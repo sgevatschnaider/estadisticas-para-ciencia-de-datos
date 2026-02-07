@@ -168,3 +168,6 @@ pip install -r requirements.txt
 
 # Instalar hooks de git (para calidad de código)
 pre-commit install
+
+⚖️ Licencia
+Este material se distribuye bajo la licencia MIT. Siéntete libre de usarlo para docencia o auto-estudio, citando la fuente original.
