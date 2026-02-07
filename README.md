@@ -2,6 +2,18 @@
 
 # Applied Statistics for Data Science (Engineering & Research Track)
 
+<p align="center">
+  <img src="assets/portada%20.gif" alt="Visualización de conceptos: MVN, Bootstrap, Regularización, Grafos y Series Temporales" width="100%">
+  <br>
+  <sub style="font-size: 14px;">
+    🔵 <b>Normal Multivariante</b> (Geometría) &nbsp;|&nbsp;
+    🟢 <b>Bootstrap</b> (Inferencia) &nbsp;|&nbsp;
+    🟠 <b>Regularización</b> (Sparsity) <br>
+    🔴 <b>DAGs</b> (Causalidad) &nbsp;|&nbsp;
+    🟣 <b>Series Temporales</b> (Procesos Estocásticos)
+  </sub>
+</p>
+
 [![src/classroom/probabilidad](https://img.shields.io/badge/src-probabilidad-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/probabilidad)
 [![src/classroom/inferencia](https://img.shields.io/badge/src-inferencia-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/inferencia)
 [![src/classroom/learning](https://img.shields.io/badge/src-learning-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/learning)
