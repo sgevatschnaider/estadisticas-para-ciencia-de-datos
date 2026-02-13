@@ -1,6 +1,4 @@
-# Estadísticas para Ciencia de Datos — Classroom
-
-## Applied Statistics for Data Science (Engineering & Research Track)
+# Applied Statistics for Data Science (Engineering & Research Track)
 
 <p align="center">
   <img src="assets/portada%20.gif" alt="Visualización de conceptos: MVN, Bootstrap, Regularización, Grafos y Series Temporales" width="100%">
@@ -8,7 +6,8 @@
   <sub style="font-size: 14px;">
     🔵 <b>Normal Multivariante</b> (Geometría) &nbsp;|&nbsp;
     🟢 <b>Bootstrap</b> (Inferencia) &nbsp;|&nbsp;
-    🟠 <b>Regularización</b> (Sparsity) <br>
+    🟠 <b>Regularización</b> (Sparsity)
+    <br>
     🔴 <b>DAGs</b> (Causalidad) &nbsp;|&nbsp;
     🟣 <b>Series Temporales</b> (Procesos Estocásticos)
   </sub>
@@ -16,9 +15,10 @@
 
 ---
 
-## 🔗 Accesos rápidos (Docs por módulo + Código)
+## 🔗 Accesos rápidos
 
 ### ✅ Páginas del curso (GitHub Pages) — una por módulo
+
 [![MÓDULO I — Probabilidad](https://img.shields.io/badge/M%C3%93DULO%20I-probabilidad-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/probabilidad/)
 [![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/inferencia/)
 [![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/learning/)
@@ -26,6 +26,7 @@
 [![MÓDULO V — Tiempo](https://img.shields.io/badge/M%C3%93DULO%20V-tiempo-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/tiempo/)
 
 ### 🧩 Código del curso (por módulo)
+
 [![src/classroom/probabilidad](https://img.shields.io/badge/src-probabilidad-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad)
 [![src/classroom/inferencia](https://img.shields.io/badge/src-inferencia-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/inferencia)
 [![src/classroom/learning](https://img.shields.io/badge/src-learning-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/learning)
@@ -44,9 +45,11 @@
 
 ---
 
+## 🎯 Descripción
+
 Material docente de nivel **Ingeniería** para Ciencia de Datos.
 
-Este curso asume conocimientos previos de estadística clásica (ANOVA, tests de hipótesis básicos) y se centra en la **“Caja Blanca”** de la ingeniería moderna: inferencia computacional, geometría de los datos, regularización y modelos gráficos probabilísticos.
+El curso asume conocimientos previos de estadística clásica (por ejemplo: ANOVA y tests de hipótesis básicos) y se centra en la **“caja blanca”** de la ingeniería estadística moderna: inferencia computacional, geometría de los datos, regularización, y modelos gráficos probabilísticos (PGMs), con extensión a causalidad y series temporales.
 
 <p align="center">
   <a href="https://www.python.org/">
@@ -68,118 +71,176 @@ Este curso asume conocimientos previos de estadística clásica (ANOVA, tests de
 
 ---
 
-## 📚 Bibliografía Base (The Canon)
+## 📚 Bibliografía base (The Canon)
 
-Las referencias bibliográficas en el programa corresponden a las siguientes obras maestras:
+Las referencias bibliográficas del programa se apoyan principalmente en:
 
-* **[Wasserman]**: *All of Statistics: A Concise Course in Statistical Inference* (Larry Wasserman).
-* **[ESL]**: *The Elements of Statistical Learning* (Hastie, Tibshirani & Friedman).
-* **[BDA3]**: *Bayesian Data Analysis, 3rd Ed.* (Gelman, Carlin, et al.).
-* **[Efron]**: *Computer Age Statistical Inference* (Efron & Hastie).
-* **[Pearl]**: *Causality: Models, Reasoning, and Inference* (Judea Pearl).
-* **[Shumway]**: *Time Series Analysis and Its Applications* (Shumway & Stoffer).
+- **[Wasserman]** — *All of Statistics: A Concise Course in Statistical Inference* (Larry Wasserman)
+- **[ESL]** — *The Elements of Statistical Learning* (Hastie, Tibshirani & Friedman)
+- **[BDA3]** — *Bayesian Data Analysis (3rd Ed.)* (Gelman, Carlin, et al.)
+- **[Efron]** — *Computer Age Statistical Inference* (Efron & Hastie)
+- **[Pearl]** — *Causality: Models, Reasoning, and Inference* (Judea Pearl)
+- **[Shumway]** — *Time Series Analysis and Its Applications* (Shumway & Stoffer)
 
 ---
 
-## 🗺️ Syllabus Detallado
+## 🗺️ Syllabus detallado
 
-### MÓDULO I: PROBABILIDAD MULTIVARIANTE Y GEOMETRÍA
-*Prerrequisito: Se asume dominio de variables aleatorias univariadas y distribuciones estándar.*
+### MÓDULO I — Probabilidad multivariante y geometría
+*Prerrequisito: dominio de variables aleatorias univariadas y distribuciones estándar.*
 
-1. **Vectores Aleatorios y Geometría de Datos**
-   * Notación matricial: Vector de medias $\mu$ y Matriz de Covarianza $\Sigma$.
-   * Dependencia lineal vs. independencia estadística.
-   * *Bibliografía:* **[Wasserman, Ch. 3]**, **[ESL, Ch. 2.4-2.5]**.
-2. **La Normal Multivariante (MVN)**
-   * Definición y propiedades geométricas (elipsoides de densidad).
-   * Descomposición espectral (eigenvalues) y blanqueo de datos (whitening).
-   * La MVN como base para Gaussian Processes y PCA.
-   * *Bibliografía:* **[ESL, Ch. 4.3]**, **[Wasserman, Ch. 14]**.
-3. **Teoría del Aprendizaje (Concentración de la Medida)**
-   * Revisión de LLN y CLT desde la convergencia estocástica.
-   * Desigualdades de **Chebyshev** y **Hoeffding**: ¿por qué aprenden las máquinas? (cotas de error).
-   * *Bibliografía:* **[Wasserman, Ch. 4-5]**.
+1. **Vectores aleatorios y geometría de datos**
+   - Notación matricial: vector de medias \(\mu\) y matriz de covarianza \(\Sigma\).
+   - Dependencia lineal vs. independencia estadística.
+   - **Bibliografía:** **[Wasserman, Ch. 3]**, **[ESL, Ch. 2.4–2.5]**.
 
-### MÓDULO II: INFERENCIA COMPUTACIONAL Y “MODERNA”
-*Enfoque: superar las limitaciones de las pruebas de hipótesis de “tabla” mediante simulación.*
+2. **Normal multivariante (MVN)**
+   - Definición y propiedades geométricas (elipsoides de densidad).
+   - Descomposición espectral (eigenvalues) y blanqueo de datos (*whitening*).
+   - MVN como base para Gaussian Processes y PCA.
+   - **Bibliografía:** **[ESL, Ch. 4.3]**, **[Wasserman, Ch. 14]**.
 
-4. **Teoría Asintótica y Máxima Verosimilitud (MLE)**
-   * El MLE como problema de optimización.
-   * Propiedades: consistencia, eficiencia y normalidad asintótica.
-   * Información de Fisher y cota de Cramér–Rao (límite de precisión).
-   * *Bibliografía:* **[Wasserman, Ch. 9]**.
-5. **El Bootstrap y Métodos de Resampling**
-   * Estimación del error estándar sin fórmulas cerradas.
-   * Bootstrap paramétrico vs. no paramétrico. Intervalos de confianza BCa.
-   * *Bibliografía:* **[Wasserman, Ch. 8]**, **[Efron, Ch. 10-11]**.
-6. **Tests de Hipótesis en Alta Dimensionalidad**
-   * Test de Wald, Score y Likelihood Ratio Test (LRT).
-   * El problema de las comparaciones múltiples: p-hacking.
-   * Corrección de Bonferroni y False Discovery Rate (FDR – Benjamini–Hochberg).
-   * *Bibliografía:* **[Wasserman, Ch. 10]**, **[Efron, Ch. 15]**.
+3. **Teoría del aprendizaje (concentración de la medida)**
+   - Revisión de LLN y CLT desde la convergencia estocástica.
+   - Desigualdades de **Chebyshev** y **Hoeffding**: ¿por qué aprenden las máquinas? (cotas de error).
+   - **Bibliografía:** **[Wasserman, Ch. 4–5]**.
 
-### MÓDULO III: APRENDIZAJE ESTADÍSTICO (REGRESIÓN AVANZADA)
+---
+
+### MÓDULO II — Inferencia computacional y “moderna”
+*Enfoque: superar las limitaciones de las pruebas de hipótesis “de tabla” mediante simulación.*
+
+4. **Teoría asintótica y máxima verosimilitud (MLE)**
+   - MLE como problema de optimización.
+   - Propiedades: consistencia, eficiencia y normalidad asintótica.
+   - Información de Fisher y cota de Cramér–Rao (límite de precisión).
+   - **Bibliografía:** **[Wasserman, Ch. 9]**.
+
+5. **Bootstrap y métodos de resampling**
+   - Estimación del error estándar sin fórmulas cerradas.
+   - Bootstrap paramétrico vs. no paramétrico. Intervalos de confianza BCa.
+   - **Bibliografía:** **[Wasserman, Ch. 8]**, **[Efron, Ch. 10–11]**.
+
+6. **Tests de hipótesis en alta dimensionalidad**
+   - Tests de Wald, Score y Likelihood Ratio Test (LRT).
+   - Comparaciones múltiples y riesgo de *p-hacking*.
+   - Bonferroni y False Discovery Rate (FDR — Benjamini–Hochberg).
+   - **Bibliografía:** **[Wasserman, Ch. 10]**, **[Efron, Ch. 15]**.
+
+---
+
+### MÓDULO III — Aprendizaje estadístico (regresión avanzada)
 *Enfoque: trade-off sesgo–varianza y selección de modelos.*
 
-7. **Geometría de Mínimos Cuadrados (OLS)**
-   * Regresión como proyección ortogonal en subespacios lineales.
-   * Teorema de Gauss–Markov.
-   * Diagnóstico: leverage, distancia de Cook y análisis de residuos.
-   * *Bibliografía:* **[ESL, Ch. 3.2]**, **[Wasserman, Ch. 13]**.
-8. **Regularización y Selección de Modelos**
-   * La maldición de la dimensionalidad ($p > n$).
-   * **Ridge Regression (L2):** contracción de coeficientes y priors gaussianos.
-   * **Lasso (L1):** sparsity y selección de variables (priors de Laplace).
-   * Criterios de información: AIC, BIC y Mallows’ Cp.
-   * *Bibliografía:* **[ESL, Ch. 3.4 & Ch. 7]**.
-9. **Modelos Lineales Generalizados (GLM)**
-   * Familia exponencial de distribuciones.
-   * Función de enlace (link function): logística (clasificación) y Poisson (conteos).
-   * Algoritmo IRLS (Iteratively Reweighted Least Squares).
-   * *Bibliografía:* **[ESL, Ch. 4.4]**, **[McCullagh & Nelder (clásico) / Wasserman Ch. 13]**.
+7. **Geometría de mínimos cuadrados (OLS)**
+   - Regresión como proyección ortogonal en subespacios lineales.
+   - Teorema de Gauss–Markov.
+   - Diagnóstico: leverage, distancia de Cook y análisis de residuos.
+   - **Bibliografía:** **[ESL, Ch. 3.2]**, **[Wasserman, Ch. 13]**.
 
-### MÓDULO IV: MODELOS ESTRUCTURADOS, GRAFOS Y TIEMPO
+8. **Regularización y selección de modelos**
+   - Maldición de la dimensionalidad (\(p > n\)).
+   - **Ridge (L2):** contracción de coeficientes y priors gaussianos.
+   - **Lasso (L1):** sparsity y selección de variables (priors de Laplace).
+   - Criterios de información: AIC, BIC y Mallows’ \(C_p\).
+   - **Bibliografía:** **[ESL, Ch. 3.4 y Ch. 7]**.
+
+9. **Modelos lineales generalizados (GLM)**
+   - Familia exponencial de distribuciones.
+   - Función de enlace (*link*): logística (clasificación) y Poisson (conteos).
+   - IRLS (Iteratively Reweighted Least Squares).
+   - **Bibliografía:** **[ESL, Ch. 4.4]**, **[McCullagh & Nelder / Wasserman, Ch. 13]**.
+
+---
+
+### MÓDULO IV — Modelos estructurados, grafos y tiempo
 *Enfoque: modelar dependencias complejas y causalidad.*
 
 10. **Probabilistic Graphical Models (PGMs)**
-    * **DAGs:** grafos acíclicos dirigidos y factorización de la conjunta.
-    * Independencia condicional y **d-separation** (lectura de grafos).
-    * Plate notation para modelos jerárquicos.
-    * *Bibliografía:* **[Wasserman, Ch. 17]**, **[Bishop, Ch. 8]**.
-11. **Inferencia Causal**
-    * Correlación vs. causación: la escalera de Pearl.
-    * Intervenciones: el operador $do(x)$.
-    * Confounders, colliders y el criterio “back-door”.
-    * *Bibliografía:* **[Pearl, Ch. 1-3]**, **[Wasserman, Ch. 19]**.
-12. **Inferencia Bayesiana y MCMC**
-    * Priors conjugados vs. no informativos.
-    * La posterior como distribución de creencias.
-    * Muestreo: introducción a Markov Chain Monte Carlo (Metropolis–Hastings).
-    * *Bibliografía:* **[BDA3, Ch. 1-3]**, **[Wasserman, Ch. 11]**.
-13. **Series Temporales (Grafos Dinámicos)**
-    * Procesos estocásticos: estacionariedad y autocorrelación.
-    * Modelos ARIMA.
-    * Modelos de espacio de estados (SSM) y filtro de Kalman.
-    * *Bibliografía:* **[Shumway, Ch. 1-3 & Ch. 6]**.
+   - **DAGs:** grafos acíclicos dirigidos y factorización de la conjunta.
+   - Independencia condicional y **d-separation** (lectura de grafos).
+   - *Plate notation* para modelos jerárquicos.
+   - **Bibliografía:** **[Wasserman, Ch. 17]**, **[Bishop, Ch. 8]**.
+
+11. **Inferencia causal**
+   - Correlación vs. causación: la escalera de Pearl.
+   - Intervenciones: operador \(do(x)\).
+   - Confounders, colliders y criterio *back-door*.
+   - **Bibliografía:** **[Pearl, Ch. 1–3]**, **[Wasserman, Ch. 19]**.
+
+12. **Inferencia bayesiana y MCMC**
+   - Priors conjugados vs. no informativos.
+   - La posterior como distribución de creencias.
+   - Introducción a Markov Chain Monte Carlo (Metropolis–Hastings).
+   - **Bibliografía:** **[BDA3, Ch. 1–3]**, **[Wasserman, Ch. 11]**.
+
+13. **Series temporales (grafos dinámicos)**
+   - Procesos estocásticos: estacionariedad y autocorrelación.
+   - Modelos ARIMA.
+   - Modelos de espacio de estados (SSM) y filtro de Kalman.
+   - **Bibliografía:** **[Shumway, Ch. 1–3 y Ch. 6]**.
+
+---
+
+## 🧱 Estructura del repositorio (high-level)
+
+> *Ajustá estos nombres si difieren en tu repo.*
+
+- `docs/` — sitio MkDocs / GitHub Pages (material por módulo)
+- `src/classroom/` — notebooks, scripts y prácticas por módulo
+- `assets/` — imágenes, gifs y recursos visuales del curso
+- `tests/` — tests (si aplica)
+- `requirements.txt` / `pyproject.toml` — dependencias
 
 ---
 
 ## 🛠️ Uso y ejecución
 
-### 1) Clonar e instalar dependencias
+### 1) Clonar el repo
 
 ```bash
 git clone https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git
 cd estadisticas-para-ciencia-de-datos
-
-# Crear entorno virtual (recomendado)
+2) Crear entorno e instalar dependencias (Python)
 python -m venv .venv
-source .venv/bin/activate  # En Windows: .venv\Scripts\activate
+# Linux/macOS:
+source .venv/bin/activate
+# Windows:
+# .venv\Scripts\activate
 
-# Instalar dependencias
 pip install -U pip
 pip install -r requirements.txt
-
-# Instalar hooks de git (para calidad de código)
+3) Calidad de código (opcional, recomendado)
 pre-commit install
+pre-commit run --all-files
+4) Ejecutar notebooks / prácticas
+Si trabajás con Jupyter:
 
+jupyter lab
+Si usás VSCode: abrí la carpeta del repo y ejecutá notebooks desde la extensión de Jupyter.
+
+✅ Requisitos y nivel esperado
+Probabilidad y estadística clásica (intervalos, tests básicos, ANOVA)
+
+Álgebra lineal (vectores, matrices, autovalores/autovectores)
+
+Programación: Python (recomendado); R/Julia como soporte (opcional)
+
+🤝 Contribuciones
+Issues y PRs son bienvenidos. Si vas a proponer cambios grandes (estructura, syllabus o tooling), abrí primero un issue describiendo el objetivo y el impacto.
+
+⚖️ Licencia
+Este material se distribuye bajo licencia MIT. Ver el archivo LICENSE.
+
+📌 Referencias (citas cortas)
+[Wasserman] Larry Wasserman — All of Statistics
+
+[ESL] Hastie, Tibshirani, Friedman — The Elements of Statistical Learning
+
+[BDA3] Gelman et al. — Bayesian Data Analysis (3rd Ed.)
+
+[Efron] Efron & Hastie — Computer Age Statistical Inference
+
+[Pearl] Judea Pearl — Causality
+
+[Shumway] Shumway & Stoffer — Time Series Analysis and Its Applications
