@@ -19,21 +19,23 @@
 ## 🔗 Accesos rápidos (Docs por módulo + Código)
 
 ### ✅ Páginas del curso (GitHub Pages) — una por módulo
-[![MÓDULO I — Probabilidad](https://img.shields.io/badge/M%C3%93DULO%20I-probabilidad-0366d6)](https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/modulos/probabilidad/)
-[![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/modulos/inferencia/)
-[![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/modulos/learning/)
-[![MÓDULO IV — PGM](https://img.shields.io/badge/M%C3%93DULO%20IV-pgm-0366d6)](https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/modulos/pgm/)
-[![MÓDULO V — Tiempo](https://img.shields.io/badge/M%C3%93DULO%20V-tiempo-0366d6)](https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/modulos/tiempo/)
+[![MÓDULO I — Probabilidad](https://img.shields.io/badge/M%C3%93DULO%20I-probabilidad-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/probabilidad/)
+[![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/inferencia/)
+[![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/learning/)
+[![MÓDULO IV — PGM](https://img.shields.io/badge/M%C3%93DULO%20IV-pgm-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/pgm/)
+[![MÓDULO V — Tiempo](https://img.shields.io/badge/M%C3%93DULO%20V-tiempo-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/tiempo/)
+
 
 ### 🧩 Código del curso (por módulo)
-[![src/classroom/probabilidad](https://img.shields.io/badge/src-probabilidad-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/probabilidad)
-[![src/classroom/inferencia](https://img.shields.io/badge/src-inferencia-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/inferencia)
-[![src/classroom/learning](https://img.shields.io/badge/src-learning-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/learning)
-[![src/classroom/pgm](https://img.shields.io/badge/src-pgm-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/pgm)
-[![src/classroom/tiempo](https://img.shields.io/badge/src-tiempo-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/tiempo)
+[![src/classroom/probabilidad](https://img.shields.io/badge/src-probabilidad-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad)
+[![src/classroom/inferencia](https://img.shields.io/badge/src-inferencia-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/inferencia)
+[![src/classroom/learning](https://img.shields.io/badge/src-learning-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/learning)
+[![src/classroom/pgm](https://img.shields.io/badge/src-pgm-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/pgm)
+[![src/classroom/tiempo](https://img.shields.io/badge/src-tiempo-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/tiempo)
+
 
 <p align="center">
-  <a href="https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/" target="_blank" rel="noopener">
+  <a href="https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/" target="_blank" rel="noopener">
     <img alt="Live docs — GitHub Pages" src="https://img.shields.io/badge/Live%20docs-GitHub%20Pages-2b3137?style=for-the-badge&logo=github" />
   </a>
   &nbsp;
@@ -42,9 +44,10 @@
   </a>
 </p>
 
+
 ---
 
-Material docente de nivel **Posgrado / Ingeniería Avanzada** para Ciencia de Datos.
+Material docente de nivel **Ingeniería** para Ciencia de Datos.
 
 Este curso asume conocimientos previos de estadística clásica (ANOVA, Tests de Hipótesis básicos) y se centra en la **"Caja Blanca"** de la ingeniería moderna: inferencia computacional, geometría de los datos, regularización y modelos gráficos probabilísticos.
 
