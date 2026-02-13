@@ -29,11 +29,11 @@
 ### ✅ Páginas del curso (Documentación Web)
 > *Acceso a la teoría y notas de clase renderizadas en HTML.*
 
-[![MÓDULO I — Probabilidad](https://img.shields.io/badge/M%C3%93DULO%20I-probabilidad-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/probabilidad.html)
-[![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/inferencia.html)
-[![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/learning.html)
-[![MÓDULO IV — PGM](https://img.shields.io/badge/M%C3%93DULO%20IV-pgm-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/pgm.html)
-[![MÓDULO V — Tiempo](https://img.shields.io/badge/M%C3%93DULO%20V-tiempo-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/tiempo.html)
+[![MÓDULO I — Probabilidad](https://img.shields.io/badge/M%C3%93DULO%20I-probabilidad-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/probabilidad.html)
+[![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/inferencia.html)
+[![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/learning.html)
+[![MÓDULO IV — PGM](https://img.shields.io/badge/M%C3%93DULO%20IV-pgm-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/pgm.html)
+[![MÓDULO V — Tiempo](https://img.shields.io/badge/M%C3%93DULO%20V-tiempo-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/tiempo.html)
 
 ### 🧩 Código del curso (Notebooks y Scripts)
 > *Acceso directo al código fuente en el repositorio.*
@@ -212,10 +212,14 @@ Las referencias bibliográficas del programa se apoyan principalmente en:
 ```bash
 git clone [https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git)
 cd estadisticas-para-ciencia-de-datos
-2) Crear entorno e instalar dependencias (Python)
+
+```
+
+### 2) Crear entorno e instalar dependencias (Python)
+
 Se recomienda usar un entorno virtual para evitar conflictos.
 
-Bash
+```bash
 # Crear entorno virtual
 python -m venv .venv
 
@@ -228,49 +232,61 @@ source .venv/bin/activate
 # Instalar dependencias
 pip install -U pip
 pip install -r requirements.txt
-3) Calidad de código (opcional, recomendado)
-Bash
+
+```
+
+### 3) Calidad de código (opcional, recomendado)
+
+```bash
 pre-commit install
 pre-commit run --all-files
-4) Ejecutar notebooks / prácticas
-Si trabajás con Jupyter Lab:
 
-Bash
+```
+
+### 4) Ejecutar notebooks / prácticas
+
+Si trabajás con **Jupyter Lab**:
+
+```bash
 jupyter lab
-Si usás VSCode:
 
-Abre la carpeta del repositorio y ejecuta los archivos .ipynb directamente usando la extensión de Jupyter.
+```
 
-✅ Requisitos y nivel esperado
-Matemática:
+Si usás **VSCode**:
 
-Probabilidad y estadística clásica (intervalos, tests básicos, ANOVA).
+> Abre la carpeta del repositorio y ejecuta los archivos `.ipynb` directamente usando la extensión de Jupyter.
 
-Álgebra lineal (vectores, matrices, autovalores/autovectores).
+---
 
-Programación:
+## ✅ Requisitos y nivel esperado
 
-Python (lenguaje principal).
+* **Matemática:**
+* Probabilidad y estadística clásica (intervalos, tests básicos, ANOVA).
+* Álgebra lineal (vectores, matrices, autovalores/autovectores).
 
-R / Julia (como soporte opcional).
 
-🤝 Contribuciones
+* **Programación:**
+* **Python** (lenguaje principal).
+* *R / Julia* (como soporte opcional).
+
+
+
+## 🤝 Contribuciones
+
 Issues y Pull Requests son bienvenidos.
 
-Si vas a proponer cambios grandes (estructura, syllabus o tooling), por favor abrí primero un Issue describiendo el objetivo y el impacto.
+* Si vas a proponer cambios grandes (estructura, syllabus o tooling), por favor abrí primero un **Issue** describiendo el objetivo y el impacto.
 
-⚖️ Licencia
-Este material se distribuye bajo licencia MIT. Ver el archivo LICENSE para más detalles.
+## ⚖️ Licencia
 
-📌 Referencias (Citas cortas)
-[Wasserman] Larry Wasserman — All of Statistics
+Este material se distribuye bajo licencia **MIT**. Ver el archivo [LICENSE](https://www.google.com/search?q=LICENSE) para más detalles.
 
-[ESL] Hastie, Tibshirani, Friedman — The Elements of Statistical Learning
+## 📌 Referencias (Citas cortas)
 
-[BDA3] Gelman et al. — Bayesian Data Analysis (3rd Ed.)
+* **[Wasserman]** Larry Wasserman — *All of Statistics*
+* **[ESL]** Hastie, Tibshirani, Friedman — *The Elements of Statistical Learning*
+* **[BDA3]** Gelman et al. — *Bayesian Data Analysis (3rd Ed.)*
+* **[Efron]** Efron & Hastie — *Computer Age Statistical Inference*
+* **[Pearl]** Judea Pearl — *Causality*
+* **[Shumway]** Shumway & Stoffer — *Time Series Analysis and Its Applications*
 
-[Efron] Efron & Hastie — Computer Age Statistical Inference
-
-[Pearl] Judea Pearl — Causality
-
-[Shumway] Shumway & Stoffer — Time Series Analysis and Its Applications
