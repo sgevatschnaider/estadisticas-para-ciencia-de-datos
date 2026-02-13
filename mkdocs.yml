@@ -1,0 +1,27 @@
+site_name: Estadísticas para Ciencia de Datos — Classroom
+site_url: https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/
+repo_url: https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: es
+
+nav:
+  - Home: index.md
+  - Módulos:
+      - I. Probabilidad y Geometría: modulos/probabilidad.md
+      - II. Inferencia Computacional: modulos/inferencia.md
+      - III. Aprendizaje Estadístico: modulos/learning.md
+      - IV. PGM & Causalidad: modulos/pgm.md
+      - V. Series Temporales: modulos/tiempo.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
