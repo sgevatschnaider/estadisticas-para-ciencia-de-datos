@@ -15,17 +15,28 @@
 
 ---
 
+## 📑 Tabla de Contenidos
+1. [Accesos rápidos](#-accesos-rápidos)
+2. [Descripción](#-descripción)
+3. [Bibliografía](#-bibliografía-base-the-canon)
+4. [Syllabus](#-syllabus-detallado)
+5. [Instalación y Uso](#-uso-y-ejecución)
+
+---
+
 ## 🔗 Accesos rápidos
 
-### ✅ Páginas del curso (GitHub Pages) — una por módulo
+### ✅ Páginas del curso (Documentación Web)
+> *Acceso a la teoría y notas de clase renderizadas en HTML.*
 
-[![MÓDULO I — Probabilidad](https://img.shields.io/badge/M%C3%93DULO%20I-probabilidad-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/probabilidad/)
-[![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/inferencia/)
-[![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/learning/)
-[![MÓDULO IV — PGM](https://img.shields.io/badge/M%C3%93DULO%20IV-pgm-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/pgm/)
-[![MÓDULO V — Tiempo](https://img.shields.io/badge/M%C3%93DULO%20V-tiempo-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/tiempo/)
+[![MÓDULO I — Probabilidad](https://img.shields.io/badge/M%C3%93DULO%20I-probabilidad-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/probabilidad.html)
+[![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/inferencia.html)
+[![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/learning.html)
+[![MÓDULO IV — PGM](https://img.shields.io/badge/M%C3%93DULO%20IV-pgm-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/pgm.html)
+[![MÓDULO V — Tiempo](https://img.shields.io/badge/M%C3%93DULO%20V-tiempo-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/modulos/tiempo.html)
 
-### 🧩 Código del curso (por módulo)
+### 🧩 Código del curso (Notebooks y Scripts)
+> *Acceso directo al código fuente en el repositorio.*
 
 [![src/classroom/probabilidad](https://img.shields.io/badge/src-probabilidad-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad)
 [![src/classroom/inferencia](https://img.shields.io/badge/src-inferencia-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/inferencia)
@@ -90,7 +101,7 @@ Las referencias bibliográficas del programa se apoyan principalmente en:
 *Prerrequisito: dominio de variables aleatorias univariadas y distribuciones estándar.*
 
 1. **Vectores aleatorios y geometría de datos**
-   - Notación matricial: vector de medias \(\mu\) y matriz de covarianza \(\Sigma\).
+   - Notación matricial: vector de medias $\mu$ y matriz de covarianza $\Sigma$.
    - Dependencia lineal vs. independencia estadística.
    - **Bibliografía:** **[Wasserman, Ch. 3]**, **[ESL, Ch. 2.4–2.5]**.
 
@@ -139,10 +150,10 @@ Las referencias bibliográficas del programa se apoyan principalmente en:
    - **Bibliografía:** **[ESL, Ch. 3.2]**, **[Wasserman, Ch. 13]**.
 
 8. **Regularización y selección de modelos**
-   - Maldición de la dimensionalidad (\(p > n\)).
+   - Maldición de la dimensionalidad ($p > n$).
    - **Ridge (L2):** contracción de coeficientes y priors gaussianos.
    - **Lasso (L1):** sparsity y selección de variables (priors de Laplace).
-   - Criterios de información: AIC, BIC y Mallows’ \(C_p\).
+   - Criterios de información: AIC, BIC y Mallows’ $C_p$.
    - **Bibliografía:** **[ESL, Ch. 3.4 y Ch. 7]**.
 
 9. **Modelos lineales generalizados (GLM)**
@@ -164,7 +175,7 @@ Las referencias bibliográficas del programa se apoyan principalmente en:
 
 11. **Inferencia causal**
    - Correlación vs. causación: la escalera de Pearl.
-   - Intervenciones: operador \(do(x)\).
+   - Intervenciones: operador $do(x)$.
    - Confounders, colliders y criterio *back-door*.
    - **Bibliografía:** **[Pearl, Ch. 1–3]**, **[Wasserman, Ch. 19]**.
 
@@ -196,43 +207,62 @@ Las referencias bibliográficas del programa se apoyan principalmente en:
 
 ## 🛠️ Uso y ejecución
 
-### 1) Clonar el repo
+### 1) Clonar el repositorio
 
 ```bash
-git clone https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git
+git clone [https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git)
 cd estadisticas-para-ciencia-de-datos
 2) Crear entorno e instalar dependencias (Python)
+Se recomienda usar un entorno virtual para evitar conflictos.
+
+Bash
+# Crear entorno virtual
 python -m venv .venv
-# Linux/macOS:
+
+# Activar entorno (Linux/macOS):
 source .venv/bin/activate
-# Windows:
+
+# Activar entorno (Windows):
 # .venv\Scripts\activate
 
+# Instalar dependencias
 pip install -U pip
 pip install -r requirements.txt
 3) Calidad de código (opcional, recomendado)
+Bash
 pre-commit install
 pre-commit run --all-files
 4) Ejecutar notebooks / prácticas
-Si trabajás con Jupyter:
+Si trabajás con Jupyter Lab:
 
+Bash
 jupyter lab
-Si usás VSCode: abrí la carpeta del repo y ejecutá notebooks desde la extensión de Jupyter.
+Si usás VSCode:
+
+Abre la carpeta del repositorio y ejecuta los archivos .ipynb directamente usando la extensión de Jupyter.
 
 ✅ Requisitos y nivel esperado
-Probabilidad y estadística clásica (intervalos, tests básicos, ANOVA)
+Matemática:
 
-Álgebra lineal (vectores, matrices, autovalores/autovectores)
+Probabilidad y estadística clásica (intervalos, tests básicos, ANOVA).
 
-Programación: Python (recomendado); R/Julia como soporte (opcional)
+Álgebra lineal (vectores, matrices, autovalores/autovectores).
+
+Programación:
+
+Python (lenguaje principal).
+
+R / Julia (como soporte opcional).
 
 🤝 Contribuciones
-Issues y PRs son bienvenidos. Si vas a proponer cambios grandes (estructura, syllabus o tooling), abrí primero un issue describiendo el objetivo y el impacto.
+Issues y Pull Requests son bienvenidos.
+
+Si vas a proponer cambios grandes (estructura, syllabus o tooling), por favor abrí primero un Issue describiendo el objetivo y el impacto.
 
 ⚖️ Licencia
-Este material se distribuye bajo licencia MIT. Ver el archivo LICENSE.
+Este material se distribuye bajo licencia MIT. Ver el archivo LICENSE para más detalles.
 
-📌 Referencias (citas cortas)
+📌 Referencias (Citas cortas)
 [Wasserman] Larry Wasserman — All of Statistics
 
 [ESL] Hastie, Tibshirani, Friedman — The Elements of Statistical Learning
