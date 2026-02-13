@@ -1,20 +1,25 @@
-site_name: Estadísticas para Ciencia de Datos — Classroom
-site_url: https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/
-repo_url: https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos
-edit_uri: edit/main/docs/
+site_name: "Estadísticas para Ciencia de Datos — Classroom"
+site_url: "https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/"
+repo_url: "https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos"
+repo_name: "sgevatschnaider/estadisticas-para-ciencia-de-datos"
+
+# Clave para que tus links /modulos/.../ funcionen
+use_directory_urls: true
 
 theme:
   name: material
   language: es
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
 
-nav:
-  - Home: index.md
-  - Módulos:
-      - I. Probabilidad y Geometría: modulos/probabilidad.md
-      - II. Inferencia Computacional: modulos/inferencia.md
-      - III. Aprendizaje Estadístico: modulos/learning.md
-      - IV. PGM & Causalidad: modulos/pgm.md
-      - V. Series Temporales: modulos/tiempo.md
+plugins:
+  - search
 
 markdown_extensions:
   - admonition
@@ -22,6 +27,18 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.arithmatex:
       generic: true
+  - toc:
+      permalink: true
 
 extra_javascript:
+  - javascripts/mathjax.js
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Módulos:
+      - "I. Probabilidad y Geometría": modulos/probabilidad.md
+      - "II. Inferencia Computacional": modulos/inferencia.md
+      - "III. Aprendizaje Estadístico": modulos/learning.md
+      - "IV. PGM & Causalidad": modulos/pgm.md
+      - "V. Series Temporales": modulos/tiempo.md
