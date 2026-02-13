@@ -14,6 +14,18 @@
   </sub>
 </p>
 
+---
+
+## 🔗 Accesos rápidos (Docs por módulo + Código)
+
+### ✅ Páginas del curso (GitHub Pages) — una por módulo
+[![MÓDULO I — Probabilidad](https://img.shields.io/badge/M%C3%93DULO%20I-probabilidad-0366d6)](https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/modulos/probabilidad/)
+[![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/modulos/inferencia/)
+[![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/modulos/learning/)
+[![MÓDULO IV — PGM](https://img.shields.io/badge/M%C3%93DULO%20IV-pgm-0366d6)](https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/modulos/pgm/)
+[![MÓDULO V — Tiempo](https://img.shields.io/badge/M%C3%93DULO%20V-tiempo-0366d6)](https://USUARIO.github.io/Estadisticas-Ciencia-de-Datos-Classroom/modulos/tiempo/)
+
+### 🧩 Código del curso (por módulo)
 [![src/classroom/probabilidad](https://img.shields.io/badge/src-probabilidad-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/probabilidad)
 [![src/classroom/inferencia](https://img.shields.io/badge/src-inferencia-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/inferencia)
 [![src/classroom/learning](https://img.shields.io/badge/src-learning-0366d6)](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom/tree/main/src/classroom/learning)
@@ -29,6 +41,8 @@
     <img alt="Live demos — Binder" src="https://img.shields.io/badge/Live%20demos-Binder-f5a250?style=for-the-badge&logo=jupyter" />
   </a>
 </p>
+
+---
 
 Material docente de nivel **Posgrado / Ingeniería Avanzada** para Ciencia de Datos.
 
@@ -155,7 +169,7 @@ Las referencias bibliográficas en el programa corresponden a las siguientes obr
 ### 1) Clonar e instalar dependencias
 
 ```bash
-git clone [https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom.git](https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom.git)
+git clone https://github.com/USUARIO/Estadisticas-Ciencia-de-Datos-Classroom.git
 cd Estadisticas-Ciencia-de-Datos-Classroom
 
 # Crear entorno virtual (Recomendado)
@@ -168,6 +182,5 @@ pip install -r requirements.txt
 
 # Instalar hooks de git (para calidad de código)
 pre-commit install
-
 ⚖️ Licencia
 Este material se distribuye bajo la licencia MIT. Siéntete libre de usarlo para docencia o auto-estudio, citando la fuente original.
