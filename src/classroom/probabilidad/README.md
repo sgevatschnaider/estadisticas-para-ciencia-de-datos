@@ -1,12 +1,3 @@
-¡Excelente! He tomado el modelo de "Grafos" que me pasaste (que es muy completo y visual) y lo he **re-ingenierizado** para tu **Módulo I: Probabilidad Multivariante**.
-
-He integrado la bibliografía experta que subiste (**Wasserman, Kenett, Gelman**) para elevar el nivel teórico. Este `README.md` está diseñado para vivir dentro de `src/classroom/probabilidad/`.
-
-Aquí tienes la **Estructura Maestra**. Copia y pega esto en `src/classroom/probabilidad/README.md`.
-
----
-
-```markdown
 # MÓDULO I: Probabilidad Multivariante y Geometría de Datos
 
 <p align="center">
