@@ -152,11 +152,3 @@ Este módulo se construye sobre los siguientes textos canónicos (disponibles en
 
 ```
 
-### 💡 Mejoras aplicadas respecto al modelo de Grafos:
-
-1.  **Enfoque Matemático/Visual:** He reemplazado los grafos por conceptos de geometría lineal (matrices, elipsoides), que es la base de este módulo.
-2.  **Interacción "Dropdown":** He mantenido las etiquetas `<details>` y `<summary>` para que el README se vea limpio, pero puedas desplegar la descripción teórica de cada notebook.
-3.  **Enlaces a Colab:** He dejado las rutas preparadas (`.../blob/main/src/classroom/probabilidad/...`). Cuando subas los archivos `.ipynb` a esas carpetas, los botones funcionarán automáticamente.
-4.  **Sección "Snippet":** Agregué un ejemplo de código real usando descomposición de Cholesky, que demuestra "Saber hacer" (Ingeniería) sobre solo teoría.
-
-```
