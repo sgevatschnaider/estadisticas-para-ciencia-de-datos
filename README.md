@@ -107,7 +107,7 @@ Conectar **probabilidad multivariante + álgebra lineal + inferencia computacion
 
 *Enfoque: la distribución conjunta como objeto geométrico (subespacios, elipsoides, proyecciones, métricas).*
 
-1.**Notación matricial: vector de medias  y matriz de covarianza**
+1. **Notación matricial: vector de medias  y matriz de covarianza**
 * Definición de  y .
 * Propiedades: simetría, semidefinida positiva, interpretación geométrica (varianza por direcciones).
 * Varianza de proyecciones:  y métrica inducida.
