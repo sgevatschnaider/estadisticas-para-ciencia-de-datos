@@ -37,8 +37,8 @@ extra_javascript:
 nav:
   - Home: index.md
   - Módulos:
-      - "I. Probabilidad y Geometría": modulos/probabilidad.md
+      - "I. Geometría y Probabilidad": modulos/probabilidad.md
       - "II. Inferencia Computacional": modulos/inferencia.md
       - "III. Aprendizaje Estadístico": modulos/learning.md
-      - "IV. PGM & Causalidad": modulos/pgm.md
-      - "V. Series Temporales": modulos/tiempo.md
+      - "IV. Modelos Estructurados": modulos/pgm.md
+      - "V. Grafos y Complejidad": modulos/tiempo.md
