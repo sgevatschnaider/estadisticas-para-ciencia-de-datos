@@ -1,15 +1,15 @@
 # Applied Statistics for Data Science (Engineering & Research Track)
 
 <p align="center">
-  <img src="assets/portada%20.gif" alt="Visualización de conceptos: MVN, Bootstrap, Regularización, Grafos y Series Temporales" width="100%">
+  <img src="assets/portada%20.gif" alt="Visualización de conceptos: Geometría de Datos, Inferencia, Learning, Modelos Estructurados y Grafos" width="100%">
   <br>
   <sub style="font-size: 14px;">
-    🔵 <b>Normal Multivariante</b> (Geometría) &nbsp;|&nbsp;
-    🟢 <b>Bootstrap</b> (Inferencia) &nbsp;|&nbsp;
-    🟠 <b>Regularización</b> (Sparsity)
+    🔵 <b>Geometría & MVN</b> (Mód. I) &nbsp;|&nbsp;
+    🟢 <b>Inferencia Comp.</b> (Mód. II) &nbsp;|&nbsp;
+    🟠 <b>Regularización & ML</b> (Mód. III)
     <br>
-    🔴 <b>DAGs</b> (Causalidad) &nbsp;|&nbsp;
-    🟣 <b>Series Temporales</b> (Procesos Estocásticos)
+    🔴 <b>Causalidad & Tiempo</b> (Mód. IV) &nbsp;|&nbsp;
+    🟣 <b>Grafos & Complejidad</b> (Mód. V)
   </sub>
 </p>
 
@@ -29,20 +29,20 @@
 ### ✅ Páginas del curso (Documentación Web)
 > *Acceso a la teoría y notas de clase renderizadas en HTML.*
 
-[![MÓDULO I — Probabilidad](https://img.shields.io/badge/M%C3%93DULO%20I-probabilidad-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/probabilidad.html)
+[![MÓDULO I — Geometría](https://img.shields.io/badge/M%C3%93DULO%20I-geometría-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/geometria.html)
 [![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/inferencia.html)
 [![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/learning.html)
-[![MÓDULO IV — PGM](https://img.shields.io/badge/M%C3%93DULO%20IV-pgm-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/pgm.html)
-[![MÓDULO V — Tiempo](https://img.shields.io/badge/M%C3%93DULO%20V-tiempo-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/tiempo.html)
+[![MÓDULO IV — Estructurados](https://img.shields.io/badge/M%C3%93DULO%20IV-estructurados-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/estructurados.html)
+[![MÓDULO V — Grafos](https://img.shields.io/badge/M%C3%93DULO%20V-grafos-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/grafos.html)
 
 ### 🧩 Código del curso (Notebooks y Scripts)
 > *Acceso directo al código fuente en el repositorio.*
 
-[![src/classroom/probabilidad](https://img.shields.io/badge/src-probabilidad-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad)
+[![src/classroom/geometria](https://img.shields.io/badge/src-geometria-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/geometria)
 [![src/classroom/inferencia](https://img.shields.io/badge/src-inferencia-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/inferencia)
 [![src/classroom/learning](https://img.shields.io/badge/src-learning-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/learning)
-[![src/classroom/pgm](https://img.shields.io/badge/src-pgm-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/pgm)
-[![src/classroom/tiempo](https://img.shields.io/badge/src-tiempo-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/tiempo)
+[![src/classroom/estructurados](https://img.shields.io/badge/src-estructurados-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/estructurados)
+[![src/classroom/grafos](https://img.shields.io/badge/src-grafos-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/grafos)
 
 <p align="center">
   <a href="https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/" target="_blank" rel="noopener">
@@ -55,6 +55,8 @@
 </p>
 
 ---
+
+
 
 ## 🎯 Descripción
 
