@@ -95,103 +95,195 @@ Las referencias bibliográficas del programa se apoyan principalmente en:
 
 ---
 
+## 🎯 Propósito del curso
+
+Conectar **probabilidad multivariante + álgebra lineal + inferencia computacional** con la **geometría de los datos** usada hoy en **ML/IA**: reducción de dimensión, regularización, modelos estructurados, grafos y métodos de simulación/optimización.
+
+---
+
 ## 🗺️ Syllabus detallado
 
-### MÓDULO I — Probabilidad multivariante y geometría
-*Prerrequisito: dominio de variables aleatorias univariadas y distribuciones estándar.*
+### MÓDULO I — Vectores aleatorios y geometría de datos
 
-1. **Vectores aleatorios y geometría de datos**
-   - Notación matricial: vector de medias $\mu$ y matriz de covarianza $\Sigma$.
-   - Dependencia lineal vs. independencia estadística.
-   - **Bibliografía:** **[Wasserman, Ch. 3]**, **[ESL, Ch. 2.4–2.5]**.
+*Enfoque: la distribución conjunta como objeto geométrico (subespacios, elipsoides, proyecciones, métricas).*
 
-2. **Normal multivariante (MVN)**
-   - Definición y propiedades geométricas (elipsoides de densidad).
-   - Descomposición espectral (eigenvalues) y blanqueo de datos (*whitening*).
-   - MVN como base para Gaussian Processes y PCA.
-   - **Bibliografía:** **[ESL, Ch. 4.3]**, **[Wasserman, Ch. 14]**.
+1. **Notación matricial: vector de medias  y matriz de covarianza **
+* Definición de  y .
+* Propiedades: simetría, semidefinida positiva, interpretación geométrica (varianza por direcciones).
+* Varianza de proyecciones:  y métrica inducida.
+* **Aplicación en DS/ML:** Feature scaling, *Covariance shift*, distancia de Mahalanobis (detección de outliers).
+* **Bibliografía:** **[Wasserman, Ch. 3]**, **[ESL, Ch. 2.4–2.5]**.
 
-3. **Teoría del aprendizaje (concentración de la medida)**
-   - Revisión de LLN y CLT desde la convergencia estocástica.
-   - Desigualdades de **Chebyshev** y **Hoeffding**: ¿por qué aprenden las máquinas? (cotas de error).
-   - **Bibliografía:** **[Wasserman, Ch. 4–5]**.
+
+2. **Dependencia lineal vs. independencia estadística**
+* Dependencia lineal ( rango, singularidad) vs. Independencia estadística ().
+* Correlación  independencia (salvo en Gaussianas).
+* **Aplicación en DS/ML:** Multicolinealidad en regresión (Ridge/Lasso), *Feature redundancy*, correlación vs. causalidad.
+* **Bibliografía:** **[Koller & Friedman, Ch. 2–3]**, **[Bishop, Ch. 8]**, **[Wasserman, Ch. 3–4]**.
+
+
+3. **Normal multivariante (MVN) y geometría**
+* Definición : forma cuadrática, log-densidad y energía.
+* **Elipsoides de densidad:** Interpretación geométrica y descomposición espectral ().
+* **Whitening:** Blanqueo de datos .
+* **Aplicación en DS/ML:** LDA/QDA, PCA (rotación + escalado), Batch/Layer Normalization, Gaussian Processes.
+* **Bibliografía:** **[Wasserman, Ch. 14]**, **[Mardia–Kent–Bibby]**, **[ESL, Ch. 3.5 / 14]**, **[Bishop, PCA]**.
+
+
+4. **Teoría del aprendizaje: concentración de la medida**
+* Convergencia en probabilidad vs. en distribución (LLN y CLT).
+* Desigualdades de **Chebyshev** y **Hoeffding**: cotas no asintóticas del error.
+* **Aplicación en DS/ML:** Generalización (riesgo empírico vs. poblacional), intervalos de confianza para métricas (Accuracy, AUC).
+* **Bibliografía:** **[Wasserman, Ch. 4–5]**.
+
+
 
 ---
 
 ### MÓDULO II — Inferencia computacional y “moderna”
-*Enfoque: superar las limitaciones de las pruebas de hipótesis “de tabla” mediante simulación.*
 
-4. **Teoría asintótica y máxima verosimilitud (MLE)**
-   - MLE como problema de optimización.
-   - Propiedades: consistencia, eficiencia y normalidad asintótica.
-   - Información de Fisher y cota de Cramér–Rao (límite de precisión).
-   - **Bibliografía:** **[Wasserman, Ch. 9]**.
+*Enfoque: superar las limitaciones de las pruebas de hipótesis clásicas mediante optimización y simulación.*
 
-5. **Bootstrap y métodos de resampling**
-   - Estimación del error estándar sin fórmulas cerradas.
-   - Bootstrap paramétrico vs. no paramétrico. Intervalos de confianza BCa.
-   - **Bibliografía:** **[Wasserman, Ch. 8]**, **[Efron, Ch. 10–11]**.
+5. **Teoría asintótica y máxima verosimilitud (MLE)**
+* MLE como optimización:  (Gradiente/Hessiano).
+* Consistencia, eficiencia, Información de Fisher y cota de Cramér–Rao.
+* **Aplicación en DS/ML:** Regresión logística (Cross-entropy), entrenamiento de modelos probabilísticos (Naive Bayes, HMM).
+* **Bibliografía:** **[Wasserman, Ch. 9]**, **[Efron & Hastie, Ch. 2]**.
 
-6. **Tests de hipótesis en alta dimensionalidad**
-   - Tests de Wald, Score y Likelihood Ratio Test (LRT).
-   - Comparaciones múltiples y riesgo de *p-hacking*.
-   - Bonferroni y False Discovery Rate (FDR — Benjamini–Hochberg).
-   - **Bibliografía:** **[Wasserman, Ch. 10]**, **[Efron, Ch. 15]**.
+
+6. **Bootstrap y métodos de resampling**
+* Estimación del error estándar sin fórmulas cerradas.
+* Bootstrap paramétrico vs. no paramétrico. Intervalos **BCa**.
+* **Aplicación en DS/ML:** Incertidumbre en métricas (F1, AUC), Bagging (Random Forest), *Stability selection*.
+* **Bibliografía:** **[Wasserman, Ch. 8]**, **[Efron & Hastie, Ch. 10–11]**.
+
+
+7. **Tests de hipótesis en alta dimensionalidad**
+* Tests de Wald, Score y Likelihood Ratio Test (LRT).
+* Comparaciones múltiples: Bonferroni y **False Discovery Rate (FDR — Benjamini–Hochberg)**.
+* **Aplicación en DS/ML:** A/B testing a escala, selección de features en alta dimensión (genes, texto).
+* **Bibliografía:** **[Wasserman, Ch. 10]**, **[ESL, High-Dim Problems]**, **[Efron & Hastie, Ch. 15]**.
+
+
 
 ---
 
 ### MÓDULO III — Aprendizaje estadístico (regresión avanzada)
-*Enfoque: trade-off sesgo–varianza y selección de modelos.*
 
-7. **Geometría de mínimos cuadrados (OLS)**
-   - Regresión como proyección ortogonal en subespacios lineales.
-   - Teorema de Gauss–Markov.
-   - Diagnóstico: leverage, distancia de Cook y análisis de residuos.
-   - **Bibliografía:** **[ESL, Ch. 3.2]**, **[Wasserman, Ch. 13]**.
+*Enfoque: trade-off sesgo–varianza, geometría de proyecciones y selección de modelos.*
 
-8. **Regularización y selección de modelos**
-   - Maldición de la dimensionalidad ($p > n$).
-   - **Ridge (L2):** contracción de coeficientes y priors gaussianos.
-   - **Lasso (L1):** sparsity y selección de variables (priors de Laplace).
-   - Criterios de información: AIC, BIC y Mallows’ $C_p$.
-   - **Bibliografía:** **[ESL, Ch. 3.4 y Ch. 7]**.
+8. **Geometría de mínimos cuadrados (OLS)**
+* Regresión como proyección ortogonal: Matriz sombrero .
+* Teorema de Gauss–Markov y diagnóstico (leverage, distancia de Cook).
+* **Aplicación en DS/ML:** Baselines interpretables, detección de puntos influyentes en producción.
+* **Bibliografía:** **[ESL, Ch. 3.2]**, **[Wasserman, Ch. 13]**.
 
-9. **Modelos lineales generalizados (GLM)**
-   - Familia exponencial de distribuciones.
-   - Función de enlace (*link*): logística (clasificación) y Poisson (conteos).
-   - IRLS (Iteratively Reweighted Least Squares).
-   - **Bibliografía:** **[ESL, Ch. 4.4]**, **[McCullagh & Nelder / Wasserman, Ch. 13]**.
+
+9. **Regularización y selección de modelos**
+* Maldición de la dimensionalidad ().
+* **Ridge (L2):** Contracción y priors gaussianos.
+* **Lasso (L1):** Sparsity y priors de Laplace. Elastic Net.
+* Criterios de información: AIC, BIC, .
+* **Aplicación en DS/ML:** Estabilidad en embeddings, selección automática de variables, *Early stopping*.
+* **Bibliografía:** **[ESL, Ch. 3.4 y Ch. 7]**, **[Efron & Hastie, Ch. 7 y 16]**.
+
+
+10. **Modelos lineales generalizados (GLM)**
+* Familia exponencial y funciones de enlace (*link*): Logística y Poisson.
+* Algoritmo IRLS (Iteratively Reweighted Least Squares).
+* **Aplicación en DS/ML:** Clasificación calibrada, modelado de conteos/demanda.
+* **Bibliografía:** **[ESL, Ch. 4.4]**, **[Efron & Hastie, Ch. 8]**.
+
+
+
+---
+
+### MÓDULO IV — Modelos estructurados, grafos, causalidad y tiempo
+
+*Enfoque: modelar dependencias complejas, inferencia bayesiana y dinámica.*
+
+11. **Probabilistic Graphical Models (PGMs)**
+* **DAGs:** Factorización de la conjunta, independencia condicional y **d-separation**.
+* *Plate notation* para modelos jerárquicos.
+* **Aplicación en DS/ML:** Naive Bayes, HMMs, modelos jerárquicos multitenant.
+* **Bibliografía:** **[Koller & Friedman, Ch. 2–4]**, **[Bishop, Ch. 8]**.
+
+
+12. **Inferencia causal**
+* Correlación vs. Causación. Intervenciones y operador .
+* Confounders, colliders y criterio *back-door*.
+* **Aplicación en DS/ML:** A/B testing, Uplift modeling, eliminación de sesgos en datos.
+* **Bibliografía:** **[Pearl, Ch. 1–3]**, **[Wasserman, Ch. 16–17]**.
+
+
+13. **Inferencia bayesiana y MCMC**
+* Priors conjugados vs. no informativos. Posterior como creencia.
+* **MCMC:** Metropolis–Hastings y diagnóstico básico.
+* **Aplicación en DS/ML:** Bayesian Logistic Regression, Bayesian Optimization, cuantificación de incertidumbre.
+* **Bibliografía:** **[BDA3, Ch. 1–3]**, **[Efron & Hastie, Ch. 13]**.
+
+
+14. **Series temporales y modelos dinámicos**
+* Estacionariedad, autocorrelación y modelos ARIMA.
+* **State Space Models (SSM):** Filtro de Kalman.
+* **Aplicación en DS/ML:** Forecasting (demanda, finanzas), tracking (IoT), comparación con RNNs.
+* **Bibliografía:** **[Shumway & Stoffer, Ch. 1–3 y 6]**, **[Bishop, Ch. 13]**.
+
+
 
 ---
 
-### MÓDULO IV — Modelos estructurados, grafos y tiempo
-*Enfoque: modelar dependencias complejas y causalidad.*
+### MÓDULO V — Geometría moderna: grafos, complejidad y búsqueda
 
-10. **Probabilistic Graphical Models (PGMs)**
-   - **DAGs:** grafos acíclicos dirigidos y factorización de la conjunta.
-   - Independencia condicional y **d-separation** (lectura de grafos).
-   - *Plate notation* para modelos jerárquicos.
-   - **Bibliografía:** **[Wasserman, Ch. 17]**, **[Bishop, Ch. 8]**.
+*Enfoque: expandir la geometría más allá de lo euclídeo (grafos), dinámica local (autómatas) y optimización no convexa.*
 
-11. **Inferencia causal**
-   - Correlación vs. causación: la escalera de Pearl.
-   - Intervenciones: operador $do(x)$.
-   - Confounders, colliders y criterio *back-door*.
-   - **Bibliografía:** **[Pearl, Ch. 1–3]**, **[Wasserman, Ch. 19]**.
+15. **Teoría de grafos para ciencia de datos**
+* Matrices de adyacencia, conectividad, caminos, BFS/DFS.
+* **Aplicación en DS/ML:** Network science (PageRank, comunidades), recomendadores, detección de fraude.
+* **Bibliografía:** **[Benjamin–Chartrand–Zhang]**, **[Kumar]**.
 
-12. **Inferencia bayesiana y MCMC**
-   - Priors conjugados vs. no informativos.
-   - La posterior como distribución de creencias.
-   - Introducción a Markov Chain Monte Carlo (Metropolis–Hastings).
-   - **Bibliografía:** **[BDA3, Ch. 1–3]**, **[Wasserman, Ch. 11]**.
 
-13. **Series temporales (grafos dinámicos)**
-   - Procesos estocásticos: estacionariedad y autocorrelación.
-   - Modelos ARIMA.
-   - Modelos de espacio de estados (SSM) y filtro de Kalman.
-   - **Bibliografía:** **[Shumway, Ch. 1–3 y Ch. 6]**.
+16. **Espectros de grafos y geometría (Spectral Graph Theory)**
+* Espectro del Laplaciano; autovalores y autovectores en grafos.
+* **Aplicación en DS/ML:** Spectral clustering, Graph Embeddings, fundamentos de GNNs.
+* **Bibliografía:** **[Kumar]**, **[ESL/Bishop (ref. espectral)]**.
+
+
+17. **Modelos sobre grafos y unificación**
+* Markov blankets, MRF (Markon Random Fields) y Factor Graphs.
+* Inferencia aproximada (Loopy Belief Propagation).
+* **Aplicación en DS/ML:** CRFs (secuencias), segmentación de imágenes, denoising.
+* **Bibliografía:** **[Koller & Friedman]**, **[Bishop, Ch. 8]**.
+
+
+18. **Algoritmos evolutivos y programación genética (GP)**
+* Optimización sin gradiente en paisajes no convexos.
+* GP: Búsqueda en espacios de programas (*Symbolic Regression*).
+* **Aplicación en DS/ML:** AutoML, descubrimiento de ecuaciones interpretables, Neuroevolution.
+* **Bibliografía:** **[Material de Cátedra: Evolutivos/GP]**.
+
+
+19. **Autómatas celulares (CA) y dinámica local**
+* Reglas locales → Emergencia global. Dinámica en grillas.
+* **Aplicación en DS/ML:** Simulación de propagación (epidemias, tráfico), modelos generativos discretos.
+* **Bibliografía:** **[Material de Cátedra: Autómatas Celulares]**, **[Wolfram (ref. conceptual)]**.
+
+
 
 ---
+
+## 📚 Bibliografía General del Curso
+
+* **Wasserman** — *All of Statistics*.
+* **Hastie, Tibshirani, Friedman** — *The Elements of Statistical Learning (ESL)*.
+* **Efron & Hastie** — *Computer Age Statistical Inference (CASI)*.
+* **Bishop** — *Pattern Recognition and Machine Learning (PRML)*.
+* **Koller & Friedman** — *Probabilistic Graphical Models*.
+* **Gelman et al.** — *Bayesian Data Analysis (BDA3)*.
+* **Pearl** — *Causal Inference in Statistics*.
+* **Shumway & Stoffer** — *Time Series Analysis and Its Applications*.
+* **Mardia, Kent, Bibby** — *Multivariate Analysis*.
+* **Benjamin, Chartrand, Zhang** — *The Fascinating World of Graph Theory*.
 
 ## 🧱 Estructura del repositorio (high-level)
 
