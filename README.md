@@ -29,11 +29,14 @@
 ### ✅ Páginas del curso (Documentación Web)
 > *Acceso a la teoría y notas de clase renderizadas en HTML.*
 
-[![MÓDULO I — Geometría](https://img.shields.io/badge/M%C3%93DULO%20I-geometría-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/geometria.html)
+### ✅ Páginas del curso (Documentación Web)
+> *Acceso a la teoría y notas de clase renderizadas en HTML.*
+
+[![MÓDULO I — Geometría](https://img.shields.io/badge/M%C3%93DULO%20I-geometría-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/probabilidad.html)
 [![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/inferencia.html)
 [![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/learning.html)
-[![MÓDULO IV — Estructurados](https://img.shields.io/badge/M%C3%93DULO%20IV-estructurados-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/estructurados.html)
-[![MÓDULO V — Grafos](https://img.shields.io/badge/M%C3%93DULO%20V-grafos-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/grafos.html)
+[![MÓDULO IV — Estructurados](https://img.shields.io/badge/M%C3%93DULO%20IV-estructurados-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/pgm.html)
+[![MÓDULO V — Grafos](https://img.shields.io/badge/M%C3%93DULO%20V-grafos-0366d6)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/docs/modulos/tiempo.html)
 
 ### 🧩 Código del curso (Notebooks y Scripts)
 > *Acceso directo al código fuente en el repositorio.*
