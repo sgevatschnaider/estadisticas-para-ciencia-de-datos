@@ -29,6 +29,8 @@
 ### ✅ Páginas del curso (Documentación Web)
 > *Acceso a la teoría y notas de clase renderizadas en HTML.*
 
+## 🔗 Accesos rápidos
+
 ### ✅ Páginas del curso (Documentación Web)
 > *Acceso a la teoría y notas de clase renderizadas en HTML.*
 
