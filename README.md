@@ -41,11 +41,11 @@
 ### 🧩 Código del curso (Notebooks y Scripts)
 > *Acceso directo al código fuente en el repositorio.*
 
-[![src/classroom/geometria](https://img.shields.io/badge/src-geometria-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/geometria)
+[![src/classroom/geometria](https://img.shields.io/badge/src-geometria-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad)
 [![src/classroom/inferencia](https://img.shields.io/badge/src-inferencia-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/inferencia)
 [![src/classroom/learning](https://img.shields.io/badge/src-learning-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/learning)
-[![src/classroom/estructurados](https://img.shields.io/badge/src-estructurados-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/estructurados)
-[![src/classroom/grafos](https://img.shields.io/badge/src-grafos-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/grafos)
+[![src/classroom/estructurados](https://img.shields.io/badge/src-estructurados-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/pgm)
+[![src/classroom/grafos](https://img.shields.io/badge/src-grafos-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/tiempo)
 
 <p align="center">
   <a href="https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/" target="_blank" rel="noopener">
