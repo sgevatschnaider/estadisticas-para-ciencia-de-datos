@@ -281,7 +281,20 @@ Conectar **probabilidad multivariante + álgebra lineal + inferencia computacion
 * **Aplicación en DS/ML:** Simulación de propagación (epidemias, tráfico), modelos generativos discretos.
 * **Bibliografía:** **[Material de Cátedra: Autómatas Celulares]**, **[Wolfram (ref. conceptual)]**.
 
+##  Cómo utilizar este material (Instalación y Uso)
 
+Tienes dos formas principales de consumir y ejecutar las clases de este repositorio:
+
+### Opción A: En la Nube (Recomendado)
+No necesitas instalar nada en tu computadora.
+1. **Simuladores Interactivos:** Haz clic en los botones azules `[![Ver en GitHub]]` de la tabla superior para acceder a los archivos `.html`. Puedes verlos funcionar directamente usando los botones verdes de `[![Ver Simulación Interactiva]]`.
+2. **Jupyter Notebooks:** Haz clic en los botones de **Binder** o **Colab** que se encuentran en la parte superior. Esto abrirá un entorno virtual en tu navegador donde podrás ejecutar el código Python celda por celda.
+
+### Opción B: Ejecución Local
+Si prefieres tener los archivos en tu máquina:
+1. Clona este repositorio:
+   ```bash
+   git clone [https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git)
 
 ---
 
