@@ -1,16 +1,16 @@
 Applied Statistics for Data Science (Engineering & Research Track)
 
 <p align="center">
-  <img src="assets/portada%20.gif" alt="Visualización de conceptos: Geometría de Datos, Inferencia, Learning, Modelos Estructurados y Grafos" width="100%">
-  <br>
-  <sub style="font-size: 14px;">
-    🔵 <b>Geometría & MVN</b> (Mód. I) &nbsp;|&nbsp;
-    🟢 <b>Inferencia Comp.</b> (Mód. II) &nbsp;|&nbsp;
-    🟠 <b>Regularización & ML</b> (Mód. III)
-    <br>
-    🔴 <b>Causalidad & Tiempo</b> (Mód. IV) &nbsp;|&nbsp;
-    🟣 <b>Grafos & Complejidad</b> (Mód. V)
-  </sub>
+  <img src="assets/portada%20.gif" alt="Visualización de conceptos: Geometría de Datos, Inferencia, Learning, Modelos Estructurados y Grafos" width="100%">
+  <br>
+  <sub style="font-size: 14px;">
+    🔵 <b>Geometría & MVN</b> (Mód. I) &nbsp;|&nbsp;
+    🟢 <b>Inferencia Comp.</b> (Mód. II) &nbsp;|&nbsp;
+    🟠 <b>Regularización & ML</b> (Mód. III)
+    <br>
+    🔴 <b>Causalidad & Tiempo</b> (Mód. IV) &nbsp;|&nbsp;
+    🟣 <b>Grafos & Complejidad</b> (Mód. V)
+  </sub>
 </p>
 
 ---
@@ -26,36 +26,27 @@ Applied Statistics for Data Science (Engineering & Research Track)
 
 ## 🔗 Accesos rápidos
 
-### ✅ Páginas del curso (Documentación Web)
-> *Acceso a la teoría y simuladores renderizados en HTML.*
-
-[![MÓDULO I — Geometría](https://img.shields.io/badge/M%C3%93DULO%20I-geometría-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad/html)
-[![MÓDULO II — Inferencia](https://img.shields.io/badge/M%C3%93DULO%20II-inferencia-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/inferencia/html)
-[![MÓDULO III — Learning](https://img.shields.io/badge/M%C3%93DULO%20III-learning-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/learning/html)
-[![MÓDULO IV — Estructurados](https://img.shields.io/badge/M%C3%93DULO%20IV-estructurados-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/pgm/html)
-[![MÓDULO V — Grafos](https://img.shields.io/badge/M%C3%93DULO%20V-grafos-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/tiempo/html)
-
-### 🧩 Código del curso (Notebooks y Scripts)
-> *Acceso directo al código fuente en el repositorio.*
-
-[![src/classroom/geometria](https://img.shields.io/badge/src-geometria-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad)
-[![src/classroom/inferencia](https://img.shields.io/badge/src-inferencia-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/inferencia)
-[![src/classroom/learning](https://img.shields.io/badge/src-learning-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/learning)
-[![src/classroom/estructurados](https://img.shields.io/badge/src-estructurados-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/pgm)
-[![src/classroom/grafos](https://img.shields.io/badge/src-grafos-0366d6)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/tiempo)
+> *Acceso directo a las carpetas del repositorio con la teoría (simuladores HTML) y el código fuente (Notebooks).*
 
 <p align="center">
-  <a href="https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/" target="_blank" rel="noopener">
-    <img alt="Live docs — GitHub Pages" src="https://img.shields.io/badge/Live%20docs-GitHub%20Pages-2b3137?style=for-the-badge&logo=github" />
-  </a>
-  &nbsp;
-  <a href="#" target="_blank" rel="noopener">
-    <img alt="Live demos — Binder" src="https://img.shields.io/badge/Live%20demos-Binder-f5a250?style=for-the-badge&logo=jupyter" />
-  </a>
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad"><img src="https://img.shields.io/badge/MÓDULO_I-Geometría-0366d6?style=for-the-badge"></a>
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/inferencia"><img src="https://img.shields.io/badge/MÓDULO_II-Inferencia-0366d6?style=for-the-badge"></a>
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/learning"><img src="https://img.shields.io/badge/MÓDULO_III-Learning-0366d6?style=for-the-badge"></a>
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/pgm"><img src="https://img.shields.io/badge/MÓDULO_IV-Estructurados-0366d6?style=for-the-badge"></a>
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/tiempo"><img src="https://img.shields.io/badge/MÓDULO_V-Grafos-0366d6?style=for-the-badge"></a>
+</p>
+
+<p align="center">
+  <a href="https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/" target="_blank" rel="noopener">
+    <img alt="Live docs — GitHub Pages" src="https://img.shields.io/badge/Live%20docs-GitHub%20Pages-2b3137?style=for-the-badge&logo=github" />
+  </a>
+  &nbsp;
+  <a href="#" target="_blank" rel="noopener">
+    <img alt="Live demos — Binder" src="https://img.shields.io/badge/Live%20demos-Binder-f5a250?style=for-the-badge&logo=jupyter" />
+  </a>
 </p>
 
 ---
-
 
 ## 🎯 Descripción
 
