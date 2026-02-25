@@ -21,7 +21,7 @@ Applied Statistics for Data Science (Engineering & Research Track)
 3. [Bibliografía Base](#bibliografía-base)
 4. [Syllabus Detallado](#syllabus-detallado)
 5. [Instalación y Uso](#cómo-utilizar-este-material-instalación-y-uso)
-6. 
+
 ## 🔗 Accesos rápidos
 
 > *Acceso directo a las carpetas del repositorio con la teoría (simuladores HTML) y el código fuente (Notebooks).*
