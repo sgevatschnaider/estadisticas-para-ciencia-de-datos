@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Guardián de las Colas — Desigualdades de Concentración</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060b17;
+  --panel: #0c1428;
+  --panel2: #101d38;
+  --border: #1a2e54;
+  --cyan: #00e5ff;
+  --cyan-dim: rgba(0,229,255,0.1);
+  --red: #ff3355;
+  --red-dim: rgba(255,51,85,0.2);
+  --gold: #ffd700;
+  --orange: #ff9500;
+  --green: #00ff88;
+  --green-dim: rgba(0,255,136,0.1);
+  --text: #c0d0f0;
+  --text-bright: #e0ecff;
+  --text-dim: #4a6090;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* STARFIELD */
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(1px 1px at 15% 25%,rgba(255,255,255,.25) 0%,transparent 100%),radial-gradient(1px 1px at 45% 65%,rgba(255,255,255,.2) 0%,transparent 100%),radial-gradient(1px 1px at 72% 18%,rgba(255,255,255,.22) 0%,transparent 100%),radial-gradient(1px 1px at 88% 80%,rgba(255,255,255,.18) 0%,transparent 100%),radial-gradient(1px 1px at 33% 90%,rgba(255,255,255,.15) 0%,transparent 100%);pointer-events:none;z-index:0}
+
+.wrap{max-width:1380px;margin:0 auto;padding:20px 24px;position:relative;z-index:1}
+
+/* HEADER */
+.hdr{text-align:center;padding:40px 0 28px;position:relative}
+.hdr::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:300px;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.hdr h1{font-family:'Orbitron',monospace;font-size:2.1rem;font-weight:900;color:var(--cyan);text-shadow:0 0 30px rgba(0,229,255,.6),0 0 60px rgba(0,229,255,.25);letter-spacing:3px;margin-bottom:8px}
+.hdr p{font-size:.95rem;color:var(--text-dim);letter-spacing:4px;text-transform:uppercase;font-weight:300;margin-bottom:16px}
+.badge{display:inline-block;background:var(--cyan-dim);border:1px solid var(--cyan);color:var(--cyan);padding:4px 16px;border-radius:20px;font-size:.72rem;font-family:'Orbitron',monospace;letter-spacing:1px}
+
+/* THEORY ACCORDION */
+.theory-wrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;margin:24px 0 18px;overflow:hidden}
+.theory-hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;cursor:pointer;user-select:none;transition:background .2s}
+.theory-hdr:hover{background:var(--panel2)}
+.theory-hdr h2{font-family:'Orbitron',monospace;font-size:.85rem;color:var(--gold);letter-spacing:1.5px}
+.theory-arr{color:var(--gold);font-size:1.1rem;transition:transform .35s}
+.theory-arr.open{transform:rotate(180deg)}
+.theory-body{max-height:0;overflow:hidden;transition:max-height .5s ease}
+.theory-body.open{max-height:900px}
+.theory-inner{padding:24px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.tcard{background:var(--panel2);border-radius:10px;padding:18px;border:1px solid var(--border);position:relative;overflow:hidden}
+.tcard::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.tcard.mk::before{background:var(--orange)}
+.tcard.ch::before{background:var(--cyan)}
+.tcard h3{font-family:'Orbitron',monospace;font-size:.8rem;letter-spacing:1px;margin-bottom:12px}
+.tcard.mk h3{color:var(--orange)}
+.tcard.ch h3{color:var(--cyan)}
+.fbox{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px 16px;text-align:center;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:.95rem;color:var(--text-bright);line-height:1.6}
+.fbox .big{font-size:1.1rem;color:var(--cyan)}
+.fbox .big.mk{color:var(--orange)}
+.tcard p,.tcard li{font-size:.83rem;color:var(--text-dim);line-height:1.7}
+.tcard ul{list-style:none;margin-top:8px}
+.tcard li{padding-left:16px;position:relative}
+.tcard li::before{content:'▸';position:absolute;left:0;color:var(--cyan)}
+.tcard.mk li::before{color:var(--orange)}
+.req-tag{display:inline-block;background:rgba(255,149,0,.12);border:1px solid rgba(255,149,0,.3);color:var(--orange);font-size:.72rem;padding:2px 8px;border-radius:4px;margin-bottom:8px}
+
+/* MODE TABS */
+.mode-row{display:flex;gap:10px;margin-bottom:18px}
+.mtab{flex:1;padding:10px 0;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'Orbitron',monospace;font-size:.7rem;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-align:center}
+.mtab.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim);box-shadow:0 0 14px rgba(0,229,255,.15)}
+.mtab.mk-tab.active{border-color:var(--orange);color:var(--orange);background:rgba(255,149,0,.1);box-shadow:0 0 14px rgba(255,149,0,.15)}
+
+/* MAIN LAB LAYOUT */
+.lab{display:grid;grid-template-columns:270px 1fr 290px;gap:16px;margin-bottom:18px}
+
+/* SIDE PANELS */
+.spanel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px}
+.ptitle{font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:16px}
+
+/* CONTROLS */
+.cgrp{margin-bottom:18px}
+.clabel{display:flex;justify-content:space-between;font-size:.83rem;margin-bottom:7px;color:var(--text)}
+.cval{font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:.83rem}
+.cval.mk{color:var(--orange)}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--cyan);cursor:pointer;box-shadow:0 0 8px rgba(0,229,255,.5)}
+input[type=range].mk::-webkit-slider-thumb{background:var(--orange);box-shadow:0 0 8px rgba(255,149,0,.5)}
+select{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.85rem;cursor:pointer;outline:none;margin-bottom:14px}
+select:focus{border-color:var(--cyan)}
+.sep-line{border:none;border-top:1px solid var(--border);margin:12px 0}
+
+/* CANVAS */
+.cvs-wrap{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column}
+#mainCanvas{display:block;cursor:crosshair;border-radius:8px;background:#04080f;width:100%}
+.cvs-hint{text-align:center;font-size:.75rem;color:var(--text-dim);margin-top:10px;letter-spacing:1px}
+
+/* SCOREBOARD */
+.score-metric{background:var(--panel2);border-radius:10px;padding:14px 16px;border:1px solid var(--border);margin-bottom:12px}
+.slabel{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.sval{font-family:'Orbitron',monospace;font-size:1.75rem;font-weight:700;line-height:1.1}
+.sval.real{color:var(--red)}
+.sval.bound{color:var(--orange)}
+.sbar{margin-top:9px;height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:3px;transition:width .3s ease}
+.sbar-fill.real{background:var(--red)}
+.sbar-fill.bound{background:var(--orange)}
+.ratio-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.78rem;color:var(--text-dim)}
+.rpill{font-family:'Orbitron',monospace;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px}
+.rpill.safe{background:var(--green);color:#001a0a}
+.rpill.tight{background:var(--orange);color:#1a0a00}
+
+.ineq-status{text-align:center;padding:12px;border-radius:10px;font-family:'Orbitron',monospace;font-size:.75rem;letter-spacing:1px;border:2px solid;margin-bottom:12px;transition:all .3s}
+.ineq-status.holds{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.ineq-status.tight{background:rgba(255,149,0,.1);border-color:var(--orange);color:var(--orange);animation:glowOrange 1.2s infinite}
+@keyframes glowOrange{0%,100%{box-shadow:0 0 0 var(--orange)}50%{box-shadow:0 0 18px rgba(255,149,0,.4)}}
+
+.easter-box{background:rgba(255,215,0,.08);border:2px solid var(--gold);border-radius:10px;padding:14px;font-size:.8rem;color:var(--gold);text-align:center;display:none;animation:glowGold 2s infinite;line-height:1.5}
+@keyframes glowGold{0%,100%{box-shadow:0 0 0 var(--gold)}50%{box-shadow:0 0 22px rgba(255,215,0,.45)}}
+
+.k-display{background:var(--panel2);border-radius:10px;padding:12px 16px;border:1px solid var(--border);margin-bottom:12px;text-align:center}
+.k-label{font-size:.72rem;color:var(--text-dim);letter-spacing:1px}
+.k-val{font-family:'Orbitron',monospace;font-size:2rem;color:var(--cyan);font-weight:700}
+.k-val.mk{color:var(--orange)}
+
+/* CHALLENGE */
+.challenge-wrap{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:18px}
+.ch-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.ch-hdr h2{font-family:'Orbitron',monospace;font-size:.9rem;color:var(--gold);letter-spacing:1px}
+.ch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ccard{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:15px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.ccard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cyan);transform:scaleX(0);transition:transform .2s}
+.ccard:hover::after{transform:scaleX(1)}
+.ccard:hover{border-color:var(--cyan);background:rgba(0,229,255,.04)}
+.ccard.done{border-color:var(--green)}
+.ccard.done::after{background:var(--green);transform:scaleX(1)}
+.cn{font-family:'Orbitron',monospace;font-size:2rem;color:rgba(255,255,255,.05);position:absolute;top:6px;right:10px;font-weight:900;line-height:1}
+.ccard h3{font-size:.88rem;color:var(--text-bright);margin-bottom:6px;font-weight:700}
+.ccard p{font-size:.78rem;color:var(--text-dim);line-height:1.5}
+.cbtn{display:inline-block;margin-top:10px;padding:5px 12px;border:1px solid var(--cyan);border-radius:20px;color:var(--cyan);font-size:.72rem;font-family:'Orbitron',monospace;letter-spacing:1px;cursor:pointer;background:transparent;transition:all .2s}
+.cbtn:hover{background:var(--cyan-dim);box-shadow:0 0 10px rgba(0,229,255,.25)}
+.cbtn.mk{border-color:var(--orange);color:var(--orange)}
+.cbtn.mk:hover{background:rgba(255,149,0,.1)}
+
+/* PROGRESS */
+.ch-progress{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 16px;background:var(--panel2);border-radius:10px;border:1px solid var(--border)}
+.ch-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.ch-bar-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:3px;transition:width .5s ease}
+.ch-prog-label{font-family:'Orbitron',monospace;font-size:.72rem;color:var(--text-dim);white-space:nowrap}
+
+/* ML CARDS */
+.ml-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+.mlcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;transition:border-color .2s}
+.mlcard:hover{border-color:var(--cyan)}
+.mlcard .ico{font-size:1.8rem;margin-bottom:10px}
+.mlcard h3{font-family:'Orbitron',monospace;font-size:.72rem;color:var(--cyan);letter-spacing:1px;margin-bottom:8px}
+.mlcard p{font-size:.8rem;color:var(--text-dim);line-height:1.6}
+.ml-fml{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--orange);background:rgba(255,149,0,.08);padding:5px 10px;border-radius:6px;margin-top:8px;display:inline-block;border:1px solid rgba(255,149,0,.2)}
+
+/* NOTIFICATION */
+.notif{position:fixed;top:24px;right:24px;background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:14px 20px;font-size:.85rem;color:var(--gold);max-width:280px;z-index:100;transform:translateX(320px);transition:transform .4s ease;box-shadow:0 0 20px rgba(255,215,0,.2)}
+.notif.show{transform:translateX(0)}
+
+@media(max-width:1050px){.lab{grid-template-columns:1fr;}.ch-grid{grid-template-columns:1fr 1fr}.ml-wrap{grid-template-columns:1fr 1fr}.theory-inner{grid-template-columns:1fr}}
+@media(max-width:680px){.ch-grid{grid-template-columns:1fr}.ml-wrap{grid-template-columns:1fr}.hdr h1{font-size:1.4rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="hdr">
+  <h1>🛡️ EL GUARDIÁN DE LAS COLAS</h1>
+  <p>Desigualdades de Concentración · Markov &amp; Chebyshev</p>
+  <span class="badge">LABORATORIO INTERACTIVO</span>
+</div>
+
+<!-- THEORY ACCORDION -->
+<div class="theory-wrap">
+  <div class="theory-hdr" onclick="toggleTheory()">
+    <h2>📐 FUNDAMENTOS TEÓRICOS — DESIGUALDADES DE CONCENTRACIÓN</h2>
+    <span class="theory-arr" id="tArr">▼</span>
+  </div>
+  <div class="theory-body" id="tBody">
+    <div class="theory-inner">
+      <div class="tcard mk">
+        <h3>⚡ DESIGUALDAD DE MARKOV</h3>
+        <span class="req-tag">Requiere: X ≥ 0, a &gt; 0</span>
+        <div class="fbox">
+          <div class="big mk">ℙ(Z ≥ a) ≤ 𝔼[Z] / a</div>
+        </div>
+        <p>Para cualquier variable aleatoria <strong>no negativa</strong>, la probabilidad de superar un umbral <em>a</em> no puede exceder la razón entre la media y dicho umbral.</p>
+        <ul>
+          <li>Solo necesita conocer la <strong>esperanza</strong></li>
+          <li>Vale para <em>cualquier</em> distribución no negativa</li>
+          <li>Intuición: si el promedio es bajo, no pueden haber muchos valores altos</li>
+          <li>Si 𝔼[Z] = 10 y a = 50 → P(Z ≥ 50) ≤ 0.20</li>
+        </ul>
+      </div>
+      <div class="tcard ch">
+        <h3>🔒 DESIGUALDAD DE CHEBYSHEV</h3>
+        <span class="req-tag" style="background:rgba(0,229,255,.1);border-color:rgba(0,229,255,.3);color:var(--cyan)">Requiere: Var(X) &lt; ∞</span>
+        <div class="fbox">
+          <div class="big">ℙ(|X − μ| ≥ t) ≤ Var(X) / t²</div>
+          <div style="margin-top:8px;color:var(--text-dim);font-size:.8rem">con t = kσ &nbsp;⟹&nbsp; ℙ(|X−μ| ≥ kσ) ≤ 1/k²</div>
+        </div>
+        <p>Para <em>cualquier distribución</em> con varianza finita, la masa de probabilidad fuera de k desviaciones estándar está acotada por 1/k².</p>
+        <ul>
+          <li>Solo necesita <strong>media y varianza</strong> — no la distribución completa</li>
+          <li>k=2 → como máximo <strong>25%</strong> fuera</li>
+          <li>k=3 → como máximo <strong>11.1%</strong> fuera</li>
+          <li><strong>Cota ajustada:</strong> alcanzable con 3 átomos (Easter Egg ✨)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODE TABS -->
+<div class="mode-row">
+  <button class="mtab active" id="chTab" onclick="setMode('chebyshev')">🔒 CHEBYSHEV</button>
+  <button class="mtab mk-tab" id="mkTab" onclick="setMode('markov')">⚡ MARKOV</button>
+</div>
+
+<!-- MAIN LAB -->
+<div class="lab">
+  <!-- LEFT CONTROLS -->
+  <div class="spanel">
+    <div class="ptitle">⚙ Controles de Distribución</div>
+    <select id="distSelect" onchange="onDistChange()">
+      <option value="normal">Normal (Gaussiana)</option>
+      <option value="uniform">Uniforme</option>
+      <option value="bimodal">Bimodal</option>
+      <option value="laplace">Laplace (Colas Pesadas)</option>
+      <option value="spike">⚡ Spike — Cota Ajustada</option>
+    </select>
+    <div id="chControls">
+      <div class="cgrp" id="grpMu">
+        <div class="clabel"><span>Media (μ)</span><span class="cval" id="vMu">0.00</span></div>
+        <input type="range" id="sMu" min="-2" max="2" step="0.05" value="0" oninput="onParam()">
+      </div>
+      <div class="cgrp" id="grpSigma">
+        <div class="clabel"><span>Desv. Estándar (σ)</span><span class="cval" id="vSigma">1.00</span></div>
+        <input type="range" id="sSigma" min="0.3" max="2.5" step="0.05" value="1" oninput="onParam()">
+      </div>
+      <div class="cgrp" id="grpExtra" style="display:none">
+        <div class="clabel"><span id="extraLabel">Separación</span><span class="cval" id="vExtra">2.00</span></div>
+        <input type="range" id="sExtra" min="0.3" max="4" step="0.05" value="2" oninput="onParam()">
+      </div>
+      <div class="cgrp" id="grpExtra2" style="display:none">
+        <div class="clabel"><span id="extra2Label">Parámetro 2</span><span class="cval" id="vExtra2">0.50</span></div>
+        <input type="range" id="sExtra2" min="0.1" max="1" step="0.05" value="0.5" oninput="onParam()">
+      </div>
+      <hr class="sep-line">
+      <div class="cgrp">
+        <div class="clabel"><span>Umbral (k · σ)</span><span class="cval" id="vK">2.00</span></div>
+        <input type="range" id="sK" min="0.5" max="4" step="0.05" value="2" oninput="onParam()">
+      </div>
+    </div>
+    <div id="mkControls" style="display:none">
+      <div class="cgrp">
+        <div class="clabel"><span>Parámetro λ</span><span class="cval mk" id="vLambda">1.00</span></div>
+        <input type="range" class="mk" id="sLambda" min="0.3" max="3" step="0.05" value="1" oninput="onParam()">
+      </div>
+      <div class="cgrp">
+        <div class="clabel"><span>Umbral (a)</span><span class="cval mk" id="vA">2.00</span></div>
+        <input type="range" class="mk" id="sA" min="0.2" max="5" step="0.05" value="2" oninput="onParam()">
+      </div>
+      <hr class="sep-line">
+      <div style="font-size:.78rem;color:var(--text-dim);line-height:1.6;background:rgba(255,149,0,.06);border:1px solid rgba(255,149,0,.15);border-radius:8px;padding:10px">
+        <strong style="color:var(--orange)">Distribuciones disponibles:</strong><br>
+        Exponencial · Log-Normal · Chi-cuadrado<br><br>
+        Nota: Markov requiere variables <em>no negativas</em>. Cambia la distribución con el selector.
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS CENTER -->
+  <div class="cvs-wrap">
+    <div class="ptitle">📊 Laboratorio Visual — <span id="labModeLabel">Chebyshev: Colas Bilaterales</span></div>
+    <canvas id="mainCanvas" height="300"></canvas>
+    <div class="cvs-hint" id="cvshint">🖱 Arrastra las líneas rojas para mover el umbral | Usa los sliders para cambiar la distribución</div>
+  </div>
+
+  <!-- SCOREBOARD -->
+  <div class="spanel">
+    <div class="ptitle">📈 Marcador en Vivo</div>
+    <div class="k-display">
+      <div class="k-label" id="kLabel">k = t / σ</div>
+      <div class="k-val" id="kDisplay">2.00</div>
+    </div>
+    <div class="score-metric">
+      <div class="slabel">🔴 Probabilidad Real</div>
+      <div class="sval real" id="realProb">—</div>
+      <div class="sbar"><div class="sbar-fill real" id="realBar" style="width:0%"></div></div>
+    </div>
+    <div class="score-metric">
+      <div class="slabel" id="boundLabel">🟠 Cota Chebyshev (1/k²)</div>
+      <div class="sval bound" id="boundVal">—</div>
+      <div class="sbar"><div class="sbar-fill bound" id="boundBar" style="width:0%"></div></div>
+    </div>
+    <div class="ratio-row">
+      <span class="rpill safe" id="ratioPill">CUMPLE ✓</span>
+      <span id="ratioText" style="font-size:.78rem">Prob / Cota: —</span>
+    </div>
+    <div style="margin:12px 0"></div>
+    <div class="ineq-status holds" id="ineqStatus">
+      ✓ DESIGUALDAD GARANTIZADA
+    </div>
+    <div class="easter-box" id="easterBox">
+      ✨ ¡COTA AJUSTADA!<br>
+      <span style="font-size:.75rem;opacity:.8">Encontraste la distribución que IGUALA el límite de Chebyshev.<br>3 átomos: μ y μ ± kσ</span>
+    </div>
+    <div style="margin-top:12px;font-size:.78rem;color:var(--text-dim);background:var(--panel2);border-radius:8px;padding:10px;border:1px solid var(--border)">
+      <div id="momentDisplay">
+        <div>𝔼[X] = <span class="cval" id="dMean">—</span></div>
+        <div>Var(X) = <span class="cval" id="dVar">—</span></div>
+        <div>σ = <span class="cval" id="dSigma">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHALLENGES -->
+<div class="challenge-wrap">
+  <div class="ch-hdr">
+    <span style="font-size:1.8rem">🎯</span>
+    <h2>RETOS — ¿PUEDES ROMPER LAS LEYES DE LA ESTADÍSTICA?</h2>
+  </div>
+  <div class="ch-grid">
+    <div class="ccard" id="c1" onclick="activateChallenge(1)">
+      <span class="cn">01</span>
+      <h3>Rompe a Chebyshev</h3>
+      <p>Con k=2, intenta que la probabilidad de cola supere el <strong>25%</strong>. Cambia la distribución todo lo que quieras...</p>
+      <button class="cbtn">ACTIVAR RETO</button>
+    </div>
+    <div class="ccard" id="c2" onclick="activateChallenge(2)">
+      <span class="cn">02</span>
+      <h3>El Muro de k=3</h3>
+      <p>Ajusta k=3. El límite baja al <strong>11.1%</strong>. ¿Qué distribución maximiza la probabilidad real?</p>
+      <button class="cbtn">ACTIVAR RETO</button>
+    </div>
+    <div class="ccard" id="c3" onclick="activateChallenge(3)">
+      <span class="cn">03</span>
+      <h3>Easter Egg ✨</h3>
+      <p>Usa la distribución <strong>Spike</strong> y ajusta los parámetros para que la probabilidad real <em>iguale</em> la cota de Chebyshev.</p>
+      <button class="cbtn" style="border-color:var(--gold);color:var(--gold)">DESCUBRIR</button>
+    </div>
+  </div>
+  <div class="ch-progress">
+    <span class="ch-prog-label">PROGRESO</span>
+    <div class="ch-bar"><div class="ch-bar-fill" id="chBarFill" style="width:0%"></div></div>
+    <span class="ch-prog-label" id="chProgText">0 / 3</span>
+  </div>
+</div>
+
+<!-- ML APPLICATIONS -->
+<div class="ml-wrap">
+  <div class="mlcard">
+    <div class="ico">🔍</div>
+    <h3>DETECCIÓN DE ANOMALÍAS</h3>
+    <p>Sin conocer la distribución exacta de tus datos, Chebyshev garantiza que a más de 3σ de la media hay como máximo el 11% de los puntos. Cualquier observación fuera es sospechosa.</p>
+    <div class="ml-fml">P(outlier) ≤ 1/k² con solo μ y σ</div>
+  </div>
+  <div class="mlcard">
+    <div class="ico">🎓</div>
+    <h3>PAC LEARNING</h3>
+    <p>¿Por qué un modelo entrenado con N muestras generaliza? Chebyshev acota el error de generalización: con N suficientemente grande, el error empírico converge al verdadero.</p>
+    <div class="ml-fml">P(|err_emp − err_real| ≥ ε) ≤ σ²/(Nε²)</div>
+  </div>
+  <div class="mlcard">
+    <div class="ico">⚠️</div>
+    <h3>GARANTÍAS DE SISTEMA</h3>
+    <p>En sistemas críticos (salud, finanzas), Chebyshev proporciona cotas de seguridad <em>distribution-free</em>. Markov es la base del análisis de tiempo de ejecución en algoritmos aleatorizados.</p>
+    <div class="ml-fml">P(latencia ≥ 10·μ) ≤ 10% siempre</div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+
+<!-- PROF FOOTER -->
+<div style="max-width:1380px;margin:26px auto 42px;padding:0 24px;position:relative;z-index:2;">
+  <div style="text-align:center;color:rgba(255,255,255,0.72);font-size:0.92rem;letter-spacing:0.02em;">
+    Material elaborado por el profesor Sergio Gevatschnaider
+  </div>
+</div>
+
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif"></div>
+
+<script>
+// =================== STATE ===================
+let mode = 'chebyshev';
+let distType = 'normal';
+let currentK = 2.0;
+let challenges = {1:false, 2:false, 3:false};
+
+const XMIN = -6, XMAX = 6, NP = 1200;
+const cvs = document.getElementById('mainCanvas');
+const ctx = cvs.getContext('2d');
+
+let isDragging = false;
+let dragSide = null; // 'left','right','single'
+let lastX = 0;
+
+// Params
+let params = {
+  mu: 0, sigma: 1,
+  sep: 2, biSigma: 0.7,
+  extra: 0.5,
+  lambda: 1,
+  a: 2,
+  k: 2,
+  spikeMass: 0.5  // center mass for spike dist
+};
+
+// =================== PDF FUNCTIONS ===================
+function normalPDF(x, mu, sig) {
+  const z = (x - mu) / sig;
+  return Math.exp(-0.5 * z * z) / (sig * Math.sqrt(2 * Math.PI));
+}
+
+function laplacePDF(x, mu, b) {
+  return Math.exp(-Math.abs(x - mu) / b) / (2 * b);
+}
+
+function getPDF(xs) {
+  const ys = new Array(xs.length);
+  const {mu, sigma, sep, biSigma, extra, lambda, k} = params;
+
+  if (mode === 'chebyshev') {
+    switch(distType) {
+      case 'normal':
+        for (let i = 0; i < xs.length; i++) ys[i] = normalPDF(xs[i], mu, sigma);
+        break;
+      case 'uniform': {
+        const hw = sigma * Math.sqrt(3);
+        for (let i = 0; i < xs.length; i++)
+          ys[i] = (xs[i] >= mu - hw && xs[i] <= mu + hw) ? 1 / (2 * hw) : 0;
+        break;
+      }
+      case 'bimodal':
+        for (let i = 0; i < xs.length; i++)
+          ys[i] = 0.5 * normalPDF(xs[i], mu - sep, biSigma) + 0.5 * normalPDF(xs[i], mu + sep, biSigma);
+        break;
+      case 'laplace':
+        for (let i = 0; i < xs.length; i++) ys[i] = laplacePDF(xs[i], mu, sigma / Math.sqrt(2));
+        break;
+      case 'spike': {
+        // Three-atom distribution that achieves Chebyshev equality
+        // P(μ) = 1 - 1/k², P(μ ± kσ) = 1/(2k²) each
+        const t = k * sigma;
+        const eps = Math.min(0.08, t * 0.12);
+        const centerMass = Math.max(0, 1 - 1 / (k * k));
+        const tailMass = (1 - centerMass) / 2;
+        for (let i = 0; i < xs.length; i++) {
+          ys[i] = centerMass * normalPDF(xs[i], mu, eps)
+                + tailMass * normalPDF(xs[i], mu + t, eps)
+                + tailMass * normalPDF(xs[i], mu - t, eps);
+        }
+        break;
+      }
+      default:
+        for (let i = 0; i < xs.length; i++) ys[i] = normalPDF(xs[i], mu, sigma);
+    }
+  } else {
+    // Markov mode — non-negative distributions
+    for (let i = 0; i < xs.length; i++) {
+      if (xs[i] < 0) { ys[i] = 0; continue; }
+      switch(distType) {
+        case 'normal':
+        case 'exponential':
+          ys[i] = xs[i] >= 0 ? lambda * Math.exp(-lambda * xs[i]) : 0;
+          break;
+        case 'uniform': {
+          const maxU = 2 / lambda;
+          ys[i] = (xs[i] >= 0 && xs[i] <= maxU) ? 1 / maxU : 0;
+          break;
+        }
+        case 'bimodal':
+          ys[i] = 0.4 * normalPDF(xs[i], 1/lambda, 0.3/lambda) + 0.6 * normalPDF(xs[i], 3/lambda, 0.5/lambda);
+          break;
+        case 'laplace':
+          ys[i] = xs[i] >= 0 ? (lambda * lambda * xs[i]) * Math.exp(-lambda * xs[i]) : 0;
+          break;
+        case 'spike':
+          ys[i] = xs[i] >= 0 ? lambda * Math.exp(-lambda * xs[i]) : 0;
+          break;
+        default:
+          ys[i] = xs[i] >= 0 ? lambda * Math.exp(-lambda * xs[i]) : 0;
+      }
+    }
+  }
+  return ys;
+}
+
+function getGrid() {
+  const xs = new Array(NP);
+  for (let i = 0; i < NP; i++) xs[i] = XMIN + (XMAX - XMIN) * i / (NP - 1);
+  return xs;
+}
+
+function normalizePDF(xs, ys) {
+  const dx = (XMAX - XMIN) / (NP - 1);
+  let sum = 0;
+  for (let i = 0; i < ys.length; i++) sum += ys[i];
+  const total = sum * dx;
+  if (total < 1e-10) return ys.map(() => 0);
+  return ys.map(y => y / total);
+}
+
+function computeMoments(xs, ys) {
+  const dx = (XMAX - XMIN) / (NP - 1);
+  let mean = 0;
+  for (let i = 0; i < NP; i++) mean += xs[i] * ys[i] * dx;
+  let variance = 0;
+  for (let i = 0; i < NP; i++) variance += (xs[i] - mean) ** 2 * ys[i] * dx;
+  return { mean, variance };
+}
+
+function computeTailProb(xs, ys, mode, threshold, mean, a_markov) {
+  const dx = (XMAX - XMIN) / (NP - 1);
+  let prob = 0;
+  for (let i = 0; i < NP; i++) {
+    if (mode === 'chebyshev') {
+      if (Math.abs(xs[i] - mean) >= threshold) prob += ys[i] * dx;
+    } else {
+      if (xs[i] >= a_markov) prob += ys[i] * dx;
+    }
+  }
+  return Math.min(1, Math.max(0, prob));
+}
+
+// =================== CANVAS DRAWING ===================
+function toCanvasX(x, W) {
+  return (x - XMIN) / (XMAX - XMIN) * W;
+}
+
+function resize() {
+  const container = cvs.parentElement;
+  cvs.width = container.clientWidth - 32;
+  cvs.height = 300;
+}
+
+function drawCanvas() {
+  resize();
+  const W = cvs.width, H = cvs.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = '#04080f';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(26,46,84,0.6)';
+  ctx.lineWidth = 1;
+  for (let x = XMIN; x <= XMAX; x++) {
+    const cx = toCanvasX(x, W);
+    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+  }
+  for (let j = 0; j <= 4; j++) {
+    const cy = H * j / 4;
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+  }
+
+  // Compute distribution
+  const xs = getGrid();
+  let ys = getPDF(xs);
+  ys = normalizePDF(xs, ys);
+
+  const { mean, variance } = computeMoments(xs, ys);
+  const sigma = Math.sqrt(Math.max(0, variance));
+
+  let threshold, a_val, bound, realProb;
+
+  if (mode === 'chebyshev') {
+    threshold = params.k * sigma;
+    realProb = computeTailProb(xs, ys, 'chebyshev', threshold, mean, null);
+    bound = Math.min(1, variance / (threshold * threshold + 1e-10));
+    a_val = null;
+  } else {
+    a_val = params.a;
+    realProb = computeTailProb(xs, ys, 'markov', null, null, a_val);
+    bound = Math.min(1, mean / (a_val + 1e-10));
+  }
+
+  // Scale PDF to canvas height (use 80% of height)
+  const maxY = Math.max(...ys);
+  const scaleY = maxY > 0 ? (H * 0.78) / maxY : 1;
+
+  // Shade tails (red)
+  ctx.fillStyle = 'rgba(255,51,85,0.22)';
+  ctx.beginPath();
+  if (mode === 'chebyshev') {
+    // Left tail
+    let inTail = false;
+    ctx.moveTo(toCanvasX(XMIN, W), H);
+    for (let i = 0; i < NP; i++) {
+      if (Math.abs(xs[i] - mean) >= threshold) {
+        const cx = toCanvasX(xs[i], W);
+        const cy = H - ys[i] * scaleY;
+        if (!inTail) { ctx.lineTo(cx, H); inTail = true; }
+        ctx.lineTo(cx, cy);
+      } else {
+        if (inTail) { ctx.lineTo(toCanvasX(xs[i-1], W), H); inTail = false; }
+      }
+    }
+    if (inTail) ctx.lineTo(toCanvasX(xs[NP-1], W), H);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    const ax = toCanvasX(a_val, W);
+    ctx.moveTo(ax, H);
+    for (let i = 0; i < NP; i++) {
+      if (xs[i] >= a_val) {
+        ctx.lineTo(toCanvasX(xs[i], W), H - ys[i] * scaleY);
+      }
+    }
+    ctx.lineTo(toCanvasX(XMAX, W), H);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Shade main distribution (cyan)
+  ctx.fillStyle = 'rgba(0,229,255,0.07)';
+  ctx.beginPath();
+  ctx.moveTo(toCanvasX(xs[0], W), H);
+  for (let i = 0; i < NP; i++) {
+    ctx.lineTo(toCanvasX(xs[i], W), H - ys[i] * scaleY);
+  }
+  ctx.lineTo(toCanvasX(xs[NP-1], W), H);
+  ctx.closePath();
+  ctx.fill();
+
+  // PDF outline
+  ctx.strokeStyle = '#00e5ff';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#00e5ff';
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  for (let i = 0; i < NP; i++) {
+    const cx = toCanvasX(xs[i], W);
+    const cy = H - ys[i] * scaleY;
+    if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Mean line
+  const meanCx = toCanvasX(mean, W);
+  ctx.strokeStyle = '#ffd700';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(meanCx, 10); ctx.lineTo(meanCx, H - 5); ctx.stroke();
+  ctx.setLineDash([]);
+  // Mean label
+  ctx.fillStyle = '#ffd700';
+  ctx.font = "11px 'JetBrains Mono', monospace";
+  ctx.fillText('μ=' + mean.toFixed(2), Math.min(meanCx + 5, W - 60), 22);
+
+  // Threshold lines
+  if (mode === 'chebyshev') {
+    const lx = toCanvasX(mean - threshold, W);
+    const rx = toCanvasX(mean + threshold, W);
+    drawThresholdLine(lx, H, '−' + threshold.toFixed(2) + 'σ');
+    drawThresholdLine(rx, H, '+' + threshold.toFixed(2) + 'σ');
+    // k·σ bracket
+    ctx.strokeStyle = 'rgba(255,51,85,0.4)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    ctx.moveTo(lx, H - 15); ctx.lineTo(meanCx, H - 15);
+    ctx.moveTo(rx, H - 15); ctx.lineTo(meanCx, H - 15);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,51,85,0.8)';
+    ctx.font = "10px 'JetBrains Mono', monospace";
+    ctx.fillText('k·σ', (meanCx + rx) / 2 - 12, H - 18);
+  } else {
+    const ax = toCanvasX(a_val, W);
+    drawThresholdLine(ax, H, 'a=' + a_val.toFixed(2), true);
+  }
+
+  // Bound indicator bar at top
+  drawBoundBar(W, H, realProb, bound);
+
+  // X axis labels
+  ctx.fillStyle = 'rgba(74,96,144,0.8)';
+  ctx.font = "10px 'JetBrains Mono', monospace";
+  for (let x = Math.ceil(XMIN); x <= XMAX; x++) {
+    const cx = toCanvasX(x, W);
+    ctx.fillText(x.toString(), cx - 4, H - 4);
+  }
+
+  // Update scoreboard
+  updateScoreboard(realProb, bound, mean, variance, sigma);
+}
+
+function drawThresholdLine(cx, H, label, isMarkov = false) {
+  const color = isMarkov ? '#ff9500' : '#ff3355';
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 8;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.shadowBlur = 0;
+  // Label background
+  ctx.fillStyle = isMarkov ? 'rgba(255,149,0,0.15)' : 'rgba(255,51,85,0.15)';
+  const lw = ctx.measureText(label).width + 10;
+  ctx.fillRect(cx - lw / 2, 28, lw, 18);
+  ctx.fillStyle = color;
+  ctx.font = "bold 10px 'JetBrains Mono', monospace";
+  ctx.textAlign = 'center';
+  ctx.fillText(label, cx, 41);
+  ctx.textAlign = 'left';
+}
+
+function drawBoundBar(W, H, realProb, bound) {
+  const barH = 8;
+  const barW = W * 0.6;
+  const barX = (W - barW) / 2;
+  const barY = 60;
+
+  // Background
+  ctx.fillStyle = 'rgba(26,46,84,0.6)';
+  roundRect(ctx, barX, barY, barW, barH, 4);
+  ctx.fill();
+
+  // Bound fill
+  ctx.fillStyle = 'rgba(255,149,0,0.5)';
+  roundRect(ctx, barX, barY, barW * Math.min(1, bound), barH, 4);
+  ctx.fill();
+
+  // Real fill
+  ctx.fillStyle = 'rgba(255,51,85,0.8)';
+  roundRect(ctx, barX, barY, barW * Math.min(1, realProb), barH, 4);
+  ctx.fill();
+
+  // Labels
+  ctx.fillStyle = 'rgba(255,149,0,0.9)';
+  ctx.font = "9px 'JetBrains Mono', monospace";
+  ctx.fillText('COTA: ' + (bound * 100).toFixed(1) + '%', barX, barY - 3);
+  ctx.fillStyle = 'rgba(255,51,85,0.9)';
+  ctx.fillText('REAL: ' + (realProb * 100).toFixed(1) + '%', barX + barW * 0.4, barY - 3);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+}
+
+// =================== SCOREBOARD ===================
+function updateScoreboard(realProb, bound, mean, variance, sigma) {
+  document.getElementById('realProb').textContent = (realProb * 100).toFixed(2) + '%';
+  document.getElementById('boundVal').textContent = bound < 1 ? (bound * 100).toFixed(2) + '%' : '100.00%';
+  document.getElementById('realBar').style.width = Math.min(100, realProb * 100) + '%';
+  document.getElementById('boundBar').style.width = Math.min(100, bound * 100) + '%';
+  document.getElementById('dMean').textContent = mean.toFixed(3);
+  document.getElementById('dVar').textContent = variance.toFixed(3);
+  document.getElementById('dSigma').textContent = sigma.toFixed(3);
+
+  const ratio = bound > 1e-6 ? realProb / bound : 0;
+  const pill = document.getElementById('ratioPill');
+  const ratioText = document.getElementById('ratioText');
+  ratioText.textContent = 'Prob / Cota: ' + ratio.toFixed(3);
+
+  // Easter egg check
+  const isEaster = distType === 'spike' && ratio > 0.92;
+  document.getElementById('easterBox').style.display = isEaster ? 'block' : 'none';
+
+  if (ratio > 0.95) {
+    pill.className = 'rpill tight';
+    pill.textContent = 'AJUSTADO ⚡';
+    document.getElementById('ineqStatus').className = 'ineq-status tight';
+    document.getElementById('ineqStatus').textContent = '⚡ COTA CASI EXACTA';
+  } else {
+    pill.className = 'rpill safe';
+    pill.textContent = 'CUMPLE ✓';
+    document.getElementById('ineqStatus').className = 'ineq-status holds';
+    document.getElementById('ineqStatus').textContent = '✓ DESIGUALDAD GARANTIZADA';
+  }
+
+  if (mode === 'chebyshev') {
+    const k = params.k;
+    document.getElementById('kDisplay').textContent = k.toFixed(2);
+    document.getElementById('kDisplay').className = 'k-val';
+    document.getElementById('kLabel').textContent = 'k = t / σ';
+    document.getElementById('boundLabel').textContent = '🟠 Cota Chebyshev (1/k²)';
+  } else {
+    const a = params.a;
+    document.getElementById('kDisplay').textContent = a.toFixed(2);
+    document.getElementById('kDisplay').className = 'k-val mk';
+    document.getElementById('kLabel').textContent = 'umbral a';
+    document.getElementById('boundLabel').textContent = '🟠 Cota Markov (𝔼[Z]/a)';
+  }
+
+  // Challenge check
+  checkChallenges(realProb, bound, ratio);
+}
+
+// =================== CHALLENGES ===================
+let _distChangeCount = 0;
+function checkChallenges(realProb, bound, ratio) {
+  if (!challenges[1] && window._c1Active && mode === 'chebyshev' && Math.abs(params.k - 2) < 0.25) {
+    _distChangeCount++;
+    if (_distChangeCount > 60) { // ~3 seconds of interaction
+      challenges[1] = true;
+      window._c1Active = false;
+      document.getElementById('c1').classList.add('done');
+      updateProgress();
+      showNotif('🛡️ ¡El muro aguanta! La prob. real NUNCA supera el 25%. Chebyshev es una ley matemática.');
+    }
+  }
+  if (!challenges[2] && mode === 'chebyshev' && Math.abs(params.k - 3) < 0.15) {
+    challenges[2] = true;
+    document.getElementById('c2').classList.add('done');
+    updateProgress();
+    showNotif('🔒 Reto 2 completado — El muro de k=3 resiste. Solo 11.1% máximo.');
+  }
+  if (!challenges[3] && isEasterEgg(ratio)) {
+    challenges[3] = true;
+    document.getElementById('c3').classList.add('done');
+    updateProgress();
+    showNotif('✨ Easter Egg encontrado! La cota de Chebyshev es AJUSTADA con 3 átomos.');
+  }
+}
+
+function isEasterEgg(ratio) {
+  return distType === 'spike' && ratio > 0.90;
+}
+
+function activateChallenge(n) {
+  if (n === 1) {
+    setMode('chebyshev');
+    document.getElementById('sK').value = 2;
+    params.k = 2;
+    document.getElementById('vK').textContent = '2.00';
+    document.getElementById('distSelect').value = 'normal';
+    distType = 'normal';
+    updateDistControls();
+    window._c1Active = true;
+    showNotif('🎯 Reto 1: Cambia la distribución e intenta que la probabilidad real supere el 25%. Es imposible... pero inténtalo.');
+  } else if (n === 2) {
+    setMode('chebyshev');
+    document.getElementById('sK').value = 3;
+    params.k = 3;
+    document.getElementById('vK').textContent = '3.00';
+    showNotif('🎯 Reto 2 activo. k=3. Límite = 11.1%.');
+  } else if (n === 3) {
+    setMode('chebyshev');
+    document.getElementById('distSelect').value = 'spike';
+    distType = 'spike';
+    updateDistControls();
+    showNotif('✨ Reto 3: Usa la distribución Spike y ajusta k para encontrar la cota exacta.');
+  }
+  drawCanvas();
+}
+
+function updateProgress() {
+  const done = Object.values(challenges).filter(Boolean).length;
+  document.getElementById('chBarFill').style.width = (done / 3 * 100) + '%';
+  document.getElementById('chProgText').textContent = done + ' / 3';
+}
+
+// =================== DRAG INTERACTION ===================
+function getMouseX(e) {
+  const rect = cvs.getBoundingClientRect();
+  return (e.clientX - rect.left) / rect.width * (cvs.width);
+}
+
+cvs.addEventListener('mousedown', (e) => {
+  const mx = getMouseX(e);
+  const W = cvs.width;
+  const xs = getGrid();
+  let ys = getPDF(xs);
+  ys = normalizePDF(xs, ys);
+  const { mean } = computeMoments(xs, ys);
+  const sigma = Math.sqrt(Math.max(0, computeMoments(xs, ys).variance));
+
+  if (mode === 'chebyshev') {
+    const lx = toCanvasX(mean - params.k * sigma, W);
+    const rx = toCanvasX(mean + params.k * sigma, W);
+    if (Math.abs(mx - lx) < 15) { isDragging = true; dragSide = 'left'; }
+    else if (Math.abs(mx - rx) < 15) { isDragging = true; dragSide = 'right'; }
+  } else {
+    const ax = toCanvasX(params.a, W);
+    if (Math.abs(mx - ax) < 15) { isDragging = true; dragSide = 'single'; }
+  }
+  lastX = mx;
+});
+
+cvs.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const mx = getMouseX(e);
+  const W = cvs.width;
+  const worldX = XMIN + (mx / W) * (XMAX - XMIN);
+
+  const xs = getGrid();
+  let ys = getPDF(xs);
+  ys = normalizePDF(xs, ys);
+  const { mean, variance } = computeMoments(xs, ys);
+  const sigma = Math.sqrt(Math.max(0.01, variance));
+
+  if (mode === 'chebyshev') {
+    let newK = Math.abs(worldX - mean) / sigma;
+    newK = Math.max(0.5, Math.min(4, newK));
+    params.k = newK;
+    document.getElementById('sK').value = newK;
+    document.getElementById('vK').textContent = newK.toFixed(2);
+  } else {
+    let newA = Math.max(0.2, Math.min(5.5, worldX));
+    params.a = newA;
+    document.getElementById('sA').value = newA;
+    document.getElementById('vA').textContent = newA.toFixed(2);
+  }
+  drawCanvas();
+  lastX = mx;
+});
+
+['mouseup', 'mouseleave'].forEach(ev => {
+  cvs.addEventListener(ev, () => { isDragging = false; });
+});
+
+// Cursor change
+cvs.addEventListener('mousemove', (e) => {
+  if (isDragging) return;
+  const mx = getMouseX(e);
+  const W = cvs.width;
+  const xs = getGrid();
+  let ys = getPDF(xs);
+  ys = normalizePDF(xs, ys);
+  const { mean, variance } = computeMoments(xs, ys);
+  const sigma = Math.sqrt(Math.max(0.01, variance));
+
+  let near = false;
+  if (mode === 'chebyshev') {
+    const lx = toCanvasX(mean - params.k * sigma, W);
+    const rx = toCanvasX(mean + params.k * sigma, W);
+    near = Math.abs(mx - lx) < 15 || Math.abs(mx - rx) < 15;
+  } else {
+    const ax = toCanvasX(params.a, W);
+    near = Math.abs(mx - ax) < 15;
+  }
+  cvs.style.cursor = near ? 'ew-resize' : 'crosshair';
+});
+
+// =================== UI EVENTS ===================
+function setMode(m) {
+  mode = m;
+  document.getElementById('chTab').className = m === 'chebyshev' ? 'mtab active' : 'mtab';
+  document.getElementById('mkTab').className = m === 'markov' ? 'mtab mk-tab active' : 'mtab mk-tab';
+  document.getElementById('chControls').style.display = m === 'chebyshev' ? 'block' : 'none';
+  document.getElementById('mkControls').style.display = m === 'markov' ? 'block' : 'none';
+  document.getElementById('labModeLabel').textContent = m === 'chebyshev'
+    ? 'Chebyshev: Colas Bilaterales'
+    : 'Markov: Cola Derecha (X ≥ a)';
+
+  // Update distribution selector for Markov
+  const sel = document.getElementById('distSelect');
+  if (m === 'markov') {
+    sel.innerHTML = `
+      <option value="exponential">Exponencial</option>
+      <option value="uniform">Uniforme (0, 2/λ)</option>
+      <option value="bimodal">Bimodal Positiva</option>
+      <option value="laplace">Gamma-like</option>
+    `;
+    distType = 'exponential';
+  } else {
+    sel.innerHTML = `
+      <option value="normal">Normal (Gaussiana)</option>
+      <option value="uniform">Uniforme</option>
+      <option value="bimodal">Bimodal</option>
+      <option value="laplace">Laplace (Colas Pesadas)</option>
+      <option value="spike">⚡ Spike — Cota Ajustada</option>
+    `;
+    distType = 'normal';
+  }
+  updateDistControls();
+  drawCanvas();
+}
+
+function onDistChange() {
+  distType = document.getElementById('distSelect').value;
+  updateDistControls();
+  drawCanvas();
+}
+
+function updateDistControls() {
+  if (mode === 'chebyshev') {
+    const grpExtra = document.getElementById('grpExtra');
+    const grpExtra2 = document.getElementById('grpExtra2');
+    const grpSigma = document.getElementById('grpSigma');
+
+    grpExtra.style.display = (distType === 'bimodal' || distType === 'spike') ? 'block' : 'none';
+    grpExtra2.style.display = 'none';
+
+    if (distType === 'bimodal') {
+      document.getElementById('extraLabel').textContent = 'Separación de Modas';
+      document.getElementById('sExtra').min = 0.3; document.getElementById('sExtra').max = 4;
+    } else if (distType === 'spike') {
+      document.getElementById('extraLabel').textContent = '(k controlado por slider)';
+      document.getElementById('sExtra').style.pointerEvents = 'none';
+    }
+    if (distType === 'spike') {
+      document.getElementById('sExtra').style.pointerEvents = 'none';
+    } else {
+      document.getElementById('sExtra').style.pointerEvents = 'auto';
+    }
+  }
+}
+
+function onParam() {
+  if (mode === 'chebyshev') {
+    params.mu = +document.getElementById('sMu').value;
+    params.sigma = +document.getElementById('sSigma').value;
+    params.k = +document.getElementById('sK').value;
+    params.sep = +document.getElementById('sExtra').value;
+    document.getElementById('vMu').textContent = params.mu.toFixed(2);
+    document.getElementById('vSigma').textContent = params.sigma.toFixed(2);
+    document.getElementById('vK').textContent = params.k.toFixed(2);
+    document.getElementById('vExtra').textContent = params.sep.toFixed(2);
+  } else {
+    params.lambda = +document.getElementById('sLambda').value;
+    params.a = +document.getElementById('sA').value;
+    document.getElementById('vLambda').textContent = params.lambda.toFixed(2);
+    document.getElementById('vA').textContent = params.a.toFixed(2);
+  }
+  drawCanvas();
+}
+
+function toggleTheory() {
+  const body = document.getElementById('tBody');
+  const arr = document.getElementById('tArr');
+  body.classList.toggle('open');
+  arr.classList.toggle('open');
+}
+
+function showNotif(msg) {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 4500);
+}
+
+// =================== RESPONSIVE RESIZE ===================
+window.addEventListener('resize', () => drawCanvas());
+
+// =================== INIT ===================
+updateDistControls();
+drawCanvas();
+
+// Auto-open theory after short delay
+setTimeout(() => toggleTheory(), 600);
+</script>
+</body>
+</html>

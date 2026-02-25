@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Integral de Lebesgue · El Juego de las Monedas Infinitas</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=JetBrains+Mono:wght@300;400;600&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f1a;
+    --bg3: #14141f;
+    --chalk: #f0ece0;
+    --chalk-dim: #b8b4a8;
+    --gold: #d4a843;
+    --gold-light: #f0c96a;
+    --riemann: #e05555;
+    --riemann-dim: #8b2e2e;
+    --lebesgue: #4db8a0;
+    --lebesgue-dim: #2a6b5d;
+    --purple: #9b72cf;
+    --blue: #5b9bd5;
+    --grid: rgba(240,236,224,0.04);
+    --border: rgba(212,168,67,0.25);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--chalk);
+    font-family: 'Libre Baskerville', serif;
+    overflow-x: hidden;
+  }
+
+  /* — BACKGROUND TEXTURE — */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 59px, var(--grid) 59px, var(--grid) 60px),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, var(--grid) 59px, var(--grid) 60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body > * { position: relative; z-index: 1; }
+
+  /* — HERO — */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,168,67,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    animation: pulseGlow 6s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%,100% { transform: scale(1); opacity:0.6; }
+    50% { transform: scale(1.15); opacity:1; }
+  }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 7vw, 6rem);
+    font-weight: 900;
+    line-height: 1.05;
+    color: var(--chalk);
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.4s forwards;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+
+  .hero-sub {
+    margin-top: 1.5rem;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--chalk-dim);
+    max-width: 600px;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.6s forwards;
+  }
+
+  .author-credit {
+    margin-top: 2.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--gold-light);
+    letter-spacing: 0.05em;
+    padding: 0.8rem 1.5rem;
+    border: 1px solid rgba(212,168,67,0.3);
+    border-radius: 8px;
+    background: rgba(212,168,67,0.05);
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.8s forwards;
+  }
+
+  .scroll-cue {
+    margin-top: 3rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    opacity: 0;
+    animation: fadeUp 0.8s ease 1s forwards, bounce 2s ease 1.8s infinite;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(20px); }
+    to { opacity:1; transform: translateY(0); }
+  }
+
+  /* — SECTIONS — */
+  .section {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    margin-top: 2rem;
+  }
+
+  p { line-height: 1.8; color: var(--chalk-dim); margin-bottom: 1rem; }
+  p strong { color: var(--chalk); }
+
+  .formula {
+    background: var(--bg3);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 1.2rem 1.8rem;
+    margin: 1.5rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    color: var(--gold-light);
+    letter-spacing: 0.05em;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  @media(max-width:640px) { .two-col { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(212,168,67,0.03) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .card.riemann { border-color: rgba(224,85,85,0.4); }
+  .card.riemann::before { background: linear-gradient(135deg, rgba(224,85,85,0.05) 0%, transparent 60%); }
+  .card.lebesgue { border-color: rgba(77,184,160,0.4); }
+  .card.lebesgue::before { background: linear-gradient(135deg, rgba(77,184,160,0.05) 0%, transparent 60%); }
+
+  .card-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .card h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  .card.riemann h4 { color: var(--riemann); }
+  .card.lebesgue h4 { color: var(--lebesgue); }
+  .card p { font-size: 0.9rem; margin: 0; }
+
+  /* — DIVIDER — */
+  .divider {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* — CANVAS CONTAINERS — */
+  .sim-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+  }
+
+  .sim-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  canvas {
+    width: 100%;
+    border-radius: 8px;
+    display: block;
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 1.2rem;
+  }
+
+  button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    padding: 0.6rem 1.4rem;
+    border: 1px solid var(--gold);
+    background: transparent;
+    color: var(--gold);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  button:hover { background: var(--gold); color: var(--bg); }
+  button.active { background: var(--gold); color: var(--bg); }
+  button.danger { border-color: var(--riemann); color: var(--riemann); }
+  button.danger:hover { background: var(--riemann); color: #fff; }
+  button.success { border-color: var(--lebesgue); color: var(--lebesgue); }
+  button.success:hover { background: var(--lebesgue); color: var(--bg); }
+
+  .stat-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.2rem;
+  }
+
+  .stat {
+    background: var(--bg3);
+    border-radius: 8px;
+    padding: 0.8rem 1.2rem;
+    min-width: 140px;
+  }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-top: 0.2rem;
+  }
+
+  .stat-value.gold { color: var(--gold-light); }
+  .stat-value.red { color: var(--riemann); }
+  .stat-value.green { color: var(--lebesgue); }
+
+  /* — LEBESGUE STACKS — */
+  .stacks-container {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    padding: 1.5rem;
+    background: var(--bg3);
+    border-radius: 12px;
+    min-height: 220px;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stack-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 0 0 auto;
+  }
+
+  .stack-bar {
+    width: 60px;
+    background: var(--lebesgue);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    transition: height 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    min-height: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stack-bar-fill {
+    width: 100%;
+    background: var(--lebesgue);
+    border-radius: 4px 4px 0 0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .stack-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--chalk-dim);
+    text-align: center;
+  }
+
+  .stack-prize {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .stack-prob {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--lebesgue);
+  }
+
+  /* — COIN FLIP SEQUENCE — */
+  .seq-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    background: var(--bg3);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-top: 1rem;
+    min-height: 3rem;
+    color: var(--chalk-dim);
+    word-break: break-all;
+    line-height: 1.8;
+  }
+
+  .coin-H { color: var(--gold-light); font-weight: 600; }
+  .coin-T { color: var(--chalk-dim); }
+  .coin-highlight { color: var(--lebesgue); font-weight: 600; }
+
+  /* — NUMBER LINE — */
+  .number-line-wrap {
+    position: relative;
+    height: 80px;
+    margin: 1.5rem 0;
+  }
+
+  /* — FOOTER — */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: rgba(240,236,224,0.2);
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-credit {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+
+  /* — HIGHLIGHT BOX — */
+  .highlight-box {
+    border: 1px solid var(--lebesgue);
+    background: rgba(77,184,160,0.06);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .highlight-box.danger {
+    border-color: var(--riemann);
+    background: rgba(224,85,85,0.06);
+  }
+
+  /* — TABS — */
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+  }
+
+  .tab-btn {
+    border: none;
+    background: transparent;
+    color: var(--chalk-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 6px 6px 0 0;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); background: transparent; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* slider */
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 160px;
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--gold);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .range-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--chalk-dim);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* — speed tag — */
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    background: rgba(212,168,67,0.15);
+    color: var(--gold);
+    margin-left: 0.4rem;
+    vertical-align: middle;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow">Teoría de la Medida · Probabilidad · Análisis Real</div>
+  <h1>El Juego de las<br><em>Monedas Infinitas</em></h1>
+  <p class="hero-sub">
+    ¿Riemann o Lebesgue? Un recorrido interactivo desde el lanzamiento de una moneda
+    hasta la integral más poderosa del análisis matemático.
+  </p>
+  
+  <div class="author-credit">
+    Material elaborado por el profesor Sergio Gevatschnaider
+  </div>
+
+  <a href="#intro" class="scroll-cue">↓ COMENZAR</a>
+</section>
+
+<!-- ==================== INTRO ==================== -->
+<section class="section" id="intro">
+  <div class="section-label">01 · Fundamento</div>
+  <h2>Dos formas de medir el mundo</h2>
+  <p>
+    Imagina que debes calcular el <strong>área bajo una curva salvaje</strong> — una función que salta de forma
+    impredecible a cada instante. Riemann, el enfoque clásico, lo intenta dividiendo el eje <em>horizontal</em>
+    en trozos finos. Lebesgue, el enfoque moderno, hace algo diferente: agrupa los puntos por su <em>valor en el eje vertical</em>.
+  </p>
+  <p>
+    Esta diferencia conceptual, aparentemente pequeña, <strong>revolucionó la matemática del siglo XX</strong>
+    y es la base de toda la probabilidad moderna, la estadística y el análisis funcional.
+  </p>
+
+  <div class="two-col">
+    <div class="card riemann">
+      <div class="card-icon">📏</div>
+      <h4>Riemann: cortar horizontalmente</h4>
+      <p>Divide el dominio en subintervalos. En cada uno, elige una altura representativa y forma rectángulos.
+         <strong>Falla</strong> cuando la función oscila demasiado dentro de cada intervalo.</p>
+    </div>
+    <div class="card lebesgue">
+      <div class="card-icon">🎯</div>
+      <h4>Lebesgue: agrupar por valor</h4>
+      <p>Agrupa todos los puntos del dominio que producen el <em>mismo valor</em> (preimagen).
+         Pesa ese conjunto con la medida. <strong>Funciona</strong> incluso para funciones salvajemente discontinuas.</p>
+    </div>
+  </div>
+
+  <div class="formula">
+    Riemann:  ∫f dx  ≈  Σ f(xᵢ) · Δx  (suma sobre el eje X)<br><br>
+    Lebesgue: ∫f dμ  =  Σ y · μ({x : f(x) ≈ y})  (suma sobre el eje Y)
+  </div>
+</section>
+<hr class="divider">
+
+<!-- ==================== SIMULACIÓN 1: DIRICHLET ==================== -->
+<section class="section" id="dirichlet">
+  <div class="section-label">02 · Escenario 1</div>
+  <h2>El Juego <em>Imposible</em></h2>
+  <p>
+    Lanzas una moneda infinitas veces. Cada secuencia genera un número en[0,1].
+    Las reglas del juego son:
+  </p>
+  <div class="highlight-box danger">
+    <strong style="color:var(--riemann)">Premio:</strong>
+    Si tu número es <strong>racional</strong> (secuencia periódica), ganas <strong>$1000</strong>.
+    Si es <strong>irracional</strong> (secuencia caótica), ganas <strong>$0</strong>.<br><br>
+    <em>¿Cuál es la esperanza matemática de este juego?</em>
+  </div>
+
+  <h3 style="color:var(--riemann)">❌ El fracaso de Riemann</h3>
+  <p>
+    Si intentamos la integral de Riemann sobre [0,1], debemos elegir la "altura" en cada subintervalo.
+    Pero en <strong>cualquier intervalo</strong>, por microscópico que sea, conviven infinitos racionales ($1000)
+    e infinitos irracionales ($0). Riemann no puede decidir. La integral <strong>no existe</strong>.
+  </p>
+
+  <!-- Canvas 1: Riemann failure visualization -->
+  <div class="sim-box">
+    <div class="sim-title">Visualización: Función de Dirichlet sobre [0,1]</div>
+    <canvas id="c1" height="200"></canvas>
+    <div class="controls">
+      <button id="btn-zoom" onclick="toggleZoom()">🔍 HACER ZOOM</button>
+      <div class="range-label">
+        Subintervalos:
+        <input type="range" id="partitions" min="4" max="40" value="10" oninput="drawDirichlet()">
+        <span id="partVal">10</span>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-label">Integral Superior</div>
+        <div class="stat-value red" id="upper">1000</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Integral Inferior</div>
+        <div class="stat-value red" id="lower">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Estado Riemann</div>
+        <div class="stat-value red" id="rstate">NO EXISTE ✗</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="color:var(--lebesgue)">✓ El triunfo de Lebesgue</h3>
+  <p>
+    Lebesgue agrupa los números de [0,1] en <strong>dos conjuntos</strong> según su premio, no su posición.
+    La medida de Lebesgue de los racionales es <strong>cero</strong> (son contables).
+    La medida de los irracionales es <strong>uno</strong>.
+  </p>
+
+  <div class="formula">
+    E[X] = $1000 × μ(racionales) + $0 × μ(irracionales)<br>
+         = $1000 × 0 + $0 × 1<br>
+         = <span style="color:var(--lebesgue)">$0</span>  ← ¡Resuelto en una línea!
+  </div>
+
+  <!-- Canvas 2: Lebesgue sets -->
+  <div class="sim-box">
+    <div class="sim-title">Visualización: Lebesgue agrupa por preimagen</div>
+    <canvas id="c2" height="200"></canvas>
+    <div class="controls">
+      <button onclick="animateLebesgue1()" class="success">▶ ANIMAR AGRUPACIÓN</button>
+    </div>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-label">μ(Racionales)</div>
+        <div class="stat-value gold">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">μ(Irracionales)</div>
+        <div class="stat-value green">1</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">E[X] Lebesgue</div>
+        <div class="stat-value green">$0 ✓</div>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- ==================== SIMULACIÓN 2: COIN FLIPS ==================== -->
+<section class="section" id="coins">
+  <div class="section-label">03 · Escenario 2</div>
+  <h2>El Juego de las <em>Esperas</em></h2>
+  <p>
+    Ahora jugamos con los <strong>Conjuntos Cilíndricos</strong>. Lanzas monedas hasta obtener la primera Cara (H).
+    Tu premio = al número de lanzamientos que tardaste.
+  </p>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-icon" style="color:var(--gold)">🎯</div>
+      <h4 style="color:var(--gold)">Reglas del juego</h4>
+      <p><strong>H</strong> (primer lanzamiento) → Premio <span style="color:var(--gold)">$1</span></p>
+      <p><strong>TH</strong> (dos lanzamientos) → Premio <span style="color:var(--gold)">$2</span></p>
+      <p><strong>TTH</strong> → Premio <span style="color:var(--gold)">$3</span></p>
+      <p><strong>TTTT…H</strong> (k lanzamientos) → Premio <span style="color:var(--gold)">$k</span></p>
+    </div>
+    <div class="card lebesgue">
+      <div class="card-icon">📐</div>
+      <h4>Visión de Lebesgue</h4>
+      <p>Lebesgue no mira la secuencia, sino el <strong>conjunto de secuencias</strong> que producen cada premio.</p>
+      <p>Cada "pila de premio" es un <strong>Conjunto Cilíndrico</strong> con medida exacta: <span style="color:var(--lebesgue)">P(k) = 1/2ᵏ</span></p>
+    </div>
+  </div>
+
+  <div class="formula">
+    E[X] = Σₖ k · P(X=k) = Σₖ k · (1/2ᵏ)<br>
+         = 1·½ + 2·¼ + 3·⅛ + 4·⅟₁₆ + ···<br>
+         = <span style="color:var(--lebesgue)">2</span>  ← Esperanza exacta
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(event,'tab-sim')">SIMULACIÓN</button>
+    <button class="tab-btn" onclick="switchTab(event,'tab-stacks')">PILAS LEBESGUE</button>
+    <button class="tab-btn" onclick="switchTab(event,'tab-series')">SERIE ∑k/2ᵏ</button>
+  </div>
+
+  <!-- TAB 1: Simulation -->
+  <div id="tab-sim" class="tab-content active">
+    <div class="sim-box">
+      <div class="sim-title">Simulador de monedas · Distribución Geométrica</div>
+      <canvas id="c3" height="220"></canvas>
+      <div class="seq-display" id="seqDisplay">
+        Presiona LANZAR para comenzar...
+      </div>
+      <div class="controls">
+        <button onclick="flipOnce()" class="success">🪙 LANZAR UNA VEZ</button>
+        <button onclick="startAutoFlip()" id="autoBtn">▶ AUTO</button>
+        <button onclick="stopAutoFlip()" class="danger">■ PARAR</button>
+        <button onclick="resetSim()">↺ RESET</button>
+        <div class="range-label">
+          Velocidad:
+          <input type="range" id="speedRange" min="50" max="1000" value="300" oninput="updateSpeed()">
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-label">Total Simulaciones</div>
+          <div class="stat-value gold" id="totalTrials">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Media Empírica</div>
+          <div class="stat-value green" id="empiricalMean">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Esperanza Teórica</div>
+          <div class="stat-value gold">2.000</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Último Premio</div>
+          <div class="stat-value" id="lastPrize" style="color:var(--purple)">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Lebesgue Stacks -->
+  <div id="tab-stacks" class="tab-content">
+    <div class="sim-box">
+      <div class="sim-title">Pilas de Lebesgue · Conjuntos Cilíndricos</div>
+      <p style="font-size:0.85rem; margin-bottom:0.5rem;">
+        Cada barra representa el <strong>conjunto cilíndrico</strong> de secuencias que produce ese premio.
+        Su altura = probabilidad (medida). La integral de Lebesgue = suma de (premio × altura).
+      </p>
+      <div class="stacks-container" id="stacksContainer"></div>
+      <div class="controls">
+        <button onclick="buildStacks(8)" class="success">CONSTRUIR 8 PILAS</button>
+        <button onclick="buildStacks(12)">12 PILAS</button>
+        <button onclick="animateStacks()">▶ ANIMAR</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-label">Suma parcial E[X]</div>
+          <div class="stat-value gold" id="partialSum">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Error vs E[X]=2</div>
+          <div class="stat-value red" id="partialError">2.000</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Series -->
+  <div id="tab-series" class="tab-content">
+    <div class="sim-box">
+      <div class="sim-title">Convergencia de la serie ∑ k/2ᵏ → 2</div>
+      <canvas id="c4" height="250"></canvas>
+      <div class="controls">
+        <button onclick="drawSeries()" class="success">▶ ANIMAR CONVERGENCIA</button>
+        <div class="range-label">
+          Términos:
+          <input type="range" id="seriesTerms" min="3" max="20" value="10" oninput="drawSeries()">
+          <span id="termsVal">10</span>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-label">Suma actual</div>
+          <div class="stat-value gold" id="seriesSum">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Límite exacto</div>
+          <div class="stat-value green">2.000</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="divider">
+
+<!-- ==================== CONCLUSIÓN ==================== -->
+<section class="section" id="conclusion">
+  <div class="section-label">04 · Síntesis</div>
+  <h2>El círculo se cierra</h2>
+  <p>
+    La fórmula clásica de la esperanza matemática que aprendes en primer curso
+    <strong>es exactamente la Integral de Lebesgue</strong>. No es una coincidencia — es la misma idea.
+  </p>
+
+  <div class="formula">
+    E[X] = Σ x · P(X=x)   ←→   ∫ x dP(x)<br><br>
+    "Sumar cada valor por la medida (probabilidad) del conjunto<br>
+     de resultados que lo producen" = Integral de Lebesgue
+  </div>
+
+  <div class="highlight-box">
+    <strong style="color:var(--lebesgue)">La gran unificación de Lebesgue:</strong>
+    <ul style="margin-top:0.8rem; padding-left:1.2rem; line-height:2; color:var(--chalk-dim)">
+      <li>Variables <strong style="color:var(--chalk)">discretas</strong>: la suma es la integral de Lebesgue</li>
+      <li>Variables <strong style="color:var(--chalk)">continuas</strong>: la integral de Riemann (cuando existe) coincide con Lebesgue</li>
+      <li>Variables <strong style="color:var(--chalk)">salvajes</strong> (Dirichlet): solo Lebesgue funciona</li>
+      <li>Toda la <strong style="color:var(--chalk)">probabilidad moderna</strong> vive en espacios de medida de Lebesgue</li>
+    </ul>
+  </div>
+
+  <p style="margin-top:1.5rem; font-style:italic; color:var(--chalk-dim)">
+    "Lo que Riemann construye con reglas, Lebesgue lo domina con balanzas."
+  </p>
+</section>
+
+<footer>
+  <div>INTEGRAL DE LEBESGUE · TEORÍA DE LA MEDIDA · VISUALIZACIÓN INTERACTIVA</div>
+  <div class="footer-credit">Material elaborado por el profesor Sergio Gevatschnaider</div>
+</footer>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+// ──────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────
+function dpr(canvas) {
+  const ctx = canvas.getContext('2d');
+  const ratio = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 40;
+  canvas.width = W * ratio;
+  canvas.height = parseInt(canvas.getAttribute('height')) * ratio;
+  canvas.style.width = W + 'px';
+  canvas.style.height = canvas.getAttribute('height') + 'px';
+  ctx.scale(ratio, ratio);
+  return [ctx, W, parseInt(canvas.getAttribute('height'))];
+}
+
+const C = (id) => document.getElementById(id);
+const BG = '#0f0f1a';
+const CHALK = '#f0ece0';
+const CHALK_DIM = '#6a6860';
+const GOLD = '#d4a843';
+const RED = '#e05555';
+const GREEN = '#4db8a0';
+const PURPLE = '#9b72cf';
+
+// ──────────────────────────────────────────
+// CANVAS 1: DIRICHLET FUNCTION (Riemann failure)
+// ──────────────────────────────────────────
+let zoomLevel = 1;
+
+function toggleZoom() {
+  zoomLevel = zoomLevel === 1 ? 5 : 1;
+  drawDirichlet();
+}
+
+function drawDirichlet() {
+  const canvas = C('c1');
+  const [ctx, W, H] = dpr(canvas);
+  const n = parseInt(C('partitions').value);
+  C('partVal').textContent = n;
+
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  const pad = 40;
+  const pw = W - pad * 2;
+  const ph = H - pad * 2;
+
+  // axes
+  ctx.strokeStyle = CHALK_DIM;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad, pad); ctx.lineTo(pad, pad + ph);
+  ctx.lineTo(pad + pw, pad + ph);
+  ctx.stroke();
+
+  // axis labels
+  ctx.fillStyle = CHALK_DIM;
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.fillText('0', pad - 12, pad + ph + 14);
+  ctx.fillText('1', pad + pw - 4, pad + ph + 14);
+  ctx.fillText('$1000', pad - 38, pad + 12);
+  ctx.fillText('$0', pad - 22, pad + ph - 4);
+  ctx.fillText('x → [0,1]', pad + pw / 2 - 30, pad + ph + 28);
+
+  // function label
+  ctx.fillStyle = RED;
+  ctx.font = 'italic 11px Libre Baskerville, serif';
+  ctx.fillText('f(x) = 1000 si x∈ℚ, 0 si x∉ℚ', pad + 5, pad - 5);
+
+  const startX = zoomLevel === 1 ? 0 : 0.3;
+  const endX = zoomLevel === 1 ? 1 : 0.7;
+  const range = endX - startX;
+
+  // Partition lines and rectangles
+  for (let i = 0; i < n; i++) {
+    const xStart = startX + (i / n) * range;
+    const xEnd = startX + ((i + 1) / n) * range;
+
+    const px0 = pad + ((xStart - startX) / range) * pw;
+    const px1 = pad + ((xEnd - startX) / range) * pw;
+
+    // upper rectangle (1000)
+    ctx.fillStyle = `rgba(224,85,85,0.15)`;
+    ctx.fillRect(px0, pad, px1 - px0, ph);
+    ctx.strokeStyle = `rgba(224,85,85,0.5)`;
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(px0, pad, px1 - px0, ph);
+
+    // "dashed" conflict indicator
+    const mid = (px0 + px1) / 2;
+    ctx.strokeStyle = RED;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(mid, pad);
+    ctx.lineTo(mid, pad + ph);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Scatter dots (rational = high, irrational = low)
+  const dotCount = 300;
+  const phi = 1.6180339887;
+  for (let i = 0; i < dotCount; i++) {
+    const frac = (i * phi) % 1;
+    const xVal = startX + frac * range;
+    const isRational = (i % 7 === 0);
+    const y = isRational ? pad + 4 : pad + ph - 4;
+    const color = isRational ? `rgba(212,168,67,0.7)` : `rgba(77,184,160,0.5)`;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(pad + frac * pw, y, isRational ? 2.5 : 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Legend
+  ctx.fillStyle = GOLD;
+  ctx.beginPath(); ctx.arc(pad + 10, H - 16, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = CHALK_DIM; ctx.font = '10px JetBrains Mono, monospace';
+  ctx.fillText('Racional ($1000)', pad + 18, H - 12);
+  ctx.fillStyle = GREEN;
+  ctx.beginPath(); ctx.arc(pad + 140, H - 16, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = CHALK_DIM;
+  ctx.fillText('Irracional ($0)', pad + 148, H - 12);
+
+  if (zoomLevel > 1) {
+    ctx.fillStyle = GOLD;
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillText('⚡ ZOOM 5× — ¡siguen mezclados!', W - 220, 20);
+  }
+}
+
+// ──────────────────────────────────────────
+// CANVAS 2: LEBESGUE SETS
+// ──────────────────────────────────────────
+let leb1Anim = 0;
+let leb1RAF = null;
+
+function animateLebesgue1() {
+  leb1Anim = 0;
+  if (leb1RAF) cancelAnimationFrame(leb1RAF);
+  function step() {
+    leb1Anim = Math.min(leb1Anim + 0.012, 1);
+    drawLebesgue1(leb1Anim);
+    if (leb1Anim < 1) leb1RAF = requestAnimationFrame(step);
+  }
+  step();
+}
+
+function drawLebesgue1(t) {
+  t = t === undefined ? 1 : t;
+  const canvas = C('c2');
+  const [ctx, W, H] = dpr(canvas);
+
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  const pad = 40;
+  const pw = W - pad * 2;
+  const ph = H - pad * 2 - 20;
+
+  // Two big zones
+  const split = 0.5;
+
+  // Zone B: irrationals (measure 1)
+  const bWidth = pw * Math.min(t * 1.5, 1);
+  ctx.fillStyle = `rgba(77,184,160,${0.12 * t})`;
+  ctx.fillRect(pad, pad, bWidth, ph);
+  ctx.strokeStyle = `rgba(77,184,160,${0.5 * t})`;
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(pad, pad, bWidth, ph);
+
+  // Zone A: rationals (tiny slivers — measure 0)
+  const rationalXs =[0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 0.9];
+  for (const rx of rationalXs) {
+    const x = pad + rx * pw;
+    ctx.fillStyle = `rgba(212,168,67,${0.8 * t})`;
+    ctx.fillRect(x - 1, pad, 2, ph);
+  }
+
+  // Labels
+  if (t > 0.3) {
+    ctx.globalAlpha = Math.min((t - 0.3) / 0.4, 1);
+    ctx.fillStyle = GREEN;
+    ctx.font = 'bold 13px Playfair Display, serif';
+    ctx.fillText('Conjunto B: Irracionales', pad + 10, pad + 30);
+    ctx.fillStyle = CHALK_DIM;
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillText('μ(B) = 1   →   Premio $0', pad + 10, pad + 48);
+
+    ctx.fillStyle = GOLD;
+    ctx.font = 'bold 11px JetBrains Mono, monospace';
+    ctx.fillText('Racionales ⟶', pad + pw * 0.5 + 5, pad + ph / 2 + 4);
+    ctx.fillText('μ(ℚ∩[0,1]) = 0', pad + pw * 0.5 + 5, pad + ph / 2 + 18);
+    ctx.globalAlpha = 1;
+  }
+
+  // Integral display
+  if (t > 0.7) {
+    ctx.globalAlpha = Math.min((t - 0.7) / 0.3, 1);
+    ctx.fillStyle = '#14141f';
+    ctx.beginPath();
+    ctx.roundRect(pad, H - 30, pw, 22, 6);
+    ctx.fill();
+
+    ctx.fillStyle = GREEN;
+    ctx.font = '12px JetBrains Mono, monospace';
+    ctx.fillText('∫ f dμ = $1000 × 0 + $0 × 1 = $0  ✓', pad + 10, H - 14);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ──────────────────────────────────────────
+// CANVAS 3: COIN FLIPS
+// ──────────────────────────────────────────
+let simData = { trials: 0, total: 0, hist: {} };
+let autoTimer = null;
+let flipSpeed = 300;
+
+function geometricSample() {
+  let k = 1;
+  while (Math.random() < 0.5) k++;
+  return k;
+}
+
+function flipOnce() {
+  const k = geometricSample();
+  simData.trials++;
+  simData.total += k;
+  simData.hist[k] = (simData.hist[k] || 0) + 1;
+
+  // sequence display
+  let seq = 'T'.repeat(k - 1) + 'H';
+  let html = '';
+  for (let i = 0; i < seq.length; i++) {
+    const c = seq[i];
+    if (c === 'H') html += `<span class="coin-H">H</span>`;
+    else html += `<span class="coin-T">T</span>`;
+    if (i < seq.length - 1) html += '·';
+  }
+  html += `  <span class="coin-highlight">→ Premio $${k}</span>`;
+  C('seqDisplay').innerHTML = html;
+  C('totalTrials').textContent = simData.trials;
+  C('empiricalMean').textContent = (simData.total / simData.trials).toFixed(4);
+  C('lastPrize').textContent = `$${k}`;
+  drawHistogram();
+}
+
+function drawHistogram() {
+  const canvas = C('c3');
+  const [ctx, W, H] = dpr(canvas);
+
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  const pad = { top: 20, bottom: 40, left: 50, right: 20 };
+  const pw = W - pad.left - pad.right;
+  const ph = H - pad.top - pad.bottom;
+
+  const maxK = Math.max(12, ...Object.keys(simData.hist).map(Number));
+  const maxFreq = Math.max(1, ...Object.values(simData.hist));
+  const barCount = Math.min(maxK, 15);
+
+  // axes
+  ctx.strokeStyle = CHALK_DIM;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ph);
+  ctx.lineTo(pad.left + pw, pad.top + ph);
+  ctx.stroke();
+
+  const barW = pw / barCount - 4;
+
+  for (let k = 1; k <= barCount; k++) {
+    const freq = simData.hist[k] || 0;
+    const empH = simData.trials > 0 ? (freq / simData.trials) * ph : 0;
+    const theoH = (1 / Math.pow(2, k)) * ph;
+
+    const x = pad.left + ((k - 1) / barCount) * pw + 2;
+
+    // theoretical bar (outline)
+    ctx.strokeStyle = `rgba(77,184,160,0.4)`;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, pad.top + ph - theoH, barW, theoH);
+
+    // empirical bar
+    if (empH > 0) {
+      ctx.fillStyle = k <= 3 ? GOLD : `rgba(212,168,67,0.6)`;
+      ctx.fillRect(x + 1, pad.top + ph - empH + 1, barW - 2, empH - 1);
+    }
+
+    // label k
+    ctx.fillStyle = CHALK_DIM;
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillText(k, x + barW / 2 - 4, pad.top + ph + 14);
+  }
+
+  // Y axis labels
+  ctx.fillStyle = CHALK_DIM;
+  ctx.font = '9px JetBrains Mono, monospace';
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + ph - (i / 4) * ph;
+    const pct = (i / 4) * (1 / Math.pow(2, 1)) * 4;
+    ctx.fillText((i * 25) + '%', 2, y + 3);
+    ctx.strokeStyle = `rgba(240,236,224,0.05)`;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + pw, y); ctx.stroke();
+  }
+
+  // Legend
+  ctx.fillStyle = GOLD;
+  ctx.fillRect(pad.left, pad.top, 12, 8);
+  ctx.fillStyle = CHALK_DIM; ctx.font = '9px JetBrains Mono, monospace';
+  ctx.fillText('Empírico', pad.left + 16, pad.top + 8);
+  ctx.strokeStyle = GREEN;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(pad.left + 70, pad.top, 12, 8);
+  ctx.fillText('Teórico 1/2ᵏ', pad.left + 86, pad.top + 8);
+
+  // Mean line
+  if (simData.trials > 0) {
+    const mean = simData.total / simData.trials;
+    const meanX = pad.left + ((mean - 1) / barCount) * pw + barW / 2;
+    ctx.strokeStyle = PURPLE;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.moveTo(meanX, pad.top); ctx.lineTo(meanX, pad.top + ph); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = PURPLE;
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.fillText('x̄=' + mean.toFixed(2), meanX + 3, pad.top + 10);
+
+    // theoretical E[X]=2
+    const theoX = pad.left + (2 - 1) / barCount * pw + barW / 2;
+    ctx.strokeStyle = GREEN;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 3]);
+    ctx.beginPath(); ctx.moveTo(theoX, pad.top); ctx.lineTo(theoX, pad.top + ph); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = GREEN;
+    ctx.fillText('E[X]=2', theoX + 3, pad.top + 22);
+  }
+}
+
+function startAutoFlip() {
+  stopAutoFlip();
+  autoTimer = setInterval(flipOnce, flipSpeed);
+  C('autoBtn').classList.add('active');
+}
+
+function stopAutoFlip() {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  C('autoBtn').classList.remove('active');
+}
+
+function resetSim() {
+  stopAutoFlip();
+  simData = { trials: 0, total: 0, hist: {} };
+  C('totalTrials').textContent = '0';
+  C('empiricalMean').textContent = '—';
+  C('lastPrize').textContent = '—';
+  C('seqDisplay').textContent = 'Presiona LANZAR para comenzar...';
+  drawHistogram();
+}
+
+function updateSpeed() {
+  flipSpeed = 1050 - parseInt(C('speedRange').value);
+  if (autoTimer) { startAutoFlip(); }
+}
+
+// ──────────────────────────────────────────
+// LEBESGUE STACKS
+// ──────────────────────────────────────────
+function buildStacks(n) {
+  const container = C('stacksContainer');
+  container.innerHTML = '';
+  let partialE = 0;
+  const maxH = 160;
+
+  for (let k = 1; k <= n; k++) {
+    const prob = 1 / Math.pow(2, k);
+    const prize = k;
+    partialE += prize * prob;
+
+    const col = document.createElement('div');
+    col.className = 'stack-col';
+
+    const barH = Math.max(4, prob * maxH * 2);
+    const intensity = Math.max(0.3, 1 - k * 0.08);
+
+    col.innerHTML = `
+      <div class="stack-prize">$${prize}</div>
+      <div style="
+        width:52px;
+        height:${barH}px;
+        background: rgba(77,184,160,${intensity});
+        border-radius:4px 4px 0 0;
+        border:1px solid rgba(77,184,160,${intensity + 0.2});
+        position:relative;
+        transition:all 0.5s;
+        display:flex;
+        align-items:flex-start;
+        justify-content:center;
+        padding-top:3px;
+      ">
+        <span style="font-family:JetBrains Mono,monospace;font-size:8px;color:#0f0f1a;font-weight:600;">${(prob*100).toFixed(1)}%</span>
+      </div>
+      <div class="stack-label">${k}=${k % 2 === 0 ? '½' : '⅟'}${Math.pow(2,k)>1?Math.pow(2,k):''}</div>
+      <div class="stack-prob">k·p = ${(prize * prob).toFixed(3)}</div>
+    `;
+
+    container.appendChild(col);
+  }
+
+  C('partialSum').textContent = partialE.toFixed(4);
+  C('partialError').textContent = (2 - partialE).toFixed(4);
+}
+
+function animateStacks() {
+  const cols = C('stacksContainer').querySelectorAll('.stack-col');
+  cols.forEach((col, i) => {
+    setTimeout(() => {
+      const bar = col.querySelector('[style]');
+      if (bar) {
+        bar.style.transform = 'scaleY(1.15)';
+        setTimeout(() => { bar.style.transform = 'scaleY(1)'; }, 300);
+      }
+    }, i * 150);
+  });
+}
+
+// ──────────────────────────────────────────
+// CANVAS 4: SERIES
+// ──────────────────────────────────────────
+let seriesAnim = 0;
+let seriesRAF = null;
+
+function drawSeries() {
+  if (seriesRAF) cancelAnimationFrame(seriesRAF);
+  seriesAnim = 0;
+  const n = parseInt(C('seriesTerms').value);
+  C('termsVal').textContent = n;
+  animateSeries(n);
+}
+
+function animateSeries(maxN) {
+  seriesAnim = Math.min(seriesAnim + 1, maxN);
+  _drawSeries(seriesAnim, maxN);
+  if (seriesAnim < maxN) seriesRAF = setTimeout(() => animateSeries(maxN), 200);
+}
+
+function _drawSeries(current, maxN) {
+  const canvas = C('c4');
+  const [ctx, W, H] = dpr(canvas);
+
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  const pad = { top: 30, bottom: 40, left: 60, right: 20 };
+  const pw = W - pad.left - pad.right;
+  const ph = H - pad.top - pad.bottom;
+
+  // axes
+  ctx.strokeStyle = CHALK_DIM;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ph);
+  ctx.lineTo(pad.left + pw, pad.top + ph);
+  ctx.stroke();
+
+  // horizontal limit at y=2
+  const yFor2 = pad.top + ph - (2 / 2.5) * ph;
+  ctx.strokeStyle = `rgba(77,184,160,0.4)`;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(pad.left, yFor2); ctx.lineTo(pad.left + pw, yFor2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = GREEN;
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.fillText('E[X] = 2', pad.left + pw + 3, yFor2 + 4);
+
+  const terms =[];
+  let s = 0;
+  for (let k = 1; k <= maxN; k++) {
+    s += k / Math.pow(2, k);
+    terms.push(s);
+  }
+
+  const stepW = pw / maxN;
+
+  for (let i = 0; i < current; i++) {
+    const x = pad.left + i * stepW;
+    const y = pad.top + ph - (terms[i] / 2.5) * ph;
+
+    // term bar
+    ctx.fillStyle = `rgba(212,168,67,0.3)`;
+    ctx.fillRect(x + 2, y, stepW - 4, pad.top + ph - y);
+
+    // dot
+    ctx.fillStyle = GOLD;
+    ctx.beginPath(); ctx.arc(x + stepW / 2, y, 4, 0, Math.PI * 2); ctx.fill();
+
+    // connecting line
+    if (i > 0) {
+      const px = pad.left + (i - 1) * stepW + stepW / 2;
+      const py = pad.top + ph - (terms[i - 1] / 2.5) * ph;
+      ctx.strokeStyle = GOLD;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(x + stepW / 2, y); ctx.stroke();
+    }
+
+    // value label on top
+    ctx.fillStyle = CHALK_DIM;
+    ctx.font = '8px JetBrains Mono, monospace';
+    ctx.fillText(terms[i].toFixed(2), x, y - 5);
+  }
+
+  // X axis labels
+  for (let i = 0; i < maxN; i++) {
+    const x = pad.left + i * stepW + stepW / 2;
+    ctx.fillStyle = CHALK_DIM;
+    ctx.font = '9px JetBrains Mono, monospace';
+    if (i < 12) ctx.fillText(i + 1, x - 4, pad.top + ph + 16);
+    ctx.fillStyle = CHALK_DIM;
+    ctx.fillText('k', pad.left + pw / 2, pad.top + ph + 30);
+  }
+
+  // Y labels
+  for (let v = 0; v <= 2.5; v += 0.5) {
+    const y = pad.top + ph - (v / 2.5) * ph;
+    ctx.fillStyle = CHALK_DIM;
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.fillText(v.toFixed(1), 2, y + 3);
+    ctx.strokeStyle = `rgba(240,236,224,0.04)`;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + pw, y); ctx.stroke();
+  }
+
+  const curSum = terms[current - 1] || 0;
+  C('seriesSum').textContent = curSum.toFixed(6);
+}
+
+// ──────────────────────────────────────────
+// TABS
+// ──────────────────────────────────────────
+function switchTab(e, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  e.target.classList.add('active');
+  C(id).classList.add('active');
+
+  if (id === 'tab-stacks') buildStacks(8);
+  if (id === 'tab-series') setTimeout(drawSeries, 100);
+}
+
+// ──────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────
+window.addEventListener('load', () => {
+  drawDirichlet();
+  drawLebesgue1(1);
+  drawHistogram();
+  buildStacks(8);
+});
+
+window.addEventListener('resize', () => {
+  drawDirichlet();
+  drawLebesgue1(leb1Anim || 1);
+  drawHistogram();
+  const activeTab = document.querySelector('.tab-content.active');
+  if (activeTab && activeTab.id === 'tab-series') _drawSeries(parseInt(C('seriesTerms').value), parseInt(C('seriesTerms').value));
+});
+</script>
+</body>
+</html>

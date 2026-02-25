@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Fábrica de Átomos · Censura y Truncamiento</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090e; --bg2: #111827; --bg3: #1a2234;
+    --border: rgba(148,163,184,0.12);
+    --gold: #f5c842; --gold-dim: rgba(245,200,66,0.15);
+    --cyan: #38bdf8; --cyan-dim: rgba(56,189,248,0.15);
+    --red: #f43f5e; --red-dim: rgba(244,63,94,0.15);
+    --green: #34d399;
+    --purple: #a78bfa;
+    --text: #e2e8f0; --muted: #64748b; --muted2: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    padding: 1.5rem;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 100px;
+    background: radial-gradient(ellipse, rgba(245,200,66,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+  }
+  .header h1 span { font-style: italic; color: var(--cyan); }
+  .header p { color: var(--muted2); margin-top: 0.4rem; font-size: 0.9rem; letter-spacing: 0.03em; }
+  .section-tag {
+    display: inline-block;
+    background: var(--gold-dim);
+    border: 1px solid rgba(245,200,66,0.3);
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* ─── LAYOUT ─── */
+  .top-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 1.5rem;
+    max-width: 1280px;
+    margin: 0 auto 1.5rem;
+  }
+  @media(max-width: 960px) { .top-grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+  .panel-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--cyan);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .panel-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── CANVAS ─── */
+  canvas {
+    width: 100%;
+    background: #090d16;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: block;
+  }
+
+  /* ─── CONTROLS ─── */
+  .controls-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .slider-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text);
+    white-space: nowrap;
+    min-width: 90px;
+  }
+  .slider-label span { color: var(--cyan); font-size: 0.9rem; }
+  input[type=range] {
+    flex: 1;
+    cursor: pointer;
+    accent-color: var(--cyan);
+    height: 4px;
+  }
+  .mode-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+  /* ─── BUTTONS ─── */
+  button {
+    background: transparent;
+    border: 1px solid rgba(245,200,66,0.4);
+    color: var(--gold);
+    padding: 0.45rem 0.9rem;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    transition: all 0.18s ease;
+    letter-spacing: 0.04em;
+  }
+  button:hover { background: var(--gold-dim); border-color: var(--gold); }
+  button.active { background: var(--gold); color: #07090e; font-weight: 700; border-color: var(--gold); }
+  button.btn-red { border-color: rgba(244,63,94,0.4); color: var(--red); }
+  button.btn-red:hover { background: var(--red-dim); border-color: var(--red); }
+  button.btn-red.active { background: var(--red); color: white; border-color: var(--red); }
+  button.btn-sm { border-color: rgba(148,163,184,0.3); color: var(--muted2); font-size: 0.7rem; padding: 0.35rem 0.7rem; }
+  button.btn-sm.active { background: rgba(148,163,184,0.15); border-color: var(--muted2); color: var(--text); }
+
+  /* ─── FORMULA BOX ─── */
+  .formula-box {
+    background: #090d16;
+    border-left: 3px solid var(--gold);
+    padding: 0.8rem 1rem;
+    border-radius: 0 8px 8px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--gold);
+    line-height: 1.6;
+  }
+  .formula-box .sub { color: var(--cyan); font-size: 0.78rem; margin-top: 0.3rem; }
+
+  /* ─── STATS ─── */
+  .stats-grid { display: flex; gap: 0.75rem; }
+  .stat-card {
+    flex: 1;
+    background: #090d16;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent-color, var(--gold));
+  }
+  .stat-card.cyan-accent { --accent-color: var(--cyan); }
+  .stat-card.green-accent { --accent-color: var(--green); }
+  .stat-card.purple-accent { --accent-color: var(--purple); }
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+  }
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.35rem;
+    color: var(--gold);
+    transition: color 0.3s;
+  }
+  .stat-card.cyan-accent .stat-value { color: var(--cyan); }
+  .stat-card.green-accent .stat-value { color: var(--green); }
+  .stat-card.purple-accent .stat-value { color: var(--purple); }
+
+  /* ─── USE-CASES ─── */
+  .uc-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .uc-desc {
+    font-size: 0.82rem;
+    color: var(--muted2);
+    line-height: 1.6;
+    min-height: 2.5rem;
+    padding: 0.6rem 0.8rem;
+    background: #090d16;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .uc-desc strong { color: var(--text); }
+
+  /* ─── THEORY PANEL (bottom) ─── */
+  .theory-panel {
+    max-width: 1280px;
+    margin: 0 auto 1.5rem;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+  }
+  .theory-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 1rem;
+  }
+  @media(max-width: 960px) { .theory-grid { grid-template-columns: 1fr; } }
+
+  .theory-card {
+    background: #090d16;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+  }
+  .theory-card h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .theory-card p { font-size: 0.83rem; color: var(--muted2); line-height: 1.65; }
+  .theory-card p strong { color: var(--text); }
+  .theory-card p em { color: var(--gold); font-style: normal; font-family: 'JetBrains Mono', monospace; font-size: 0.82em; }
+
+  .lebesgue-highlight {
+    margin-top: 0.7rem;
+    padding: 0.5rem 0.8rem;
+    background: var(--gold-dim);
+    border-left: 2px solid var(--gold);
+    border-radius: 0 6px 6px 0;
+    font-size: 0.78rem;
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ─── ATOM CALLOUT (dynamic) ─── */
+  #atomCallout {
+    transition: opacity 0.4s;
+    opacity: 0;
+  }
+  #atomCallout.visible { opacity: 1; }
+
+  /* ─── INSTRUCTION ─── */
+  .hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: -0.3rem;
+  }
+  .hint span { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="section-tag">SECCIÓN 3 · NOTEBOOK DE ESTADÍSTICA</div>
+  <h1>La Fábrica de <span>Átomos</span></h1>
+  <p>Simulador interactivo · Distribuciones Mixtas: Censura vs. Truncamiento</p>
+</div>
+
+<!-- TOP GRID: PDF + CDF/Controls -->
+<div class="top-grid">
+
+  <!-- LEFT: PDF Canvas -->
+  <div class="panel">
+    <div class="panel-title">⚛ Partículas cayendo · PDF (Densidad de Probabilidad)</div>
+    <canvas id="pdfCanvas" height="320"></canvas>
+    <p class="hint">Arrastrá el slider ← para empujar la barrera. Las partículas chocaran y formarán el <span>átomo</span>.</p>
+
+    <div class="controls-block">
+      <div class="slider-row">
+        <span class="slider-label">Umbral <em style="color:var(--cyan)">c</em> = <span id="cVal" style="color:var(--cyan);font-size:1rem">1.5σ</span></span>
+        <input type="range" id="cSlider" min="-2.5" max="2.5" step="0.05" value="1.5">
+      </div>
+      <div class="mode-row">
+        <button id="modeCensura" class="active" onclick="setMode('censura')">🚧 CENSURAR &nbsp; Y = min(X, c)</button>
+        <button id="modeTrunc" class="btn-red" onclick="setMode('trunc')">✂️ TRUNCAR &nbsp; (X | X ≤ c)</button>
+      </div>
+    </div>
+
+    <div class="formula-box" id="formulaBox">
+      Y = min(X, c)
+      <div class="sub" id="formulaSub">Las partículas &gt; c colapsan en x = c → forman el átomo.</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: CDF + Stats + Use Cases -->
+  <div class="panel">
+    <div class="panel-title">📈 Acumulación · CDF (Función de Distribución Acumulada)</div>
+    <canvas id="cdfCanvas" height="220"></canvas>
+
+    <!-- ATOM CALLOUT -->
+    <div id="atomCallout" style="padding:0.5rem 0.8rem; background:var(--cyan-dim); border:1px solid rgba(56,189,248,0.3); border-radius:8px; font-size:0.8rem; color:var(--cyan); font-family:'JetBrains Mono',monospace; text-align:center;">
+      ↑ El SALTO en la CDF es exactamente la <strong>masa del átomo</strong> P(X &gt; c)
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card cyan-accent">
+        <div class="stat-label">Masa Átomo P(X>c)</div>
+        <div class="stat-value" id="statAtom">0.0%</div>
+      </div>
+      <div class="stat-card green-accent">
+        <div class="stat-label">E[Y] (Esperanza)</div>
+        <div class="stat-value" id="statEY">0.00σ</div>
+      </div>
+      <div class="stat-card purple-accent">
+        <div class="stat-label">N activas</div>
+        <div class="stat-value" id="statN">0</div>
+      </div>
+    </div>
+
+    <!-- USE CASES -->
+    <div>
+      <div class="uc-tabs">
+        <button class="btn-sm active" onclick="setScenario(0)">🚗 Seguros</button>
+        <button class="btn-sm" onclick="setScenario(1)">🌡️ Sensor</button>
+        <button class="btn-sm" onclick="setScenario(2)">🛒 Marketing</button>
+        <button class="btn-sm" onclick="setScenario(3)">📊 Censos</button>
+      </div>
+      <div class="uc-desc" id="ucDesc" style="margin-top:0.5rem">
+        <strong>Seguros de Auto:</strong> X = daño real del auto. La póliza paga Y = min(X, c). Para todos los siniestros catastróficos (X &gt; c) el seguro paga exactamente c. En la PDF eso forma un "átomo" en x = c.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /top-grid -->
+
+<!-- THEORY PANEL -->
+<div class="theory-panel">
+  <div class="panel-title">📐 Teoría: ¿Por qué necesitamos Lebesgue?</div>
+  <div class="theory-grid">
+
+    <div class="theory-card">
+      <h3>⚖️ Integral de Riemann falla</h3>
+      <p>Para Riemann, la integral sobre un <strong>conjunto de medida cero</strong> (un único punto) es siempre cero. Si <em>P(X = c) &gt; 0</em>, Riemann no puede expresar esto como una integral de densidad clásica.</p>
+      <div class="lebesgue-highlight">∫ f(x) dx sobre {c} = 0 (Riemann)</div>
+    </div>
+
+    <div class="theory-card">
+      <h3>🔬 Lebesgue resuelve el átomo</h3>
+      <p>Lebesgue <strong>mide conjuntos arbitrarios</strong>, no solo intervalos. El punto <em>{x = c}</em> puede tener medida positiva: <em>μ({c}) = P(X &gt; c)</em>. Esa masa es exactamente el salto que ves en la CDF.</p>
+      <div class="lebesgue-highlight" id="lebesgueVal">μ({c}) = P(X > c) ≈ ?%</div>
+    </div>
+
+    <div class="theory-card">
+      <h3>📊 Fórmula de E[Y] completa</h3>
+      <p>La esperanza de la variable censurada se descompone en <strong>dos partes</strong>: la integral continua hasta c, más la masa concentrada en c:</p>
+      <div class="lebesgue-highlight" id="eyFormula">
+        E[Y] = ∫₋∞ᶜ x·f(x)dx + c·P(X>c)
+      </div>
+      <p style="margin-top:0.5rem; font-size:0.78rem;" id="eyNums">
+        Mové el slider para ver los valores en vivo ↑
+      </p>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- PROF PANEL -->
+<div class="theory-panel" style="margin-top:-0.75rem;">
+  <div class="panel-title">🧑‍🏫 Material del profesor Sergio Gevatschnaider</div>
+
+  <div style="margin-top:0.9rem; display:grid; grid-template-columns: 1.2fr 0.8fr; gap:1.25rem;">
+    <div class="theory-card" style="border-radius:12px;">
+      <h3>📌 Lectura guiada: qué mirar en la simulación</h3>
+      <p>
+        Este simulador está pensado para que <strong>veas</strong> dos operaciones distintas sobre una misma variable aleatoria <em>X</em> (aquí, una Normal estándar) y cómo cambian la distribución y los resúmenes.
+        En <strong>censura</strong>, todo lo que cae a la derecha del umbral <em>c</em> no desaparece: <strong>colapsa en un punto</strong>. Ese punto tiene masa positiva y por eso aparece un <strong>salto</strong> en la CDF.
+        En <strong>truncamiento</strong>, lo que excede <em>c</em> se <strong>elimina</strong> y luego la densidad se <strong>renormaliza</strong>: no hay átomo, pero cambia la escala de probabilidades.
+      </p>
+      <p style="margin-top:0.6rem;">
+        Observá tres cosas: <strong>(i)</strong> la columna brillante en <em>x=c</em> (solo en censura), <strong>(ii)</strong> el salto Δ en la CDF,
+        y <strong>(iii)</strong> cómo varía <em>E[Y]</em> cuando desplazás el umbral.
+      </p>
+
+      <div class="lebesgue-highlight" style="margin-top:0.8rem; border-left-color: var(--cyan); background: var(--cyan-dim); color: var(--cyan);">
+        Tip docente: “átomo” = masa puntual. En censura, <em>P(Y=c)</em> no es 0: es exactamente <em>P(X&gt;c)</em>.
+      </div>
+    </div>
+
+    <div class="theory-card" style="border-radius:12px;">
+      <h3>🧮 Valores teóricos en vivo</h3>
+      <p>
+        Para <em>X~N(0,1)</em>:
+        <br>
+        <em>P(X&gt;c)=1-Φ(c)</em> (masa del átomo en censura)
+        <br>
+        <em>E[min(X,c)]</em> (censura) = parte continua + <em>c·P(X&gt;c)</em>
+        <br>
+        <em>E[X | X≤c]</em> (truncamiento) = media condicional de cola izquierda.
+      </p>
+
+      <div class="stats-grid" style="margin-top:0.8rem;">
+        <div class="stat-card cyan-accent">
+          <div class="stat-label">1 − Φ(c)</div>
+          <div class="stat-value" id="profTail">—</div>
+        </div>
+        <div class="stat-card green-accent">
+          <div class="stat-label">E[min(X,c)]</div>
+          <div class="stat-value" id="profCensMean">—</div>
+        </div>
+        <div class="stat-card purple-accent">
+          <div class="stat-label">E[X | X≤c]</div>
+          <div class="stat-value" id="profTruncMean">—</div>
+        </div>
+      </div>
+
+      <div class="lebesgue-highlight" id="profNote" style="margin-top:0.8rem;">
+        Ajustá el umbral para comparar teoría vs. simulación.
+      </div>
+    </div>
+  </div>
+
+  <div class="theory-grid" style="margin-top:1.25rem;">
+    <div class="theory-card">
+      <h3>🧠 Derivación rápida (intuición)</h3>
+      <p>
+        En <strong>censura</strong>, definimos <em>Y=min(X,c)</em>.
+        Para cualquier función de prueba <em>g</em>, la esperanza se separa:
+        <em>E[g(Y)] = E[g(X)·1(X≤c)] + g(c)·P(X&gt;c)</em>.
+        Esto sugiere una medida mezcla: una parte <strong>absolutamente continua</strong> en <em>(-∞,c)</em> y una parte <strong>atómica</strong> en <em>{c}</em>.
+        Esa mezcla es exactamente lo que “pide” Lebesgue.
+      </p>
+    </div>
+
+    <div class="theory-card">
+      <h3>🧪 Ejercicios sugeridos</h3>
+      <p>
+        1) Fijá <em>c=0</em>. Estimá visualmente el salto en la CDF y comparalo con <em>1-Φ(0)=0.5</em>.
+        <br>
+        2) Mové <em>c</em> hacia la derecha. ¿Qué le pasa a la masa del átomo y a <em>E[Y]</em>?
+        <br>
+        3) Cambiá a truncamiento. Para un <em>c</em> negativo, ¿por qué la media condicional <em>E[X|X≤c]</em> queda “más negativa”?
+      </p>
+      <div class="lebesgue-highlight" style="margin-top:0.7rem;">
+        Pista: en truncamiento “te quedás” con una subpoblación; en censura “aplastás” la cola.
+      </div>
+    </div>
+
+    <div class="theory-card">
+      <h3>✅ Mini‑quiz (autocorrección)</h3>
+      <p style="margin-bottom:0.6rem;">
+        Elegí una opción y mirá el feedback.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:0.55rem;">
+        <div style="padding:0.65rem 0.7rem; border:1px solid var(--border); border-radius:10px; background:#090d16;">
+          <div style="font-family:'JetBrains Mono', monospace; font-size:0.72rem; color:var(--muted2); letter-spacing:0.08em; text-transform:uppercase;">Q1</div>
+          <div style="margin-top:0.25rem; font-size:0.85rem; color:var(--text); line-height:1.55;">
+            En censura, el salto de la CDF en <em>c</em> vale…
+          </div>
+          <div class="mode-row" style="margin-top:0.55rem;">
+            <button class="btn-sm" onclick="profAnswer('q1','a')">P(X ≤ c)</button>
+            <button class="btn-sm" onclick="profAnswer('q1','b')">P(X &gt; c)</button>
+            <button class="btn-sm" onclick="profAnswer('q1','c')">f(c)</button>
+          </div>
+          <div id="prof_q1" style="margin-top:0.5rem; font-size:0.8rem; color:var(--muted2); line-height:1.55;"></div>
+        </div>
+
+        <div style="padding:0.65rem 0.7rem; border:1px solid var(--border); border-radius:10px; background:#090d16;">
+          <div style="font-family:'JetBrains Mono', monospace; font-size:0.72rem; color:var(--muted2); letter-spacing:0.08em; text-transform:uppercase;">Q2</div>
+          <div style="margin-top:0.25rem; font-size:0.85rem; color:var(--text); line-height:1.55;">
+            En truncamiento (X | X≤c), la densidad resultante…
+          </div>
+          <div class="mode-row" style="margin-top:0.55rem;">
+            <button class="btn-sm" onclick="profAnswer('q2','a')">Se mantiene igual y suma &lt; 1</button>
+            <button class="btn-sm" onclick="profAnswer('q2','b')">Se renormaliza dividiendo por P(X≤c)</button>
+            <button class="btn-sm" onclick="profAnswer('q2','c')">Agrega un átomo en c</button>
+          </div>
+          <div id="prof_q2" style="margin-top:0.5rem; font-size:0.8rem; color:var(--muted2); line-height:1.55;"></div>
+        </div>
+
+        <div style="padding:0.65rem 0.7rem; border:1px solid var(--border); border-radius:10px; background:#090d16;">
+          <div style="font-family:'JetBrains Mono', monospace; font-size:0.72rem; color:var(--muted2); letter-spacing:0.08em; text-transform:uppercase;">Q3</div>
+          <div style="margin-top:0.25rem; font-size:0.85rem; color:var(--text); line-height:1.55;">
+            ¿Qué cambia “más” en censura al mover <em>c</em> hacia la izquierda?
+          </div>
+          <div class="mode-row" style="margin-top:0.55rem;">
+            <button class="btn-sm" onclick="profAnswer('q3','a')">Crece P(X&gt;c) y aumenta el salto</button>
+            <button class="btn-sm" onclick="profAnswer('q3','b')">Desaparece la masa puntual</button>
+            <button class="btn-sm" onclick="profAnswer('q3','c')">La CDF se vuelve continua</button>
+          </div>
+          <div id="prof_q3" style="margin-top:0.5rem; font-size:0.8rem; color:var(--muted2); line-height:1.55;"></div>
+        </div>
+      </div>
+
+      <div class="lebesgue-highlight" style="margin-top:0.8rem; border-left-color: var(--purple);">
+        Sugerencia: resolvé el quiz para “fijar” la diferencia censura vs truncamiento antes de pasar a estimación y máxima verosimilitud.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ SCRIPT ══ -->
+<script>
+
+// ── SCENARIOS ──────────────────────────────────────────────────────
+const scenarios = [
+  {
+    unit: 'σ',
+    desc: '<strong>Seguros de Auto:</strong> X = daño real del auto. La póliza paga Y = min(X, c). Para todos los siniestros catastróficos (X > c) el seguro paga exactamente c. En la PDF eso forma un "átomo" en x = c.'
+  },
+  {
+    unit: '°C',
+    desc: '<strong>Saturación de Sensor:</strong> El termómetro mide hasta c °C. Cualquier temperatura mayor se registra exactamente como c → colapso en el máximo del rango.'
+  },
+  {
+    unit: ' uds',
+    desc: '<strong>Base de Datos de Marketing:</strong> Compras registradas por cliente. El sistema guarda "c o más" como un único valor. Toda la cola derecha colapsa en c.'
+  },
+  {
+    unit: ' años',
+    desc: '<strong>Censos de Supervivencia:</strong> Tiempo de vida de un equipo. El estudio termina en t = c. Los equipos que siguen funcionando al final se censuran: solo sabemos X > c.'
+  }
+];
+let currentScenario = 0;
+
+// ── STATE ───────────────────────────────────────────────────────────
+let mode = 'censura';
+let cThreshold = 1.5;
+let particles = [];
+const N_PARTICLES = 3000;
+const PARTICLE_R = 1.4;
+const BIN_COUNT = 80;
+const PARTICLE_PX = 2.5; // pixels per particle in a stack
+
+// Two separate bin arrays: stable (physics floor) vs display
+let settledBins   = new Array(BIN_COUNT).fill(0);
+let displayBins   = new Array(BIN_COUNT).fill(0);
+let cdfBins       = new Array(BIN_COUNT).fill(0);
+
+// ── RNG (Box-Muller) ────────────────────────────────────────────────
+function randn() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+// ── CANVAS SETUP ────────────────────────────────────────────────────
+let pdfEnv, cdfEnv;
+
+function setupCanvas(id, cssHeight) {
+  const canvas = document.getElementById(id);
+  const ctx    = canvas.getContext('2d');
+  const dpr    = window.devicePixelRatio || 1;
+  const rect   = canvas.parentElement.getBoundingClientRect();
+  const w      = rect.width - 48;          // account for panel padding
+  const h      = cssHeight;
+  canvas.style.width  = w + 'px';
+  canvas.style.height = h + 'px';
+  canvas.width  = w * dpr;
+  canvas.height = h * dpr;
+  ctx.scale(dpr, dpr);
+  return { canvas, ctx, w, h };
+}
+
+// ── COORDINATE MAPPING ──────────────────────────────────────────────
+const X_MIN = -4, X_MAX = 4;          // display range in σ units
+function xToCanvas(val, w) {
+  return ((val - X_MIN) / (X_MAX - X_MIN)) * w;
+}
+function getBin(val) {
+  let b = Math.floor(((val - X_MIN) / (X_MAX - X_MIN)) * BIN_COUNT);
+  return Math.max(0, Math.min(BIN_COUNT - 1, b));
+}
+function binToX(b) {
+  return X_MIN + (b + 0.5) / BIN_COUNT * (X_MAX - X_MIN);
+}
+
+// ── THEORETICAL GAUSSIAN (for overlay) ─────────────────────────────
+function gaussPDF(x) {
+  return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * x * x);
+}
+function gaussCDF(x) {
+  // Abramowitz & Stegun approximation
+  const t = 1 / (1 + 0.2316419 * Math.abs(x));
+  const poly = t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+  const cdf = 1 - gaussPDF(x) * poly;
+  return x >= 0 ? cdf : 1 - cdf;
+}
+
+// ── PARTICLE INIT ───────────────────────────────────────────────────
+function initParticles() {
+  particles = [];
+  settledBins.fill(0);
+  for (let i = 0; i < N_PARTICLES; i++) {
+    particles.push({
+      originalX : randn(),
+      x         : 0,
+      y         : -(Math.random() * 600 + 20),  // above canvas, staggered
+      speed     : 1.2 + Math.random() * 1.2,
+      settled   : false,
+      finalBin  : -1,
+      isAtom    : false,
+    });
+  }
+}
+
+// ── RESET (on threshold/mode change) ───────────────────────────────
+function resetParticles() {
+  settledBins.fill(0);
+  particles.forEach(p => {
+    p.settled  = false;
+    p.finalBin = -1;
+    p.isAtom   = false;
+    p.y        = -(Math.random() * 600 + 20);
+    p.speed    = 1.2 + Math.random() * 1.2;
+  });
+}
+
+// ── PHYSICS UPDATE ──────────────────────────────────────────────────
+function updatePhysics(h) {
+  // display bins = copy of stable settled bins (computed each frame after settling)
+  for (let i = 0; i < BIN_COUNT; i++) displayBins[i] = settledBins[i];
+
+  let atomCount   = 0;
+  let activeCount = 0;
+  let sumY        = 0;
+
+  particles.forEach(p => {
+    let effectiveX  = p.originalX;
+    let isCensored  = false;
+    let isTruncated = false;
+
+    if (effectiveX > cThreshold) {
+      if (mode === 'censura') { effectiveX = cThreshold; isCensored = true; }
+      else                    { isTruncated = true; }
+    }
+
+    if (isTruncated) {
+      p.x = p.originalX;
+      return; // skip — vaporized
+    }
+
+    activeCount++;
+    sumY += effectiveX;
+    if (isCensored) atomCount++;
+
+    p.x      = effectiveX;
+    p.isAtom = isCensored;
+
+    if (!p.settled) {
+      p.y += p.speed;
+      const targetBin  = getBin(effectiveX);
+      const stackH     = settledBins[targetBin] * PARTICLE_PX;
+      const floorY     = h - 22 - stackH;
+
+      if (p.y >= floorY) {
+        p.y        = floorY;
+        p.settled  = true;
+        p.finalBin = targetBin;
+        settledBins[targetBin]++;
+        displayBins[targetBin] = settledBins[targetBin];
+      }
+    }
+  });
+
+  // Build CDF from displayBins
+  let accum = 0;
+  for (let i = 0; i < BIN_COUNT; i++) {
+    accum += displayBins[i];
+    cdfBins[i] = activeCount > 0 ? accum / activeCount : 0;
+  }
+
+  // Compute theoretical values (using Gaussian CDF for reference)
+  const atomMass  = gaussCDF(999) - gaussCDF(cThreshold);   // P(X > c)
+  const atomPct   = (atomMass * 100).toFixed(1);
+
+  // E[Y] = E[X · 1(X≤c)] + c · P(X>c)
+  // Numerical approximation using particle data
+  const eyApprox  = activeCount > 0 ? (sumY / activeCount).toFixed(3) : '—';
+
+  document.getElementById('statAtom').textContent = atomPct + '%';
+  document.getElementById('statEY').textContent   = eyApprox + scenarios[currentScenario].unit;
+  document.getElementById('statN').textContent    = activeCount;
+
+  // Lebesgue callout
+  document.getElementById('lebesgueVal').textContent =
+    `μ({c}) = P(X > c) ≈ ${atomPct}%`;
+
+  // E[Y] formula numbers
+  const contPart = (parseFloat(eyApprox) - cThreshold * atomMass).toFixed(3);
+  document.getElementById('eyNums').innerHTML =
+    `E[Y] = <em>${contPart}</em> (parte continua) + <em>${(cThreshold * atomMass).toFixed(3)}</em> (átomo) = <em>${eyApprox}</em>`;
+
+  // Atom callout visibility
+  const callout = document.getElementById('atomCallout');
+  if (mode === 'censura' && parseFloat(atomPct) > 1) {
+    callout.classList.add('visible');
+  } else {
+    callout.classList.remove('visible');
+  }
+}
+
+// ── DRAW PDF CANVAS ─────────────────────────────────────────────────
+function drawPDF(ctx, w, h) {
+  ctx.clearRect(0, 0, w, h);
+
+  // Background gradient
+  const bg = ctx.createLinearGradient(0, 0, 0, h);
+  bg.addColorStop(0, '#090d16');
+  bg.addColorStop(1, '#07090e');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+
+  // ─ Grid & axis ─────────────────────────────
+  const floorY = h - 22;
+
+  // Vertical grid lines at σ values
+  for (let s = -3; s <= 3; s++) {
+    const gx = xToCanvas(s, w);
+    ctx.strokeStyle = s === 0 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash(s === 0 ? [] : [4, 6]);
+    ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, floorY); ctx.stroke();
+    ctx.setLineDash([]);
+    // Labels
+    if (s !== 0) {
+      ctx.fillStyle = 'rgba(100,116,139,0.7)';
+      ctx.font = '10px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText((s > 0 ? '+' : '') + s + 'σ', gx, floorY + 15);
+    }
+  }
+  ctx.fillStyle = 'rgba(100,116,139,0.7)';
+  ctx.font = '10px JetBrains Mono';
+  ctx.textAlign = 'center';
+  ctx.fillText('0', xToCanvas(0, w), floorY + 15);
+
+  // Theoretical Gaussian overlay (ghost)
+  const maxGauss   = gaussPDF(0);
+  const gaussScale = (floorY - 20) / maxGauss * 0.9;
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth   = 1.5;
+  for (let px = 0; px < w; px++) {
+    const xVal = X_MIN + (px / w) * (X_MAX - X_MIN);
+    const py   = floorY - gaussPDF(xVal) * gaussScale;
+    px === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Floor
+  ctx.fillStyle = '#1a2234';
+  ctx.fillRect(0, floorY, w, 22);
+
+  // ─ Threshold wall ──────────────────────────
+  const cX = xToCanvas(cThreshold, w);
+  const wallColor = mode === 'censura' ? '#38bdf8' : '#f43f5e';
+  ctx.strokeStyle = wallColor;
+  ctx.lineWidth   = 2;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath(); ctx.moveTo(cX, 0); ctx.lineTo(cX, floorY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Wall label
+  ctx.fillStyle = wallColor;
+  ctx.font      = 'bold 11px JetBrains Mono';
+  ctx.textAlign = 'left';
+  ctx.fillText('c = ' + cThreshold.toFixed(2) + 'σ', cX + 5, 18);
+
+  // Right-side shading (censured zone)
+  if (mode === 'censura') {
+    ctx.fillStyle = 'rgba(56,189,248,0.04)';
+    ctx.fillRect(cX, 0, w - cX, floorY);
+  } else {
+    ctx.fillStyle = 'rgba(244,63,94,0.06)';
+    ctx.fillRect(cX, 0, w - cX, floorY);
+  }
+
+  // ─ ATOM glow (censura mode) ─────────────────
+  if (mode === 'censura') {
+    const atomBin = getBin(cThreshold);
+    const atomH   = settledBins[atomBin] * PARTICLE_PX;
+    if (atomH > 0) {
+      // Glow behind atom column
+      const grad = ctx.createLinearGradient(cX - 12, 0, cX + 12, 0);
+      grad.addColorStop(0, 'transparent');
+      grad.addColorStop(0.5, 'rgba(56,189,248,0.25)');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.fillRect(cX - 12, floorY - atomH, 24, atomH);
+
+      // Label: Átomo
+      ctx.fillStyle = '#38bdf8';
+      ctx.font      = 'bold 11px JetBrains Mono';
+      ctx.textAlign = 'center';
+      if (atomH > 30) ctx.fillText('⚛ ÁTOMO', cX, floorY - atomH - 8);
+    }
+  }
+
+  // ─ Particles ───────────────────────────────
+  particles.forEach(p => {
+    if (mode === 'trunc' && p.originalX > cThreshold) return;
+
+    const px = xToCanvas(p.x, w);
+    if (px < 0 || px > w) return;
+
+    if (p.isAtom) {
+      ctx.fillStyle = 'rgba(56,189,248,0.85)';
+    } else if (mode === 'trunc') {
+      ctx.fillStyle = 'rgba(244,63,94,0.75)';
+    } else {
+      // Color gradient by position: warm left → gold right
+      const t = (p.x - X_MIN) / (X_MAX - X_MIN);
+      ctx.fillStyle = `rgba(245,${Math.floor(180 + t*30)},${Math.floor(40+t*40)},0.8)`;
+    }
+
+    ctx.beginPath();
+    ctx.arc(px, p.y, PARTICLE_R, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+// ── DRAW CDF CANVAS ─────────────────────────────────────────────────
+function drawCDF(ctx, w, h) {
+  ctx.clearRect(0, 0, w, h);
+
+  const PAD_B  = 28;   // bottom padding for axis
+  const PAD_L  = 38;   // left padding for y-axis labels
+  const plotH  = h - PAD_B - 10;
+  const plotW  = w - PAD_L - 10;
+
+  ctx.fillStyle = '#090d16';
+  ctx.fillRect(0, 0, w, h);
+
+  // ─ Y-axis grid ─────────────────────────────
+  [0, 0.25, 0.5, 0.75, 1.0].forEach(val => {
+    const y = (10 + plotH) - val * plotH;
+    ctx.strokeStyle = val === 1.0 || val === 0
+      ? 'rgba(255,255,255,0.06)'
+      : 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(PAD_L + plotW, y); ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    ctx.font      = '10px JetBrains Mono';
+    ctx.textAlign = 'right';
+    ctx.fillText(val.toFixed(2), PAD_L - 5, y + 4);
+  });
+
+  // X-axis labels
+  for (let s = -3; s <= 3; s += 1) {
+    const xc = PAD_L + ((s - X_MIN) / (X_MAX - X_MIN)) * plotW;
+    ctx.fillStyle = '#64748b';
+    ctx.font      = '9px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(s + 'σ', xc, h - 6);
+  }
+
+  // Axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth   = 1;
+  ctx.beginPath();
+  ctx.moveTo(PAD_L, 10);
+  ctx.lineTo(PAD_L, 10 + plotH);
+  ctx.lineTo(PAD_L + plotW, 10 + plotH);
+  ctx.stroke();
+
+  // ─ Theoretical CDF (ghost) ─────────────────
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth   = 1.5;
+  for (let i = 0; i < BIN_COUNT; i++) {
+    const bx  = binToX(i);
+    const px  = PAD_L + ((bx - X_MIN) / (X_MAX - X_MIN)) * plotW;
+    const cdf = gaussCDF(bx);
+    const py  = (10 + plotH) - cdf * plotH;
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // ─ Threshold line ──────────────────────────
+  const cX_cdf = PAD_L + ((cThreshold - X_MIN) / (X_MAX - X_MIN)) * plotW;
+  ctx.strokeStyle = 'rgba(148,163,184,0.2)';
+  ctx.lineWidth   = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(cX_cdf, 10); ctx.lineTo(cX_cdf, 10 + plotH); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ─ Simulated CDF curve ──────────────────────
+  ctx.beginPath();
+  ctx.strokeStyle = mode === 'censura' ? '#f5c842' : '#f43f5e';
+  ctx.lineWidth   = 2.5;
+  ctx.lineJoin    = 'round';
+
+  let jumpDrawn = false;
+  for (let i = 0; i < BIN_COUNT; i++) {
+    const bx = binToX(i);
+    const px = PAD_L + ((bx - X_MIN) / (X_MAX - X_MIN)) * plotW;
+    const py = (10 + plotH) - cdfBins[i] * plotH;
+
+    if (i === 0) {
+      ctx.moveTo(px, py);
+    } else {
+      // If censura: draw the vertical jump at c
+      if (mode === 'censura' && !jumpDrawn && bx >= cThreshold) {
+        const prevPy = (10 + plotH) - cdfBins[i - 1] * plotH;
+        ctx.lineTo(cX_cdf, prevPy);
+        ctx.lineTo(cX_cdf, py);
+        jumpDrawn = true;
+      }
+      ctx.lineTo(px, py);
+    }
+  }
+  ctx.stroke();
+
+  // ─ Jump highlight ───────────────────────────
+  if (mode === 'censura') {
+    const jumpBin  = getBin(cThreshold);
+    const prevBin  = Math.max(0, jumpBin - 1);
+    if (cdfBins[jumpBin] > cdfBins[prevBin] + 0.005) {
+      const yBase = (10 + plotH) - cdfBins[prevBin] * plotH;
+      const yTop  = (10 + plotH) - cdfBins[jumpBin]  * plotH;
+
+      // Animated-ish double arrow
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth   = 3.5;
+      ctx.beginPath(); ctx.moveTo(cX_cdf, yBase); ctx.lineTo(cX_cdf, yTop); ctx.stroke();
+
+      // Arrow heads
+      const arrowSz = 5;
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.moveTo(cX_cdf, yTop - arrowSz);
+      ctx.lineTo(cX_cdf - arrowSz, yTop + arrowSz);
+      ctx.lineTo(cX_cdf + arrowSz, yTop + arrowSz);
+      ctx.fill();
+
+      // Jump size annotation
+      const jumpSize = ((cdfBins[jumpBin] - cdfBins[prevBin]) * 100).toFixed(1);
+      const midY     = (yBase + yTop) / 2;
+      ctx.fillStyle  = '#38bdf8';
+      ctx.font       = 'bold 10px JetBrains Mono';
+      ctx.textAlign  = cX_cdf > w * 0.7 ? 'right' : 'left';
+      const offsetX  = cX_cdf > w * 0.7 ? -8 : 8;
+      ctx.fillText('Δ = ' + jumpSize + '%', cX_cdf + offsetX, midY + 4);
+    }
+  }
+}
+
+// ── RENDER LOOP ──────────────────────────────────────────────────────
+function loop() {
+  updatePhysics(pdfEnv.h);
+  updateProfPanel();
+  drawPDF(pdfEnv.ctx, pdfEnv.w, pdfEnv.h);
+  drawCDF(cdfEnv.ctx, cdfEnv.w, cdfEnv.h);
+  requestAnimationFrame(loop);
+}
+
+// ── INTERACTIONS ─────────────────────────────────────────────────────
+document.getElementById('cSlider').addEventListener('input', e => {
+  cThreshold = parseFloat(e.target.value);
+  document.getElementById('cVal').textContent =
+    cThreshold.toFixed(2) + scenarios[currentScenario].unit;
+  resetParticles();
+});
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('modeCensura').classList.toggle('active', m === 'censura');
+  document.getElementById('modeTrunc').classList.toggle('active', m === 'trunc');
+
+  if (m === 'censura') {
+    document.getElementById('formulaBox').innerHTML =
+      'Y = min(X, c)' +
+      '<div class="sub">Las partículas &gt; c chocan en la barrera → forman el <strong>átomo</strong> ⚛</div>';
+  } else {
+    document.getElementById('formulaBox').innerHTML =
+      'f<sub>Y</sub>(y) = f<sub>X</sub>(y) / P(X ≤ c)' +
+      '<div class="sub" style="color:var(--red)">Las partículas &gt; c se eliminan. La muestra restante se re-normaliza.</div>';
+  }
+  resetParticles();
+}
+
+function setScenario(idx) {
+  currentScenario = idx;
+  document.querySelectorAll('.uc-tabs .btn-sm').forEach((b, i) =>
+    b.classList.toggle('active', i === idx));
+  document.getElementById('ucDesc').innerHTML = scenarios[idx].desc;
+  document.getElementById('cVal').textContent =
+    cThreshold.toFixed(2) + scenarios[idx].unit;
+}
+
+
+// ── PROF PANEL LOGIC (Sergio Gevatschnaider) ─────────────────────────
+// Standard normal pdf = φ(x), cdf = Φ(x)
+function phi(x) { return gaussPDF(x); }
+function Phi(x) { return gaussCDF(x); }
+
+// Tail probability: 1 - Φ(c)
+function tailProb(c) { return 1 - Phi(c); }
+
+// Censored mean: E[min(X,c)] = ∫_{-∞}^c x φ(x) dx + c(1-Φ(c))
+// For N(0,1): ∫_{-∞}^c x φ(x) dx = -φ(c)
+function censoredMean(c) {
+  return (-phi(c)) + c * tailProb(c);
+}
+
+// Truncated mean (left truncation at c): E[X | X ≤ c] = E[X 1(X≤c)] / P(X≤c)
+// For N(0,1): E[X 1(X≤c)] = -φ(c)
+function truncatedMeanLeft(c) {
+  const p = Phi(c);
+  if (p < 1e-9) return NaN;
+  return (-phi(c)) / p;
+}
+
+function fmt(x, digits=3) {
+  if (!isFinite(x)) return '—';
+  return x.toFixed(digits);
+}
+
+function updateProfPanel() {
+  const tail = tailProb(cThreshold);
+  const cm   = censoredMean(cThreshold);
+  const tm   = truncatedMeanLeft(cThreshold);
+
+  const unit = scenarios[currentScenario].unit;
+
+  const tailEl = document.getElementById('profTail');
+  const cmEl   = document.getElementById('profCensMean');
+  const tmEl   = document.getElementById('profTruncMean');
+  const noteEl = document.getElementById('profNote');
+
+  if (tailEl) tailEl.textContent = (tail * 100).toFixed(1) + '%';
+  if (cmEl)   cmEl.textContent   = fmt(cm) + unit;
+  if (tmEl)   tmEl.textContent   = fmt(tm) + unit;
+
+  if (noteEl) {
+    if (mode === 'censura') {
+      noteEl.innerHTML = `Modo actual: <strong>Censura</strong>. El salto Δ en la CDF vale <em>P(X&gt;c)=${(tail*100).toFixed(1)}%</em>.`;
+    } else {
+      noteEl.innerHTML = `Modo actual: <strong>Truncamiento</strong>. No hay átomo: la densidad se renormaliza por <em>P(X≤c)=${(Phi(cThreshold)*100).toFixed(1)}%</em>.`;
+    }
+  }
+}
+
+// Mini‑quiz feedback
+function profAnswer(q, opt) {
+  const target = document.getElementById('prof_' + q);
+  if (!target) return;
+
+  const tail = (tailProb(cThreshold) * 100).toFixed(1) + '%';
+
+  const ok = { q1: 'b', q2: 'b', q3: 'a' }[q];
+
+  const explanations = {
+    q1: {
+      a: `No. <em>P(X≤c)</em> es la parte “continua acumulada” hasta c. El <strong>salto</strong> corresponde a la masa puntual, que es <em>P(X&gt;c)</em> (hoy ≈ ${tail}).`,
+      b: `Correcto. En censura, <em>P(Y=c)=P(X&gt;c)</em>. Ese es el <strong>salto</strong> en la CDF (hoy ≈ ${tail}).`,
+      c: `No. <em>f(c)</em> es una densidad (no una probabilidad). El salto requiere una <strong>masa</strong>, no una altura de densidad.`
+    },
+    q2: {
+      a: `No. Una densidad debe integrar a 1. Si truncás, eliminás masa y luego debés re-escalar.`,
+      b: `Correcto. En truncamiento, <em>f_Y(y)=f_X(y)/P(X≤c)</em> para <em>y≤c</em>. Se renormaliza.`,
+      c: `No. El átomo aparece en censura; truncamiento elimina observaciones y no concentra masa en un punto.`
+    },
+    q3: {
+      a: `Correcto. Si movés c a la izquierda, aumenta <em>P(X&gt;c)</em> y el salto crece (más masa colapsa en c).`,
+      b: `No. Justamente ocurre lo contrario: la masa puntual crece porque más valores exceden c.`,
+      c: `No. En censura la CDF no se vuelve continua: conserva un salto en c mientras <em>P(X&gt;c)&gt;0</em>.`
+    }
+  };
+
+  const isOk = (opt === ok);
+  const badge = isOk
+    ? `<span style="color:var(--green); font-family:'JetBrains Mono',monospace;">✔ Correcto</span>`
+    : `<span style="color:var(--red); font-family:'JetBrains Mono',monospace;">✖ Revisá</span>`;
+
+  target.innerHTML = badge + ' · ' + explanations[q][opt];
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  pdfEnv = setupCanvas('pdfCanvas', 320);
+  cdfEnv = setupCanvas('cdfCanvas', 220);
+  initParticles();
+  loop();
+});
+
+window.addEventListener('resize', () => {
+  pdfEnv = setupCanvas('pdfCanvas', 320);
+  cdfEnv = setupCanvas('cdfCanvas', 220);
+});
+
+</script>
+
+<!-- PROF FOOTER -->
+<div style="max-width:1200px;margin:24px auto 40px;padding:0 16px;">
+  <div style="text-align:center;color:rgba(255,255,255,0.72);font-size:0.92rem;letter-spacing:0.02em;">
+    Material elaborado por el profesor Sergio Gevatschnaider
+  </div>
+</div>
+
+</body>
+</html>
