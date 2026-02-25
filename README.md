@@ -16,11 +16,11 @@ Applied Statistics for Data Science (Engineering & Research Track)
 ---
 
 ## 📑 Tabla de Contenidos
-1. [Accesos rápidos](#accesos-rápidos)
-2. [Descripción](#descripción)
-3. [Bibliografía](#bibliografía-base-the-canon)
-4. [Syllabus](#syllabus-detallado)
-5. [Instalación y Uso](#cómo-utilizar-este-material-instalación-y-uso)
+1. [Accesos rápidos](#-accesos-rápidos)
+2. [Descripción](#-descripción)
+3. [Bibliografía](#-bibliografía-base-the-canon)
+4. [Syllabus](#-syllabus-detallado)
+5. [Instalación y Uso](#-cómo-utilizar-este-material-instalación-y-uso)
 ---
 
 ## 🔗 Accesos rápidos
