@@ -297,19 +297,6 @@ Si prefieres tener los archivos en tu máquina:
 
 ---
 
-## 📚 Bibliografía General del Curso
-
-* **Wasserman** — *All of Statistics*.
-* **Hastie, Tibshirani, Friedman** — *The Elements of Statistical Learning (ESL)*.
-* **Efron & Hastie** — *Computer Age Statistical Inference (CASI)*.
-* **Bishop** — *Pattern Recognition and Machine Learning (PRML)*.
-* **Koller & Friedman** — *Probabilistic Graphical Models*.
-* **Gelman et al.** — *Bayesian Data Analysis (BDA3)*.
-* **Pearl** — *Causal Inference in Statistics*.
-* **Shumway & Stoffer** — *Time Series Analysis and Its Applications*.
-* **Mardia, Kent, Bibby** — *Multivariate Analysis*.
-* **Benjamin, Chartrand, Zhang** — *The Fascinating World of Graph Theory*.
-
 ## 🧱 Estructura del repositorio (high-level)
 
 > *Ajustá estos nombres si difieren en tu repo.*
