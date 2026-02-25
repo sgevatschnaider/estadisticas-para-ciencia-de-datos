@@ -398,7 +398,7 @@ Issues y Pull Requests son bienvenidos.
 
 Este material se distribuye bajo licencia **MIT**. Ver el archivo [LICENSE](https://www.google.com/search?q=LICENSE) para más detalles.
 
-## 📌 Referencias (Citas cortas)
+## 📚 Bibliografía Base
 
 * **[Wasserman]** Larry Wasserman — *All of Statistics*
 * **[ESL]** Hastie, Tibshirani, Friedman — *The Elements of Statistical Learning*
