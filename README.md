@@ -398,12 +398,5 @@ Issues y Pull Requests son bienvenidos.
 
 Este material se distribuye bajo licencia **MIT**. Ver el archivo [LICENSE](https://www.google.com/search?q=LICENSE) para más detalles.
 
-## 📚 Bibliografía Base
 
-* **[Wasserman]** Larry Wasserman — *All of Statistics*
-* **[ESL]** Hastie, Tibshirani, Friedman — *The Elements of Statistical Learning*
-* **[BDA3]** Gelman et al. — *Bayesian Data Analysis (3rd Ed.)*
-* **[Efron]** Efron & Hastie — *Computer Age Statistical Inference*
-* **[Pearl]** Judea Pearl — *Causality*
-* **[Shumway]** Shumway & Stoffer — *Time Series Analysis and Its Applications*
 
