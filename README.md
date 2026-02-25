@@ -72,17 +72,18 @@ El curso asume conocimientos previos de estadística clásica (por ejemplo: ANOV
 
 ---
 
-## 📚 Bibliografía base (The Canon)
+## 📚 Bibliografía Base
 
-Las referencias bibliográficas del programa se apoyan principalmente en:
+Las referencias bibliográficas del programa (The Canon) se apoyan principalmente en:
 
-- **[Wasserman]** — *All of Statistics: A Concise Course in Statistical Inference* (Larry Wasserman)
-- **[ESL]** — *The Elements of Statistical Learning* (Hastie, Tibshirani & Friedman)
-- **[BDA3]** — *Bayesian Data Analysis (3rd Ed.)* (Gelman, Carlin, et al.)
-- **[Efron]** — *Computer Age Statistical Inference* (Efron & Hastie)
-- **[Pearl]** — *Causality: Models, Reasoning, and Inference* (Judea Pearl)
-- **[Shumway]** — *Time Series Analysis and Its Applications* (Shumway & Stoffer)
-
+* **[Wasserman]** — *All of Statistics: A Concise Course in Statistical Inference* (Larry Wasserman)
+* **[ESL]** — *The Elements of Statistical Learning* (Hastie, Tibshirani & Friedman)
+* **[BDA3]** — *Bayesian Data Analysis (3rd Ed.)* (Gelman, Carlin, et al.)
+* **[Efron]** — *Computer Age Statistical Inference* (Efron & Hastie)
+* **[Pearl]** — *Causality: Models, Reasoning, and Inference* (Judea Pearl)
+* **[Shumway]** — *Time Series Analysis and Its Applications* (Shumway & Stoffer)
+* **[Bishop]** — *Pattern Recognition and Machine Learning (PRML)*
+* **[Koller & Friedman]** — *Probabilistic Graphical Models*
 ---
 
 ## 🎯 Propósito del curso
