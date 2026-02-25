@@ -34,19 +34,19 @@ Applied Statistics for Data Science (Engineering & Research Track)
   <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/learning"><img src="https://img.shields.io/badge/MÓDULO_III-Learning-0366d6?style=for-the-badge"></a>
   <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/pgm"><img src="https://img.shields.io/badge/MÓDULO_IV-Estructurados-0366d6?style=for-the-badge"></a>
   <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/tiempo"><img src="https://img.shields.io/badge/MÓDULO_V-Grafos-0366d6?style=for-the-badge"></a>
-</p>
-
 <p align="center">
   <a href="https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/" target="_blank" rel="noopener">
     <img alt="Live docs — GitHub Pages" src="https://img.shields.io/badge/Live%20docs-GitHub%20Pages-2b3137?style=for-the-badge&logo=github" />
   </a>
   &nbsp;
-  <a href="#" target="_blank" rel="noopener">
+  <a href="https://mybinder.org/v2/gh/sgevatschnaider/estadisticas-para-ciencia-de-datos/main" target="_blank" rel="noopener">
     <img alt="Live demos — Binder" src="https://img.shields.io/badge/Live%20demos-Binder-f5a250?style=for-the-badge&logo=jupyter" />
   </a>
+  &nbsp;
+  <a href="https://colab.research.google.com/github/sgevatschnaider/estadisticas-para-ciencia-de-datos/" target="_blank" rel="noopener">
+    <img alt="Open in — Colab" src="https://img.shields.io/badge/Open%20in-Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=white" />
+  </a>
 </p>
-
----
 
 ## 🎯 Descripción
 
