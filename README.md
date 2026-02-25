@@ -72,7 +72,7 @@ El curso asume conocimientos previos de estadística clásica (por ejemplo: ANOV
 
 ---
 
-## 📚 Bibliografía Base
+## 📚 Bibliografía base
 
 Las referencias bibliográficas del programa (The Canon) se apoyan principalmente en:
 
