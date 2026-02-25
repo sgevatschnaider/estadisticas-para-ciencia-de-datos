@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Máquina de la Creación — Transformada Inversa</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+MathJax = {
+  tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root {
+  --bg:      #060810;
+  --bg1:     #0a0e1a;
+  --bg2:     #0f1626;
+  --border:  rgba(148,163,184,0.08);
+  --border2: rgba(148,163,184,0.15);
+  --text:    #dde6f5;
+  --muted:   #4a607e;
+  --muted2:  #6b84a0;
+  --amber:   #f59e0b;
+  --amber2:  #fbbf24;
+  --blue:    #60a5fa;
+  --blue2:   #3b82f6;
+  --teal:    #2dd4bf;
+  --green:   #4ade80;
+  --pink:    #f472b6;
+  --purple:  #c084fc;
+
+  --unif-color:  #38bdf8;
+  --gauss-color: #f472b6;
+  --arrow-color: #fbbf24;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── STARFIELD BACKGROUND ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(ellipse 90% 50% at 50% -5%, rgba(96,165,250,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 10% 90%, rgba(196,132,252,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 50%, rgba(244,114,182,0.04) 0%, transparent 60%),
+    var(--bg);
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: -1;
+  background-image:
+    linear-gradient(rgba(148,163,184,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148,163,184,0.015) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.wrapper { max-width: 1080px; margin: 0 auto; padding: 50px 22px 90px; }
+
+/* ── HEADER ── */
+header { margin-bottom: 56px; }
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.67rem;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: var(--pink);
+  opacity: 0.85;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.eyebrow::before {
+  content: '';
+  width: 28px; height: 1px;
+  background: currentColor; opacity: 0.6;
+}
+h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+h1 em {
+  font-style: italic;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--amber2);
+  margin-bottom: 16px;
+  opacity: 0.85;
+}
+.header-desc {
+  color: var(--muted2);
+  font-size: 0.94rem;
+  line-height: 1.78;
+  max-width: 700px;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  margin-bottom: 22px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+.card-header {
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  display: flex; align-items: center; gap: 10px;
+}
+.pip { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.pip-pink   { background: var(--pink);   box-shadow: 0 0 6px var(--pink); }
+.pip-blue   { background: var(--blue2);  box-shadow: 0 0 6px var(--blue2); }
+.pip-amber  { background: var(--amber);  box-shadow: 0 0 6px var(--amber); }
+.pip-teal   { background: var(--teal);   box-shadow: 0 0 6px var(--teal); }
+.pip-purple { background: var(--purple); box-shadow: 0 0 6px var(--purple); }
+
+/* ── CONTROL ROW ── */
+.ctrl-row {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.15);
+}
+.btn {
+  padding: 10px 24px;
+  border: none; border-radius: 10px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #9333ea, #c084fc);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(192,132,252,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(192,132,252,0.45); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.speed-group { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.speed-label { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+.speed-btn {
+  width: 32px; height: 32px; border-radius: 7px;
+  border: 1px solid var(--border2);
+  background: var(--bg2); color: var(--muted2);
+  font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.speed-btn.active { border-color: var(--purple); color: var(--purple); background: rgba(192,132,252,0.1); }
+.speed-btn:hover  { border-color: var(--border2); color: var(--text); }
+
+/* ── PROGRESS BAR ── */
+.progress-wrap { padding: 0 24px; height: 3px; background: transparent; }
+.progress-track { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; }
+.progress-fill  { height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--purple), var(--pink)); width: 0%; transition: width 0.1s linear; box-shadow: 0 0 8px rgba(244,114,182,0.5); }
+
+/* ── MAIN VISUALIZATION ── */
+.viz-grid {
+  display: grid;
+  grid-template-columns: 1fr 180px 1fr;
+  gap: 0;
+  min-height: 360px;
+}
+@media (max-width: 700px) {
+  .viz-grid { grid-template-columns: 1fr; }
+  .viz-arrow-col { display: none; }
+}
+.viz-col {
+  padding: 20px 16px;
+  display: flex; flex-direction: column; align-items: center;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.viz-col:last-child { border-right: none; }
+.viz-col-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 7px;
+}
+.col-label-blue  { color: var(--unif-color); }
+.col-label-amber { color: var(--amber2); }
+.col-label-pink  { color: var(--gauss-color); }
+
+canvas { border-radius: 6px; }
+#uniCanvas, #gaussCanvas { width: 100% !important; }
+
+/* ── ARROW COL ── */
+.viz-arrow-col {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 20px 10px;
+  border-right: 1px solid var(--border);
+  gap: 10px;
+  position: relative;
+}
+.transform-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.3rem;
+  color: var(--amber2);
+  text-align: center;
+  line-height: 1.3;
+}
+.transform-formula {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted2);
+  text-align: center;
+  background: rgba(245,158,11,0.07);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  line-height: 1.6;
+}
+.big-arrow {
+  font-size: 2rem;
+  color: var(--amber);
+  animation: pulse-arrow 2s ease-in-out infinite;
+}
+@keyframes pulse-arrow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+/* ── STATS ROW ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-cell {
+  background: var(--bg1);
+  padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.stat-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.num-blue  { color: var(--unif-color); }
+.num-pink  { color: var(--gauss-color); }
+.num-teal  { color: var(--teal); }
+.num-amber { color: var(--amber2); }
+
+/* ── THEORY STRIP ── */
+.theory-strip {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--border);
+}
+@media (max-width: 640px) { .theory-strip { grid-template-columns: 1fr; } }
+.theory-cell { background: var(--bg1); padding: 22px 24px; }
+.theory-cell-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.theory-cell p {
+  color: var(--muted2);
+  font-size: 0.88rem;
+  line-height: 1.78;
+}
+.formula-display {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(192,132,252,0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--purple);
+  margin: 12px 0;
+  text-align: center;
+  line-height: 1.7;
+}
+
+/* ── LOADING ── */
+#loadOverlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(6,8,16,0.9);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 14px;
+}
+#loadOverlay.on { display: flex; }
+.spin {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(192,132,252,0.2);
+  border-top-color: var(--purple);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.load-txt { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--muted2); }
+
+/* ── FOOTER ── */
+footer {
+  text-align: center;
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.8;
+}
+footer em { color: rgba(255,255,255,0.25); font-style: normal; }
+</style>
+</head>
+<body>
+
+<div id="loadOverlay">
+  <div class="spin"></div>
+  <div class="load-txt">Preparando la simulación…</div>
+</div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="eyebrow">Módulo 4 · Variable Aleatoria</div>
+    <h1>La Máquina de la <em>Creación</em></h1>
+    <div class="header-sub">Transformada Inversa — del Caos Uniforme a la Campana de Gauss</div>
+    <p class="header-desc">
+      Las monedas generan puntos <strong style="color:var(--unif-color)">uniformes y planos</strong> en $[0,1]$.
+      Al aplicar la inversa de la FDA normal, $F_X^{-1}(U)$, esos puntos <em>migran</em>:
+      los del centro se apilan, los extremos se dispersan, y emerge en tiempo real
+      la <strong style="color:var(--gauss-color)">Campana de Gauss</strong>.
+    </p>
+  </header>
+
+  <!-- MAIN SIMULATION CARD -->
+  <div class="card">
+    <div class="card-header">
+      <div class="pip pip-purple"></div>
+      Simulación en tiempo real — Transformada Inversa
+    </div>
+
+    <div class="ctrl-row">
+      <button class="btn btn-primary" id="btnStart" onclick="startSim()">▶ Iniciar transformación</button>
+      <button class="btn btn-secondary" id="btnReset" onclick="resetSim()">↺ Reiniciar</button>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted);">
+        N = <span id="nLabel">5 000</span> puntos
+      </div>
+      <div class="speed-group">
+        <span class="speed-label">VELOCIDAD</span>
+        <button class="speed-btn" id="spd1" onclick="setSpeed(1)">1×</button>
+        <button class="speed-btn active" id="spd2" onclick="setSpeed(2)">2×</button>
+        <button class="speed-btn" id="spd5" onclick="setSpeed(5)">5×</button>
+      </div>
+    </div>
+
+    <div class="progress-wrap" style="padding:0; height:3px;">
+      <div class="progress-track" style="border-radius:0;">
+        <div class="progress-fill" id="progFill"></div>
+      </div>
+    </div>
+
+    <!-- THREE-PANEL VIZ -->
+    <div class="viz-grid">
+
+      <!-- LEFT: Uniform [0,1] -->
+      <div class="viz-col">
+        <div class="viz-col-title col-label-blue">
+          <span style="width:8px;height:8px;background:var(--unif-color);border-radius:50%;display:inline-block;"></span>
+          Distribución Uniforme $U[0,1]$
+        </div>
+        <canvas id="uniCanvas" height="280"></canvas>
+        <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:0.66rem;color:var(--muted);text-align:center;">
+          0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.5 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1
+        </div>
+      </div>
+
+      <!-- CENTER: Arrow + formula -->
+      <div class="viz-arrow-col">
+        <div class="transform-label">Función<br>de Mapeo</div>
+        <div class="big-arrow">⟶</div>
+        <div class="transform-formula">
+          $X = F^{-1}(U)$<br>
+          <span style="color:var(--muted);font-size:0.62rem;">Transformada<br>Inversa</span>
+        </div>
+        <div class="big-arrow" style="animation-delay:0.5s">⟶</div>
+        <canvas id="mapCanvas" width="160" height="160"></canvas>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);margin-top:4px;text-align:center;">
+          Curva $\Phi^{-1}(u)$<br>Probit
+        </div>
+      </div>
+
+      <!-- RIGHT: Gaussian -->
+      <div class="viz-col">
+        <div class="viz-col-title col-label-pink">
+          <span style="width:8px;height:8px;background:var(--gauss-color);border-radius:50%;display:inline-block;"></span>
+          Distribución Normal $\mathcal{N}(0,1)$ emergente
+        </div>
+        <canvas id="gaussCanvas" height="280"></canvas>
+        <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:0.66rem;color:var(--muted);text-align:center;">
+          −4 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +4
+        </div>
+      </div>
+
+    </div>
+
+    <!-- STATS STRIP -->
+    <div class="stats-grid">
+      <div class="stat-cell">
+        <div class="stat-lbl">Transformados</div>
+        <div class="stat-num num-pink" id="sTransf">0</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-lbl">Media empírica $\hat{\mu}$</div>
+        <div class="stat-num num-teal" id="sMean">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-lbl">Desv. estándar $\hat{\sigma}$</div>
+        <div class="stat-num num-amber" id="sStd">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-lbl">Progreso</div>
+        <div class="stat-num num-blue" id="sProg">0 %</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- THEORY CARD -->
+  <div class="card">
+    <div class="card-header">
+      <div class="pip pip-purple"></div>
+      El mecanismo matemático
+    </div>
+    <div class="theory-strip">
+      <div class="theory-cell">
+        <div class="theory-cell-title"><div class="pip pip-blue"></div>Paso 1 — Generación uniforme</div>
+        <p>Cada secuencia de monedas produce un número $U \in [0,1]$ mediante $U = \sum_{i=1}^{n} \frac{\omega_i}{2^i}$. Estos valores tienen distribución <strong style="color:var(--unif-color)">perfectamente uniforme</strong> — todos los subintervalos tienen la misma densidad.</p>
+        <div class="formula-display">$U \sim \mathcal{U}[0,1]$<br>$f_U(u) = 1 \quad \forall u \in [0,1]$</div>
+      </div>
+      <div class="theory-cell">
+        <div class="theory-cell-title"><div class="pip pip-pink"></div>Paso 2 — Transformada Inversa</div>
+        <p>Aplicamos la inversa de la FDA normal estándar $\Phi^{-1}$ (función probit). Este mapeo <strong style="color:var(--gauss-color)">comprime los valores extremos</strong> y expande los del centro, creando la acumulación característica de la campana.</p>
+        <div class="formula-display">$X = \Phi^{-1}(U) \sim \mathcal{N}(0,1)$<br>$f_X(x) = \tfrac{1}{\sqrt{2\pi}} e^{-x^2/2}$</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<footer>
+  Material elaborado por el profesor <em>Sergio Gevatschnaider</em><br>
+  <span style="font-size:0.75rem;margin-top:4px;display:block;">Módulo 4 · Variable Aleatoria · Transformada Inversa · Distribución Normal</span>
+</footer>
+
+<script>
+/* ══════════════════════════════════════
+   INVERSE NORMAL CDF  (Acklam's rational approximation)
+   Accurate to ~7 decimal places
+══════════════════════════════════════ */
+function norminv(p) {
+  if (p <= 0) return -Infinity;
+  if (p >= 1) return  Infinity;
+  const a = [-3.969683028665376e+01, 2.209460984245205e+02,
+             -2.759285104469687e+02, 1.383577518672690e+02,
+             -3.066479806614716e+01, 2.506628277459239e+00];
+  const b = [-5.447609879822406e+01, 1.615858368580409e+02,
+             -1.556989798598866e+02, 6.680131188771972e+01,
+             -1.328068155288572e+01];
+  const c = [-7.784894002430293e-03,-3.223964580411365e-01,
+             -2.400758277161838e+00,-2.549732539343734e+00,
+              4.374664141464968e+00, 2.938163982698783e+00];
+  const d = [7.784695709041462e-03, 3.224671290700398e-01,
+             2.445134137142996e+00, 3.754408661907416e+00];
+  const plo = 0.02425, phi = 1 - plo;
+  let q, r;
+  if (p < plo) {
+    q = Math.sqrt(-2 * Math.log(p));
+    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+           ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  } else if (p <= phi) {
+    q = p - 0.5; r = q * q;
+    return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q /
+           (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+            ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  }
+}
+
+/* ══════════════════════════════════════
+   Normal PDF
+══════════════════════════════════════ */
+function normpdf(x) { return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI); }
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+const N = 5000;
+const N_BITS = 20;
+const XMIN = -4, XMAX = 4;
+const N_BINS_U = 50;
+const N_BINS_G = 80;
+
+let uniforms   = new Float64Array(N);
+let gaussians  = new Float64Array(N);
+let done       = 0;      // how many have been transformed
+let animId     = null;
+let speed      = 2;      // points per frame multiplier
+const BATCH    = 50;     // base points per frame
+
+let uBins   = new Int32Array(N_BINS_U);
+let gBins   = new Int32Array(N_BINS_G);
+
+let running = false;
+
+/* ══════════════════════════════════════
+   GENERATE UNIFORM DATA UP FRONT
+══════════════════════════════════════ */
+function generateUniforms() {
+  const pow2 = new Float64Array(N_BITS);
+  for (let i = 0; i < N_BITS; i++) pow2[i] = 1 / Math.pow(2, i + 1);
+  for (let s = 0; s < N; s++) {
+    let v = 0;
+    for (let b = 0; b < N_BITS; b++) {
+      if (Math.random() < 0.5) v += pow2[b];
+    }
+    // clamp away from 0/1 extremes for stability
+    uniforms[s] = Math.max(0.0001, Math.min(0.9999, v));
+  }
+}
+
+/* ══════════════════════════════════════
+   CANVAS SIZING
+══════════════════════════════════════ */
+function sizeCanvas(id, h) {
+  const canvas = document.getElementById(id);
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 32;
+  canvas.width  = W * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = h + 'px';
+  return { ctx: canvas.getContext('2d'), W, H: h, dpr };
+}
+
+/* ══════════════════════════════════════
+   DRAW UNIFORM HISTOGRAM
+══════════════════════════════════════ */
+function drawUniform() {
+  const { ctx, W, H, dpr } = sizeCanvas('uniCanvas', 280);
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const PL = 8, PR = 8, PT = 14, PB = 6;
+  const pw = W - PL - PR, ph = H - PT - PB;
+
+  // bg
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  roundRect(ctx, PL, PT, pw, ph, 6); ctx.fill();
+
+  if (N === 0) return;
+
+  // Count all N uniforms in bins (pre-transform — always show full uniform)
+  const bins = new Int32Array(N_BINS_U);
+  const bw = 1 / N_BINS_U;
+  for (let i = 0; i < N; i++) {
+    const b = Math.min(N_BINS_U - 1, Math.floor(uniforms[i] / bw));
+    bins[b]++;
+  }
+
+  // highlight already-transformed
+  const tBins = new Int32Array(N_BINS_U);
+  for (let i = 0; i < done; i++) {
+    const b = Math.min(N_BINS_U - 1, Math.floor(uniforms[i] / bw));
+    tBins[b]++;
+  }
+
+  const maxB = Math.max(...bins);
+  const barW = pw / N_BINS_U;
+
+  for (let b = 0; b < N_BINS_U; b++) {
+    const x = PL + b * barW;
+    const hAll = (bins[b] / maxB) * ph;
+    const hDone = done > 0 ? (tBins[b] / maxB) * ph : 0;
+
+    // background bar (untransformed)
+    ctx.fillStyle = 'rgba(56,189,248,0.18)';
+    ctx.fillRect(x + 0.5, PT + ph - hAll, barW - 1, hAll);
+
+    // transformed portion (dimmer)
+    if (hDone > 0) {
+      ctx.fillStyle = 'rgba(56,189,248,0.55)';
+      ctx.fillRect(x + 0.5, PT + ph - hDone, barW - 1, hDone);
+    }
+  }
+
+  // Expected uniform line
+  const expH = (N / N_BINS_U / maxB) * ph;
+  ctx.strokeStyle = 'rgba(56,189,248,0.3)';
+  ctx.lineWidth = 1.5; ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(PL, PT + ph - expH); ctx.lineTo(PL + pw, PT + ph - expH); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Label
+  ctx.fillStyle = 'rgba(56,189,248,0.5)';
+  ctx.font = `500 10px 'Outfit', sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.fillText(`${done.toLocaleString()} / ${N.toLocaleString()}`, PL + pw - 4, PT + 12);
+}
+
+/* ══════════════════════════════════════
+   DRAW GAUSSIAN HISTOGRAM
+══════════════════════════════════════ */
+function drawGaussian() {
+  const { ctx, W, H, dpr } = sizeCanvas('gaussCanvas', 280);
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const PL = 8, PR = 8, PT = 14, PB = 6;
+  const pw = W - PL - PR, ph = H - PT - PB;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  roundRect(ctx, PL, PT, pw, ph, 6); ctx.fill();
+
+  if (done === 0) {
+    ctx.fillStyle = 'rgba(244,114,182,0.25)';
+    ctx.font = `14px 'Cormorant Garamond', serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('La campana emergerá aquí…', PL + pw / 2, PT + ph / 2);
+    return;
+  }
+
+  // Bin the gaussians
+  const bins = new Int32Array(N_BINS_G);
+  const range = XMAX - XMIN;
+  const bw = range / N_BINS_G;
+  for (let i = 0; i < done; i++) {
+    const b = Math.min(N_BINS_G - 1, Math.floor((gaussians[i] - XMIN) / bw));
+    if (b >= 0) bins[b]++;
+  }
+
+  const maxB = Math.max(...bins);
+  const barW = pw / N_BINS_G;
+
+  // Gradient bars
+  for (let b = 0; b < N_BINS_G; b++) {
+    if (bins[b] === 0) continue;
+    const x = PL + b * barW;
+    const bh = (bins[b] / maxB) * ph;
+
+    const center = (b + 0.5) / N_BINS_G; // 0..1 within range
+    // Color: blue at tails, pink at center
+    const dist = Math.abs(center - 0.5) * 2; // 0=center, 1=edge
+    const r = Math.round(244 * (1 - dist) + 99  * dist);
+    const g = Math.round(114 * (1 - dist) + 102 * dist);
+    const bv = Math.round(182 * (1 - dist) + 241 * dist);
+
+    const grad = ctx.createLinearGradient(0, PT + ph - bh, 0, PT + ph);
+    grad.addColorStop(0, `rgba(${r},${g},${bv},0.95)`);
+    grad.addColorStop(1, `rgba(${r},${g},${bv},0.3)`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(x + 0.4, PT + ph - bh, barW - 0.8, bh);
+  }
+
+  // Theoretical normal curve
+  const scale = (done / N) * maxB; // scale theory to current count
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(244,114,182,0.8)';
+  ctx.lineWidth = 2.5;
+  let first = true;
+  for (let px = 0; px <= pw; px++) {
+    const xv = XMIN + (px / pw) * range;
+    const density = normpdf(xv);
+    const scaledCount = density * bw * done;
+    const y = PT + ph - (scaledCount / maxB) * ph;
+    if (first) { ctx.moveTo(PL + px, y); first = false; }
+    else ctx.lineTo(PL + px, y);
+  }
+  ctx.stroke();
+
+  // Glow pass
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(244,114,182,0.25)';
+  ctx.lineWidth = 7;
+  first = true;
+  for (let px = 0; px <= pw; px++) {
+    const xv = XMIN + (px / pw) * range;
+    const density = normpdf(xv);
+    const scaledCount = density * bw * done;
+    const y = PT + ph - (scaledCount / maxB) * ph;
+    if (first) { ctx.moveTo(PL + px, y); first = false; }
+    else ctx.lineTo(PL + px, y);
+  }
+  ctx.stroke();
+
+  // Count label
+  ctx.fillStyle = 'rgba(244,114,182,0.6)';
+  ctx.font = `500 10px 'Outfit', sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.fillText(`${done.toLocaleString()} puntos`, PL + pw - 4, PT + 12);
+}
+
+/* ══════════════════════════════════════
+   DRAW PROBIT CURVE (center panel)
+══════════════════════════════════════ */
+function drawProbit() {
+  const canvas = document.getElementById('mapCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = 160 * dpr;
+  canvas.height = 160 * dpr;
+  canvas.style.width  = '160px';
+  canvas.style.height = '160px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const W = 160, H = 160;
+  const PL = 20, PR = 10, PT = 10, PB = 20;
+  const pw = W - PL - PR, ph = H - PT - PB;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  roundRect(ctx, PL, PT, pw, ph, 6); ctx.fill();
+
+  // Axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(PL, PT); ctx.lineTo(PL, PT + ph);
+  ctx.lineTo(PL + pw, PT + ph);
+  ctx.stroke();
+
+  // Probit curve
+  const grad = ctx.createLinearGradient(PL, 0, PL + pw, 0);
+  grad.addColorStop(0, 'rgba(56,189,248,0.9)');
+  grad.addColorStop(0.5, 'rgba(245,158,11,0.9)');
+  grad.addColorStop(1, 'rgba(244,114,182,0.9)');
+  ctx.beginPath();
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 2;
+  const uRange = [0.002, 0.998];
+  const xRange = [norminv(uRange[0]), norminv(uRange[1])];
+  let first = true;
+  for (let px = 0; px <= pw; px++) {
+    const u = uRange[0] + (px / pw) * (uRange[1] - uRange[0]);
+    const x = norminv(u);
+    const screenX = PL + px;
+    const screenY = PT + ph - ((x - xRange[0]) / (xRange[1] - xRange[0])) * ph;
+    if (first) { ctx.moveTo(screenX, screenY); first = false; }
+    else ctx.lineTo(screenX, screenY);
+  }
+  ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = 'rgba(148,163,184,0.5)';
+  ctx.font = `8px 'JetBrains Mono', monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText('u → 0    0.5    1', PL + pw / 2, PT + ph + 14);
+  ctx.save(); ctx.translate(PL - 12, PT + ph / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Φ⁻¹(u)', 0, 0); ctx.restore();
+
+  // Animated dot showing current progress
+  if (done > 0 && done < N) {
+    const lastU = uniforms[done - 1];
+    const lastX = gaussians[done - 1];
+    const dotX = PL + ((lastU - uRange[0]) / (uRange[1] - uRange[0])) * pw;
+    const dotY = PT + ph - ((lastX - xRange[0]) / (xRange[1] - xRange[0])) * ph;
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(251,191,36,0.9)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(251,191,36,0.4)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+}
+
+/* ══════════════════════════════════════
+   ANIMATION LOOP
+══════════════════════════════════════ */
+function tick() {
+  if (!running) return;
+
+  const batch = BATCH * speed;
+  const end = Math.min(done + batch, N);
+
+  // Transform this batch
+  for (let i = done; i < end; i++) {
+    gaussians[i] = norminv(uniforms[i]);
+  }
+  done = end;
+
+  // Update running stats
+  let sum = 0, sum2 = 0;
+  for (let i = 0; i < done; i++) { sum += gaussians[i]; sum2 += gaussians[i] * gaussians[i]; }
+  const mean = sum / done;
+  const std  = Math.sqrt(sum2 / done - mean * mean);
+
+  document.getElementById('sTransf').textContent = done.toLocaleString();
+  document.getElementById('sMean').textContent   = done > 1 ? mean.toFixed(4) : '—';
+  document.getElementById('sStd').textContent    = done > 1 ? std.toFixed(4)  : '—';
+  const pct = Math.round(done / N * 100);
+  document.getElementById('sProg').textContent   = pct + ' %';
+  document.getElementById('progFill').style.width = pct + '%';
+
+  // Redraw
+  drawUniform();
+  drawGaussian();
+  drawProbit();
+
+  if (done < N) {
+    animId = requestAnimationFrame(tick);
+  } else {
+    running = false;
+    document.getElementById('btnStart').textContent = '✓ Completado';
+    document.getElementById('btnStart').disabled = true;
+  }
+}
+
+/* ══════════════════════════════════════
+   CONTROLS
+══════════════════════════════════════ */
+function startSim() {
+  if (running) return;
+  if (done === N) return;
+  running = true;
+  document.getElementById('btnStart').disabled = true;
+  animId = requestAnimationFrame(tick);
+}
+
+function resetSim() {
+  running = false;
+  if (animId) cancelAnimationFrame(animId);
+  done = 0;
+  gaussians.fill(0);
+
+  document.getElementById('sTransf').textContent = '0';
+  document.getElementById('sMean').textContent   = '—';
+  document.getElementById('sStd').textContent    = '—';
+  document.getElementById('sProg').textContent   = '0 %';
+  document.getElementById('progFill').style.width = '0%';
+  document.getElementById('btnStart').textContent = '▶ Iniciar transformación';
+  document.getElementById('btnStart').disabled = false;
+
+  // Re-generate uniforms
+  generateUniforms();
+  drawUniform();
+  drawGaussian();
+  drawProbit();
+}
+
+function setSpeed(s) {
+  speed = s;
+  ['1','2','5'].forEach(v => {
+    const el = document.getElementById('spd' + v);
+    el.classList.toggle('active', parseInt(v) === s);
+  });
+}
+
+/* ══════════════════════════════════════
+   UTILS
+══════════════════════════════════════ */
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+window.addEventListener('resize', () => {
+  drawUniform(); drawGaussian(); drawProbit();
+});
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+generateUniforms();
+drawUniform();
+drawGaussian();
+drawProbit();
+</script>
+</body>
+</html>

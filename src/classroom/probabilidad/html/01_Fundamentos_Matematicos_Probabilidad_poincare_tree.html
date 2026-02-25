@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Árbol Binario — Disco de Poincaré</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #f0c040;
+    --gold-dim: #8a6e10;
+    --cyan: #40c0f0;
+    --cyan-dim: #0e5c80;
+    --purple: #a855f7;
+    --white: #e8f0ff;
+    --bg: #04040e;
+    --panel-bg: rgba(8,8,28,0.85);
+    --border: rgba(255,255,255,0.07);
+    --glow-gold: 0 0 18px rgba(240,192,64,0.55);
+    --glow-cyan: 0 0 18px rgba(64,192,240,0.55);
+    --glow-purple: 0 0 18px rgba(168,85,247,0.55);
+  }
+
+  body {
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: 'Space Mono', monospace;
+    color: var(--white);
+    padding: 20px 16px 32px;
+    gap: 18px;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    text-align: center;
+    max-width: 600px;
+  }
+
+  header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.1rem, 3.5vw, 1.7rem);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    background: linear-gradient(135deg, #e8d080 0%, #ffffff 50%, #80c0f8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+
+  header p {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: rgba(180,200,255,0.4);
+    text-transform: uppercase;
+  }
+
+  /* ── Canvas wrapper ── */
+  .disk-wrapper {
+    position: relative;
+    filter: drop-shadow(0 0 40px rgba(60,100,220,0.25));
+  }
+
+  canvas {
+    display: block;
+    border-radius: 50%;
+  }
+
+  /* ── Sequence display ── */
+  .sequence-strip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 42px;
+    padding: 8px 18px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 560px;
+    width: 100%;
+  }
+
+  .bit-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.75rem;
+    animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .bit-pill.cara {
+    background: radial-gradient(circle at 35% 35%, #ffe080, #b08000);
+    color: #1e0e00;
+    box-shadow: var(--glow-gold);
+  }
+  .bit-pill.cruz {
+    background: radial-gradient(circle at 35% 35%, #80e0ff, #005888);
+    color: #001822;
+    box-shadow: var(--glow-cyan);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0) rotate(-30deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+  }
+
+  .seq-placeholder {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: rgba(180,200,255,0.2);
+    text-transform: uppercase;
+  }
+
+  /* ── Info row ── */
+  .info-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 560px;
+    width: 100%;
+  }
+
+  .info-card {
+    flex: 1;
+    min-width: 110px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+  }
+
+  .info-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(180,200,255,0.35);
+    margin-bottom: 5px;
+  }
+
+  .info-value {
+    font-family: 'Cinzel', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gold);
+    transition: color 0.3s;
+  }
+
+  .info-value.cyan { color: var(--cyan); }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: rgba(255,255,255,0);
+    transition: background 0.2s;
+  }
+  button:hover::after { background: rgba(255,255,255,0.07); }
+  button:active { transform: scale(0.96); }
+
+  #btn-cara {
+    background: linear-gradient(135deg, #ffe060 0%, #c08800 100%);
+    color: #1e0e00;
+    box-shadow: 0 4px 20px rgba(200,160,0,0.4);
+  }
+  #btn-cara:hover { box-shadow: 0 6px 28px rgba(200,160,0,0.65); transform: translateY(-2px); }
+
+  #btn-cruz {
+    background: linear-gradient(135deg, #50d0ff 0%, #0055a0 100%);
+    color: #001020;
+    box-shadow: 0 4px 20px rgba(0,120,200,0.4);
+  }
+  #btn-cruz:hover { box-shadow: 0 6px 28px rgba(0,120,200,0.65); transform: translateY(-2px); }
+
+  #btn-auto {
+    background: linear-gradient(135deg, #c084fc 0%, #7e22ce 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 20px rgba(168,85,247,0.4);
+  }
+  #btn-auto:hover { box-shadow: 0 6px 28px rgba(168,85,247,0.65); transform: translateY(-2px); }
+
+  #btn-undo, #btn-reset {
+    background: rgba(255,255,255,0.05);
+    color: rgba(200,220,255,0.55);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  #btn-undo:hover, #btn-reset:hover { color: rgba(200,220,255,0.85); }
+
+  button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* ── Theory blurb ── */
+  .theory-row {
+    display: flex;
+    gap: 10px;
+    max-width: 560px;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .theory-chip {
+    font-size: 0.63rem;
+    letter-spacing: 0.06em;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(180,200,255,0.45);
+    text-transform: uppercase;
+  }
+
+  .msg {
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: rgba(180,200,255,0.4);
+    text-align: center;
+    min-height: 18px;
+    max-width: 500px;
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    color: rgba(180,200,255,0.3);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    width: 100%;
+    max-width: 600px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Árbol Binario — Disco de Poincaré</h1>
+  <p>Moneda&nbsp;→&nbsp;Bifurcación&nbsp;→&nbsp;Geometría Hiperbólica</p>
+</header>
+
+<div class="disk-wrapper">
+  <canvas id="c"></canvas>
+</div>
+
+<div class="sequence-strip" id="seqStrip">
+  <span class="seq-placeholder">— Raíz del árbol —</span>
+</div>
+
+<div class="info-row">
+  <div class="info-card">
+    <div class="info-label">Profundidad</div>
+    <div class="info-value" id="vDepth">0 / 8</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">Probabilidad</div>
+    <div class="info-value cyan" id="vProb">1</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">Nodo</div>
+    <div class="info-value" id="vNode" style="font-size:0.8rem;padding-top:6px; word-break: break-all;">raíz</div>
+  </div>
+</div>
+
+<div class="controls">
+  <button id="btn-cara">🌕 CARA</button>
+  <button id="btn-cruz">🌑 CRUZ</button>
+  <button id="btn-auto">⚡ AUTO</button>
+  <button id="btn-undo">← Deshacer</button>
+  <button id="btn-reset">↩ Reiniciar</button>
+</div>
+
+<div class="theory-row">
+  <div class="theory-chip">1 = Cara → Derecha</div>
+  <div class="theory-chip">0 = Cruz → Izquierda</div>
+  <div class="theory-chip">P(ruta) = 1 / 2ⁿ</div>
+</div>
+
+<div class="msg" id="msg">Elige <b>Cara</b> o <b>Cruz</b> para navegar el árbol hiperbólico</div>
+
+<footer>Material elaborado por el profesor Sergio Gevatschnaider</footer>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  COMPLEX NUMBER HELPERS
+// ════════════════════════════════════════════════════════════════
+const C = {
+  add:  (a,b) => ({re:a.re+b.re, im:a.im+b.im}),
+  sub:  (a,b) => ({re:a.re-b.re, im:a.im-b.im}),
+  mul:  (a,b) => ({re:a.re*b.re-a.im*b.im, im:a.re*b.im+a.im*b.re}),
+  div:  (a,b) => { const d=b.re*b.re+b.im*b.im; return {re:(a.re*b.re+a.im*b.im)/d, im:(a.im*b.re-a.re*b.im)/d}; },
+  conj: (a)   => ({re:a.re, im:-a.im}),
+  abs2: (a)   => a.re*a.re+a.im*a.im,
+  abs:  (a)   => Math.sqrt(a.re*a.re+a.im*a.im),
+};
+
+// ════════════════════════════════════════════════════════════════
+//  TREE LAYOUT — sector-based, guaranteed crossing-free
+// ════════════════════════════════════════════════════════════════
+const MAX_DEPTH   = 8; // Ampliado para permitir secuencias más largas
+const ANG_CENTER  = Math.PI / 2;
+const ANG_HALF    = Math.PI * 0.95;
+
+const posCache = Object.create(null);
+
+function getNodePos(path) {
+  if (posCache[path]) return posCache[path];
+  let lo = ANG_CENTER - ANG_HALF;
+  let hi = ANG_CENTER + ANG_HALF;
+  for (const bit of path) {
+    const mid = (lo + hi) / 2;
+    if (bit === '1') hi = mid;
+    else             lo = mid;
+  }
+  const angle = (lo + hi) / 2;
+  const d = path.length;
+  const r = d === 0 ? 0 : Math.tanh(d * 0.50); // Ajuste radial por profundidad
+  const z = {re: r * Math.cos(angle), im: r * Math.sin(angle)};
+  posCache[path] = z;
+  return z;
+}
+
+// Pre-build full tree lists
+const allPaths = [];
+const allEdges = [];
+(function build(p = '', d = 0) {
+  allPaths.push(p);
+  if (d < MAX_DEPTH) {
+    ['0','1'].forEach(bit => {
+      allEdges.push([p, p+bit]);
+      build(p+bit, d+1);
+    });
+  }
+})();
+for (const p of allPaths) getNodePos(p);
+
+// ════════════════════════════════════════════════════════════════
+//  CANVAS SETUP
+// ════════════════════════════════════════════════════════════════
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+
+function resize() {
+  const side = Math.min(window.innerWidth - 32, 540);
+  canvas.width = canvas.height = side;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const CX = () => canvas.width  / 2;
+const CY = () => canvas.height / 2;
+const SC = () => canvas.width  / 2 - 16;
+
+function dx(z) { return CX() + z.re * SC(); }
+function dy(z) { return CY() - z.im * SC(); }
+
+// ════════════════════════════════════════════════════════════════
+//  GEODESIC DRAWING
+// ════════════════════════════════════════════════════════════════
+function strokeGeodesic(z1, z2) {
+  const cross = z1.re * z2.im - z1.im * z2.re;
+  if (Math.abs(cross) < 1e-9) {
+    ctx.moveTo(dx(z1), dy(z1));
+    ctx.lineTo(dx(z2), dy(z2));
+    return;
+  }
+  const rhs1 = (1 + C.abs2(z1)) / 2;
+  const rhs2 = (1 + C.abs2(z2)) / 2;
+  const det  = cross;
+  const gcx  = (rhs1 * z2.im - rhs2 * z1.im) / det;
+  const gcy  = (z1.re * rhs2 - z2.re * rhs1) / det;
+  const gr   = Math.sqrt(gcx*gcx + gcy*gcy - 1);
+
+  const a1 = Math.atan2(z1.im - gcy, z1.re - gcx);
+  const a2 = Math.atan2(z2.im - gcy, z2.re - gcx);
+
+  const diffCCW    = ((a2 - a1) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI);
+  const midAngCCW  = a1 + diffCCW / 2;
+  const midCCW     = {re: gcx + gr*Math.cos(midAngCCW), im: gcy + gr*Math.sin(midAngCCW)};
+  const useCCW     = C.abs(midCCW) < 1;
+
+  const diff  = useCCW ? diffCCW : -(2*Math.PI - diffCCW);
+  const steps = 28;
+  for (let i = 0; i <= steps; i++) {
+    const ang = a1 + diff * i / steps;
+    const px  = gcx + gr * Math.cos(ang);
+    const py  = gcy + gr * Math.sin(ang);
+    const pt  = {re: px, im: py};
+    if (i === 0) ctx.moveTo(dx(pt), dy(pt));
+    else         ctx.lineTo(dx(pt), dy(pt));
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  STARS
+// ════════════════════════════════════════════════════════════════
+const stars = [];
+(function genStars() {
+  for (let i = 0; i < 80; i++) {
+    const angle = (i * 137.508) * Math.PI / 180;
+    const rr    = Math.sqrt(i / 80) * 0.92;
+    stars.push({
+      re: rr * Math.cos(angle),
+      im: rr * Math.sin(angle),
+      r:  0.4 + (((i*1731+13) % 17) / 17) * 0.8,
+      a:  0.2 + (((i*997+7)   % 11) / 11) * 0.55,
+    });
+  }
+})();
+
+// ════════════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════════════
+let currentPath = '';
+let t = 0;
+let autoInterval = null; // Variable para controlar el ciclo automático
+
+// ════════════════════════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════════════════════════
+function draw() {
+  t += 0.018;
+  const W  = canvas.width, H = canvas.height;
+  const cx = CX(), cy = CY(), sc = SC();
+  const DR = sc; 
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Background fill
+  const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, DR * 1.4);
+  bg.addColorStop(0,   '#07071e');
+  bg.addColorStop(0.7, '#040412');
+  bg.addColorStop(1,   '#020208');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, DR, 0, 2*Math.PI);
+  ctx.clip();
+
+  const dg = ctx.createRadialGradient(cx, cy*0.7, 0, cx, cy, DR);
+  dg.addColorStop(0,   'rgba(40,60,160,0.08)');
+  dg.addColorStop(0.5, 'rgba(10,20,80,0.04)');
+  dg.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = dg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  for (const s of stars) {
+    const twinkle = 0.6 + 0.4 * Math.sin(t * 1.3 + s.re * 20 + s.im * 15);
+    ctx.beginPath();
+    ctx.arc(dx(s), dy(s), s.r, 0, 2*Math.PI);
+    ctx.fillStyle = `rgba(180,210,255,${s.a * twinkle})`;
+    ctx.fill();
+  }
+
+  const pathSet = new Set();
+  for (let i = 0; i <= currentPath.length; i++) pathSet.add(currentPath.slice(0, i));
+
+  // Background edges
+  for (const [p1, p2] of allEdges) {
+    const onPath = pathSet.has(p1) && pathSet.has(p2);
+    if (onPath) continue;
+    const depth = p2.length;
+    // Ocultar un poco más las ramas profundas para no saturar
+    const alpha = Math.max(0.015, 0.12 - depth * 0.015);
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(50,80,180,${alpha})`;
+    ctx.lineWidth   = Math.max(0.2, 1.2 - depth * 0.15);
+    strokeGeodesic(getNodePos(p1), getNodePos(p2));
+    ctx.stroke();
+  }
+
+  // Future edges from current node
+  if (currentPath.length < MAX_DEPTH) {
+    const z0 = getNodePos(currentPath);
+    for (const [bit, col] of [['0','rgba(64,192,240,0.3)'], ['1','rgba(240,192,64,0.3)']]) {
+      ctx.beginPath();
+      ctx.strokeStyle = col;
+      ctx.lineWidth   = 2;
+      ctx.setLineDash([4, 5]);
+      strokeGeodesic(z0, getNodePos(currentPath + bit));
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // Path edges
+  for (let i = 0; i < currentPath.length; i++) {
+    const p1  = currentPath.slice(0, i);
+    const p2  = currentPath.slice(0, i + 1);
+    const bit = currentPath[i];
+    const col = bit === '1' ? '#f0c040' : '#40c0f0';
+    const glo = bit === '1' ? 'rgba(240,192,64,0.7)' : 'rgba(64,192,240,0.7)';
+
+    ctx.beginPath();
+    ctx.strokeStyle = col;
+    ctx.lineWidth   = Math.max(1, 3.5 - i * 0.2); // Más fino a medida que avanza
+    ctx.shadowBlur  = 14;
+    ctx.shadowColor = glo;
+    strokeGeodesic(getNodePos(p1), getNodePos(p2));
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // Path nodes (visited)
+  for (let i = 1; i <= currentPath.length; i++) {
+    const path = currentPath.slice(0, i);
+    const bit  = path[path.length - 1];
+    const z    = getNodePos(path);
+    const isCurrent = i === currentPath.length;
+    if (isCurrent) continue;
+
+    const depth = path.length;
+    const r     = Math.max(3, 10 - depth * 1.0);
+    const px    = dx(z), py = dy(z);
+    const col   = bit === '1' ? '#f0c040' : '#40c0f0';
+
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, 2*Math.PI);
+    ctx.fillStyle = col;
+    ctx.shadowBlur  = 8;
+    ctx.shadowColor = col;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // Root node
+  {
+    const z  = getNodePos('');
+    const px = dx(z), py = dy(z);
+    const pulse = 1 + 0.12 * Math.sin(t * 2.5);
+    const r  = currentPath.length === 0 ? 13 * pulse : 10;
+
+    const grd = ctx.createRadialGradient(px, py, 0, px, py, r * 2.5);
+    grd.addColorStop(0, 'rgba(255,255,255,0.35)');
+    grd.addColorStop(1, 'transparent');
+    ctx.beginPath(); ctx.arc(px, py, r * 2.5, 0, 2*Math.PI);
+    ctx.fillStyle = grd; ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, 2*Math.PI);
+    ctx.fillStyle = '#e8f0ff';
+    ctx.shadowBlur  = 16;
+    ctx.shadowColor = 'rgba(180,210,255,0.8)';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#04040e';
+    ctx.font = `bold ${Math.round(r*0.75)}px "Space Mono"`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('ε', px, py);
+  }
+
+  // Current node (pulsing gold/cyan)
+  if (currentPath.length > 0) {
+    const z     = getNodePos(currentPath);
+    const px    = dx(z), py = dy(z);
+    const depth = currentPath.length;
+    const r     = Math.max(4, 12 - depth * 0.8);
+    const pulse = 1 + 0.18 * Math.sin(t * 3.2);
+    const bit   = currentPath[currentPath.length - 1];
+    const col   = bit === '1' ? '#ffe070' : '#50d0ff';
+    const gloCol= bit === '1' ? 'rgba(240,192,64,' : 'rgba(64,192,240,';
+
+    for (let ring = 3; ring >= 1; ring--) {
+      const grd = ctx.createRadialGradient(px, py, 0, px, py, r * (1 + ring * 0.9) * pulse);
+      grd.addColorStop(0,   `${gloCol}${0.25 / ring})`);
+      grd.addColorStop(1,   'transparent');
+      ctx.beginPath(); ctx.arc(px, py, r * (1 + ring * 0.9) * pulse, 0, 2*Math.PI);
+      ctx.fillStyle = grd; ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(px, py, r * pulse, 0, 2*Math.PI);
+    ctx.fillStyle   = col;
+    ctx.shadowBlur  = 20;
+    ctx.shadowColor = col;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.restore(); 
+
+  // Boundary rings
+  ctx.beginPath();
+  ctx.arc(cx, cy, DR, 0, 2*Math.PI);
+  const ring1 = ctx.createLinearGradient(cx - DR, cy, cx + DR, cy);
+  ring1.addColorStop(0,   'rgba(60,100,220,0.5)');
+  ring1.addColorStop(0.5, 'rgba(120,180,255,0.85)');
+  ring1.addColorStop(1,   'rgba(60,100,220,0.5)');
+  ctx.strokeStyle = ring1;
+  ctx.lineWidth   = 1.5;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, DR + 4, 0, 2*Math.PI);
+  ctx.strokeStyle = 'rgba(80,120,255,0.08)';
+  ctx.lineWidth   = 10;
+  ctx.stroke();
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  for (let k = 0; k < 32; k++) {
+    const ang  = (k / 32) * 2 * Math.PI + t * 0.04;
+    const x1   = Math.cos(ang) * (DR - 4);
+    const y1   = Math.sin(ang) * (DR - 4);
+    const x2   = Math.cos(ang) * (DR - 1);
+    const y2   = Math.sin(ang) * (DR - 1);
+    const fade = 0.3 + 0.7 * Math.abs(Math.sin(t * 0.5 + k * 0.3));
+    ctx.beginPath();
+    ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = `rgba(100,140,255,${fade * 0.4})`;
+    ctx.lineWidth   = 0.8;
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Probability arc indicator
+  const depth = currentPath.length;
+  if (depth > 0) {
+    let lo = ANG_CENTER - ANG_HALF;
+    let hi = ANG_CENTER + ANG_HALF;
+    for (const bit of currentPath) {
+      const mid = (lo + hi) / 2;
+      if (bit === '1') hi = mid; else lo = mid;
+    }
+    const aStart = -lo + Math.PI / 2;
+    const aEnd   = -hi + Math.PI / 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, DR - 2, aEnd, aStart);
+    ctx.strokeStyle = depth > 0 && currentPath[currentPath.length-1]==='1'
+      ? 'rgba(240,192,64,0.6)' : 'rgba(64,192,240,0.6)';
+    ctx.lineWidth   = 3.5;
+    ctx.shadowBlur  = 12;
+    ctx.shadowColor = currentPath[currentPath.length-1]==='1'
+      ? '#f0c040' : '#40c0f0';
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  requestAnimationFrame(draw);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  UI UPDATE & AUTO LOGIC
+// ════════════════════════════════════════════════════════════════
+function updateUI() {
+  const depth = currentPath.length;
+  const prob  = depth === 0 ? '1' : `1 / ${Math.pow(2, depth)}`;
+  // Para profundidades mayores, fijamos más decimales
+  const pct   = depth === 0 ? '100%' : `${(100 / Math.pow(2, depth)).toFixed(depth > 5 ? 4 : 2)}%`;
+
+  document.getElementById('vDepth').textContent = `${depth} / ${MAX_DEPTH}`;
+  document.getElementById('vProb').textContent  = prob;
+  document.getElementById('vNode').textContent  = depth === 0 ? 'raíz' : currentPath;
+
+  const strip = document.getElementById('seqStrip');
+  if (depth === 0) {
+    strip.innerHTML = '<span class="seq-placeholder">— Raíz del árbol —</span>';
+  } else {
+    strip.innerHTML = currentPath.split('').map((bit, i) => {
+      const cls   = bit === '1' ? 'cara' : 'cruz';
+      const label = bit === '1' ? 'C' : 'X';
+      return `<div class="bit-pill ${cls}" style="animation-delay:${i*0.04}s">${label}</div>`;
+    }).join('');
+  }
+
+  const atMax = depth >= MAX_DEPTH;
+  document.getElementById('btn-cara').disabled = atMax;
+  document.getElementById('btn-cruz').disabled = atMax;
+  document.getElementById('btn-undo').disabled = depth === 0;
+
+  const msgEl = document.getElementById('msg');
+  if (atMax) {
+    msgEl.innerHTML = `🌌 Límite de la simulación alcanzado — Probabilidad: <b>${pct}</b>`;
+  } else if (depth === 0) {
+    msgEl.innerHTML = `Elige <b style="color:var(--gold)">Cara</b>, <b style="color:var(--cyan)">Cruz</b> o presiona <b>AUTO</b>`;
+  } else {
+    msgEl.innerHTML = `Nodo <b>${currentPath}</b> — P(rama) = <b style="color:var(--cyan)">${prob}</b> ≈ <b>${pct}</b>`;
+  }
+}
+
+function stopAuto() {
+  if (autoInterval) {
+    clearInterval(autoInterval);
+    autoInterval = null;
+    document.getElementById('btn-auto').innerHTML = '⚡ AUTO';
+    document.getElementById('btn-auto').style.background = 'linear-gradient(135deg, #c084fc 0%, #7e22ce 100%)';
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  EVENTS
+// ════════════════════════════════════════════════════════════════
+document.getElementById('btn-cara').onclick = () => {
+  stopAuto();
+  if (currentPath.length < MAX_DEPTH) { currentPath += '1'; updateUI(); }
+};
+
+document.getElementById('btn-cruz').onclick = () => {
+  stopAuto();
+  if (currentPath.length < MAX_DEPTH) { currentPath += '0'; updateUI(); }
+};
+
+document.getElementById('btn-undo').onclick = () => {
+  stopAuto();
+  if (currentPath.length > 0) { currentPath = currentPath.slice(0,-1); updateUI(); }
+};
+
+document.getElementById('btn-reset').onclick = () => {
+  stopAuto();
+  currentPath = ''; updateUI();
+};
+
+document.getElementById('btn-auto').onclick = () => {
+  if (autoInterval) {
+    stopAuto(); // Si está corriendo, detenerlo
+    return;
+  }
+  
+  // Si ya estamos en el máximo, reiniciar antes de comenzar el modo auto
+  if (currentPath.length >= MAX_DEPTH) {
+    currentPath = '';
+    updateUI();
+  }
+
+  // Cambiar aspecto del botón
+  document.getElementById('btn-auto').innerHTML = '⏹ DETENER';
+  document.getElementById('btn-auto').style.background = 'linear-gradient(135deg, #f43f5e 0%, #9f1239 100%)';
+
+  autoInterval = setInterval(() => {
+    if (currentPath.length < MAX_DEPTH) {
+      currentPath += Math.random() < 0.5 ? '1' : '0';
+      updateUI();
+    } else {
+      stopAuto(); // Detener automáticamente al llegar al borde
+    }
+  }, 350); // Velocidad de caída de la moneda (350 ms)
+};
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === '1' || e.key === 'ArrowRight') document.getElementById('btn-cara').click();
+  if (e.key === '0' || e.key === 'ArrowLeft')  document.getElementById('btn-cruz').click();
+  if (e.key === 'Backspace')                   document.getElementById('btn-undo').click();
+  if (e.key === 'r' || e.key === 'Escape')     document.getElementById('btn-reset').click();
+  if (e.key === 'a' || e.key === 'A')          document.getElementById('btn-auto').click();
+});
+
+// ════════════════════════════════════════════════════════════════
+//  START
+// ════════════════════════════════════════════════════════════════
+updateUI();
+draw();
+</script>
+</body>
+</html>

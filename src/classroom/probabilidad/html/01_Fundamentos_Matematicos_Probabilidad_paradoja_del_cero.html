@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Paradoja del Cero — Colisiones en el Continuo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>
+MathJax = {
+  tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root {
+  --bg:      #050509;
+  --bg1:     #080c14;
+  --bg2:     #0d1220;
+  --bg3:     #10192c;
+  --border:  rgba(100,130,200,0.08);
+  --border2: rgba(100,130,200,0.15);
+  --text:    #d8e4f8;
+  --muted:   #3a4f6e;
+  --muted2:  #5a739a;
+  --cyan:    #22d3ee;
+  --cyan2:   #67e8f9;
+  --crimson: #f43f5e;
+  --crimson2:#fb7185;
+  --gold:    #fbbf24;
+  --gold2:   #fde68a;
+  --green:   #34d399;
+  --purple:  #a78bfa;
+  --orange:  #fb923c;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SCANLINE TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(ellipse 100% 60% at 50% -20%, rgba(34,211,238,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 0% 80%,   rgba(244,63,94,0.04)  0%, transparent 55%),
+    var(--bg);
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.07) 3px,
+    rgba(0,0,0,0.07) 4px
+  );
+}
+
+.wrapper { max-width: 1100px; margin: 0 auto; padding: 48px 22px 80px; }
+
+/* ── HEADER ── */
+header { margin-bottom: 48px; position: relative; }
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.63rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--crimson);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 12px;
+  opacity: 0.9;
+}
+.eyebrow::before { content: ''; width: 24px; height: 1px; background: currentColor; }
+
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  letter-spacing: 2px;
+  line-height: 0.95;
+  margin-bottom: 6px;
+  background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+h1 .accent {
+  background: linear-gradient(90deg, var(--crimson), var(--crimson2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header-sub {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--gold);
+  margin-bottom: 14px;
+  opacity: 0.85;
+}
+.header-desc {
+  color: var(--muted2);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  max-width: 680px;
+}
+.header-desc strong { color: var(--cyan); font-weight: 500; }
+
+/* ── BIT SELECTOR ── */
+.bit-selector-card {
+  background: var(--bg1);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 13px 22px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  display: flex; align-items: center; gap: 9px;
+}
+.pip { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.pip-cyan    { background: var(--cyan);    box-shadow: 0 0 6px var(--cyan); }
+.pip-crimson { background: var(--crimson); box-shadow: 0 0 6px var(--crimson); }
+.pip-gold    { background: var(--gold);    box-shadow: 0 0 6px var(--gold); }
+.pip-green   { background: var(--green);   box-shadow: 0 0 6px var(--green); }
+.pip-purple  { background: var(--purple);  box-shadow: 0 0 6px var(--purple); }
+
+.bit-row {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 18px 22px;
+}
+.bit-preset {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  cursor: pointer;
+  transition: all 0.18s;
+  min-width: 64px;
+  gap: 3px;
+}
+.bit-preset:hover { border-color: var(--cyan); transform: translateY(-2px); }
+.bit-preset.selected {
+  border-color: var(--cyan);
+  background: rgba(34,211,238,0.08);
+  box-shadow: 0 0 16px rgba(34,211,238,0.15);
+}
+.bp-bits {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+  line-height: 1;
+  color: var(--text);
+  transition: color 0.18s;
+}
+.bit-preset.selected .bp-bits { color: var(--cyan); }
+.bp-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted2);
+  letter-spacing: 1px;
+}
+.bp-space {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+.bit-divider {
+  width: 1px; height: 48px;
+  background: var(--border2);
+  margin: 0 4px;
+}
+
+/* Danger level badges */
+.danger-badge {
+  padding: 2px 7px; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.danger-easy   { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+.danger-medium { background: rgba(251,191,36,0.12); color: var(--gold);  border: 1px solid rgba(251,191,36,0.25); }
+.danger-hard   { background: rgba(244,63,94,0.12);  color: var(--crimson2); border: 1px solid rgba(244,63,94,0.25); }
+.danger-impossible { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
+
+/* ── MAIN SIM LAYOUT ── */
+.sim-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+@media (max-width: 800px) { .sim-layout { grid-template-columns: 1fr; } }
+
+/* ── LIVE SIM CARD ── */
+.sim-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+
+.ctrl-row {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+}
+.btn {
+  padding: 9px 20px;
+  border: none; border-radius: 9px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.86rem; font-weight: 500;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+  transition: all 0.18s;
+}
+.btn-start {
+  background: var(--crimson);
+  color: #fff;
+  box-shadow: 0 3px 14px rgba(244,63,94,0.35);
+}
+.btn-start:hover { background: var(--crimson2); transform: translateY(-1px); box-shadow: 0 6px 22px rgba(244,63,94,0.45); }
+.btn-start:active { transform: translateY(0); }
+.btn-start.running { background: linear-gradient(135deg, #7f1d1d, var(--crimson)); animation: pulse-btn 1.5s ease-in-out infinite; }
+@keyframes pulse-btn { 0%,100% { box-shadow: 0 3px 14px rgba(244,63,94,0.35); } 50% { box-shadow: 0 3px 24px rgba(244,63,94,0.65); } }
+
+.btn-stop {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+}
+.btn-stop:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+/* ── NUMBER LINE ── */
+.nl-section { padding: 18px 22px 10px; }
+.nl-title { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+#nlCanvas { width: 100%; border-radius: 6px; display: block; }
+
+/* ── COLLISION FEED ── */
+.feed-section { padding: 12px 22px 16px; flex: 1; }
+.feed-title { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+.collision-feed {
+  height: 100px;
+  overflow-y: auto;
+  display: flex; flex-direction: column-reverse; gap: 4px;
+}
+.collision-feed::-webkit-scrollbar { width: 4px; }
+.collision-feed::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.col-entry {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: flex; justify-content: space-between; align-items: center;
+  animation: slideIn 0.3s ease-out;
+  flex-shrink: 0;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.col-entry.hit   { background: rgba(244,63,94,0.12); border: 1px solid rgba(244,63,94,0.25); color: var(--crimson2); }
+.col-entry.empty { background: rgba(34,211,238,0.04); border: 1px solid rgba(34,211,238,0.1); color: var(--muted2); }
+.no-collisions {
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* ── STATS SIDE CARD ── */
+.stats-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.stat-block {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-block:last-child { border-bottom: none; }
+.sb-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sb-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+.sv-cyan    { color: var(--cyan); }
+.sv-crimson { color: var(--crimson2); }
+.sv-gold    { color: var(--gold); }
+.sv-green   { color: var(--green); }
+.sv-purple  { color: var(--purple); }
+.sv-muted   { color: var(--muted2); font-size: 1.3rem; }
+.sb-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+/* probability bar */
+.prob-bar-wrap { margin-top: 6px; }
+.prob-bar-track { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; }
+.prob-bar-fill  {
+  height: 4px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--crimson));
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* ── COLLAPSE CHART ── */
+.chart-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+#collapseCanvas { width: 100% !important; display: block; }
+
+/* ── INSIGHT STRIP ── */
+.insight-strip {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px; background: var(--border);
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 640px) { .insight-strip { grid-template-columns: 1fr; } }
+.insight-cell {
+  background: var(--bg1);
+  padding: 20px 22px;
+}
+.ic-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 7px;
+}
+.ic-body {
+  font-family: 'Lora', serif;
+  font-size: 0.87rem;
+  line-height: 1.72;
+  color: var(--muted2);
+}
+.ic-body strong { color: var(--text); font-weight: 600; font-style: normal; }
+.ic-formula {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--cyan);
+  margin-top: 10px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ── TOOLTIP ── */
+#ttip {
+  position: fixed; z-index: 200;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+footer {
+  text-align: center; margin-top: 60px; padding-top: 22px;
+  border-top: 1px solid var(--border);
+  color: var(--muted); font-size: 0.8rem; line-height: 1.8;
+}
+footer em { color: rgba(255,255,255,0.22); font-style: normal; }
+</style>
+</head>
+<body>
+<div id="ttip"></div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="eyebrow">Módulo 1.3 · Módulo 3.3 · Paradoja de la Medida</div>
+    <h1>La Paradoja<br>del <span class="accent">Cero</span></h1>
+    <div class="header-sub">Colisiones en el Continuo — P({x}) = 0 no significa imposible</div>
+    <p class="header-desc">
+      Con <strong>5 bits</strong> solo existen 32 valores posibles: las colisiones ocurren al instante.
+      Con <strong>60 bits</strong>, la computadora podría correr durante <em>eones</em> sin repetir un número.
+      Observá en tiempo real cómo la probabilidad de repetición colapsa hacia el <strong>cero absoluto</strong>
+      a medida que la "diana" se hace infinitamente pequeña.
+    </p>
+  </header>
+
+  <!-- BIT SELECTOR -->
+  <div class="bit-selector-card">
+    <div class="card-header"><div class="pip pip-cyan"></div>Profundidad de bits — Tamaño del espacio muestral</div>
+    <div class="bit-row" id="bitRow"></div>
+  </div>
+
+  <!-- MAIN: sim + stats -->
+  <div class="sim-layout">
+
+    <!-- LEFT: Live simulation -->
+    <div class="sim-card">
+      <div class="card-header"><div class="pip pip-crimson"></div>Búsqueda de colisiones en tiempo real</div>
+      <div class="ctrl-row">
+        <button class="btn btn-start" id="btnStart" onclick="toggleSim()">▶ Iniciar búsqueda</button>
+        <button class="btn btn-stop" onclick="resetSim()">↺ Reiniciar</button>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);margin-left:auto;">
+          <span id="speedLabel">~10k / seg</span>
+        </div>
+      </div>
+
+      <div class="nl-section">
+        <div class="nl-title">Mapa de puntos generados en [0, 1]</div>
+        <canvas id="nlCanvas" height="72"></canvas>
+      </div>
+
+      <div class="feed-section">
+        <div class="feed-title">
+          <span>Registro de colisiones</span>
+          <span id="feedClear" style="cursor:pointer;color:var(--muted);font-size:0.6rem;" onclick="clearFeed()">limpiar</span>
+        </div>
+        <div class="collision-feed" id="colFeed">
+          <div class="no-collisions" id="noColMsg">Sin colisiones aún…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Stats -->
+    <div class="stats-card">
+      <div class="card-header"><div class="pip pip-gold"></div>Estadísticas en vivo</div>
+
+      <div class="stat-block">
+        <div class="sb-label">Secuencias generadas</div>
+        <div class="sb-value sv-cyan" id="sTried">0</div>
+      </div>
+      <div class="stat-block">
+        <div class="sb-label">Colisiones encontradas</div>
+        <div class="sb-value sv-crimson" id="sCols">0</div>
+        <div class="prob-bar-wrap">
+          <div class="prob-bar-track"><div class="prob-bar-fill" id="colBar"></div></div>
+        </div>
+      </div>
+      <div class="stat-block">
+        <div class="sb-label">Espacio total de valores</div>
+        <div class="sb-value sv-gold" id="sSpace" style="font-size:1.3rem;">—</div>
+      </div>
+      <div class="stat-block">
+        <div class="sb-label">P(colisión) teórica acum.</div>
+        <div class="sb-value sv-green" id="sProb">0%</div>
+        <div class="sb-sub" id="sProbSub">—</div>
+      </div>
+      <div class="stat-block">
+        <div class="sb-label">Tiempo esperado 50% prob.</div>
+        <div class="sb-value sv-purple" id="sBDay" style="font-size:1.1rem;">—</div>
+        <div class="sb-sub">Problema del cumpleaños</div>
+      </div>
+      <div class="stat-block">
+        <div class="sb-label">Tasa de generación</div>
+        <div class="sb-value sv-muted" id="sRate">—</div>
+        <div class="sb-sub">secuencias / segundo</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- COLLAPSE CHART -->
+  <div class="chart-card">
+    <div class="card-header"><div class="pip pip-purple"></div>Colapso de la probabilidad de colisión — P(colisión | N=1000 tries) vs bits</div>
+    <div style="padding:16px 22px 6px;">
+      <canvas id="collapseCanvas" height="240"></canvas>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--muted);text-align:center;margin-top:4px;">
+        bits → 5 &nbsp;&nbsp; 8 &nbsp;&nbsp; 10 &nbsp;&nbsp; 12 &nbsp;&nbsp; 15 &nbsp;&nbsp; 18 &nbsp;&nbsp; 20 &nbsp;&nbsp; 24 &nbsp;&nbsp; 30 &nbsp;&nbsp; 40 &nbsp;&nbsp; 50 &nbsp;&nbsp; 60
+      </div>
+    </div>
+    <div class="insight-strip">
+      <div class="insight-cell">
+        <div class="ic-title"><div class="pip pip-crimson"></div><span style="color:var(--crimson2)">Pocos bits</span></div>
+        <div class="ic-body">Con $b=5$ bits el espacio es $2^5 = 32$ valores. La probabilidad de colisión tras 1000 intentos es prácticamente <strong>100%</strong>. Las "dianas" son grandes.</div>
+      </div>
+      <div class="insight-cell">
+        <div class="ic-title"><div class="pip pip-gold"></div><span style="color:var(--gold)">Transición</span></div>
+        <div class="ic-body">
+          El umbral del cumpleaños — $n^* \approx \sqrt{2^b}$ secuencias para tener 50% de colisión — crece exponencialmente con los bits.
+          <div class="ic-formula">$n^* \approx \sqrt{2 \cdot 2^b \cdot \ln 2}$</div>
+        </div>
+      </div>
+      <div class="insight-cell">
+        <div class="ic-title"><div class="pip pip-purple"></div><span style="color:var(--purple)">El infinito continuo</span></div>
+        <div class="ic-body">Con $b \to \infty$ el espacio es $\mathbb{R}$. Cada punto tiene probabilidad <strong>exactamente 0</strong>. No imposible — sino que la diana tiene medida de Lebesgue nula.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<footer>
+  Material elaborado por el profesor <em>Sergio Gevatschnaider</em><br>
+  <span style="font-size:0.75rem;margin-top:4px;display:block;">Módulo 1.3 · Paradoja del Cero · Módulo 3.3 · Aplastamiento del Punto · Teoría de la Medida</span>
+</footer>
+
+<script>
+/* ══════════════════════════════════════
+   PRESETS
+══════════════════════════════════════ */
+const PRESETS = [
+  { bits:  5, label: 'BITS',  space: '32',          danger: 'easy',       dLabel: 'Trivial',     batchSz: 20   },
+  { bits:  8, label: 'BITS',  space: '256',          danger: 'easy',       dLabel: 'Fácil',       batchSz: 50   },
+  { bits: 10, label: 'BITS',  space: '1,024',        danger: 'easy',       dLabel: 'Fácil',       batchSz: 200  },
+  { bits: 15, label: 'BITS',  space: '32,768',       danger: 'medium',     dLabel: 'Moderado',    batchSz: 500  },
+  { bits: 20, label: 'BITS',  space: '1,048,576',    danger: 'medium',     dLabel: 'Lento',       batchSz: 2000 },
+  { bits: 32, label: 'BITS',  space: '4.3 × 10⁹',   danger: 'hard',       dLabel: 'Muy lento',   batchSz: 5000 },
+  { bits: 50, label: 'BITS',  space: '1.1 × 10¹⁵',  danger: 'impossible', dLabel: '∞ años',      batchSz: 10000},
+  { bits: 60, label: 'BITS',  space: '1.2 × 10¹⁸',  danger: 'impossible', dLabel: 'Imposible',   batchSz: 10000},
+];
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let selectedBits = 10;
+let tried    = 0;
+let cols     = 0;
+let running  = false;
+let animId   = null;
+let startTime = null;
+let seen     = null;   // Map for collision detection (low bits) or Set
+let lastRateTime = 0;
+let lastRateTried = 0;
+let rateSmooth = 0;
+let dotPositions = []; // {x, col} for number line dots
+const MAX_DOTS = 3000;
+
+/* ══════════════════════════════════════
+   BUILD BIT PRESETS UI
+══════════════════════════════════════ */
+function buildPresets() {
+  const row = document.getElementById('bitRow');
+  row.innerHTML = '';
+  PRESETS.forEach((p, i) => {
+    if (i === 5) {
+      const div = document.createElement('div');
+      div.className = 'bit-divider';
+      row.appendChild(div);
+    }
+    const el = document.createElement('div');
+    el.className = 'bit-preset' + (p.bits === selectedBits ? ' selected' : '');
+    el.innerHTML = `
+      <div class="bp-bits">${p.bits}</div>
+      <div class="bp-label">${p.label}</div>
+      <div class="bp-space">${p.space} vals</div>
+      <div class="danger-badge danger-${p.danger}">${p.dLabel}</div>`;
+    el.onclick = () => selectBits(p.bits);
+    row.appendChild(el);
+  });
+}
+
+function selectBits(b) {
+  selectedBits = b;
+  resetSim();
+  buildPresets();
+  updateStaticInfo();
+  drawCollapseChart();
+}
+
+function getPreset() { return PRESETS.find(p => p.bits === selectedBits); }
+
+/* ══════════════════════════════════════
+   STATIC INFO
+══════════════════════════════════════ */
+function birthdayN50(bits) {
+  // n such that P(collision) ≈ 50%: n ≈ sqrt(2 * k * ln2), k = 2^bits
+  // = 2^(bits/2) * sqrt(2 * ln2)
+  return Math.sqrt(2 * Math.pow(2, bits) * Math.log(2));
+}
+
+function birthdayStr(bits) {
+  const n = birthdayN50(bits);
+  if (bits <= 20) return n.toFixed(0) + ' seqs';
+  if (bits <= 32) {
+    return (n / 1e6).toFixed(1) + 'M seqs';
+  }
+  if (bits <= 50) {
+    return (n / 1e9).toFixed(1) + 'B seqs';
+  }
+  return '> 10¹⁰ seqs → ∞';
+}
+
+function updateStaticInfo() {
+  const p = getPreset();
+  document.getElementById('sSpace').textContent = p.space;
+  document.getElementById('sBDay').textContent  = birthdayStr(selectedBits);
+  document.getElementById('speedLabel').textContent = `~${(p.batchSz * 60).toLocaleString()} / seg`;
+}
+
+/* ══════════════════════════════════════
+   COLLISION PROBABILITY (birthday problem)
+   P(≥1 collision after n draws from k values)
+   = 1 - k!/(k^n (k-n)!) ≈ 1 - e^{-n(n-1)/(2k)}
+══════════════════════════════════════ */
+function birthdayProb(n, bits) {
+  const k = Math.pow(2, bits);
+  if (n >= k) return 1;
+  // log approximation for large k
+  return 1 - Math.exp(-n * (n - 1) / (2 * k));
+}
+
+/* ══════════════════════════════════════
+   GENERATE ONE VALUE (integer)
+   For bits ≤ 32 we use an integer key
+   For bits > 32 we use a string key of two 32-bit halves
+══════════════════════════════════════ */
+function genKey() {
+  const b = selectedBits;
+  if (b <= 32) {
+    // Random integer in [0, 2^b)
+    return (Math.random() * Math.pow(2, b)) >>> 0;
+  } else {
+    // Two halves
+    const hi = (Math.random() * 0x100000000) >>> 0;
+    const lo = (Math.random() * 0x100000000) >>> 0;
+    return hi.toString(16).padStart(8,'0') + lo.toString(16).padStart(8,'0');
+  }
+}
+
+function keyToDecimal(key) {
+  if (typeof key === 'number') return key / Math.pow(2, selectedBits);
+  // string hex key
+  const hi = parseInt(key.slice(0, 8), 16);
+  const lo = parseInt(key.slice(8), 16);
+  return hi / Math.pow(2, selectedBits - 32);
+}
+
+/* ══════════════════════════════════════
+   SIMULATION LOOP
+══════════════════════════════════════ */
+function toggleSim() {
+  if (running) {
+    pauseSim();
+  } else {
+    startSim();
+  }
+}
+
+function startSim() {
+  if (!seen) seen = new Map();
+  running = true;
+  startTime = startTime || performance.now();
+  lastRateTime = performance.now();
+  lastRateTried = tried;
+  const btn = document.getElementById('btnStart');
+  btn.textContent = '⏸ Pausar';
+  btn.className = 'btn btn-start running';
+  animId = requestAnimationFrame(tick);
+}
+
+function pauseSim() {
+  running = false;
+  if (animId) cancelAnimationFrame(animId);
+  const btn = document.getElementById('btnStart');
+  btn.textContent = '▶ Continuar';
+  btn.className = 'btn btn-start';
+}
+
+function resetSim() {
+  running = false;
+  if (animId) cancelAnimationFrame(animId);
+  tried = 0; cols = 0;
+  seen = new Map();
+  startTime = null;
+  rateSmooth = 0;
+  dotPositions = [];
+  const btn = document.getElementById('btnStart');
+  btn.textContent = '▶ Iniciar búsqueda';
+  btn.className = 'btn btn-start';
+
+  document.getElementById('sTried').textContent = '0';
+  document.getElementById('sCols').textContent  = '0';
+  document.getElementById('sProb').textContent  = '0%';
+  document.getElementById('sProbSub').textContent = '—';
+  document.getElementById('sRate').textContent  = '—';
+  document.getElementById('colBar').style.width = '0%';
+
+  const feed = document.getElementById('colFeed');
+  feed.innerHTML = '<div class="no-collisions" id="noColMsg">Sin colisiones aún…</div>';
+  drawNumberLine();
+}
+
+let frameCount = 0;
+function tick() {
+  if (!running) return;
+  frameCount++;
+
+  const p = getPreset();
+  const batch = p.batchSz;
+
+  // For very large spaces, limit detection to save memory
+  const trackLimit = selectedBits <= 32 ? Infinity : 500000;
+
+  let newCols = [];
+
+  for (let i = 0; i < batch; i++) {
+    const key = genKey();
+    tried++;
+
+    const dec = keyToDecimal(key);
+    // Add dot
+    if (dotPositions.length < MAX_DOTS) {
+      dotPositions.push({ x: dec, col: false });
+    }
+
+    if (seen.size < trackLimit) {
+      if (seen.has(key)) {
+        cols++;
+        const prev = seen.get(key);
+        newCols.push({ key, dec, count: prev + 1 });
+        seen.set(key, prev + 1);
+        // Mark dot
+        if (dotPositions.length < MAX_DOTS) {
+          dotPositions[dotPositions.length - 1].col = true;
+        }
+      } else {
+        seen.set(key, 1);
+      }
+    } else {
+      // Memory full: only approximate tracking
+      seen = new Map(); // reset to avoid OOM
+    }
+  }
+
+  // Rate calculation
+  const now = performance.now();
+  if (now - lastRateTime > 500) {
+    const dt = (now - lastRateTime) / 1000;
+    const raw = (tried - lastRateTried) / dt;
+    rateSmooth = rateSmooth === 0 ? raw : rateSmooth * 0.7 + raw * 0.3;
+    lastRateTime = now;
+    lastRateTried = tried;
+    document.getElementById('sRate').textContent = formatRate(rateSmooth);
+  }
+
+  // Update UI
+  document.getElementById('sTried').textContent = tried >= 1e6
+    ? (tried/1e6).toFixed(2) + 'M'
+    : tried.toLocaleString();
+  document.getElementById('sCols').textContent  = cols.toLocaleString();
+
+  const prob = birthdayProb(tried, selectedBits);
+  const probPct = (prob * 100);
+  document.getElementById('sProb').textContent = probPct >= 99.9999 ? '≈ 100%' : probPct.toFixed(probPct < 0.01 ? 6 : 3) + '%';
+  document.getElementById('sProbSub').textContent = prob < 1e-6
+    ? `1 en ${(1/prob).toExponential(2)}`
+    : `Prob. acumulada del cumpleaños`;
+  document.getElementById('colBar').style.width = Math.min(prob * 100, 100) + '%';
+
+  // Collision feed
+  if (newCols.length > 0) {
+    const feed = document.getElementById('colFeed');
+    const noMsg = document.getElementById('noColMsg');
+    if (noMsg) noMsg.remove();
+
+    newCols.slice(-3).forEach(c => {
+      const entry = document.createElement('div');
+      entry.className = 'col-entry hit';
+      entry.innerHTML = `<span>💥 COLISIÓN #${cols}</span><span>${c.dec.toFixed(6)}</span>`;
+      feed.appendChild(entry);
+      if (feed.children.length > 60) feed.removeChild(feed.firstChild);
+    });
+  }
+
+  // Redraw every frame
+  drawNumberLine();
+
+  // Pause automatically for impossible spaces after 2M
+  if (selectedBits >= 50 && tried >= 2_000_000) {
+    pauseSim();
+    const feed = document.getElementById('colFeed');
+    const entry = document.createElement('div');
+    entry.className = 'col-entry empty';
+    entry.innerHTML = `<span>⏸ 2M secuencias sin colisión (esperado)</span>`;
+    feed.appendChild(entry);
+    return;
+  }
+
+  animId = requestAnimationFrame(tick);
+}
+
+function formatRate(r) {
+  if (r >= 1e6) return (r/1e6).toFixed(2) + 'M';
+  if (r >= 1e3) return (r/1e3).toFixed(1) + 'k';
+  return r.toFixed(0);
+}
+
+/* ══════════════════════════════════════
+   NUMBER LINE CANVAS
+══════════════════════════════════════ */
+function drawNumberLine() {
+  const canvas = document.getElementById('nlCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 44;
+  const H = 72;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, W, H, 6);
+  ctx.fill();
+
+  // For small bit spaces, show the discrete grid
+  const k = Math.pow(2, selectedBits);
+  if (selectedBits <= 12 && k <= W) {
+    // Show allowed positions
+    for (let i = 0; i < k; i++) {
+      const x = (i / k) * W;
+      ctx.fillStyle = 'rgba(34,211,238,0.12)';
+      ctx.fillRect(x, 0, W/k - 0.5, H);
+    }
+  }
+
+  // Draw track
+  const TY = H / 2;
+  ctx.fillStyle = 'rgba(255,255,255,0.04)';
+  ctx.fillRect(0, TY - 2, W, 4);
+
+  // Draw dots
+  const pts = dotPositions;
+  // non-collision dots
+  for (let i = 0; i < pts.length; i++) {
+    if (pts[i].col) continue;
+    const x = pts[i].x * W;
+    const y = 12 + Math.sin(i * 2.399963) * (H/2 - 14); // sunflower jitter
+    ctx.beginPath();
+    ctx.arc(x, TY + (y - H/4) * 0.6, 1.4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(34,211,238,0.55)';
+    ctx.fill();
+  }
+  // collision dots on top
+  for (let i = 0; i < pts.length; i++) {
+    if (!pts[i].col) continue;
+    const x = pts[i].x * W;
+    ctx.beginPath();
+    ctx.arc(x, TY, 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(244,63,94,0.9)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(244,63,94,0.4)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  // Axis ticks
+  [0, 0.25, 0.5, 0.75, 1].forEach(t => {
+    ctx.fillStyle = 'rgba(100,130,180,0.4)';
+    ctx.fillRect(t * W, H - 10, 1, 6);
+  });
+}
+
+/* ══════════════════════════════════════
+   COLLAPSE CHART
+══════════════════════════════════════ */
+function drawCollapseChart() {
+  const canvas = document.getElementById('collapseCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 44;
+  const H = 240;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const PL = 48, PR = 16, PT = 16, PB = 36;
+  const pw = W - PL - PR, ph = H - PT - PB;
+
+  // Background
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath(); ctx.roundRect(PL, PT, pw, ph, 6); ctx.fill();
+
+  // Grid lines
+  [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+    const y = PT + ph - v * ph;
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(PL, y); ctx.lineTo(PL + pw, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(100,130,180,0.35)';
+    ctx.font = `9px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'right';
+    ctx.fillText((v * 100).toFixed(0) + '%', PL - 6, y + 3);
+  });
+
+  // X axis: bits from 5 to 60
+  const bitVals = [5, 8, 10, 12, 15, 18, 20, 24, 30, 40, 50, 60];
+  const N_TRIES = 1000; // fixed N for the chart
+
+  // Draw areas for different danger zones
+  const zoneCuts = [
+    { xStart: 0, xEnd: 10, color: 'rgba(244,63,94,0.03)' },
+    { xStart: 10, xEnd: 20, color: 'rgba(251,191,36,0.025)' },
+    { xStart: 20, xEnd: 60, color: 'rgba(167,139,250,0.02)' },
+  ];
+
+  // Draw the curve: for each bit value, compute P(collision | 1000 tries)
+  const bMin = 5, bMax = 60;
+
+  // Shade under curve
+  ctx.beginPath();
+  let first = true;
+  for (let bx = bMin; bx <= bMax; bx += 0.5) {
+    const xFrac = (bx - bMin) / (bMax - bMin);
+    const x = PL + xFrac * pw;
+    const prob = birthdayProb(N_TRIES, bx);
+    const y = PT + ph - prob * ph;
+    if (first) { ctx.moveTo(x, PT + ph); ctx.lineTo(x, y); first = false; }
+    else ctx.lineTo(x, y);
+  }
+  ctx.lineTo(PL + pw, PT + ph);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(PL, 0, PL + pw, 0);
+  grad.addColorStop(0,   'rgba(244,63,94,0.25)');
+  grad.addColorStop(0.3, 'rgba(251,191,36,0.15)');
+  grad.addColorStop(0.6, 'rgba(34,211,238,0.08)');
+  grad.addColorStop(1,   'rgba(167,139,250,0.04)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Main curve
+  ctx.beginPath(); first = true;
+  const lineGrad = ctx.createLinearGradient(PL, 0, PL + pw, 0);
+  lineGrad.addColorStop(0,   'rgba(244,63,94,0.95)');
+  lineGrad.addColorStop(0.35,'rgba(251,191,36,0.95)');
+  lineGrad.addColorStop(0.65,'rgba(34,211,238,0.8)');
+  lineGrad.addColorStop(1,   'rgba(167,139,250,0.7)');
+  ctx.strokeStyle = lineGrad;
+  ctx.lineWidth = 2.5;
+  for (let bx = bMin; bx <= bMax; bx += 0.25) {
+    const xFrac = (bx - bMin) / (bMax - bMin);
+    const x = PL + xFrac * pw;
+    const prob = birthdayProb(N_TRIES, bx);
+    const y = PT + ph - prob * ph;
+    if (first) { ctx.moveTo(x, y); first = false; }
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Glow
+  ctx.beginPath(); first = true;
+  ctx.strokeStyle = 'rgba(244,63,94,0.15)';
+  ctx.lineWidth = 8;
+  for (let bx = bMin; bx <= bMax; bx += 0.5) {
+    const xFrac = (bx - bMin) / (bMax - bMin);
+    const x = PL + xFrac * pw;
+    const prob = birthdayProb(N_TRIES, bx);
+    const y = PT + ph - prob * ph;
+    if (first) { ctx.moveTo(x, y); first = false; }
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // X axis labels & ticks
+  bitVals.forEach(b => {
+    const xFrac = (b - bMin) / (bMax - bMin);
+    const x = PL + xFrac * pw;
+    ctx.fillStyle = 'rgba(100,130,180,0.35)';
+    ctx.fillRect(x, PT + ph, 1, 6);
+    ctx.font = `9px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = b === selectedBits ? 'rgba(34,211,238,0.9)' : 'rgba(100,130,180,0.5)';
+    ctx.fillText(b, x, PT + ph + 16);
+  });
+
+  // Selected bits vertical line
+  const selFrac = (selectedBits - bMin) / (bMax - bMin);
+  const selX = PL + selFrac * pw;
+  const selProb = birthdayProb(N_TRIES, selectedBits);
+  const selY = PT + ph - selProb * ph;
+  ctx.strokeStyle = 'rgba(34,211,238,0.6)';
+  ctx.lineWidth = 1.5; ctx.setLineDash([5, 3]);
+  ctx.beginPath(); ctx.moveTo(selX, PT + ph); ctx.lineTo(selX, selY); ctx.stroke();
+  ctx.setLineDash([]);
+  // dot at intersection
+  ctx.beginPath(); ctx.arc(selX, selY, 5, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(34,211,238,0.9)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(34,211,238,0.4)'; ctx.lineWidth = 3; ctx.stroke();
+
+  // Annotation
+  const annX = selX + (selFrac > 0.7 ? -100 : 10);
+  const annY = Math.max(selY - 8, PT + 20);
+  ctx.fillStyle = 'rgba(8,12,20,0.85)';
+  ctx.beginPath(); ctx.roundRect(annX, annY - 14, 90, 30, 4); ctx.fill();
+  ctx.strokeStyle = 'rgba(34,211,238,0.3)'; ctx.lineWidth = 1; ctx.beginPath();
+  ctx.roundRect(annX, annY - 14, 90, 30, 4); ctx.stroke();
+  ctx.fillStyle = 'rgba(34,211,238,0.9)';
+  ctx.font = `bold 9px 'JetBrains Mono', monospace`;
+  ctx.textAlign = 'left';
+  ctx.fillText(`b=${selectedBits}: ${(selProb*100).toFixed(1)}%`, annX + 6, annY + 2);
+
+  // Y axis label
+  ctx.save(); ctx.translate(12, PT + ph / 2); ctx.rotate(-Math.PI/2);
+  ctx.fillStyle = 'rgba(100,130,180,0.5)';
+  ctx.font = `9px 'JetBrains Mono', monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText('P(colisión | N=1000)', 0, 0);
+  ctx.restore();
+
+  // X axis label
+  ctx.fillStyle = 'rgba(100,130,180,0.5)';
+  ctx.font = `9px 'JetBrains Mono', monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText('bits (b)', PL + pw / 2, H - 4);
+}
+
+/* ══════════════════════════════════════
+   CANVAS TOOLTIP (collapse chart)
+══════════════════════════════════════ */
+document.getElementById('collapseCanvas').addEventListener('mousemove', (e) => {
+  const canvas = document.getElementById('collapseCanvas');
+  const rect = canvas.getBoundingClientRect();
+  const W = rect.width;
+  const PL = 48, PR = 16;
+  const pw = W - PL - PR;
+  const relX = (e.clientX - rect.left - PL) / pw;
+  if (relX < 0 || relX > 1) { document.getElementById('ttip').style.opacity = 0; return; }
+
+  const b = 5 + relX * 55;
+  const prob = birthdayProb(1000, b);
+  const tip = document.getElementById('ttip');
+  tip.innerHTML = `b = ${b.toFixed(1)} bits<br>P(col|1000) = ${(prob*100).toFixed(4)}%<br>Espacio: ${Math.pow(2,b.toFixed(0)).toExponential(2)} vals`;
+  tip.style.left = (e.clientX + 12) + 'px';
+  tip.style.top  = (e.clientY - 10) + 'px';
+  tip.style.opacity = 1;
+});
+document.getElementById('collapseCanvas').addEventListener('mouseleave', () => {
+  document.getElementById('ttip').style.opacity = 0;
+});
+document.getElementById('collapseCanvas').addEventListener('click', (e) => {
+  const canvas = document.getElementById('collapseCanvas');
+  const rect = canvas.getBoundingClientRect();
+  const W = rect.width;
+  const PL = 48, PR = 16;
+  const pw = W - PL - PR;
+  const relX = (e.clientX - rect.left - PL) / pw;
+  if (relX < 0 || relX > 1) return;
+  const b = Math.round(5 + relX * 55);
+  const valid = PRESETS.map(p => p.bits);
+  const closest = valid.reduce((a, c) => Math.abs(c - b) < Math.abs(a - b) ? c : a, valid[0]);
+  selectBits(closest);
+});
+
+/* ══════════════════════════════════════
+   FEED UTILS
+══════════════════════════════════════ */
+function clearFeed() {
+  const feed = document.getElementById('colFeed');
+  feed.innerHTML = '<div class="no-collisions" id="noColMsg">Sin colisiones aún…</div>';
+}
+
+/* ══════════════════════════════════════
+   RESIZE
+══════════════════════════════════════ */
+window.addEventListener('resize', () => {
+  drawNumberLine();
+  drawCollapseChart();
+});
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+buildPresets();
+updateStaticInfo();
+drawCollapseChart();
+drawNumberLine();
+</script>
+</body>
+</html>

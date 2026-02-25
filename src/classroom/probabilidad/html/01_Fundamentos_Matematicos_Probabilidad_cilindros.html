@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conjuntos Cilíndricos — Simulador</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+MathJax = {
+  tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root {
+  --bg:       #07090e;
+  --bg1:      #0c1018;
+  --bg2:      #111827;
+  --border:   rgba(148,163,184,0.09);
+  --border2:  rgba(148,163,184,0.16);
+  --text:     #e2e8f0;
+  --muted:    #4b6080;
+  --muted2:   #6b84a0;
+  --amber:    #f59e0b;
+  --amber2:   #fbbf24;
+  --amber-g:  rgba(245,158,11,0.18);
+  --blue:     #3b82f6;
+  --blue-d:   #1d4ed8;
+  --blue-g:   rgba(59,130,246,0.12);
+  --teal:     #2dd4bf;
+  --red:      #f87171;
+  --red-g:    rgba(248,113,113,0.12);
+  --green:    #34d399;
+  --green-g:  rgba(52,211,153,0.12);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(ellipse 70% 40% at 20% 0%, rgba(59,130,246,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 90% 80%, rgba(245,158,11,0.05) 0%, transparent 60%),
+    var(--bg);
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: -1;
+  background-image:
+    linear-gradient(rgba(148,163,184,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148,163,184,0.018) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.wrapper { max-width: 1060px; margin: 0 auto; padding: 48px 24px 80px; }
+
+/* ── HEADER ── */
+header { margin-bottom: 52px; }
+.header-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--amber);
+  opacity: 0.8;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.header-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 32px; height: 1px;
+  background: var(--amber);
+  opacity: 0.5;
+}
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.9rem, 4.5vw, 3.2rem);
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+h1 em {
+  font-style: italic;
+  color: var(--amber2);
+  -webkit-text-fill-color: var(--amber2);
+}
+.header-desc {
+  color: var(--muted2);
+  font-size: 0.97rem;
+  line-height: 1.75;
+  max-width: 680px;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  display: flex; align-items: center; gap: 10px;
+}
+.card-header .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+}
+.dot-amber { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.dot-blue  { background: var(--blue);  box-shadow: 0 0 6px var(--blue); }
+.dot-teal  { background: var(--teal);  box-shadow: 0 0 6px var(--teal); }
+.dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+/* ── GENERATE BUTTON ── */
+.gen-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.btn-gen {
+  padding: 11px 28px;
+  background: linear-gradient(135deg, var(--blue-d), var(--blue));
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem; font-weight: 600;
+  color: #fff; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(59,130,246,0.3);
+}
+.btn-gen:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(59,130,246,0.4); }
+.btn-gen:active { transform: translateY(0); }
+.gen-info {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.gen-info span { color: var(--text); }
+
+/* ── HISTOGRAM CANVAS ── */
+.hist-container {
+  padding: 24px 24px 10px;
+  position: relative;
+}
+#histCanvas {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+  cursor: crosshair;
+}
+.hist-axis {
+  display: flex; justify-content: space-between;
+  padding: 6px 4px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+/* ── DOT STRIP ── */
+.dot-strip-container {
+  padding: 0 24px 20px;
+}
+.dot-strip-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+#dotCanvas {
+  width: 100%;
+  border-radius: 6px;
+  display: block;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border);
+}
+
+/* ── CYLINDER SELECTOR ── */
+.selector-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+}
+@media (max-width: 640px) { .selector-grid { grid-template-columns: 1fr; } }
+.sel-left, .sel-right { background: var(--bg1); padding: 24px; }
+
+.coin-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.coin-toggle {
+  width: 52px; height: 64px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.18s;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+.coin-toggle::before {
+  content: '';
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity 0.18s;
+}
+.coin-toggle:hover { border-color: var(--border2); transform: translateY(-2px); }
+.coin-toggle.state-free { }
+.coin-toggle.state-one  { border-color: rgba(52,211,153,0.5); background: rgba(52,211,153,0.07); }
+.coin-toggle.state-one::before  { background: rgba(52,211,153,0.05); opacity: 1; }
+.coin-toggle.state-zero { border-color: rgba(248,113,113,0.5); background: rgba(248,113,113,0.07); }
+.coin-toggle.state-zero::before { background: rgba(248,113,113,0.05); opacity: 1; }
+.coin-symbol {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: color 0.18s;
+}
+.state-free  .coin-symbol { color: var(--muted); }
+.state-one   .coin-symbol { color: var(--green); }
+.state-zero  .coin-symbol { color: var(--red); }
+.coin-pos {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--muted);
+}
+.coin-label {
+  font-size: 0.58rem;
+  font-family: 'JetBrains Mono', monospace;
+  transition: color 0.18s;
+}
+.state-free  .coin-label { color: var(--muted); }
+.state-one   .coin-label { color: var(--green); opacity: 0.8; }
+.state-zero  .coin-label { color: var(--red); opacity: 0.8; }
+
+.sel-section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+/* Reset button */
+.btn-reset-pat {
+  padding: 8px 18px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--muted2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-reset-pat:hover { border-color: var(--amber); color: var(--amber); background: rgba(245,158,11,0.06); }
+
+/* ── STATS PANEL ── */
+.stats-panel { display: flex; flex-direction: column; gap: 16px; }
+
+.stat-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--muted2);
+  line-height: 1.5;
+}
+.stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: right;
+}
+.val-total  { color: var(--text); }
+.val-caught { color: var(--amber2); }
+.val-theory { color: var(--teal); }
+.val-error  { color: var(--muted2); font-size: 0.82rem; }
+
+.progress-bar-outer {
+  width: 100%; height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.progress-bar-inner {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--amber), var(--amber2));
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 0 8px rgba(245,158,11,0.4);
+  width: 0%;
+}
+
+/* ── INTERVAL DISPLAY ── */
+.interval-card { padding: 24px; }
+.int-formula {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--amber2);
+  line-height: 1.7;
+  overflow-x: auto;
+}
+.int-formula .highlight { color: var(--amber); font-size: 1rem; }
+
+/* Number line */
+.number-line-wrap {
+  position: relative;
+  padding: 24px 0 36px;
+}
+.nl-bg {
+  width: 100%; height: 8px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 4px;
+  position: relative;
+  overflow: visible;
+}
+.nl-region {
+  position: absolute; top: 0; height: 100%;
+  background: linear-gradient(90deg, rgba(245,158,11,0.6), rgba(251,191,36,0.6));
+  border-radius: 3px;
+  box-shadow: 0 0 16px rgba(245,158,11,0.35);
+  transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.nl-tick {
+  position: absolute; top: -4px;
+  width: 2px; height: 16px;
+  background: var(--muted);
+}
+.nl-tick-label {
+  position: absolute; top: 16px;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.nl-region-label {
+  position: absolute; top: -26px;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--amber2);
+  white-space: nowrap;
+  background: rgba(245,158,11,0.1);
+  border: 1px solid rgba(245,158,11,0.25);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+#noFilterMsg {
+  text-align: center;
+  padding: 20px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* ── TOOLTIP ── */
+#tooltip {
+  position: fixed;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text);
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.15s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+/* ── LOADING OVERLAY ── */
+#loadingOverlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(7,9,14,0.88);
+  display: none;
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+}
+#loadingOverlay.show { display: flex; }
+.loading-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid rgba(245,158,11,0.2);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── ANIMATION: bar grow ── */
+@keyframes barGrow {
+  from { transform: scaleY(0); transform-origin: bottom; }
+  to   { transform: scaleY(1); transform-origin: bottom; }
+}
+
+footer {
+  text-align: center; margin-top: 60px; padding-top: 20px;
+  border-top: 1px solid var(--border);
+  color: var(--muted); font-size: 0.8rem;
+}
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Generando 10 000 secuencias…</div>
+</div>
+
+<div id="tooltip"></div>
+
+<div class="wrapper">
+
+  <header>
+    <div class="header-eyebrow">Módulo 2.1 · Teoría de la Probabilidad</div>
+    <h1>El Ladrillo de Información:<br><em>Conjuntos Cilíndricos</em></h1>
+    <p class="header-desc">
+      Una condición finita sobre las primeras monedas recorta un <strong style="color:var(--text)">volumen exacto</strong> del espacio continuo $[0,1]$.
+      Generá 10 000 secuencias de 15 tiradas y observá cómo el filtro cilíndrico atrapa exactamente $1/2^k$ de los puntos.
+    </p>
+  </header>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="dot dot-blue"></div>
+      Distribución de 10 000 secuencias en [0, 1]
+    </div>
+
+    <div class="gen-row">
+      <button class="btn-gen" id="btnGenerate" onclick="generateData()">
+        ⟳ Generar 10 000 secuencias
+      </button>
+      <div class="gen-info">
+        Total generado: <span id="totalCount">0</span> &nbsp;·&nbsp;
+        Bits por secuencia: <span id="bitsInfo">15</span> &nbsp;·&nbsp;
+        Precision: <span>1 / 32 768</span>
+      </div>
+    </div>
+
+    <div class="hist-container">
+      <canvas id="histCanvas" height="220"></canvas>
+      <div class="hist-axis" id="histAxis"></div>
+    </div>
+
+    <div class="dot-strip-container">
+      <div class="dot-strip-label">Mapa de puntos — cada punto = 1 secuencia</div>
+      <canvas id="dotCanvas" height="48"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="dot dot-amber"></div>
+      Definir el Conjunto Cilíndrico — Condición sobre las primeras monedas
+    </div>
+    <div class="selector-grid">
+      <div class="sel-left">
+        <div class="sel-section-title">Patrón de las primeras 6 monedas</div>
+        <div class="coin-row" id="coinToggles"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <button class="btn-reset-pat" onclick="resetPattern()">✕ Limpiar patrón</button>
+          <span style="font-size:0.75rem;color:var(--muted);font-family:'JetBrains Mono',monospace;">
+            Clic para ciclar: <span style="color:var(--muted2)">★ libre</span> → 
+            <span style="color:var(--green)">1 cara</span> → 
+            <span style="color:var(--red)">0 cruz</span>
+          </span>
+        </div>
+      </div>
+      <div class="sel-right">
+        <div class="sel-section-title">Resultados en tiempo real</div>
+        <div class="stats-panel" id="statsPanel">
+          <div class="stat-row">
+            <div class="stat-label">Total de secuencias</div>
+            <div class="stat-val val-total" id="sTot">—</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">Atrapadas por el cilindro</div>
+            <div>
+              <div class="stat-val val-caught" id="sCaught">—</div>
+              <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+            </div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">Probabilidad teórica $1/2^k$</div>
+            <div class="stat-val val-theory" id="sTheory">—</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">Proporción empírica</div>
+            <div class="stat-val val-caught" id="sEmp">—</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">Bits fijos (k)</div>
+            <div class="stat-val" style="color:var(--text)" id="sK">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="dot dot-amber"></div>
+      Intervalo capturado en la recta numérica [0, 1]
+    </div>
+    <div class="interval-card">
+      <div class="int-formula" id="formulaBox">
+        <em style="color:var(--muted)">Seleccioná un patrón arriba para ver el intervalo matemático correspondiente.</em>
+      </div>
+      <div class="number-line-wrap">
+        <div class="nl-bg" id="nlBg">
+          </div>
+      </div>
+      <div id="noFilterMsg">☝ Hacé clic en las monedas para definir una condición</div>
+    </div>
+  </div>
+
+  <footer>Material elaborado por el profesor Sergio Gevatschnaider</footer>
+</div><script>
+/* ══════════════════════════════════════
+   DATA & STATE
+══════════════════════════════════════ */
+const N_SEQS  = 10_000;
+const N_BITS  = 15;
+const N_COINS = 6;  // controllable positions
+const N_BINS  = 80;
+
+let allDecimals  = [];  // Float64, length N_SEQS
+let allSequences = [];  // Uint8Array of length N_BITS each
+let pattern      = new Array(N_COINS).fill(null); // null | 0 | 1
+let matchedMask  = new Uint8Array(N_SEQS);        // 1 if matches pattern
+let generated    = false;
+
+/* ══════════════════════════════════════
+   GENERATE
+══════════════════════════════════════ */
+function generateData() {
+  document.getElementById('loadingOverlay').classList.add('show');
+  // defer to next frame so overlay renders
+  setTimeout(() => {
+    allDecimals = new Float64Array(N_SEQS);
+    allSequences = [];
+    const pow2 = new Float64Array(N_BITS);
+    for (let i = 0; i < N_BITS; i++) pow2[i] = 1 / Math.pow(2, i + 1);
+
+    for (let s = 0; s < N_SEQS; s++) {
+      const seq = new Uint8Array(N_BITS);
+      let val = 0;
+      for (let b = 0; b < N_BITS; b++) {
+        const bit = Math.random() < 0.5 ? 1 : 0;
+        seq[b] = bit;
+        if (bit) val += pow2[b];
+      }
+      allSequences.push(seq);
+      allDecimals[s] = val;
+    }
+
+    generated = true;
+    document.getElementById('totalCount').textContent = N_SEQS.toLocaleString();
+    document.getElementById('loadingOverlay').classList.remove('show');
+
+    applyPattern();
+    drawHistogram();
+    drawDotStrip();
+  }, 30);
+}
+
+/* ══════════════════════════════════════
+   PATTERN MATCHING
+══════════════════════════════════════ */
+function applyPattern() {
+  if (!generated) return;
+  for (let s = 0; s < N_SEQS; s++) {
+    let ok = true;
+    const seq = allSequences[s];
+    for (let i = 0; i < N_COINS; i++) {
+      if (pattern[i] !== null && seq[i] !== pattern[i]) { ok = false; break; }
+    }
+    matchedMask[s] = ok ? 1 : 0;
+  }
+  updateStats();
+  drawHistogram();
+  drawDotStrip();
+  updateInterval();
+}
+
+function countFixed() {
+  return pattern.filter(v => v !== null).length;
+}
+
+/* ══════════════════════════════════════
+   INTERVAL CALCULATION
+   For a prefix pattern (first k fixed, then *),
+   we compute the union of intervals.
+   We enumerate all 2^(free within 0..maxIdx) combos.
+══════════════════════════════════════ */
+function getCylinderIntervals() {
+  const fixedPositions = [];
+  for (let i = 0; i < N_COINS; i++) {
+    if (pattern[i] !== null) fixedPositions.push(i);
+  }
+  if (fixedPositions.length === 0) return [];
+
+  const maxIdx = Math.max(...fixedPositions);
+  const freePos = [];
+  for (let i = 0; i <= maxIdx; i++) {
+    if (pattern[i] === null) freePos.push(i);
+  }
+
+  const nFree = freePos.length;
+  const combos = 1 << nFree;
+  const pow2 = i => 1 / Math.pow(2, i + 1);
+  const width = 1 / Math.pow(2, maxIdx + 1);
+  const intervals = [];
+
+  for (let mask = 0; mask < combos; mask++) {
+    let lo = 0;
+    // fixed bits
+    fixedPositions.forEach(i => { if (pattern[i] === 1) lo += pow2(i); });
+    // free bits for this combo
+    freePos.forEach((pos, j) => {
+      if ((mask >> (nFree - 1 - j)) & 1) lo += pow2(pos);
+    });
+    intervals.push([lo, lo + width]);
+  }
+
+  // sort & merge
+  intervals.sort((a, b) => a[0] - b[0]);
+  const merged = [intervals[0].slice()];
+  for (let i = 1; i < intervals.length; i++) {
+    const last = merged[merged.length - 1];
+    if (intervals[i][0] <= last[1] + 1e-13) {
+      last[1] = Math.max(last[1], intervals[i][1]);
+    } else {
+      merged.push(intervals[i].slice());
+    }
+  }
+  return merged;
+}
+
+/* ══════════════════════════════════════
+   STATS
+══════════════════════════════════════ */
+function updateStats() {
+  const k = countFixed();
+  let caught = 0;
+  for (let s = 0; s < N_SEQS; s++) caught += matchedMask[s];
+
+  document.getElementById('sTot').textContent    = N_SEQS.toLocaleString();
+  document.getElementById('sCaught').textContent = caught.toLocaleString();
+  document.getElementById('sK').textContent      = k;
+
+  if (k === 0) {
+    document.getElementById('sTheory').textContent = '—';
+    document.getElementById('sEmp').textContent    = '—';
+    document.getElementById('progressBar').style.width = '0%';
+  } else {
+    const theory = 1 / Math.pow(2, k);
+    const emp    = caught / N_SEQS;
+    document.getElementById('sTheory').textContent = `1 / ${Math.pow(2,k).toLocaleString()}  =  ${(theory*100).toFixed(4)} %`;
+    document.getElementById('sEmp').textContent    = `${(emp*100).toFixed(3)} %`;
+    document.getElementById('progressBar').style.width = (emp * 100) + '%';
+  }
+}
+
+/* ══════════════════════════════════════
+   HISTOGRAM
+══════════════════════════════════════ */
+function drawHistogram() {
+  const canvas = document.getElementById('histCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 48;
+  const H = 220;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const PAD = { l: 10, r: 10, t: 16, b: 8 };
+  const plotW = W - PAD.l - PAD.r;
+  const plotH = H - PAD.t - PAD.b;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // background
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  roundRect(ctx, PAD.l, PAD.t, plotW, plotH, 6);
+  ctx.fill();
+
+  if (!generated) {
+    ctx.fillStyle = 'rgba(75,96,128,0.5)';
+    ctx.font = `500 14px 'DM Sans', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Generá las secuencias para ver el histograma', W / 2, H / 2);
+    return;
+  }
+
+  // Bin data
+  const totalBins  = new Float64Array(N_BINS);
+  const caughtBins = new Float64Array(N_BINS);
+  const binW = 1 / N_BINS;
+
+  for (let s = 0; s < N_SEQS; s++) {
+    const bin = Math.min(N_BINS - 1, Math.floor(allDecimals[s] / binW));
+    totalBins[bin]++;
+    if (matchedMask[s]) caughtBins[bin]++;
+  }
+
+  const maxCount = Math.max(...totalBins);
+  const barW = plotW / N_BINS;
+  const intervals = getCylinderIntervals();
+
+  const k = countFixed();
+
+  for (let b = 0; b < N_BINS; b++) {
+    const x = PAD.l + b * barW;
+    const binCenter = (b + 0.5) / N_BINS;
+
+    // Is this bin inside any cylinder interval?
+    const inCyl = intervals.some(([lo, hi]) => binCenter >= lo && binCenter < hi);
+
+    // Total bar
+    const hTotal = (totalBins[b] / maxCount) * plotH;
+    if (!inCyl || k === 0) {
+      ctx.fillStyle = 'rgba(59,130,246,0.22)';
+    } else {
+      ctx.fillStyle = 'rgba(59,130,246,0.10)';
+    }
+    ctx.fillRect(x + 0.5, PAD.t + plotH - hTotal, barW - 1, hTotal);
+
+    // Caught bar (amber)
+    if (caughtBins[b] > 0 && k > 0) {
+      const hCaught = (caughtBins[b] / maxCount) * plotH;
+      const grad = ctx.createLinearGradient(0, PAD.t + plotH - hCaught, 0, PAD.t + plotH);
+      grad.addColorStop(0, 'rgba(251,191,36,0.9)');
+      grad.addColorStop(1, 'rgba(245,158,11,0.55)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x + 0.5, PAD.t + plotH - hCaught, barW - 1, hCaught);
+    }
+  }
+
+  // Draw cylinder interval shading on top
+  if (k > 0) {
+    intervals.forEach(([lo, hi]) => {
+      const x0 = PAD.l + lo * plotW;
+      const xw = (hi - lo) * plotW;
+      // top glow line
+      ctx.fillStyle = 'rgba(245,158,11,0.7)';
+      ctx.fillRect(x0, PAD.t, xw, 2);
+      // bracket lines
+      ctx.strokeStyle = 'rgba(245,158,11,0.4)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(x0, PAD.t); ctx.lineTo(x0, PAD.t + plotH);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(PAD.l + hi * plotW, PAD.t); ctx.lineTo(PAD.l + hi * plotW, PAD.t + plotH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+  }
+
+  // Uniform expected line
+  const expectedH = (N_SEQS / N_BINS / maxCount) * plotH;
+  ctx.strokeStyle = 'rgba(148,163,184,0.25)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(PAD.l, PAD.t + plotH - expectedH);
+  ctx.lineTo(PAD.l + plotW, PAD.t + plotH - expectedH);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(148,163,184,0.35)';
+  ctx.font = `10px 'JetBrains Mono', monospace`;
+  ctx.textAlign = 'right';
+  ctx.fillText('Esperado uniforme', PAD.l + plotW - 4, PAD.t + plotH - expectedH - 4);
+
+  // Axis ticks
+  buildHistAxis();
+}
+
+function buildHistAxis() {
+  const ax = document.getElementById('histAxis');
+  ax.innerHTML = '';
+  const ticks = [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+  ticks.forEach(t => {
+    const s = document.createElement('span');
+    s.textContent = t.toFixed(3);
+    if (t === 0.625) s.style.color = 'rgba(245,158,11,0.8)';
+    ax.appendChild(s);
+  });
+}
+
+/* ══════════════════════════════════════
+   DOT STRIP
+══════════════════════════════════════ */
+function drawDotStrip() {
+  const canvas = document.getElementById('dotCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 48;
+  const H = 48;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, W, H);
+  if (!generated) return;
+
+  const k = countFixed();
+
+  // Draw all points first (dim)
+  for (let s = 0; s < N_SEQS; s++) {
+    if (matchedMask[s]) continue;
+    const x = allDecimals[s] * W;
+    const y = 4 + Math.random() * (H - 8); // jitter vertically
+    ctx.fillStyle = k > 0 ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.35)';
+    ctx.beginPath();
+    ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Draw matched points on top (bright amber)
+  if (k > 0) {
+    for (let s = 0; s < N_SEQS; s++) {
+      if (!matchedMask[s]) continue;
+      const x = allDecimals[s] * W;
+      const y = 4 + Math.random() * (H - 8);
+      ctx.fillStyle = 'rgba(251,191,36,0.85)';
+      ctx.beginPath();
+      ctx.arc(x, y, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+/* ══════════════════════════════════════
+   INTERVAL / NUMBER LINE
+══════════════════════════════════════ */
+function updateInterval() {
+  const k = countFixed();
+  const noMsg = document.getElementById('noFilterMsg');
+  const formula = document.getElementById('formulaBox');
+  const nlBg = document.getElementById('nlBg');
+
+  if (k === 0) {
+    noMsg.style.display = 'block';
+    formula.innerHTML = '<em style="color:var(--muted)">Seleccioná un patrón arriba para ver el intervalo matemático correspondiente.</em>';
+    nlBg.innerHTML = '';
+    buildTicksOnly();
+    return;
+  }
+
+  noMsg.style.display = 'none';
+
+  const intervals = getCylinderIntervals();
+  const theory = 1 / Math.pow(2, k);
+
+  // Build formula text
+  const patStr = pattern.slice(0, N_COINS)
+    .map((v, i) => v === null ? `<span style="color:var(--muted)">ω${i+1}=★</span>` : `<span style="color:${v===1?'var(--green)':'var(--red)'}">ω${i+1}=${v}</span>`)
+    .join(' , ');
+
+  let intStr = intervals.map(([lo, hi]) =>
+    `[<span style="color:var(--amber2)">${lo.toFixed(5)}</span>, <span style="color:var(--amber2)">${hi.toFixed(5)}</span>)`
+  ).join(' ∪ ');
+
+  const measureStr = `${intervals.length} intervalo${intervals.length>1?'s':', longitud'} = 1/2^${k} = ${theory.toFixed(6)}`;
+
+  formula.innerHTML = `
+    <div>Condición: { ${patStr} }</div>
+    <div style="margin-top:8px">↳ Intervalo: ${intStr}</div>
+    <div style="margin-top:8px;color:var(--teal)">
+      Medida del conjunto: <span class="highlight">${measureStr}</span>
+    </div>`;
+
+  // MathJax re-render
+  if (window.MathJax) MathJax.typesetPromise([formula]).catch(() => {});
+
+  // Build number line
+  nlBg.innerHTML = '';
+
+  // Ticks at 0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1
+  const ticks = [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1];
+  ticks.forEach(t => {
+    const tick = document.createElement('div');
+    tick.className = 'nl-tick';
+    tick.style.left = (t * 100) + '%';
+    nlBg.appendChild(tick);
+    const lbl = document.createElement('div');
+    lbl.className = 'nl-tick-label';
+    lbl.style.left = (t * 100) + '%';
+    lbl.textContent = t === 0 ? '0' : t === 1 ? '1' : t.toFixed(3);
+    nlBg.appendChild(lbl);
+  });
+
+  // Interval regions
+  intervals.forEach(([lo, hi], idx) => {
+    const region = document.createElement('div');
+    region.className = 'nl-region';
+    region.style.left  = (lo * 100) + '%';
+    region.style.width = ((hi - lo) * 100) + '%';
+    nlBg.appendChild(region);
+
+    // Center label
+    const center = (lo + hi) / 2;
+    const lbl = document.createElement('div');
+    lbl.className = 'nl-region-label';
+    lbl.style.left = (center * 100) + '%';
+    lbl.textContent = `${(theory*100).toFixed(2)}%`;
+    if (intervals.length > 1) lbl.textContent = `${idx+1}/${intervals.length}`;
+    nlBg.appendChild(lbl);
+  });
+}
+
+function buildTicksOnly() {
+  const nlBg = document.getElementById('nlBg');
+  nlBg.innerHTML = '';
+  const ticks = [0, 0.25, 0.5, 0.75, 1];
+  ticks.forEach(t => {
+    const tick = document.createElement('div');
+    tick.className = 'nl-tick';
+    tick.style.left = (t * 100) + '%';
+    nlBg.appendChild(tick);
+    const lbl = document.createElement('div');
+    lbl.className = 'nl-tick-label';
+    lbl.style.left = (t * 100) + '%';
+    lbl.textContent = t;
+    nlBg.appendChild(lbl);
+  });
+}
+
+/* ══════════════════════════════════════
+   COIN TOGGLES
+══════════════════════════════════════ */
+function buildCoinToggles() {
+  const row = document.getElementById('coinToggles');
+  row.innerHTML = '';
+  for (let i = 0; i < N_COINS; i++) {
+    const div = document.createElement('div');
+    div.className = 'coin-toggle state-free';
+    div.dataset.idx = i;
+    div.innerHTML = `
+      <div class="coin-pos">ω${i+1}</div>
+      <div class="coin-symbol">★</div>
+      <div class="coin-label">libre</div>`;
+    div.addEventListener('click', () => toggleCoin(i, div));
+    row.appendChild(div);
+  }
+}
+
+function toggleCoin(i, el) {
+  // cycle: null → 1 → 0 → null
+  if (pattern[i] === null) { pattern[i] = 1; }
+  else if (pattern[i] === 1) { pattern[i] = 0; }
+  else { pattern[i] = null; }
+
+  const v = pattern[i];
+  el.className = 'coin-toggle ' + (v === null ? 'state-free' : v === 1 ? 'state-one' : 'state-zero');
+  el.querySelector('.coin-symbol').textContent = v === null ? '★' : v === 1 ? '1' : '0';
+  el.querySelector('.coin-label').textContent  = v === null ? 'libre' : v === 1 ? 'cara' : 'cruz';
+
+  applyPattern();
+}
+
+function resetPattern() {
+  pattern = new Array(N_COINS).fill(null);
+  document.querySelectorAll('.coin-toggle').forEach(el => {
+    el.className = 'coin-toggle state-free';
+    el.querySelector('.coin-symbol').textContent = '★';
+    el.querySelector('.coin-label').textContent  = 'libre';
+  });
+  applyPattern();
+}
+
+/* ══════════════════════════════════════
+   HISTOGRAM TOOLTIP
+══════════════════════════════════════ */
+document.getElementById('histCanvas').addEventListener('mousemove', (e) => {
+  if (!generated) return;
+  const canvas = document.getElementById('histCanvas');
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const W = rect.width;
+  const PAD_L = 10, PAD_R = 10;
+  const plotW = W - PAD_L - PAD_R;
+  const relX = (x - PAD_L) / plotW;
+  if (relX < 0 || relX > 1) {
+    document.getElementById('tooltip').style.opacity = 0;
+    return;
+  }
+  const bin = Math.min(N_BINS - 1, Math.floor(relX * N_BINS));
+  const binW = 1 / N_BINS;
+  const lo = bin * binW, hi = lo + binW;
+
+  let count = 0, caught = 0;
+  for (let s = 0; s < N_SEQS; s++) {
+    if (allDecimals[s] >= lo && allDecimals[s] < hi) {
+      count++;
+      if (matchedMask[s]) caught++;
+    }
+  }
+
+  const tip = document.getElementById('tooltip');
+  tip.innerHTML = `[${lo.toFixed(3)}, ${hi.toFixed(3)})<br>Total: ${count} &nbsp;|&nbsp; Atrapados: ${caught}`;
+  tip.style.left = (e.clientX + 12) + 'px';
+  tip.style.top  = (e.clientY - 10) + 'px';
+  tip.style.opacity = 1;
+});
+document.getElementById('histCanvas').addEventListener('mouseleave', () => {
+  document.getElementById('tooltip').style.opacity = 0;
+});
+
+/* ══════════════════════════════════════
+   UTILS
+══════════════════════════════════════ */
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+window.addEventListener('resize', () => {
+  if (generated) { drawHistogram(); drawDotStrip(); }
+});
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+buildCoinToggles();
+buildTicksOnly();
+updateStats();
+drawHistogram();   // empty state
+</script>
+</body>
+</html>
