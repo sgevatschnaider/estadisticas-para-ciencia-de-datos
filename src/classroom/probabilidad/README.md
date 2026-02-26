@@ -61,6 +61,19 @@ Esta sección contiene los recursos principales. Los **Notebooks** combinan teor
 | **Fase 9: El Juego de las Monedas Infinitas (Simulador)** <br><br> <details><summary><strong>Resumen:</strong> <em>(haz clic para expandir/colapsar)</em></summary><p>Simulador avanzado que contrasta las integrales de Riemann y Lebesgue. A través de la Función de Dirichlet y la construcción de Conjuntos Cilíndricos mediante lanzamientos de moneda, demuestra cómo Lebesgue agrupa por preimagen para unificar el concepto de Esperanza Matemática.</p></details> | [![Ver en GitHub](https://img.shields.io/badge/Ver%20en-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/blob/main/src/classroom/probabilidad/html/01_Fundamentos_Matematicos_Probabilidad_lebesgue_monedas.html) <br><br> [![Ver Simulación Interactiva](https://img.shields.io/badge/Ver%20Simulaci%C3%B3n-Interactiva-green?style=for-the-badge&logo=blogger)](https://htmlpreview.github.io/?https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/blob/main/src/classroom/probabilidad/html/01_Fundamentos_Matematicos_Probabilidad_lebesgue_monedas.html) |
 
 ---
+## 🎥 Material Audiovisual Complementario (The Video Lectures)
+
+Para consolidar la intuición geométrica y las demostraciones formales de los simuladores, esta es la curaduría definitiva de clases en video. Ideal para repasar conceptos complejos de topología, teoría de la medida y econometría aplicados a la ciencia de datos.
+
+| 🎬 Tema y Concepto Clave | 👨‍🏫 Canal / Autor | 🔗 Enlace |
+| :--- | :--- | :--- |
+| **Teoría de la Medida e Integral de Lebesgue**<br><sub>*Complemento visual para entender por qué la integración de Riemann falla en el continuo y cómo Lebesgue agrupa por preimagen.*</sub> | **Cofiber**<br><sub>*Understanding Measure Theory...*</sub><br><br>**The Bright Side of Mathematics**<br><sub>*Measure Theory (Curso Completo)*</sub> | [Ver Video](https://www.youtube.com/watch?gHUZFXvy4yE) <br><br> [Ver Playlist](https://www.youtube.com/playlist?list=PLBh2i93oe2qvMVqAzsX1Kuv6-4fjazZ8j) |
+| **Desigualdades de Concentración**<br><sub>*La demostración rigurosa de Markov y Chebyshev, fundamental para entender las cotas de error en algoritmos.*</sub> | **Steve Brunton**<br><sub>*Chebyshev's Inequality in Probability*</sub><br><br>**MIT OpenCourseWare**<br><sub>*Prof. John Tsitsiklis (Lecture 20)*</sub> | [Ver Video](https://www.youtube.com/watch?v=otCHN3s52ho) <br><br> [Ver Video](https://www.youtube.com/watch?v=nrDkb2MAwSA) |
+| **Método de la Transformada Inversa**<br><sub>*La matemática detrás de la simulación de variables aleatorias usando la función cuantil ($F^{-1}$).*</sub> | **Ben Lambert**<br><sub>*An introduction to inverse transform...*</sub><br><br>**ritvikmath**<br><sub>*Inverse Transform Sampling*</sub> | [Ver Video](https://www.youtube.com/watch?v=rnBbYsysPaU) <br><br> [Ver Video](https://www.youtube.com/watch?v=9ixzzPQWuAY) |
+| **Topología del Continuo y Medida Cero**<br><sub>*Paradojas del espacio muestral continuo, mapeos infinitos y por qué probabilidad 0 $\neq$ imposible.*</sub> | **3Blue1Brown**<br><sub>*Probabilities of continuous spaces*</sub><br><br>**Vsauce**<br><sub>*How To Count Past Infinity*</sub> | [Ver Video](https://www.youtube.com/watch?v=ZA4JkHKZM50) <br><br> [Ver Video](https://www.youtube.com/watch?v=SrU9YDoXE88) |
+| **Censura vs. Truncamiento (Econometría)**<br><sub>*Entendiendo la formación de átomos (masas puntuales) en las colas, esencial para los Modelos Tobit.*</sub> | **Anders Munk-Nielsen**<br><sub>*The Tobit Model*</sub><br><br>**Jake Clifton / Ben Lambert**<br><sub>*Econometrics II (Playlist)*</sub> | [Ver Video](https://www.youtube.com/watch?v=IwsE8Rr6l6E) <br><br> [Ver Playlist](https://www.youtube.com/playlist?list=PLLZ4uVeiDmR_rzu-uYl9A5BrmvTKtH_aB) |
+
+---
 
 | 📄 Recurso | 📥 Acceso |
 | --- | --- |
