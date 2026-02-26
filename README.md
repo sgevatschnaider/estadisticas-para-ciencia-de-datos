@@ -116,10 +116,10 @@ Conectar **probabilidad multivariante + álgebra lineal + inferencia computacion
 * *Aplicación:* Feature scaling, Covariance shift, Distancia de Mahalanobis.
 
 ### 2. Dependencia Lineal vs. Independencia Estadística
-* **Conceptos:** Diferencia entre dependencia lineal (rango, singularidad) e independencia estadística ($p(x,y)=p(x)p(y)$).
-* **La falacia de la correlación:** Correlación $\neq$ Independencia (excepto en Gaussianas).
+* **Conceptos:** Diferencia entre dependencia lineal (rango, singularidad) e independencia estadística (p(x,y) = p(x)p(y)).
+* **La falacia de la correlación:** Correlación ≠ Independencia (excepto en distribuciones gaussianas).
 * *Aplicación:* Multicolinealidad en regresión, selección de variables.
-
+  
 ### 3. Normal Multivariante (MVN)
 * **Definición:** Densidad, forma cuadrática y energía.
 * **Geometría:** Elipsoides de densidad y descomposición espectral ($\Sigma = U \Lambda U^\top$).
