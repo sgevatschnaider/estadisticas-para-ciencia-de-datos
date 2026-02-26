@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cuestionario · Teoría de la Medida & Probabilidad</title>
+
+  <!-- MathJax for LaTeX rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ══════════ TEMAS ══════════ */
+    :root {
+      --bg: #0b0c10;
+      --surface: #111318;
+      --card: #161a23;
+      --border: #252b3a;
+      --accent1: #f0c040;
+      --accent2: #3de6c8;
+      --accent3: #f06060;
+      --accent4: #8b6fff;
+      --text: #e8e8f0;
+      --muted: #7a7f9a;
+      --answer-bg: #0d1520;
+      --header-bg1: #0e1420;
+      --header-bg2: #0b0c10;
+      --progress-bg: rgba(11,12,16,0.92);
+      --radius: 14px;
+      --transition: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }[data-theme="light"] {
+      --bg: #f4f5f8;
+      --surface: #ecedf2;
+      --card: #ffffff;
+      --border: #d8dae4;
+      --accent1: #c89a00;
+      --accent2: #0a9e87;
+      --accent3: #d94040;
+      --accent4: #6a4fd8;
+      --text: #1a1b26;
+      --muted: #6b7080;
+      --answer-bg: #f0f2f8;
+      --header-bg1: #e8eaf2;
+      --header-bg2: #f4f5f8;
+      --progress-bg: rgba(244,245,248,0.94);
+    }
+
+    [data-theme="sepia"] {
+      --bg: #f5efe2;
+      --surface: #ede7d6;
+      --card: #fdf8f0;
+      --border: #d4c9b0;
+      --accent1: #a06820;
+      --accent2: #4a8a72;
+      --accent3: #b84040;
+      --accent4: #7055a8;
+      --text: #2c2410;
+      --muted: #7a6a50;
+      --answer-bg: #ede7d6;
+      --header-bg1: #e8e0cc;
+      --header-bg2: #f5efe2;
+      --progress-bg: rgba(245,239,226,0.94);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lora', Georgia, serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── NOISE TEXTURE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 72px 24px 56px;
+      background: linear-gradient(160deg, var(--header-bg1) 0%, var(--header-bg2) 60%);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      transition: background 0.4s ease;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse at center, rgba(240,192,64,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      border: 1px solid rgba(61,230,200,0.35);
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      font-weight: 900;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #f0c040 0%, #ffecaa 40%, #f0c040 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+
+    .subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .author-credit {
+      margin-top: 24px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--accent1);
+      letter-spacing: 0.05em;
+      font-weight: 500;
+      display: inline-block;
+      padding: 8px 20px;
+      background: rgba(240,192,64,0.08);
+      border: 1px solid rgba(240,192,64,0.2);
+      border-radius: 8px;
+    }
+
+    /* ─── PROGRESS BAR ─── */
+    #progress-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--progress-bg);
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: background 0.4s ease;
+    }
+
+    #progress-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--accent1);
+      white-space: nowrap;
+    }
+
+    #progress-bar-outer {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #progress-bar-inner {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent1));
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    #open-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* ─── MAIN LAYOUT ─── */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    /* ─── SECTION DIVIDER ─── */
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent4);
+      padding: 32px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent4), transparent);
+    }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      border-color: rgba(240,192,64,0.25);
+      box-shadow: 0 4px 40px rgba(0,0,0,0.4);
+    }
+
+    .card.open {
+      border-color: rgba(240,192,64,0.45);
+      box-shadow: 0 8px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(240,192,64,0.1);
+    }
+
+    /* ─── QUESTION TRIGGER ─── */
+    .q-trigger {
+      width: 100%;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 24px 26px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+      gap: 18px;
+      text-align: left;
+    }
+
+    .q-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent1);
+      background: rgba(240,192,64,0.1);
+      border: 1px solid rgba(240,192,64,0.25);
+      border-radius: 6px;
+      padding: 4px 8px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .q-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(0.95rem, 2vw, 1.08rem);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.45;
+      transition: color 0.3s;
+    }
+
+    .card.open .q-title,
+    .card:hover .q-title {
+      color: var(--accent1);
+    }
+
+    .q-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background var(--transition), border-color var(--transition), transform var(--transition);
+      margin-top: 2px;
+    }
+
+    .q-icon svg {
+      transition: transform var(--transition);
+      stroke: var(--muted);
+    }
+
+    .card.open .q-icon {
+      background: var(--accent1);
+      border-color: var(--accent1);
+      transform: scale(1.08);
+    }
+
+    .card.open .q-icon svg {
+      stroke: #000;
+      transform: rotate(180deg);
+    }
+
+    /* ─── ANSWER PANEL ─── */
+    .a-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows var(--transition);
+    }
+
+    .card.open .a-wrap {
+      grid-template-rows: 1fr;
+    }
+
+    .a-inner {
+      overflow: hidden;
+    }
+
+    .a-body {
+      padding: 0 26px 28px 70px;
+      border-top: 1px solid var(--border);
+      background: var(--answer-bg);
+      animation: none;
+    }
+
+    .card.open .a-body {
+      padding-top: 24px;
+    }
+
+    .a-body p {
+      font-size: 0.975rem;
+      line-height: 1.82;
+      color: #c8c8d8;
+      margin-bottom: 14px;
+    }
+
+    .a-body p:last-child { margin-bottom: 0; }
+
+    /* Math block */
+    .math-block {
+      background: rgba(61,230,200,0.06);
+      border-left: 3px solid var(--accent2);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 18px 0;
+      overflow-x: auto;
+      font-size: 1.05rem;
+    }
+
+    .highlight {
+      background: rgba(240,192,64,0.1);
+      border: 1px solid rgba(240,192,64,0.2);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 0.92rem;
+      line-height: 1.75;
+      color: #d8d0b8;
+    }
+
+    .highlight strong {
+      color: var(--accent1);
+      font-style: normal;
+    }
+
+    strong { color: var(--accent2); font-weight: 600; }
+    em { color: var(--muted); font-style: italic; }
+
+    /* ─── CONTROLS ─── */
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin: 0 0 36px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .btn:hover {
+      background: var(--accent1);
+      border-color: var(--accent1);
+      color: #000;
+    }
+
+    .btn-accent {
+      border-color: rgba(61,230,200,0.4);
+      color: var(--accent2);
+    }
+
+    .btn-accent:hover {
+      background: var(--accent2);
+      border-color: var(--accent2);
+      color: #000;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      text-align: center;
+      padding: 32px 20px 48px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+    }
+
+    .footer-author {
+      color: var(--accent1);
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* ─── FADE IN ANIMATION ─── */
+    .card {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.5s forwards;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Staggered delay */
+    .card:nth-child(1)  { animation-delay: 0.05s; }
+    .card:nth-child(2)  { animation-delay: 0.10s; }
+    .card:nth-child(3)  { animation-delay: 0.15s; }
+    .card:nth-child(4)  { animation-delay: 0.20s; }
+    .card:nth-child(5)  { animation-delay: 0.25s; }
+    .card:nth-child(6)  { animation-delay: 0.30s; }
+    .card:nth-child(7)  { animation-delay: 0.35s; }
+    .card:nth-child(8)  { animation-delay: 0.40s; }
+    .card:nth-child(9)  { animation-delay: 0.45s; }
+    .card:nth-child(10) { animation-delay: 0.50s; }
+
+    /* ─── THEME TOGGLE ─── */
+    #theme-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+      transition: box-shadow 0.3s, border-color 0.3s;
+    }
+
+    #theme-btn:hover {
+      box-shadow: 0 6px 32px rgba(0,0,0,0.45);
+      border-color: var(--accent1);
+    }
+
+    .theme-opt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 100px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.25s, transform 0.2s;
+      position: relative;
+    }
+
+    .theme-opt:hover { transform: scale(1.15); }
+
+    .theme-opt.active {
+      background: var(--accent1);
+    }
+
+    .theme-opt .tip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .theme-opt:hover .tip { opacity: 1; }
+
+    /* Smooth all transitions on theme change */
+    *, *::before, *::after {
+      transition: background-color 0.35s ease, border-color 0.35s ease, color 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    /* But keep layout transitions instant */
+    .a-wrap { transition: grid-template-rows var(--transition) !important; }
+    #progress-bar-inner { transition: width 0.5s ease !important; }
+    .q-icon svg { transition: transform var(--transition) !important; }
+    .q-icon { transition: background var(--transition), border-color var(--transition), transform var(--transition) !important; }
+
+    @media (max-width: 600px) {
+      .a-body { padding-left: 20px; padding-right: 20px; }
+      .q-trigger { padding: 18px; gap: 12px; }
+      h1 { font-size: 1.9rem; }
+      #theme-btn { bottom: 16px; right: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── THEME TOGGLE BUTTON ─── -->
+<div id="theme-btn" role="group" aria-label="Cambiar tema">
+  <button class="theme-opt active" id="opt-dark"  onclick="setTheme('dark')"  title="Oscuro">
+    🌙<span class="tip">Oscuro</span>
+  </button>
+  <button class="theme-opt" id="opt-light" onclick="setTheme('light')" title="Claro">
+    ☀️<span class="tip">Claro</span>
+  </button>
+  <button class="theme-opt" id="opt-sepia" onclick="setTheme('sepia')"  title="Sepia">
+    📜<span class="tip">Sepia</span>
+  </button>
+</div>
+
+<header>
+  <div class="tag">Cuestionario Académico · 20 Preguntas</div>
+  <h1>Teoría de la Medida<br>&amp; Probabilidad Moderna</h1>
+  <p class="subtitle">Riemann · Lebesgue · Desigualdades de Concentración · Variables Aleatorias</p>
+  <div class="author-credit">Material elaborado por el profesor Sergio Gevatschnaider</div>
+</header>
+
+<div id="progress-wrap">
+  <span id="progress-text">PROGRESO</span>
+  <div id="progress-bar-outer"><div id="progress-bar-inner"></div></div>
+  <span id="open-count">0 / 20 abiertas</span>
+</div>
+
+<main>
+  <div class="controls">
+    <button class="btn btn-accent" onclick="expandAll()">Expandir todo</button>
+    <button class="btn" onclick="collapseAll()">Colapsar todo</button>
+  </div>
+
+  <!-- ══════════════════ PREGUNTAS ══════════════════ -->
+
+  <!-- 1 -->
+  <div class="card" id="c1">
+    <button class="q-trigger" onclick="toggle(1)">
+      <span class="q-num">01</span>
+      <span class="q-title">¿Qué diferencia conceptual separa a Riemann de Lebesgue, y por qué eso importa para probabilidad moderna?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La diferencia fundamental reside en la <strong>estrategia de partición antes de sumar</strong>. La integral de Riemann intenta calcular el área bajo una curva particionando el eje horizontal (el dominio, \(x\)) en pequeños intervalos contiguos y aproximando rectángulos. Cuando una función es altamente discontinua o fractal (con saltos impredecibles en cada punto), este enfoque colapsa porque no se puede definir un límite consistente para los rectángulos.</p>
+      <p>Lebesgue revoluciona este concepto: en lugar de particionar el dominio, <strong>particiona el codominio</strong> (el eje vertical, \(y\)). Agrupa los puntos del dominio que comparten el mismo valor de la función (preimágenes) y simplemente mide el "tamaño" (la medida) de ese conjunto.</p>
+      <p>En probabilidad moderna, esto es vital porque una variable aleatoria es exactamente una función sobre un espacio abstracto de resultados (\(\Omega\)). Calcular una esperanza matemática mediante Lebesgue se traduce naturalmente en una suma ponderada: el valor de la variable multiplicado por la probabilidad (medida) del conjunto de eventos que producen ese valor.</p>
+    </div></div></div>
+  </div>
+
+  <!-- 2 -->
+  <div class="card" id="c2">
+    <button class="q-trigger" onclick="toggle(2)">
+      <span class="q-num">02</span>
+      <span class="q-title">¿Cómo se define el "Juego de las Esperas" con monedas y cuál es exactamente la variable aleatoria de interés?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>El <strong>"Juego de las Esperas"</strong> es un modelo estocástico donde se lanza una moneda repetidamente hasta que aparece la primera Cara (\(H\)). La recompensa o resultado del juego es el número total de lanzamientos requeridos.</p>
+      <p>Formalmente, la variable aleatoria de interés, \(X\), es una función medible que mapea el espacio de secuencias infinitas de cruces y caras hacia los números naturales (\(\mathbb{N}\)). Representa el "tiempo de espera" hasta el primer éxito:</p>
+      <div class="highlight">
+        <strong>X = k</strong> corresponde a una racha inicial de \(k-1\) cruces seguidas de una cara: el patrón \(T^{k-1}H\). Esta variable sigue una <strong>distribución Geométrica</strong>, que modela el número de ensayos de Bernoulli independientes necesarios para obtener el primer éxito.
+      </div>
+    </div></div></div>
+  </div>
+
+  <!-- 3 -->
+  <div class="card" id="c3">
+    <button class="q-trigger" onclick="toggle(3)">
+      <span class="q-num">03</span>
+      <span class="q-title">¿Qué significa en este contexto que "cada pila de premio es un Conjunto Cilíndrico"?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>En la teoría de la medida aplicada a espacios de secuencias infinitas, como \(\{H,T\}^{\mathbb{N}}\), es imposible asignar una probabilidad positiva a una única secuencia infinita específica. Para resolver esto, se construyen <strong>conjuntos cilíndricos</strong>.</p>
+      <p>Un cilindro es un evento definido por la fijación estricta de un <em>prefijo finito</em> de coordenadas, dejando el resto de la secuencia infinita completamente libre (sin restricción). Cuando agrupamos todas las secuencias que nos otorgan el mismo premio \(k\), estamos definiendo un conjunto cilíndrico.</p>
+      <div class="highlight">
+        Por ejemplo, el evento "\(X = 3\)" agrupa a todas las secuencias infinitas que comienzan inevitablemente con el patrón <strong>TTH</strong>. Todo lo que ocurre a partir del cuarto lanzamiento es irrelevante para el premio. Esta estructura permite asignar medidas de probabilidad exactas operando únicamente sobre el segmento finito conocido.
+      </div>
+    </div></div></div>
+  </div>
+
+  <!-- 4 -->
+  <div class="card" id="c4">
+    <button class="q-trigger" onclick="toggle(4)">
+      <span class="q-num">04</span>
+      <span class="q-title">¿Por qué en el juego de esperas se obtiene \(\mathbb{P}(X=k)=2^{-k}\) con moneda justa?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Para que la variable aleatoria tome exactamente el valor \(X = k\), debe ocurrir un evento altamente específico: una secuencia ininterrumpida de \(k-1\) cruces, terminada abruptamente por una cara en el lanzamiento número \(k\), es decir, el patrón \(T^{k-1}H\).</p>
+      <p>Bajo el supuesto de una <strong>moneda justa</strong> (\(p = 1/2\)) y el axioma de <strong>independencia estricta</strong> entre lanzamientos, la probabilidad de una intersección de eventos independientes es el producto de probabilities individuales:</p>
+      <div class="math-block">
+        $$\mathbb{P}(T^{k-1}H) = \left(\frac{1}{2}\right)^{k-1} \times \left(\frac{1}{2}\right) = \left(\frac{1}{2}\right)^k = 2^{-k}$$
+      </div>
+      <p>Esta es la medida geométrica exacta que corresponde a ese conjunto cilíndrico particular en el espacio muestral.</p>
+    </div></div></div>
+  </div>
+
+  <!-- 5 -->
+  <div class="card" id="c5">
+    <button class="q-trigger" onclick="toggle(5)">
+      <span class="q-num">05</span>
+      <span class="q-title">¿Cómo se calcula la esperanza \(\mathbb{E}[X]\) en el juego de esperas y por qué da exactamente 2?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La esperanza matemática se define como la integral de la variable aleatoria respecto a su medida de probabilidad, que en un espacio discreto se reduce a una <strong>suma infinita ponderada</strong>:</p>
+      <div class="math-block">
+        $$\mathbb{E}[X] = \sum_{k=1}^{\infty} k \, \mathbb{P}(X=k)$$
+      </div>
+      <p>Sustituyendo la probabilidad geométrica hallada previamente:</p>
+      <div class="math-block">
+        $$\mathbb{E}[X] = \sum_{k=1}^{\infty} k \, 2^{-k} = 1\!\left(\frac{1}{2}\right) + 2\!\left(\frac{1}{4}\right) + 3\!\left(\frac{1}{8}\right) + \cdots$$
+      </div>
+      <p>Esta es una <strong>serie aritmético-geométrica convergente</strong>. Al resolverla analíticamente (por ejemplo, mediante la derivada de la serie geométrica), la suma converge exactamente al valor <strong>2</strong>. El peso probabilístico decae exponencialmente, lo cual aplasta rápidamente el crecimiento lineal de los premios \(k\), resultando en un promedio teórico finito de 2 lanzamientos.</p>
+    </div></div></div>
+  </div>
+
+  <!-- 6 -->
+  <div class="card" id="c6">
+    <button class="q-trigger" onclick="toggle(6)">
+      <span class="q-num">06</span>
+      <span class="q-title">¿Qué diferencia conceptual existe entre la "simulación" de un experimento y su cálculo exacto analítico?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La <strong>simulación computacional</strong> (como el método de Monte Carlo) se fundamenta en la Ley de los Grandes Números. Al repetir el experimento estocástico miles o millones de veces, el promedio de las muestras tiende a converger hacia el valor esperado teórico. Es una herramienta poderosa para generar intuición o resolver integrales intratables.</p>
+      <p>Sin embargo, su limitación conceptual radica en que nunca constituye una <strong>demostración matemática rigurosa</strong>. Una simulación siempre arrastra:</p>
+      <div class="highlight">
+        <strong>·</strong> Un margen de error estadístico (varianza empírica).<br>
+        <strong>·</strong> Limitaciones de los generadores de números pseudoaleatorios (PRNG).<br>
+        <strong>·</strong> Imprecisiones de punto flotante de la máquina.
+      </div>
+      <p>El cálculo analítico exacto, ya sea mediante series discretas o la integral de Lebesgue, entrega un resultado <strong>absoluto, universal y libre de ruido estocástico</strong> o sesgo computacional.</p>
+    </div></div></div>
+  </div>
+
+  <!-- 7 -->
+  <div class="card" id="c7">
+    <button class="q-trigger" onclick="toggle(7)">
+      <span class="q-num">07</span>
+      <span class="q-title">¿Cuál es un ejemplo donde "Riemann falla" y "Lebesgue triunfa", y qué enseña sobre medir racionales e irracionales?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Un caso canónico es una <strong>función indicadora tipo Dirichlet</strong> modificada en \([0,1]\): un juego que paga 1000 si el número elegido al azar es racional (\(\mathbb{Q}\)) y 0 si es irracional (\(\mathbb{I}\)).</p>
+      <p><strong>Riemann falla</strong> porque entre dos racionales siempre hay un irracional y viceversa; cualquier rectángulo aproximador oscilará caóticamente entre 0 y 1000, impidiendo la convergencia del límite.</p>
+      <p><strong>Lebesgue triunfa</strong> al ignorar la posición en el eje \(x\) y mirar directamente las preimágenes:</p>
+      <div class="math-block">
+        $$\mathbb{E}[X] = 1000 \cdot \underbrace{\mu(\mathbb{Q} \cap [0,1])}_{= 0} + 0 \cdot \underbrace{\mu(\mathbb{I} \cap [0,1])}_{= 1} = 0$$
+      </div>
+      <p>La lección fundamental: <strong>tener infinitos puntos no equivale a poseer masa probabilística positiva</strong>. Los racionales son numerables y tienen medida de Lebesgue exactamente 0.</p>
+    </div></div></div>
+  </div>
+
+  <!-- 8 -->
+  <div class="card" id="c8">
+    <button class="q-trigger" onclick="toggle(8)">
+      <span class="q-num">08</span>
+      <span class="q-title">¿Qué es exactamente la "Paradoja del Cero" en probabilidad continua?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La <strong>Paradoja del Cero</strong> es una aparente contradicción lógica que surge al aplicar intuiciones de probabilidad discreta a espacios continuos reales. Se resume en el contraste entre:</p>
+      <div class="highlight">
+        El hecho matemático de que la probabilidad de un evento puntual específico es estrictamente cero: \(\mathbb{P}(\{x\}) = 0\)&mdash;<strong>y</strong> la realidad física de que dicho evento puede ocurrir y no es imposible.
+      </div>
+      <p>En un modelo continuo (como elegir un número real uniforme entre 0 y 1), existen infinitas opciones no numerables. El "área bajo la curva" para un único punto geométrico carece de anchura, resultando en un área (probabilidad) nula.</p>
+      <p>La resolución de la paradoja es comprender que <strong>"medida nula"</strong> es un concepto analítico de peso relativo frente al todo, no un sinónimo de "imposibilidad lógica" (representada por el conjunto vacío \(\emptyset\)).</p>
+    </div></div></div>
+  </div>
+
+  <!-- 9 -->
+  <div class="card" id="c9">
+    <button class="q-trigger" onclick="toggle(9)">
+      <span class="q-num">09</span>
+      <span class="q-title">¿Cómo se utiliza el concepto de "bits" para explicar la transición de un modelo discreto a uno continuo?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Modelar un número continuo en \([0,1]\) en un entorno informático se logra discretizándolo mediante una cantidad \(b\) de bits, generando un espacio muestral de tamaño \(N = 2^b\).</p>
+      <div class="highlight">
+        <strong>b = 5 bits</strong> → 32 valores posibles → cuadrícula muy gruesa, alta probabilidad de repetición.<br>
+        <strong>b → ∞ (ej. 60 bits)</strong> → \({\sim}10^{18}\) valores → granularidad de paso \(2^{-b}\) microscópicamente fina, emulando a los reales.
+      </div>
+      <p>La transición conceptual ocurre cuando el tamaño del espacio crece exponencialmente, haciendo que la probabilidad de extraer exactamente el mismo elemento se pulverice y colapse asintóticamente hacia cero, dando a luz a la <strong>geometría del continuo</strong>.</p>
+    </div></div></div>
+  </div>
+
+  <!-- 10 -->
+  <div class="card" id="c10">
+    <button class="q-trigger" onclick="toggle(10)">
+      <span class="q-num">10</span>
+      <span class="q-title">¿Qué es el "umbral del cumpleaños" y por qué es crítico en el análisis probabilístico de colisiones?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>El <strong>umbral o paradoja del cumpleaños</strong> cuantifica la sorpresiva rapidez con la que aparecen colisiones (repeticiones) al extraer muestras aleatorias uniformes de un conjunto finito de tamaño \(N\).</p>
+      <p>Matemáticamente, la probabilidad de que al menos dos muestras colisionen alcanza el 50% mucho antes de extraer \(N/2\) elementos. La aproximación de Taylor revela que este umbral escala proporcionalmente a \(\sqrt{N}\). Si el sistema usa \(b\) bits:</p>
+      <div class="math-block">
+        $$N = 2^b \implies \text{Umbral de colisiones} \approx \sqrt{N} = 2^{b/2}$$
+      </div>
+      <p>Esto es crítico para la <strong>criptografía</strong> (ataques de cumpleaños a funciones hash): las colisiones ocurren muchísimo antes de lo que la intuición humana dictaría.</p>
+    </div></div></div>
+  </div>
+
+  <!-- 11 -->
+  <div class="card" id="c11">
+    <button class="q-trigger" onclick="toggle(11)">
+      <span class="q-num">11</span>
+      <span class="q-title">¿Por qué en el límite estricto continuo "cada punto tiene probabilidad 0" y cuál es la lectura correcta?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>En un marco teórico continuo regido por la Teoría de la Medida de Lebesgue, el espacio muestral está compuesto por un continuo no numerable de puntos. Si asignáramos a un solo punto una probabilidad uniforme estrictamente mayor que cero (\(\varepsilon > 0\)), por el <strong>axioma de aditividad numerable de Kolmogorov</strong>, la suma de las probabilidades tendería a infinito, violando la regla de que la probabilidad total debe ser exactamente 1.</p>
+      <div class="highlight">
+        La <strong>lectura correcta</strong>: la "masa" probabilística en el continuo no reside en los puntos aislados, sino en los <em>intervalos</em>. La densidad de probabilidad requiere de un diferencial \(dx\) para transformarse en probabilidad neta. Un evento de medida nula es aquel que carece de extensión geométrica para atrapar la aleatoriedad continua.
+      </div>
+    </div></div></div>
+  </div>
+
+  <!-- 12 -->
+  <div class="card" id="c12">
+    <button class="q-trigger" onclick="toggle(12)">
+      <span class="q-num">12</span>
+      <span class="q-title">¿Qué significa que la probabilidad de repetición "colapsa hacia el cero absoluto" al aumentar la resolución del espacio?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Significa que la probabilidad de obtener una colisión tras un número fijo \(n\) de intentos depende <strong>inversamente</strong> del tamaño del espacio de estados \(N\). Para \(n\) constante y \(N \to \infty\):</p>
+      <div class="math-block">
+        $$\mathbb{P}(\text{colisión}) \approx 1 - e^{-n^2 / 2N} \;\xrightarrow{N\to\infty}\; 1 - e^{0} = 1 - 1 = 0$$
+      </div>
+      <p>El colapso hacia el cero no indica que sea ontológicamente <em>imposible</em> repetir un número real, sino que el número esperado de extracciones para presenciar dicho evento se vuelve <strong>asintóticamente inalcanzable</strong> en la práctica.</p>
+    </div></div></div>
+  </div>
+
+  <!-- 13 -->
+  <div class="card" id="c13">
+    <button class="q-trigger" onclick="toggle(13)">
+      <span class="q-num">13</span>
+      <span class="q-title">¿Qué son las "desigualdades de concentración" y por qué se las considera universales?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Las <strong>desigualdades de concentración</strong> son teoremas fundamentales que permiten acotar superiormente la probabilidad de que una variable aleatoria tome valores extremadamente lejanos a su tendencia central (sus colas probabilísticas).</p>
+      <p>Se las considera herramientas <strong>universales</strong> (o <em>distribution-free</em>) porque operan independientemente de la forma geométrica de la distribución subyacente. No requieren distribución normal, simetría ni continuidad.</p>
+      <div class="highlight">
+        Imponen límites matemáticos estrictos "en el peor de los casos" valiéndose únicamente de unos pocos momentos estadísticos conocidos &mdash;como la <strong>media</strong> y la <strong>varianza</strong>&mdash; actuando como garantes teóricos de que la dispersión masiva de datos tiene fronteras matemáticas infranqueables.
+      </div>
+    </div></div></div>
+  </div>
+
+  <!-- 14 -->
+  <div class="card" id="c14">
+    <button class="q-trigger" onclick="toggle(14)">
+      <span class="q-num">14</span>
+      <span class="q-title">Enuncia la desigualdad de Markov, sus condiciones y proporciona una interpretación intuitiva sólida.</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La <strong>desigualdad de Markov</strong> postula que para cualquier variable aleatoria estrictamente no negativa (\(Z \ge 0\)) y para cualquier constante real positiva \(a > 0\):</p>
+      <div class="math-block">
+        $$\mathbb{P}(Z \ge a) \le \frac{\mathbb{E}[Z]}{a}$$
+      </div>
+      <p><strong>Condiciones esenciales:</strong> (1) la función no puede tomar valores negativos; (2) debe poseer un primer momento finito (esperanza finita).</p>
+      <div class="highlight">
+        <strong>Intuición:</strong> "Si el promedio de un sistema es bajo, es matemáticamente imposible que una gran parte de la población posea valores descomunales". Si el salario promedio es 1,000 USD, es imposible que más del 10% de la población gane 10,000 USD o más &mdash;eso solo empujaría el promedio por encima de los 1,000 USD, contradicción.
+      </div>
+    </div></div></div>
+  </div>
+
+  <!-- 15 -->
+  <div class="card" id="c15">
+    <button class="q-trigger" onclick="toggle(15)">
+      <span class="q-num">15</span>
+      <span class="q-title">Enuncia la desigualdad de Chebyshev, sus requerimientos y la interpretación con \(t = k\sigma\).</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La <strong>desigualdad de Chebyshev</strong> afirma que para cualquier variable aleatoria \(X\) con esperanza \(\mu\) y varianza finita \(\mathrm{Var}(X)\), se cumple para cualquier \(t > 0\):</p>
+      <div class="math-block">
+        $$\mathbb{P}(|X - \mu| \ge t) \le \frac{\mathrm{Var}(X)}{t^2}$$
+      </div>
+      <p>Parametrizando con \(t = k\sigma\) (donde \(\sigma = \sqrt{\mathrm{Var}(X)}\)):</p>
+      <div class="math-block">
+        $$\mathbb{P}(|X - \mu| \ge k\sigma) \le \frac{1}{k^2}$$
+      </div>
+      <div class="highlight">
+        Sin conocer la distribución, podemos garantizar que la fracción de masa probabilística a más de \(k\) desviaciones estándar del centro nunca supera \(1/k^2\).<br><br>
+        <strong>k = 2</strong> → máximo 25% en las colas &emsp; | &emsp; <strong>k = 3</strong> → máximo 11.1% en las colas.
+      </div>
+    </div></div></div>
+  </div>
+
+  <!-- 16 -->
+  <div class="card" id="c16">
+    <button class="q-trigger" onclick="toggle(16)">
+      <span class="q-num">16</span>
+      <span class="q-title">¿Qué significa que la cota de Chebyshev sea "ajustada" (tight) y qué rol juega la distribución "Spike"?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Afirmar que una cota es <strong>"ajustada"</strong> (tight) significa que existe al menos un caso patológico real donde la desigualdad se convierte en una igualdad estricta. La cota no puede ser mejorada sin perder su universalidad.</p>
+      <p>La <strong>distribución "Spike"</strong> (distribución de tres puntos de masa) es el contraejemplo que muestra que Chebyshev es óptima en el peor caso:</p>
+      <div class="highlight">
+        Probabilidad \(\frac{1}{2k^2}\) en \(\mu - k\sigma\) y en \(\mu + k\sigma\) (los extremos), y probabilidad \(\left(1 - \frac{1}{k^2}\right)\) en el centro \(\mu\). Al aplicar Chebyshev a esta estructura, la probabilidad en las colas <strong>iguala exactamente</strong> la cota teórica, demostrando que está optimizada para el peor escenario posible.
+      </div>
+    </div></div></div>
+  </div>
+
+  <!-- 17 -->
+  <div class="card" id="c17">
+    <button class="q-trigger" onclick="toggle(17)">
+      <span class="q-num">17</span>
+      <span class="q-title">¿De qué manera la integral de Lebesgue interpreta y calcula una esperanza como "premio × medida del conjunto que lo produce"?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La integral de Lebesgue abandona la partición secuencial de Riemann y adopta un enfoque <strong>estratificado por resultados</strong>. Para cada nivel de "premio" \(k\), agrupa todos los micro-eventos del espacio muestral que generan idéntico premio. Este conjunto es la preimagen \(X^{-1}(\{k\})\).</p>
+      <p>Lebesgue calcula la medida (probabilidad total, \(\mathbb{P}\)) de esta preimagen completa. La esperanza se reduce entonces a:</p>
+      <div class="math-block">
+        $$\mathbb{E}[X] = \sum_k k \cdot \mathbb{P}(X=k)$$
+      </div>
+      <p>Esta es la manifestación discreta pura de la integral de Lebesgue: <strong>integrar es el acto de ponderar escalares (valores de la función) por las medidas conjuntas de sus preimágenes</strong> en el espacio de Borel.</p>
+    </div></div></div>
+  </div>
+
+  <!-- 18 -->
+  <div class="card" id="c18">
+    <button class="q-trigger" onclick="toggle(18)">
+      <span class="q-num">18</span>
+      <span class="q-title">¿Qué conexión teórica subyace entre el ejemplo de "racionales vs irracionales" y la agrupación por niveles y preimágenes?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Los números racionales y los irracionales son conjuntos densos; están tan íntimamente entrelazados en la recta real que cualquier pequeño intervalo contiene infinitos miembros de ambos. Intentar evaluar la función secuencialmente (de izquierda a derecha) genera un caos analítico intratable.</p>
+      <p>La conexión teórica es que el enfoque de agrupación por niveles <strong>ignora elegantemente esta geografía caótica</strong>. Al definir:</p>
+      <div class="math-block">
+        $$X(\omega) = \begin{cases} 1000 & \text{si } \omega \in \mathbb{Q} \\ 0 & \text{si } \omega \in \mathbb{I} \end{cases}$$
+      </div>
+      <p>La preimagen del nivel 1000 aglutina a todos los racionales → medida = 0. La preimagen del nivel 0 aglutina a los irracionales → medida = 1. La resolución se apoya puramente en el <strong>tamaño volumétrico de los conjuntos preimagen</strong>, soslayando su disposición espacial.</p>
+    </div></div></div>
+  </div>
+
+  <!-- 19 -->
+  <div class="card" id="c19">
+    <button class="q-trigger" onclick="toggle(19)">
+      <span class="q-num">19</span>
+      <span class="q-title">¿Cómo se aplica la desigualdad de Markov para establecer "garantías de sistema" y analizar la latencia en ciencias de la computación?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>En el diseño de sistemas críticos, a menudo se desconoce la distribución de probabilidad exacta que rige los tiempos de respuesta o la latencia de red. La latencia (tiempo) es una variable estrictamente no negativa (\(Z \ge 0\)), lo que hace aplicable a Markov.</p>
+      <p>Si se conoce el tiempo medio de respuesta \(\mathbb{E}[Z] = \mu\), Markov provee un <strong>blindaje probabilístico garantizado</strong>:</p>
+      <div class="math-block">
+        $$\mathbb{P}(Z \ge 10\mu) \le \frac{\mu}{10\mu} = \frac{1}{10} = 10\%$$
+      </div>
+      <div class="highlight">
+        La probabilidad de un pico de latencia de 10× el promedio nunca supera el 10% de las solicitudes, <strong>sin importar la distribución subyacente</strong>. Esto permite firmar Acuerdos de Nivel de Servicio (SLAs) matemáticamente robustos sin presunciones estadísticas temerarias.
+      </div>
+    </div></div></div>
+  </div>
+
+  <!-- 20 -->
+  <div class="card" id="c20">
+    <button class="q-trigger" onclick="toggle(20)">
+      <span class="q-num">20</span>
+      <span class="q-title">¿De qué manera la desigualdad de Chebyshev es explotada en la "detección de anomalías" y cuál es el mensaje estadístico fundamental?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>En análisis de datos y detección de <em>outliers</em> (fraude bancario, fallas de sensores), la práctica común es etiquetar como anomalía cualquier observación que exceda las \(3\sigma\) de la media. Bajo distribución Normal, la Regla Empírica indica una probabilidad del 0.3% para un evento más allá de \(3\sigma\). Sin embargo, en la vida real los datos financieros o industriales presentan <strong>colas pesadas crónicas</strong>.</p>
+      <p>Chebyshev interviene como el filtro conservador definitivo. Para \(k=3\):</p>
+      <div class="math-block">
+        $$\mathbb{P}(|X - \mu| \ge 3\sigma) \le \frac{1}{9} \approx 11.1\%$$
+      </div>
+      <div class="highlight">
+        <strong>Mensaje estadístico fundamental:</strong> en problemas de seguridad y anomalías de misión crítica, la heurística óptima no es "¿cuál es la probabilidad exacta asumiendo normalidad?" sino <strong>"¿cuál es la peor desviación garantizable con información parcial?"</strong>. Todo dato que rompa el umbral de Chebyshev es, por necesidad matemática incuestionable, una anomalía estructural severa.
+      </div>
+    </div></div></div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-author">Material elaborado por el profesor Sergio Gevatschnaider</div>
+  <br>
+  Teoría de la Medida &amp; Probabilidad Moderna &nbsp;·&nbsp; 20 Preguntas &amp; Respuestas Completas
+</footer>
+
+<script>
+  const total = 20;
+  let openSet = new Set();
+
+  function toggle(n) {
+    const card = document.getElementById('c' + n);
+    if (card.classList.contains('open')) {
+      card.classList.remove('open');
+      openSet.delete(n);
+    } else {
+      card.classList.add('open');
+      openSet.add(n);
+      // Trigger MathJax re-render
+      if (window.MathJax) {
+        MathJax.typesetPromise([card]).catch(err => console.log(err));
+      }
+    }
+    updateProgress();
+  }
+
+  function expandAll() {
+    for (let i = 1; i <= total; i++) {
+      const card = document.getElementById('c' + i);
+      card.classList.add('open');
+      openSet.add(i);
+    }
+    updateProgress();
+    if (window.MathJax) {
+      MathJax.typesetPromise(document.querySelectorAll('.card')).catch(err => console.log(err));
+    }
+  }
+
+  function collapseAll() {
+    for (let i = 1; i <= total; i++) {
+      document.getElementById('c' + i).classList.remove('open');
+    }
+    openSet.clear();
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const count = openSet.size;
+    const pct = (count / total * 100).toFixed(0);
+    document.getElementById('progress-bar-inner').style.width = pct + '%';
+    document.getElementById('open-count').textContent = count + ' / ' + total + ' abiertas';
+    document.getElementById('progress-text').textContent = pct + '% COMPLETADO';
+  }
+
+  // ─── THEME ───
+  const themes = ['dark', 'light', 'sepia'];
+
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themes.forEach(th => {
+      document.getElementById('opt-' + th).classList.toggle('active', th === t);
+    });
+    try { localStorage.setItem('quiz-theme', t); } catch(e) {}
+  }
+
+  // Restore saved theme
+  (function() {
+    try {
+      const saved = localStorage.getItem('quiz-theme');
+      if (saved && themes.includes(saved)) setTheme(saved);
+    } catch(e) {}
+  })();
+
+  // Keyboard: press Enter / Space on trigger
+  document.querySelectorAll('.q-trigger').forEach((btn, idx) => {
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle(idx + 1);
+      }
+    });
+  });
+</script>
+</body>
+</html>
