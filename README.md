@@ -105,7 +105,6 @@ Estas referencias sostienen los resultados de convergencia, concentración, mult
 
 * **[KenettZacksGedeck]** — Ron S. Kenett, Shelemyahu Zacks, Peter Gedeck, *Modern Statistics: A Computer-Based Approach with Python* (enfoque computacional aplicado).  
 
-> Nota de estilo: en el README se evita notación LaTeX inline para asegurar renderizado consistente en GitHub.
 
 ## 🎯 Propósito del curso
 
