@@ -179,7 +179,63 @@ Este módulo se construye sobre los siguientes textos canónicos (disponibles en
 4. **Proyecto Final:** Detector de anomalías basado en Mahalanobis sobre dataset real.
 
 ---
+## 🏆 Proyecto Final: Detector de Anomalías Multivariante
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Dificultad-Avanzada-red?style=for-the-badge" alt="Dificultad">
+  <img src="https://img.shields.io/badge/Herramienta-Jupyter_Notebook-F37626?style=for-the-badge&logo=jupyter" alt="Jupyter">
+  <img src="https://img.shields.io/badge/Librer%C3%ADas-NumPy%20%7C%20SciPy-blue?style=for-the-badge" alt="Librerías">
+</p>
+
+
+
+### 📝 Descripción del Problema
+En espacios de alta dimensión donde las variables están correlacionadas, la distancia Euclidiana es engañosa. Un punto puede parecer "cercano" al centroide pero violar por completo la estructura de covarianza del sistema. 
+
+El objetivo de este proyecto es implementar un sistema de **Detección de Anomalías (Outlier Detection)** desde cero utilizando la **Distancia de Mahalanobis**, aplicándolo a un conjunto de datos real (por ejemplo, transacciones bancarias o lecturas de sensores industriales).
+
+### 🛠️ Requisitos de Implementación (Step-by-Step)
+
+1. **Adquisición y Limpieza:**
+   * Cargar un dataset multivariante continuo (se recomienda el *Credit Card Fraud Detection* de Kaggle o un dataset de telemetría).
+   * Separar un subconjunto de datos "sanos" (inliers) para calibrar el modelo.
+
+2. **Ajuste del Modelo Paramétrico (MVN):**
+   * Calcular el vector de medias $\mu \in \mathbb{R}^d$.
+   * Estimar la matriz de covarianza muestral $\Sigma \in \mathbb{R}^{d \times d}$.
+   * *Control de estabilidad:* Verificar si $\Sigma$ es mal condicionada y aplicar regularización (Ridge/Tikhonov) o usar la pseudoinversa (`np.linalg.pinv`) si es necesario.
+
+3. **Ingeniería de Distancias:**
+   * Implementar vectorizadamente el cálculo del cuadrado de la distancia de Mahalanobis para cada nueva observación $x$:
+     $$D_M^2(x) = (x - \mu)^T \Sigma^{-1} (x - \mu)$$
+
+4. **Decisión Estadística y Umbrales:**
+   * **Teoría:** Sabiendo que $D_M^2$ sigue una distribución $\chi^2$ (Chi-cuadrado) con $d$ grados de libertad.
+   * **Práctica:** Utilizar `scipy.stats.chi2.ppf` para establecer un umbral de corte estricto (ej. $\alpha = 0.01$ o $\alpha = 0.001$). Todo punto que supere este umbral es clasificado como anomalía.
+
+5. **Análisis y Visualización:**
+   * Proyectar los datos a 2D utilizando Análisis de Componentes Principales (PCA) calculado manualmente mediante la descomposición espectral de $\Sigma$.
+   * Graficar las observaciones normales, las anomalías detectadas y los isocontornos (elipsoides de confianza).
+
+### 📦 Entregables Esperados
+
+* Un archivo `Proyecto_Mahalanobis.ipynb` completamente documentado.
+* El código debe estar estructurado en funciones limpias (ej. `fit_mvn(X)`, `mahalanobis_score(X_test, mu, cov)`, `predict_anomalies(scores, alpha)`).
+* Un breve reporte final (en celdas Markdown) discutiendo:
+  1. ¿Qué ventajas observaste respecto a usar simplemente una métrica Euclidiana?
+  2. ¿Qué ocurre con la eficacia del detector si los datos subyacentes no son verdaderamente Gaussianos?
+
+<details>
+<summary>💡 <strong>Pista para la vectorización (clic para ver)</strong></summary>
+
+Evita usar bucles `for` para calcular la distancia de miles de filas. Si `X` es tu matriz de datos centrada $(X - \mu)$ de dimensión $(n, d)$ y `InvSigma` es la matriz inversa $(d, d)$, puedes calcular todas las distancias simultáneamente usando un producto de matrices y sumando a lo largo del eje correcto:
+
+```python
+delta = X_test - mu
+# (n, d) @ (d, d) -> (n, d)
+left_term = np.dot(delta, inv_sigma) 
+# Producto elemento a elemento y suma por filas
+D_squared = np.sum(left_term * delta, axis=1)
 ## ⚠️ Errores Comunes (Troubleshooting)
 
 * **Matriz Singular:** Si `np.linalg.inv(Sigma)` falla, tu matriz de covarianza no es invertible (tienes variables colineales). *Solución:* Usar `np.linalg.pinv` (pseudoinversa).
