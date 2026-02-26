@@ -156,17 +156,59 @@ Conectar **probabilidad multivariante + álgebra lineal + inferencia computacion
 
 ---
 
-## 📚 Bibliografía Específica
+## 📚 Bibliografía Específica — Módulo I  
+**Vectores Aleatorios y Geometría de Datos**
 
-* **Wasserman, *All of Statistics*:**
-    * Chapter 3: Expectation & Variance.
-    * Chapter 4–5: Convergence & Inequalities (Concentration).
-    * Chapter 14: Multivariate Models.
-* **Hastie et al., *ESL*:**
-    * Chapter 2.4–2.5: Statistical Decision Theory / Local Methods.
-    * Chapter 3.5: Dimensionality Reduction.
-* **Koller & Friedman, *PGM*:**
-    * Chapter 2–3: Independence & Factorization.
+El módulo se apoya en textos de probabilidad rigurosa, teoría multivariante y fundamentos geométricos del aprendizaje estadístico.
+
+### 🔹 Probabilidad y Convergencia
+
+**Wasserman — *All of Statistics***
+- Chapter 3: Expectation and Variance  
+- Chapter 4–5: Convergence of Random Variables and Inequalities  
+- Chapter 14: Multivariate Models  
+
+**Rosenthal — *A First Look at Rigorous Probability Theory***
+- Capítulos sobre convergencia (LLN y CLT formales)  
+- Secciones sobre desigualdades y modos de convergencia  
+
+---
+
+### 🔹 Teoría Multivariante y Geometría
+
+**Mardia, Kent & Bibby — *Multivariate Analysis***
+- Capítulos sobre Normal Multivariante  
+- Distribución Wishart  
+- Teoría espectral aplicada a covarianza  
+
+**Härdle, Simar & Fengler — *Applied Multivariate Statistical Analysis***
+- Secciones sobre PCA y reducción de dimensión  
+- Geometría de datos multivariantes  
+
+---
+
+### 🔹 Aprendizaje Estadístico (Enfoque Geométrico)
+
+**Hastie, Tibshirani & Friedman — *The Elements of Statistical Learning***
+- Chapter 2.4–2.5: Statistical Decision Theory  
+- Chapter 3.5: Dimensionality Reduction  
+- Secciones sobre Bias–Variance Tradeoff  
+
+---
+
+### 🔹 Independencia y Factorización
+
+**Koller & Friedman — *Probabilistic Graphical Models***
+- Chapter 2–3: Conditional Independence and Factorization  
+
+---
+
+### 🔹 Complemento Avanzado (Opcional / Research Track)
+
+**Chikuse — *Statistics on Special Manifolds***
+- Fundamentos geométricos en Stiefel y Grassmann manifolds  
+- Marco para extender MVN más allá del espacio euclídeo  
+
 
 ---
 
