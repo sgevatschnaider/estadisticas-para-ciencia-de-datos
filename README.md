@@ -105,9 +105,6 @@ Conectar **probabilidad multivariante + álgebra lineal + inferencia computacion
 | Recurso | Enlace al Repositorio |
 | :--- | :--- |
 | **💻 Código Fuente** | [Ir a carpeta `src/classroom/probabilidad`](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad) |
-| **📝 Ejercicios** | [Ver ejercicios](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad/ejercicios) |
-| **💡 Soluciones** | [Ver soluciones](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad/soluciones) |
-
 ---
 
 ## 🗺️ Temario Detallado
