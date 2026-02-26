@@ -74,17 +74,38 @@ El curso asume conocimientos previos de estadística clásica (por ejemplo: ANOV
 
 ## 📚 Bibliografía Base
 
-Las referencias bibliográficas del programa (The Canon) se apoyan principalmente en:
+Las referencias bibliográficas del programa se organizan en dos capas:
 
-* **[Wasserman]** — *All of Statistics: A Concise Course in Statistical Inference* (Larry Wasserman)
-* **[ESL]** — *The Elements of Statistical Learning* (Hastie, Tibshirani & Friedman)
-* **[BDA3]** — *Bayesian Data Analysis (3rd Ed.)* (Gelman, Carlin, et al.)
-* **[Efron]** — *Computer Age Statistical Inference* (Efron & Hastie)
-* **[Pearl]** — *Causality: Models, Reasoning, and Inference* (Judea Pearl)
-* **[Shumway]** — *Time Series Analysis and Its Applications* (Shumway & Stoffer)
-* **[Bishop]** — *Pattern Recognition and Machine Learning (PRML)*
-* **[Koller & Friedman]** — *Probabilistic Graphical Models*
----
+1) **The Canon**: los textos vertebrales del curso (conceptos, métodos y marco unificado).  
+2) **Foundations / Backbone**: los fundamentos matemáticos y multivariantes que sostienen el nivel “Engineering & Research Track”.  
+
+### The Canon (textos centrales)
+
+* **[Wasserman]** — Larry Wasserman, *All of Statistics: A Concise Course in Statistical Inference*.  
+* **[ESL]** — Trevor Hastie, Robert Tibshirani, Jerome Friedman, *The Elements of Statistical Learning: Data Mining, Inference, and Prediction*.  
+* **[BDA3]** — Andrew Gelman, John B. Carlin, Hal S. Stern, David B. Dunson, Aki Vehtari, Donald B. Rubin, *Bayesian Data Analysis (3rd Ed.)*.  
+* **[Efron]** — Bradley Efron, Trevor Hastie, *Computer Age Statistical Inference: Algorithms, Evidence, and Data Science*.  
+* **[Bishop]** — Christopher M. Bishop, *Pattern Recognition and Machine Learning*.  
+* **[KollerFriedman]** — Daphne Koller, Nir Friedman, *Probabilistic Graphical Models: Principles and Techniques*.  
+* **[Pearl]** — Judea Pearl, *Causality: Models, Reasoning, and Inference*.  
+* **[ShumwayStoffer]** — Robert H. Shumway, David S. Stoffer, *Time Series Analysis and Its Applications*.  
+
+### Foundations / Mathematical Backbone (rigor y soporte formal)
+
+Estas referencias sostienen los resultados de convergencia, concentración, multivariante y geometría usados a lo largo del curso:
+
+* **[AxlerMeasure]** — Sheldon Axler, *Measure, Integration & Real Analysis* (teoría de medida e integración).  
+* **[Rosenthal]** — Jeffrey Seth Rosenthal, *A First Look at Rigorous Probability Theory (2nd Ed.)* (probabilidad rigurosa y herramientas asintóticas).  
+* **[Mardia]** — K. V. Mardia, J. T. Kent, J. M. Bibby, *Multivariate Analysis: Probability and Mathematical Statistics* (MVN, Wishart, teoría multivariante clásica).  
+* **[HardleSimarFengler]** — Wolfgang Karl Härdle, Léopold Simar, Matthias R. Fengler, *Applied Multivariate Statistical Analysis* (multivariante aplicado y métodos modernos).  
+* **[Chikuse]** — Yasuko Chikuse, *Statistics on Special Manifolds* (Stiefel/Grassmann, estadística en variedades, enfoque avanzado).  
+* **[RotondiPedroniPievatolo]** — Alberto Rotondi, Paolo Pedroni, Antonio Pievatolo, *Probability, Statistics and Simulation: With Application Programs Written in R* (Monte Carlo, simulación y verificación computacional).  
+
+### Lecturas complementarias (según profundidad y orientación)
+
+* **[KenettZacksGedeck]** — Ron S. Kenett, Shelemyahu Zacks, Peter Gedeck, *Modern Statistics: A Computer-Based Approach with Python* (enfoque computacional aplicado).  
+
+> Nota de estilo: en el README se evita notación LaTeX inline para asegurar renderizado consistente en GitHub.
 
 ## 🎯 Propósito del curso
 
