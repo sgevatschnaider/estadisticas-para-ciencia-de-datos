@@ -1,4 +1,4 @@
-Applied Statistics for Data Science (Engineering & Research Track)
+# Applied Statistics for Data Science (Engineering & Research Track)
 
 <p align="center">
   <img src="assets/portada%20.gif" alt="Visualización de conceptos: Geometría de Datos, Inferencia, Learning, Modelos Estructurados y Grafos" width="100%">
@@ -17,21 +17,41 @@ Applied Statistics for Data Science (Engineering & Research Track)
 
 ## 📑 Tabla de Contenidos
 1. [Accesos rápidos](#accesos-rápidos)
-2. [Descripción](#descripción)
-3. [Bibliografía Base](#bibliografía-base)
-4. [Syllabus Detallado](#syllabus-detallado)
-5. [Instalación y Uso](#cómo-utilizar-este-material-instalación-y-uso)
+2. [Descripción](#-descripción)
+3. [Bibliografía base](#-bibliografía-base)
+4. [Propósito del curso](#-propósito-del-curso)
+5. [Syllabus detallado](#️-syllabus-detallado)
+6. [Cómo utilizar este material](#-cómo-utilizar-este-material-instalación-y-uso)
+7. [Estructura del repositorio](#-estructura-del-repositorio-high-level)
+8. [Uso y ejecución](#️-uso-y-ejecución)
+9. [Requisitos y nivel esperado](#-requisitos-y-nivel-esperado)
+10. [Contribuciones](#-contribuciones)
+11. [Licencia](#️-licencia)
+
+---
 
 ## 🔗 Accesos rápidos
 
-> *Acceso directo a las carpetas del repositorio con la teoría (simuladores HTML) y el código fuente (Notebooks).*
+> Acceso directo a las carpetas del repositorio con la teoría (simuladores HTML) y el código fuente (Notebooks).
 
 <p align="center">
-  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad"><img src="https://img.shields.io/badge/MÓDULO_I-Geometría-0366d6?style=for-the-badge"></a>
-  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/inferencia"><img src="https://img.shields.io/badge/MÓDULO_II-Inferencia-0366d6?style=for-the-badge"></a>
-  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/learning"><img src="https://img.shields.io/badge/MÓDULO_III-Learning-0366d6?style=for-the-badge"></a>
-  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/pgm"><img src="https://img.shields.io/badge/MÓDULO_IV-Estructurados-0366d6?style=for-the-badge"></a>
-  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/tiempo"><img src="https://img.shields.io/badge/MÓDULO_V-Grafos-0366d6?style=for-the-badge"></a>
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad">
+    <img src="https://img.shields.io/badge/MÓDULO_I-Geometría-0366d6?style=for-the-badge" alt="MÓDULO I">
+  </a>
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/inferencia">
+    <img src="https://img.shields.io/badge/MÓDULO_II-Inferencia-0366d6?style=for-the-badge" alt="MÓDULO II">
+  </a>
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/learning">
+    <img src="https://img.shields.io/badge/MÓDULO_III-Learning-0366d6?style=for-the-badge" alt="MÓDULO III">
+  </a>
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/pgm">
+    <img src="https://img.shields.io/badge/MÓDULO_IV-Estructurados-0366d6?style=for-the-badge" alt="MÓDULO IV">
+  </a>
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/tiempo">
+    <img src="https://img.shields.io/badge/MÓDULO_V-Grafos-0366d6?style=for-the-badge" alt="MÓDULO V">
+  </a>
+</p>
+
 <p align="center">
   <a href="https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/" target="_blank" rel="noopener">
     <img alt="Live docs — GitHub Pages" src="https://img.shields.io/badge/Live%20docs-GitHub%20Pages-2b3137?style=for-the-badge&logo=github" />
@@ -46,11 +66,13 @@ Applied Statistics for Data Science (Engineering & Research Track)
   </a>
 </p>
 
+---
+
 ## 🎯 Descripción
 
 Material docente de nivel **Ingeniería** para Ciencia de Datos.
 
-El curso asume conocimientos previos de estadística clásica (por ejemplo: ANOVA y tests de hipótesis básicos) y se centra en la **“caja blanca”** de la ingeniería estadística moderna: inferencia computacional, geometría de los datos, regularización, y modelos gráficos probabilísticos (PGMs), con extensión a causalidad y series temporales.
+El curso asume conocimientos previos de estadística clásica (por ejemplo: ANOVA y tests de hipótesis básicos) y se centra en la **caja blanca** de la ingeniería estadística moderna: inferencia computacional, geometría de los datos, regularización y modelos gráficos probabilísticos (PGMs), con extensión a causalidad y series temporales.
 
 <p align="center">
   <a href="https://www.python.org/">
@@ -76,35 +98,36 @@ El curso asume conocimientos previos de estadística clásica (por ejemplo: ANOV
 
 Las referencias bibliográficas del programa se organizan en dos capas:
 
-1) **The Canon**: los textos vertebrales del curso (conceptos, métodos y marco unificado).  
-2) **Foundations / Backbone**: los fundamentos matemáticos y multivariantes que sostienen el nivel “Engineering & Research Track”.  
+1. **The Canon**: textos vertebrales del curso (conceptos, métodos y marco unificado).  
+2. **Foundations / Backbone**: fundamentos matemáticos y multivariantes que sostienen el nivel “Engineering & Research Track”.
 
 ### The Canon (textos centrales)
 
-* **[Wasserman]** — Larry Wasserman, *All of Statistics: A Concise Course in Statistical Inference*.  
-* **[ESL]** — Trevor Hastie, Robert Tibshirani, Jerome Friedman, *The Elements of Statistical Learning: Data Mining, Inference, and Prediction*.  
-* **[BDA3]** — Andrew Gelman, John B. Carlin, Hal S. Stern, David B. Dunson, Aki Vehtari, Donald B. Rubin, *Bayesian Data Analysis (3rd Ed.)*.  
-* **[Efron]** — Bradley Efron, Trevor Hastie, *Computer Age Statistical Inference: Algorithms, Evidence, and Data Science*.  
-* **[Bishop]** — Christopher M. Bishop, *Pattern Recognition and Machine Learning*.  
-* **[KollerFriedman]** — Daphne Koller, Nir Friedman, *Probabilistic Graphical Models: Principles and Techniques*.  
-* **[Pearl]** — Judea Pearl, *Causality: Models, Reasoning, and Inference*.  
-* **[ShumwayStoffer]** — Robert H. Shumway, David S. Stoffer, *Time Series Analysis and Its Applications*.  
+- **[Wasserman]** — Larry Wasserman, *All of Statistics: A Concise Course in Statistical Inference*.  
+- **[ESL]** — Trevor Hastie, Robert Tibshirani, Jerome Friedman, *The Elements of Statistical Learning: Data Mining, Inference, and Prediction*.  
+- **[BDA3]** — Andrew Gelman, John B. Carlin, Hal S. Stern, David B. Dunson, Aki Vehtari, Donald B. Rubin, *Bayesian Data Analysis (3rd Ed.)*.  
+- **[Efron]** — Bradley Efron, Trevor Hastie, *Computer Age Statistical Inference: Algorithms, Evidence, and Data Science*.  
+- **[Bishop]** — Christopher M. Bishop, *Pattern Recognition and Machine Learning*.  
+- **[KollerFriedman]** — Daphne Koller, Nir Friedman, *Probabilistic Graphical Models: Principles and Techniques*.  
+- **[Pearl]** — Judea Pearl, *Causality: Models, Reasoning, and Inference*.  
+- **[ShumwayStoffer]** — Robert H. Shumway, David S. Stoffer, *Time Series Analysis and Its Applications*.  
 
 ### Foundations / Mathematical Backbone (rigor y soporte formal)
 
-Estas referencias sostienen los resultados de convergencia, concentración, multivariante y geometría usados a lo largo del curso:
+Estas referencias sostienen resultados de convergencia, concentración, multivariante y geometría usados a lo largo del curso:
 
-* **[AxlerMeasure]** — Sheldon Axler, *Measure, Integration & Real Analysis* (teoría de medida e integración).  
-* **[Rosenthal]** — Jeffrey Seth Rosenthal, *A First Look at Rigorous Probability Theory (2nd Ed.)* (probabilidad rigurosa y herramientas asintóticas).  
-* **[Mardia]** — K. V. Mardia, J. T. Kent, J. M. Bibby, *Multivariate Analysis: Probability and Mathematical Statistics* (MVN, Wishart, teoría multivariante clásica).  
-* **[HardleSimarFengler]** — Wolfgang Karl Härdle, Léopold Simar, Matthias R. Fengler, *Applied Multivariate Statistical Analysis* (multivariante aplicado y métodos modernos).  
-* **[Chikuse]** — Yasuko Chikuse, *Statistics on Special Manifolds* (Stiefel/Grassmann, estadística en variedades, enfoque avanzado).  
-* **[RotondiPedroniPievatolo]** — Alberto Rotondi, Paolo Pedroni, Antonio Pievatolo, *Probability, Statistics and Simulation: With Application Programs Written in R* (Monte Carlo, simulación y verificación computacional).  
+- **[AxlerMeasure]** — Sheldon Axler, *Measure, Integration & Real Analysis* (teoría de medida e integración).  
+- **[Rosenthal]** — Jeffrey Seth Rosenthal, *A First Look at Rigorous Probability Theory (2nd Ed.)* (probabilidad rigurosa y herramientas asintóticas).  
+- **[Mardia]** — K. V. Mardia, J. T. Kent, J. M. Bibby, *Multivariate Analysis: Probability and Mathematical Statistics* (MVN, Wishart, teoría multivariante clásica).  
+- **[HardleSimarFengler]** — Wolfgang Karl Härdle, Léopold Simar, Matthias R. Fengler, *Applied Multivariate Statistical Analysis* (multivariante aplicado y métodos modernos).  
+- **[Chikuse]** — Yasuko Chikuse, *Statistics on Special Manifolds* (Stiefel/Grassmann, estadística en variedades).  
+- **[RotondiPedroniPievatolo]** — Alberto Rotondi, Paolo Pedroni, Antonio Pievatolo, *Probability, Statistics and Simulation: With Application Programs Written in R* (Monte Carlo y verificación computacional).  
 
 ### Lecturas complementarias (según profundidad y orientación)
 
-* **[KenettZacksGedeck]** — Ron S. Kenett, Shelemyahu Zacks, Peter Gedeck, *Modern Statistics: A Computer-Based Approach with Python* (enfoque computacional aplicado).  
+- **[KenettZacksGedeck]** — Ron S. Kenett, Shelemyahu Zacks, Peter Gedeck, *Modern Statistics: A Computer-Based Approach with Python* (enfoque computacional aplicado).  
 
+---
 
 ## 🎯 Propósito del curso
 
@@ -114,53 +137,43 @@ Conectar **probabilidad multivariante + álgebra lineal + inferencia computacion
 
 ## 🗺️ Syllabus detallado
 
-# MÓDULO I — Vectores Aleatorios y Geometría de Datos
+## MÓDULO I — Vectores Aleatorios y Geometría de Datos
 
-> **Enfoque:** La distribución conjunta como objeto geométrico (subespacios, elipsoides, proyecciones) y la teoría de concentración de la medida.
+> **Enfoque:** la distribución conjunta como objeto geométrico (subespacios, elipsoides, proyecciones) y la concentración de la medida.
 
----
-
-## 📂 Ruta del módulo y Recursos
+### 📂 Ruta del módulo y Recursos
 
 | Recurso | Enlace al Repositorio |
 | :--- | :--- |
 | **💻 Código Fuente** | [Ir a carpeta `src/classroom/probabilidad`](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/tree/main/src/classroom/probabilidad) |
----
 
-## 🗺️ Temario Detallado
+### 🗺️ Temario Detallado
 
-### 1. Notación matricial y Geometría ($\mu, \Sigma$)
-* **Definiciones:** Vector de medias $\mu = \mathbb{E}[X]$ y matriz de covarianza $\Sigma = \mathbb{E}[(X-\mu)(X-\mu)^\top]$.
-* **Propiedades:** Simetría, semidefinida positiva e interpretación geométrica (varianza por direcciones).
-* **Proyecciones:** Varianza de $u^\top X$ y métrica inducida.
-* *Aplicación:* Feature scaling, Covariance shift, Distancia de Mahalanobis.
+#### 1. Notación matricial y geometría (μ, Σ)
+- **Definiciones:** vector de medias μ = E[X] y matriz de covarianza Σ = E[(X − μ)(X − μ)ᵀ].  
+- **Propiedades:** simetría, semidefinida positiva e interpretación geométrica (varianza por direcciones).  
+- **Proyecciones:** varianza de uᵀX y métrica inducida.  
+- **Aplicación:** feature scaling, covariance shift, distancia de Mahalanobis.
 
-### 2. Dependencia Lineal vs. Independencia Estadística
-* **Conceptos:** Diferencia entre dependencia lineal (rango, singularidad) e independencia estadística (p(x,y) = p(x)p(y)).
-* **La falacia de la correlación:** Correlación ≠ Independencia (excepto en distribuciones gaussianas).
-* *Aplicación:* Multicolinealidad en regresión, selección de variables.
-  
-### 3. Normal Multivariante (MVN)
-* **Definición:** Densidad, forma cuadrática y energía.
-* **Geometría:** Elipsoides de densidad y descomposición espectral ($\Sigma = U \Lambda U^\top$).
-* **Whitening (Blanqueo):** Transformación $Z=\Lambda^{-1/2}U^\top(X-\mu)$ para decorrelacionar datos.
-* *Aplicación:* PCA, Gaussian Processes, Batch Normalization.
+#### 2. Dependencia lineal vs. independencia estadística
+- **Conceptos:** diferencia entre dependencia lineal (rango, singularidad) e independencia estadística (p(x,y) = p(x)p(y)).  
+- **La falacia de la correlación:** correlación ≠ independencia (excepto en distribuciones gaussianas).  
+- **Aplicación:** multicolinealidad en regresión, selección de variables.
 
-### 4. Teoría del Aprendizaje (Concentración de la Medida)
-* **Convergencia:** Ley de los Grandes Números (LLN) y Teorema Central del Límite (CLT) vistos como convergencia estocástica.
-* **Desigualdades:**
-    * **Chebyshev:** Cota básica basada en varianza.
-    * **Hoeffding:** Cota exponencial para variables acotadas (fundamental en ML).
-* *Aplicación:* Cotas de error en generalización, intervalos de confianza para métricas.
+#### 3. Normal multivariante (MVN)
+- **Definición:** densidad y forma cuadrática.  
+- **Geometría:** elipsoides de densidad y descomposición espectral: Σ = UΛUᵀ.  
+- **Whitening (blanqueo):** Z = Λ^(−1/2) Uᵀ (X − μ) para decorrelacionar datos.  
+- **Aplicación:** PCA, Gaussian Processes, Batch Normalization.
 
----
+#### 4. Teoría del aprendizaje (concentración de la medida)
+- **Convergencia:** LLN y CLT como convergencia estocástica y aproximación gaussiana.  
+- **Desigualdades:** Chebyshev (cota por varianza) y Hoeffding (cota exponencial para variables acotadas).  
+- **Aplicación:** cotas de generalización, intervalos de confianza para métricas.
 
-## 📚 Bibliografía Específica — Módulo I  
-**Vectores Aleatorios y Geometría de Datos**
+### 📚 Bibliografía Específica — Módulo I
 
 El módulo se apoya en textos de probabilidad rigurosa, teoría multivariante y fundamentos geométricos del aprendizaje estadístico.
-
-### 🔹 Probabilidad y Convergencia
 
 **Wasserman — *All of Statistics***
 - Chapter 3: Expectation and Variance  
@@ -168,222 +181,178 @@ El módulo se apoya en textos de probabilidad rigurosa, teoría multivariante y 
 - Chapter 14: Multivariate Models  
 
 **Rosenthal — *A First Look at Rigorous Probability Theory***
-- Capítulos sobre convergencia (LLN y CLT formales)  
-- Secciones sobre desigualdades y modos de convergencia  
-
----
-
-### 🔹 Teoría Multivariante y Geometría
+- Secciones sobre modos de convergencia y resultados LLN/CLT  
+- Secciones sobre desigualdades y herramientas asintóticas  
 
 **Mardia, Kent & Bibby — *Multivariate Analysis***
-- Capítulos sobre Normal Multivariante  
-- Distribución Wishart  
-- Teoría espectral aplicada a covarianza  
+- Normal multivariante y propiedades geométricas  
+- Wishart y modelos multivariantes clásicos  
 
 **Härdle, Simar & Fengler — *Applied Multivariate Statistical Analysis***
-- Secciones sobre PCA y reducción de dimensión  
-- Geometría de datos multivariantes  
-
----
-
-### 🔹 Aprendizaje Estadístico (Enfoque Geométrico)
+- PCA y reducción de dimensión  
+- Métodos multivariantes aplicados y geometría de datos  
 
 **Hastie, Tibshirani & Friedman — *The Elements of Statistical Learning***
 - Chapter 2.4–2.5: Statistical Decision Theory  
 - Chapter 3.5: Dimensionality Reduction  
-- Secciones sobre Bias–Variance Tradeoff  
-
----
-
-### 🔹 Independencia y Factorización
+- Secciones sobre bias–variance tradeoff  
 
 **Koller & Friedman — *Probabilistic Graphical Models***
 - Chapter 2–3: Conditional Independence and Factorization  
 
----
-
-### 🔹 Complemento Avanzado (Opcional / Research Track)
-
-**Chikuse — *Statistics on Special Manifolds***
-- Fundamentos geométricos en Stiefel y Grassmann manifolds  
-- Marco para extender MVN más allá del espacio euclídeo  
-
+**Chikuse — *Statistics on Special Manifolds* (opcional / Research Track)**
+- Stiefel y Grassmann manifolds  
+- Marco geométrico para extender modelos más allá de lo euclídeo  
 
 ---
 
-### MÓDULO II — Inferencia computacional y “moderna”
+## MÓDULO II — Inferencia computacional y moderna
 
-*Enfoque: superar las limitaciones de las pruebas de hipótesis clásicas mediante optimización y simulación.*
+> **Enfoque:** superar límites de tests clásicos mediante optimización y simulación.
 
-5. **Teoría asintótica y máxima verosimilitud (MLE)**
-* MLE como optimización:  (Gradiente/Hessiano).
-* Consistencia, eficiencia, Información de Fisher y cota de Cramér–Rao.
-* **Aplicación en DS/ML:** Regresión logística (Cross-entropy), entrenamiento de modelos probabilísticos (Naive Bayes, HMM).
-* **Bibliografía:** **[Wasserman, Ch. 9]**, **[Efron & Hastie, Ch. 2]**.
+#### 5. Teoría asintótica y máxima verosimilitud (MLE)
+- MLE como problema de optimización (gradiente y Hessiano; estimación numérica).  
+- Consistencia, eficiencia, información de Fisher y cota de Cramér–Rao.  
+- **Aplicación en DS/ML:** regresión logística (cross-entropy), entrenamiento de modelos probabilísticos (Naive Bayes, HMM).  
+- **Bibliografía:** **[Wasserman, Ch. 9]**, **[Efron & Hastie, Ch. 2]**.
 
+#### 6. Bootstrap y métodos de resampling
+- Estimación del error estándar sin fórmulas cerradas.  
+- Bootstrap paramétrico vs. no paramétrico; intervalos BCa.  
+- **Aplicación en DS/ML:** incertidumbre en métricas (F1, AUC), bagging (Random Forest), stability selection.  
+- **Bibliografía:** **[Wasserman, Ch. 8]**, **[Efron & Hastie, Ch. 10–11]**.
 
-6. **Bootstrap y métodos de resampling**
-* Estimación del error estándar sin fórmulas cerradas.
-* Bootstrap paramétrico vs. no paramétrico. Intervalos **BCa**.
-* **Aplicación en DS/ML:** Incertidumbre en métricas (F1, AUC), Bagging (Random Forest), *Stability selection*.
-* **Bibliografía:** **[Wasserman, Ch. 8]**, **[Efron & Hastie, Ch. 10–11]**.
-
-
-7. **Tests de hipótesis en alta dimensionalidad**
-* Tests de Wald, Score y Likelihood Ratio Test (LRT).
-* Comparaciones múltiples: Bonferroni y **False Discovery Rate (FDR — Benjamini–Hochberg)**.
-* **Aplicación en DS/ML:** A/B testing a escala, selección de features en alta dimensión (genes, texto).
-* **Bibliografía:** **[Wasserman, Ch. 10]**, **[ESL, High-Dim Problems]**, **[Efron & Hastie, Ch. 15]**.
-
-
+#### 7. Tests de hipótesis en alta dimensionalidad
+- Tests de Wald, Score y Likelihood Ratio Test (LRT).  
+- Comparaciones múltiples: Bonferroni y FDR (Benjamini–Hochberg).  
+- **Aplicación en DS/ML:** A/B testing a escala, selección de features en alta dimensión (genómica, texto).  
+- **Bibliografía:** **[Wasserman, Ch. 10]**, **[Efron & Hastie, Ch. 15]**, **[ESL (capítulos de alta dimensión)]**.
 
 ---
 
-### MÓDULO III — Aprendizaje estadístico (regresión avanzada)
+## MÓDULO III — Aprendizaje estadístico (regresión avanzada)
 
-*Enfoque: trade-off sesgo–varianza, geometría de proyecciones y selección de modelos.*
+> **Enfoque:** trade-off sesgo–varianza, geometría de proyecciones y selección de modelos.
 
-8. **Geometría de mínimos cuadrados (OLS)**
-* Regresión como proyección ortogonal: Matriz sombrero .
-* Teorema de Gauss–Markov y diagnóstico (leverage, distancia de Cook).
-* **Aplicación en DS/ML:** Baselines interpretables, detección de puntos influyentes en producción.
-* **Bibliografía:** **[ESL, Ch. 3.2]**, **[Wasserman, Ch. 13]**.
+#### 8. Geometría de mínimos cuadrados (OLS)
+- Regresión como proyección ortogonal; matriz sombrero H.  
+- Teorema de Gauss–Markov y diagnóstico (leverage, distancia de Cook).  
+- **Aplicación en DS/ML:** baselines interpretables, detección de puntos influyentes en producción.  
+- **Bibliografía:** **[ESL, Ch. 3.2]**, **[Wasserman, Ch. 13]**.
 
+#### 9. Regularización y selección de modelos
+- Maldición de la dimensionalidad y sobreajuste.  
+- Ridge (L2): contracción y conexión con priors gaussianos.  
+- Lasso (L1): sparsity y conexión con priors Laplace; Elastic Net.  
+- Criterios de información: AIC y BIC; validación cruzada como alternativa práctica.  
+- **Aplicación en DS/ML:** estabilidad en modelos, selección automática de variables, early stopping.  
+- **Bibliografía:** **[ESL, Ch. 3.4 y Ch. 7]**, **[Efron & Hastie, Ch. 7 y 16]**.
 
-9. **Regularización y selección de modelos**
-* Maldición de la dimensionalidad ().
-* **Ridge (L2):** Contracción y priors gaussianos.
-* **Lasso (L1):** Sparsity y priors de Laplace. Elastic Net.
-* Criterios de información: AIC, BIC, .
-* **Aplicación en DS/ML:** Estabilidad en embeddings, selección automática de variables, *Early stopping*.
-* **Bibliografía:** **[ESL, Ch. 3.4 y Ch. 7]**, **[Efron & Hastie, Ch. 7 y 16]**.
-
-
-10. **Modelos lineales generalizados (GLM)**
-* Familia exponencial y funciones de enlace (*link*): Logística y Poisson.
-* Algoritmo IRLS (Iteratively Reweighted Least Squares).
-* **Aplicación en DS/ML:** Clasificación calibrada, modelado de conteos/demanda.
-* **Bibliografía:** **[ESL, Ch. 4.4]**, **[Efron & Hastie, Ch. 8]**.
-
-
+#### 10. Modelos lineales generalizados (GLM)
+- Familia exponencial y funciones de enlace (logística y Poisson).  
+- Algoritmo IRLS (Iteratively Reweighted Least Squares).  
+- **Aplicación en DS/ML:** clasificación calibrada, modelado de conteos/demanda.  
+- **Bibliografía:** **[ESL, Ch. 4.4]**, **[Efron & Hastie, Ch. 8]**.
 
 ---
 
-### MÓDULO IV — Modelos estructurados, grafos, causalidad y tiempo
+## MÓDULO IV — Modelos estructurados, causalidad y tiempo
 
-*Enfoque: modelar dependencias complejas, inferencia bayesiana y dinámica.*
+> **Enfoque:** modelar dependencias complejas, inferencia bayesiana y dinámica.
 
-11. **Probabilistic Graphical Models (PGMs)**
-* **DAGs:** Factorización de la conjunta, independencia condicional y **d-separation**.
-* *Plate notation* para modelos jerárquicos.
-* **Aplicación en DS/ML:** Naive Bayes, HMMs, modelos jerárquicos multitenant.
-* **Bibliografía:** **[Koller & Friedman, Ch. 2–4]**, **[Bishop, Ch. 8]**.
+#### 11. Probabilistic Graphical Models (PGMs)
+- DAGs: factorización de la conjunta, independencia condicional y d-separation.  
+- Plate notation para modelos jerárquicos.  
+- **Aplicación en DS/ML:** Naive Bayes, HMMs, modelos jerárquicos.  
+- **Bibliografía:** **[Koller & Friedman, Ch. 2–4]**, **[Bishop, Ch. 8]**.
 
+#### 12. Inferencia causal
+- Correlación vs. causalidad; intervenciones y operador do(·).  
+- Confounders, colliders y criterio back-door.  
+- **Aplicación en DS/ML:** A/B testing, uplift modeling, mitigación de sesgos.  
+- **Bibliografía:** **[Pearl, Ch. 1–3]**, **[Wasserman, Ch. 16–17]**.
 
-12. **Inferencia causal**
-* Correlación vs. Causación. Intervenciones y operador .
-* Confounders, colliders y criterio *back-door*.
-* **Aplicación en DS/ML:** A/B testing, Uplift modeling, eliminación de sesgos en datos.
-* **Bibliografía:** **[Pearl, Ch. 1–3]**, **[Wasserman, Ch. 16–17]**.
+#### 13. Inferencia bayesiana y MCMC
+- Priors conjugados vs. no informativos; posterior como actualización de creencias.  
+- MCMC: Metropolis–Hastings y diagnóstico básico.  
+- **Aplicación en DS/ML:** Bayesian logistic regression, Bayesian optimization, cuantificación de incertidumbre.  
+- **Bibliografía:** **[BDA3, Ch. 1–3]**, **[Efron & Hastie, Ch. 13]**.
 
-
-13. **Inferencia bayesiana y MCMC**
-* Priors conjugados vs. no informativos. Posterior como creencia.
-* **MCMC:** Metropolis–Hastings y diagnóstico básico.
-* **Aplicación en DS/ML:** Bayesian Logistic Regression, Bayesian Optimization, cuantificación de incertidumbre.
-* **Bibliografía:** **[BDA3, Ch. 1–3]**, **[Efron & Hastie, Ch. 13]**.
-
-
-14. **Series temporales y modelos dinámicos**
-* Estacionariedad, autocorrelación y modelos ARIMA.
-* **State Space Models (SSM):** Filtro de Kalman.
-* **Aplicación en DS/ML:** Forecasting (demanda, finanzas), tracking (IoT), comparación con RNNs.
-* **Bibliografía:** **[Shumway & Stoffer, Ch. 1–3 y 6]**, **[Bishop, Ch. 13]**.
-
-
+#### 14. Series temporales y modelos dinámicos
+- Estacionariedad, autocorrelación y modelos ARIMA.  
+- State Space Models (SSM) y filtro de Kalman.  
+- **Aplicación en DS/ML:** forecasting (demanda, finanzas), tracking (IoT), comparación con RNNs.  
+- **Bibliografía:** **[Shumway & Stoffer, Ch. 1–3 y 6]**, **[Bishop, Ch. 13]**.
 
 ---
 
-### MÓDULO V — Geometría moderna: grafos, complejidad y búsqueda
+## MÓDULO V — Geometría moderna: grafos, complejidad y búsqueda
 
-*Enfoque: expandir la geometría más allá de lo euclídeo (grafos), dinámica local (autómatas) y optimización no convexa.*
+> **Enfoque:** expandir la geometría más allá de lo euclídeo (grafos), dinámica local (autómatas) y optimización no convexa.
 
-15. **Teoría de grafos para ciencia de datos**
-* Matrices de adyacencia, conectividad, caminos, BFS/DFS.
-* **Aplicación en DS/ML:** Network science (PageRank, comunidades), recomendadores, detección de fraude.
-* **Bibliografía:** **[Benjamin–Chartrand–Zhang]**, **[Kumar]**.
+#### 15. Teoría de grafos para ciencia de datos
+- Matrices de adyacencia, conectividad, caminos, BFS/DFS.  
+- **Aplicación en DS/ML:** PageRank, comunidades, recomendadores, detección de fraude.  
+- **Bibliografía:** **[Material de cátedra]**.
 
+#### 16. Espectros de grafos y geometría (spectral graph theory)
+- Espectro del Laplaciano; autovalores y autovectores.  
+- **Aplicación en DS/ML:** spectral clustering, graph embeddings, fundamentos de GNNs.  
+- **Bibliografía:** **[Material de cátedra]**, con referencias cruzadas a conceptos de espectro en **[ESL]** y **[Bishop]**.
 
-16. **Espectros de grafos y geometría (Spectral Graph Theory)**
-* Espectro del Laplaciano; autovalores y autovectores en grafos.
-* **Aplicación en DS/ML:** Spectral clustering, Graph Embeddings, fundamentos de GNNs.
-* **Bibliografía:** **[Kumar]**, **[ESL/Bishop (ref. espectral)]**.
+#### 17. Modelos sobre grafos y unificación
+- Markov blankets, MRF (Markov Random Fields) y factor graphs.  
+- Inferencia aproximada (loopy belief propagation).  
+- **Aplicación en DS/ML:** CRFs (secuencias), segmentación, denoising.  
+- **Bibliografía:** **[Koller & Friedman]**, **[Bishop, Ch. 8]**.
 
+#### 18. Algoritmos evolutivos y programación genética (GP)
+- Optimización sin gradiente en paisajes no convexos.  
+- GP: búsqueda en espacios de programas (symbolic regression).  
+- **Aplicación en DS/ML:** AutoML, ecuaciones interpretables, neuroevolution.  
+- **Bibliografía:** **[Material de cátedra: Evolutivos/GP]**.
 
-17. **Modelos sobre grafos y unificación**
-* Markov blankets, MRF (Markon Random Fields) y Factor Graphs.
-* Inferencia aproximada (Loopy Belief Propagation).
-* **Aplicación en DS/ML:** CRFs (secuencias), segmentación de imágenes, denoising.
-* **Bibliografía:** **[Koller & Friedman]**, **[Bishop, Ch. 8]**.
+#### 19. Autómatas celulares (CA) y dinámica local
+- Reglas locales y emergencia global; dinámica en grillas.  
+- **Aplicación en DS/ML:** simulación de propagación (epidemias, tráfico), modelos generativos discretos.  
+- **Bibliografía:** **[Material de cátedra: Autómatas Celulares]**.
 
+---
 
-18. **Algoritmos evolutivos y programación genética (GP)**
-* Optimización sin gradiente en paisajes no convexos.
-* GP: Búsqueda en espacios de programas (*Symbolic Regression*).
-* **Aplicación en DS/ML:** AutoML, descubrimiento de ecuaciones interpretables, Neuroevolution.
-* **Bibliografía:** **[Material de Cátedra: Evolutivos/GP]**.
+## 💻 Cómo utilizar este material (Instalación y Uso)
 
+Tienes dos formas principales de consumir y ejecutar las clases de este repositorio.
 
-19. **Autómatas celulares (CA) y dinámica local**
-* Reglas locales → Emergencia global. Dinámica en grillas.
-* **Aplicación en DS/ML:** Simulación de propagación (epidemias, tráfico), modelos generativos discretos.
-* **Bibliografía:** **[Material de Cátedra: Autómatas Celulares]**, **[Wolfram (ref. conceptual)]**.
-
-##  Cómo utilizar este material (Instalación y Uso)
-
-Tienes dos formas principales de consumir y ejecutar las clases de este repositorio:
-
-### Opción A: En la Nube (Recomendado)
+### Opción A: En la nube (recomendado)
 No necesitas instalar nada en tu computadora.
-1. **Simuladores Interactivos:** Haz clic en los botones azules `[![Ver en GitHub]]` de la tabla superior para acceder a los archivos `.html`. Puedes verlos funcionar directamente usando los botones verdes de `[![Ver Simulación Interactiva]]`.
-2. **Jupyter Notebooks:** Haz clic en los botones de **Binder** o **Colab** que se encuentran en la parte superior. Esto abrirá un entorno virtual en tu navegador donde podrás ejecutar el código Python celda por celda.
 
-### Opción B: Ejecución Local
+1. **Simuladores interactivos:** navega a los HTML desde las carpetas del repo o desde **GitHub Pages**.  
+2. **Jupyter Notebooks:** usa los botones de **Binder** o **Colab** para abrir un entorno virtual y ejecutar el código celda por celda.
+
+### Opción B: Ejecución local
 Si prefieres tener los archivos en tu máquina:
+
 1. Clona este repositorio:
    ```bash
-   git clone [https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git)
+   git clone https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git
+   cd estadisticas-para-ciencia-de-datos
+🧱 Estructura del repositorio (high-level)
 
----
+docs/ — sitio GitHub Pages (material por módulo)
 
-## 🧱 Estructura del repositorio (high-level)
+src/classroom/ — notebooks, scripts y prácticas por módulo
 
-> *Ajustá estos nombres si difieren en tu repo.*
+assets/ — imágenes, gifs y recursos visuales del curso
 
-- `docs/` — sitio MkDocs / GitHub Pages (material por módulo)
-- `src/classroom/` — notebooks, scripts y prácticas por módulo
-- `assets/` — imágenes, gifs y recursos visuales del curso
-- `tests/` — tests (si aplica)
-- `requirements.txt` / `pyproject.toml` — dependencias
+tests/ — tests (si aplica)
 
----
+requirements.txt / pyproject.toml — dependencias
 
-## 🛠️ Uso y ejecución
-
-### 1) Clonar el repositorio
-
-```bash
-git clone [https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git)
+🛠️ Uso y ejecución
+1) Clonar el repositorio
+git clone https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos.git
 cd estadisticas-para-ciencia-de-datos
-
-```
-
-### 2) Crear entorno e instalar dependencias (Python)
-
-Se recomienda usar un entorno virtual para evitar conflictos.
-
-```bash
-# Crear entorno virtual
+2) Crear entorno e instalar dependencias (Python)
 python -m venv .venv
 
 # Activar entorno (Linux/macOS):
@@ -392,57 +361,42 @@ source .venv/bin/activate
 # Activar entorno (Windows):
 # .venv\Scripts\activate
 
-# Instalar dependencias
 pip install -U pip
 pip install -r requirements.txt
-
-```
-
-### 3) Calidad de código (opcional, recomendado)
-
-```bash
+3) Calidad de código (opcional, recomendado)
 pre-commit install
 pre-commit run --all-files
+4) Ejecutar notebooks / prácticas
 
-```
+Si trabajas con Jupyter Lab:
 
-### 4) Ejecutar notebooks / prácticas
-
-Si trabajás con **Jupyter Lab**:
-
-```bash
 jupyter lab
 
-```
+Si usas VSCode:
 
-Si usás **VSCode**:
+Abre la carpeta del repositorio y ejecuta los archivos .ipynb con la extensión de Jupyter.
 
-> Abre la carpeta del repositorio y ejecuta los archivos `.ipynb` directamente usando la extensión de Jupyter.
+✅ Requisitos y nivel esperado
+Matemática
 
----
+Probabilidad y estadística clásica (intervalos, tests básicos, ANOVA).
 
-## ✅ Requisitos y nivel esperado
+Álgebra lineal (vectores, matrices, autovalores/autovectores).
 
-* **Matemática:**
-* Probabilidad y estadística clásica (intervalos, tests básicos, ANOVA).
-* Álgebra lineal (vectores, matrices, autovalores/autovectores).
+Programación
 
+Python (lenguaje principal).
 
-* **Programación:**
-* **Python** (lenguaje principal).
-* *R / Julia* (como soporte opcional).
+R / Julia como soporte opcional.
 
-
-
-## 🤝 Contribuciones
+🤝 Contribuciones
 
 Issues y Pull Requests son bienvenidos.
 
-* Si vas a proponer cambios grandes (estructura, syllabus o tooling), por favor abrí primero un **Issue** describiendo el objetivo y el impacto.
+Si vas a proponer cambios grandes (estructura, syllabus o tooling), por favor abre primero un Issue describiendo el objetivo y el impacto.
 
-## ⚖️ Licencia
+⚖️ Licencia
 
-Este material se distribuye bajo licencia **MIT**. Ver el archivo [LICENSE](https://www.google.com/search?q=LICENSE) para más detalles.
-
-
+Este material se distribuye bajo licencia MIT. Ver el archivo LICENSE
+ para más detalles.
 
