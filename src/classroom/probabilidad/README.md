@@ -79,17 +79,8 @@ Para consolidar la intuición geométrica y las demostraciones formales de los s
 | **Cuestionario Académico: Probabilidad Moderna** <br> <details><summary><strong>Resumen:</strong> <small><em>(haz clic para expandir)</em></small></summary><p>Evaluación interactiva de 20 preguntas diseñada para desafiar y consolidar la intuición estadística. Contrasta los enfoques de integración de Riemann y Lebesgue, explora el comportamiento de distribuciones continuas vs. discretas, y pone a prueba el dominio sobre los teoremas límite y tiempos de parada.</p></details> | [![Ver en GitHub](https://img.shields.io/badge/Ver%20en-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/blob/main/src/classroom/probabilidad/html/01_Fundamentos_Matematicos_Probabilidad_Cuestionario.html) <br> [![Ver Cuestionario Interactivo](https://img.shields.io/badge/Ver%20Cuestionario-Interactivo-green?style=for-the-badge&logo=blogger)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/src/classroom/probabilidad/html/01_Fundamentos_Matematicos_Probabilidad_Cuestionario.html) |
 
 | 📄 Recurso | 📥 Acceso |
-| --- | --- |
-| **01. La Geometría de la Aleatoriedad** <br>
-
-| 📄 Recurso | 📥 Acceso |
-| --- | --- |
-| **01. La Geometría de la Aleatoriedad** <br>
-
-<br>
-
-<br> <details><summary><strong>Resumen:</strong> <em>(clic para expandir)</em></summary><p>Basado en <strong>Wasserman (Cap. 3)</strong>. Dejamos atrás la probabilidad básica para entrar en el álgebra lineal. Visualizamos las variables aleatorias como vectores. Definimos la covarianza como un producto interno y la correlación como un ángulo. Incluye simulaciones de cómo la matriz de covarianza  deforma el espacio.</p></details> | [](https://www.google.com/search?q=./01_Geometria_de_la_Aleatoriedad.ipynb) [](https://www.google.com/search?q=https://colab.research.google.com/github/sgevatschnaider/estadisticas-para-ciencia-de-datos/blob/main/src/classroom/probabilidad/01_Geometria_de_la_Aleatoriedad.ipynb) |
-| **02. La Normal Multivariante (MVN) y Whitening** <br>
+|---|---|
+| **Estadística para Ciencia de Datos – MÓDULO I (Lección Interactiva)** <br><br> <details><summary><strong>Resumen:</strong> <em>(haz clic para expandir/colapsar)</em></summary><p>Notebook interactivo en Python que desarrolla la geometría de la media y la matriz de covarianza desde una perspectiva algebraica, estadística y visual. Explica cómo la covarianza determina elipsoides de dispersión, introduce el blanqueo (whitening) como transformación que esferiza los datos, presenta PCA como criterio variacional de máxima varianza, formaliza la distancia de Mahalanobis como métrica inducida por la matriz de precisión y extiende el análisis hacia regularización, covariance shift y concentración direccional en alta dimensión. El contenido combina teoría matemática, simulación numérica, generación de gráficos y presentación HTML embebida dentro del notebook.</p></details> | [![Ver en GitHub](https://img.shields.io/badge/Ver%20en-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/blob/96aa0491842eb6bdba5dd22a665cbe3732234138/src/classroom/probabilidad/notebooks/Estad%C3%ADstica_para_ciencia_de_datos_M%C3%93DULO_I.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sgevatschnaider/estadisticas-para-ciencia-de-datos/blob/96aa0491842eb6bdba5dd22a665cbe3732234138/src/classroom/probabilidad/notebooks/Estad%C3%ADstica_para_ciencia_de_datos_M%C3%93DULO_I.ipynb) |
 
 <br>
 
