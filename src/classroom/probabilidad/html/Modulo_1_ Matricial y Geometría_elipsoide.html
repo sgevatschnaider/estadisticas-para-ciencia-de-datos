@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elipsoide — Visualización Educativa 3D</title>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#020818;
+  --panel-bg:rgba(4,9,31,.82);
+  --panel-b:rgba(0,140,255,.1);
+  --panel-bh:rgba(0,200,255,.25);
+  --text:#c8dfff;
+  --dim:rgba(160,200,255,.45);
+  --accent:#00d4ff;
+  --accent2:#0068ff;
+  --xc:#ff5577;
+  --yc:#3dffaa;
+  --zc:#6699ff;
+  --gold:#ffd060;
+  --orange:#ff8840;
+  --green:#6fff50;
+  --blur:blur(22px) saturate(1.4);
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'Lora',serif;overflow:hidden;transition:background .4s}
+
+#loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);z-index:9999;transition:opacity .6s ease;}
+#loading.out{opacity:0;pointer-events:none}
+.ld-title{font-family:'Oxanium',sans-serif;font-weight:800;font-size:36px;letter-spacing:10px;background:linear-gradient(90deg,#00d4ff,#0068ff,#7744ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:32px;}
+.ld-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:28px;}
+.ld-ring{width:42px;height:42px;border-radius:50%;border:2px solid rgba(0,212,255,.1);border-top:2px solid var(--accent);animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#cv{position:fixed;inset:0;display:block;cursor:grab;z-index:1;}
+#cv:active{cursor:grabbing}
+
+#hdr{position:fixed;top:0;left:0;right:0;height:54px;display:flex;align-items:center;padding:0 20px;gap:16px;background:linear-gradient(180deg,rgba(2,8,24,.95) 0%,transparent 100%);z-index:100;pointer-events:none;}
+#hdr h1{font-family:'Oxanium',sans-serif;font-weight:800;font-size:20px;letter-spacing:5px;background:linear-gradient(90deg,#00d4ff,#4488ff,#8844ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+#hdr p{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+/* ── THEME SWITCHER ── */
+#theme-btn{
+  position:fixed;top:10px;right:14px;z-index:200;
+  background:var(--panel-bg);border:1px solid var(--panel-b);
+  border-radius:10px;padding:6px 11px;cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;
+  letter-spacing:.5px;color:var(--dim);display:flex;align-items:center;gap:7px;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  transition:all .2s;user-select:none;
+}
+#theme-btn:hover{border-color:var(--panel-bh);color:var(--text)}
+.tb-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 7px var(--accent);transition:all .3s;}
+#theme-panel{
+  position:fixed;top:48px;right:14px;z-index:200;
+  background:var(--panel-bg);border:1px solid var(--panel-b);
+  border-radius:12px;padding:12px;
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  display:none;flex-direction:column;gap:5px;min-width:158px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+#theme-panel.open{display:flex}
+#theme-panel .card-ttl{margin-bottom:6px}
+.tp-opt{
+  display:flex;align-items:center;gap:9px;padding:7px 8px;
+  border-radius:7px;cursor:pointer;border:1px solid transparent;transition:all .18s;
+}
+.tp-opt:hover{background:rgba(255,255,255,.05);border-color:var(--panel-b)}
+.tp-opt.on{border-color:var(--accent);background:rgba(0,212,255,.08)}
+.tp-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.25);}
+.tp-name{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.3px;color:var(--text);}
+
+.ax-lbl{position:fixed;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;pointer-events:none;z-index:50;text-shadow:0 0 12px currentColor;transition:opacity .2s;white-space:nowrap;}
+#lbl-a{color:var(--xc)} #lbl-b{color:var(--yc)} #lbl-c{color:var(--zc)}
+
+#badge{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;padding:6px 20px;border-radius:30px;border:1px solid;z-index:60;pointer-events:none;transition:all .4s ease;backdrop-filter:blur(12px);}
+#badge.sphere{color:#ffffff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);box-shadow:0 0 22px rgba(255,255,255,.12)}
+#badge.oblate{color:#44ccff;border-color:rgba(68,200,255,.3);background:rgba(0,140,255,.07);box-shadow:0 0 22px rgba(0,140,255,.18)}
+#badge.prolate{color:#ffaa44;border-color:rgba(255,160,68,.3);background:rgba(255,120,0,.07);box-shadow:0 0 22px rgba(255,120,0,.18)}
+#badge.general{color:var(--accent);border-color:rgba(0,212,255,.2);background:rgba(0,100,255,.05)}
+#obs{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);font-family:'Lora',serif;font-style:italic;font-size:12px;color:var(--dim);z-index:60;pointer-events:none;text-align:center;}
+
+#left,#right{position:fixed;top:62px;bottom:34px;width:235px;z-index:80;display:flex;flex-direction:column;gap:10px;overflow-y:auto;scrollbar-width:none;}
+#left{left:12px} #right{right:12px}
+#left::-webkit-scrollbar,#right::-webkit-scrollbar{display:none}
+
+.card{background:var(--panel-bg);border:1px solid var(--panel-b);border-radius:14px;padding:14px;backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);transition:border-color .25s,background .35s;flex-shrink:0;}
+.card:hover{border-color:var(--panel-bh)}
+.card-ttl{font-family:'Oxanium',sans-serif;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);opacity:.65;margin-bottom:13px;}
+
+.sg{margin-bottom:15px} .sg:last-child{margin-bottom:0}
+.sh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.sl{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600}
+.sl.a{color:var(--xc)} .sl.b{color:var(--yc)} .sl.c{color:var(--zc)}
+.sd{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim)}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;min-width:34px;text-align:right}
+.sv.a{color:var(--xc)} .sv.b{color:var(--yc)} .sv.c{color:var(--zc)}
+
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;outline:none;cursor:pointer}
+.ra{background:linear-gradient(90deg,var(--xc) var(--p,50%),rgba(255,85,119,.12) var(--p,50%))}
+.rb{background:linear-gradient(90deg,var(--yc) var(--p,50%),rgba(61,255,170,.12) var(--p,50%))}
+.rc{background:linear-gradient(90deg,var(--zc) var(--p,50%),rgba(102,153,255,.12) var(--p,50%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid var(--bg);transition:transform .15s;box-shadow:0 0 8px currentColor;}
+.ra::-webkit-slider-thumb{background:var(--xc);color:var(--xc)}
+.rb::-webkit-slider-thumb{background:var(--yc);color:var(--yc)}
+.rc::-webkit-slider-thumb{background:var(--zc);color:var(--zc)}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
+
+.tr{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px} .tr:last-child{margin-bottom:0}
+.tn{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text)}
+.tg{position:relative;width:38px;height:20px;cursor:pointer;flex-shrink:0}
+.tg input{display:none}
+.tk{position:absolute;inset:0;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);transition:all .25s;}
+.tg input:checked+.tk{background:rgba(0,212,255,.2);border-color:var(--accent);box-shadow:0 0 8px rgba(0,212,255,.25);}
+.tt{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.35);transition:all .25s;}
+.tg input:checked~.tt{left:20px;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pb{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.8px;padding:8px 4px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--dim);cursor:pointer;text-transform:uppercase;transition:all .2s;text-align:center;}
+.pb:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.06)}
+.pb.on{border-color:var(--accent);color:var(--bg);background:var(--accent)}
+
+.eq-box{background:rgba(0,0,0,.3);border-radius:10px;padding:14px 10px;text-align:center;margin:6px 0;}
+.eq-row{display:flex;justify-content:center;align-items:center;gap:5px;flex-wrap:nowrap}
+.ef{display:inline-flex;flex-direction:column;align-items:center;gap:0;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.en{font-size:12px;font-weight:600;padding:0 4px}
+.eb{height:1px;width:100%;min-width:26px}
+.ed{font-size:12px;font-weight:600;padding:0 4px;transition:all .25s}
+.ef.x .en,.ef.x .ed{color:var(--xc)} .ef.x .eb{background:var(--xc)}
+.ef.y .en,.ef.y .ed{color:var(--yc)} .ef.y .eb{background:var(--yc)}
+.ef.z .en,.ef.z .ed{color:var(--zc)} .ef.z .eb{background:var(--zc)}
+.eop{font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--dim)}
+.eeq{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--text)}
+
+.tab-bar{display:flex;gap:3px;margin-bottom:12px}
+.tb{font-family:'IBM Plex Mono',monospace;font-size:8.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 8px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--dim);cursor:pointer;transition:all .2s;flex:1;text-align:center;}
+.tb:hover{color:var(--text)}
+.tb.on{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.07)}
+.tc{display:none;overflow-y:auto} .tc.on{display:block}
+
+.pr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)} .pr:last-child{border-bottom:none}
+.pk{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim)}
+.pv{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--gold)}
+
+.it{font-family:'Lora',serif;font-size:11.5px;line-height:1.75;color:var(--dim);margin-bottom:9px}
+.it strong{color:var(--text);font-weight:500} .it em{color:var(--accent)}
+
+.cc{padding:10px;border-radius:8px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);margin-bottom:7px;cursor:pointer;transition:all .2s;}
+.cc:hover{background:rgba(0,212,255,.05);border-color:rgba(0,212,255,.2)}
+.cct{font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;color:var(--accent);margin-bottom:3px}
+.ccd{font-family:'Lora',serif;font-size:10.5px;color:var(--dim);line-height:1.55}
+
+.ser{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:7px;background:rgba(0,0,0,.22);margin-bottom:6px;}
+.sd2{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.sn{font-family:'IBM Plex Mono',monospace;font-size:9px;margin-bottom:2px}
+.se{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--dim)}
+
+.mx{background:rgba(0,0,0,.32);border-radius:8px;padding:12px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);margin:8px 0;}
+.tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 9px;border-radius:4px;border:1px solid rgba(0,212,255,.18);color:var(--dim);}
+
+/* ── FOOTER ── */
+#footer{
+  position:fixed;bottom:0;left:0;right:0;height:26px;
+  display:flex;align-items:center;justify-content:center;
+  z-index:70;pointer-events:none;
+}
+#footer-inner{
+  font-family:'Lora',serif;font-style:italic;font-size:11px;
+  color:var(--dim);letter-spacing:.3px;
+  background:var(--panel-bg);
+  border:1px solid var(--panel-b);
+  border-bottom:none;border-radius:8px 8px 0 0;
+  padding:4px 18px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+#footer-inner strong{color:var(--accent);font-weight:600;font-style:normal;}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="ld-title">ELIPSOIDE</div>
+  <div class="ld-sub">Visualización Educativa 3D</div>
+  <div class="ld-ring"></div>
+</div>
+
+<canvas id="cv"></canvas>
+
+<header id="hdr">
+  <h1>ELIPSOIDE</h1>
+  <p>Visualización Educativa 3D · Interactiva</p>
+</header>
+
+<!-- THEME BUTTON -->
+<div id="theme-btn" onclick="toggleThemePanel(event)">
+  <div class="tb-dot" id="thDot"></div>
+  <span id="thLabel">Tema</span>
+  <span style="opacity:.4;font-size:8px;">▼</span>
+</div>
+
+<!-- THEME PANEL -->
+<div id="theme-panel">
+  <div class="card-ttl">🎨 Tema visual</div>
+  <div class="tp-opt on" data-theme="dark" onclick="applyTheme('dark')">
+    <div class="tp-dot" style="background:#020818;border-color:#00d4ff;box-shadow:0 0 5px #00d4ff"></div>
+    <span class="tp-name">Oscuro</span>
+  </div>
+  <div class="tp-opt" data-theme="light" onclick="applyTheme('light')">
+    <div class="tp-dot" style="background:#e8eeff;border-color:#0044cc;box-shadow:0 0 5px #4477ff"></div>
+    <span class="tp-name">Claro</span>
+  </div>
+  <div class="tp-opt" data-theme="midnight" onclick="applyTheme('midnight')">
+    <div class="tp-dot" style="background:#000814;border-color:#4488ff;box-shadow:0 0 5px #2255ff"></div>
+    <span class="tp-name">Medianoche</span>
+  </div>
+  <div class="tp-opt" data-theme="sunset" onclick="applyTheme('sunset')">
+    <div class="tp-dot" style="background:#18060a;border-color:#ff7733;box-shadow:0 0 5px #ff5500"></div>
+    <span class="tp-name">Atardecer</span>
+  </div>
+  <div class="tp-opt" data-theme="forest" onclick="applyTheme('forest')">
+    <div class="tp-dot" style="background:#031208;border-color:#00dd88;box-shadow:0 0 5px #00bb66"></div>
+    <span class="tp-name">Bosque</span>
+  </div>
+</div>
+
+<div id="lbl-a" class="ax-lbl">a = 1.50</div>
+<div id="lbl-b" class="ax-lbl">b = 1.00</div>
+<div id="lbl-c" class="ax-lbl">c = 0.70</div>
+
+<div id="badge" class="general">📐 Elipsoide General</div>
+<div id="obs">Arrastra para rotar · Rueda del ratón para zoom</div>
+
+<!-- ══ LEFT PANEL ══ -->
+<aside id="left">
+  <div class="card">
+    <div class="card-ttl">Semiejes</div>
+    <div class="sg">
+      <div class="sh"><span class="sl a">a</span><span class="sd">eje x</span><span class="sv a" id="va">1.50</span></div>
+      <input type="range" class="ra" id="sa" min="0.2" max="3.0" step="0.05" value="1.5">
+    </div>
+    <div class="sg">
+      <div class="sh"><span class="sl b">b</span><span class="sd">eje y</span><span class="sv b" id="vb">1.00</span></div>
+      <input type="range" class="rb" id="sb" min="0.2" max="3.0" step="0.05" value="1.0">
+    </div>
+    <div class="sg">
+      <div class="sh"><span class="sl c">c</span><span class="sd">eje z</span><span class="sv c" id="vc">0.70</span></div>
+      <input type="range" class="rc" id="sc" min="0.2" max="3.0" step="0.05" value="0.7">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-ttl">Formas conocidas</div>
+    <div class="pg">
+      <button class="pb" data-a="1" data-b="1" data-c="1">⚪ Esfera</button>
+      <button class="pb" data-a="1.2" data-b="1.2" data-c="0.78">🌍 Tierra</button>
+      <button class="pb" data-a="0.7" data-b="0.7" data-c="1.9">🏈 Rugby</button>
+      <button class="pb" data-a="2.0" data-b="1.0" data-c="0.55">📐 General</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-ttl">Visualización</div>
+    <div class="tr"><span class="tn">Superficie</span><label class="tg"><input type="checkbox" id="tSolid" checked><div class="tk"></div><div class="tt"></div></label></div>
+    <div class="tr"><span class="tn">Malla alámbrica</span><label class="tg"><input type="checkbox" id="tWire"><div class="tk"></div><div class="tt"></div></label></div>
+    <div class="tr"><span class="tn">Ejes coordenados</span><label class="tg"><input type="checkbox" id="tAxes" checked><div class="tk"></div><div class="tt"></div></label></div>
+    <div class="tr"><span class="tn">Grilla de referencia</span><label class="tg"><input type="checkbox" id="tGrid" checked><div class="tk"></div><div class="tt"></div></label></div>
+    <div class="tr"><span class="tn">Rotación automática</span><label class="tg"><input type="checkbox" id="tAuto" checked><div class="tk"></div><div class="tt"></div></label></div>
+  </div>
+
+  <div class="card">
+    <div class="card-ttl">Secciones planas</div>
+    <div class="tr"><span class="tn" style="color:var(--gold)">Plano z = 0 (XY)</span><label class="tg"><input type="checkbox" id="tSxy"><div class="tk"></div><div class="tt"></div></label></div>
+    <div class="tr"><span class="tn" style="color:var(--orange)">Plano y = 0 (XZ)</span><label class="tg"><input type="checkbox" id="tSxz"><div class="tk"></div><div class="tt"></div></label></div>
+    <div class="tr"><span class="tn" style="color:var(--green)">Plano x = 0 (YZ)</span><label class="tg"><input type="checkbox" id="tSyz"><div class="tk"></div><div class="tt"></div></label></div>
+  </div>
+</aside>
+
+<!-- ══ RIGHT PANEL ══ -->
+<aside id="right">
+  <div class="card">
+    <div class="card-ttl">Ecuación canónica</div>
+    <div class="eq-box">
+      <div class="eq-row">
+        <div class="ef x"><span class="en">x²</span><div class="eb"></div><span class="ed" id="ea">a²</span></div>
+        <span class="eop">+</span>
+        <div class="ef y"><span class="en">y²</span><div class="eb"></div><span class="ed" id="eb">b²</span></div>
+        <span class="eop">+</span>
+        <div class="ef z"><span class="en">z²</span><div class="eb"></div><span class="ed" id="ec">c²</span></div>
+        <span class="eeq">&nbsp;= 1</span>
+      </div>
+    </div>
+    <div class="eq-box" style="margin-top:5px;">
+      <div class="eq-row" id="eq-num"></div>
+    </div>
+  </div>
+
+  <div class="card" style="flex:1;min-height:0;display:flex;flex-direction:column;">
+    <div class="tab-bar">
+      <button class="tb on" data-t="props">Props.</button>
+      <button class="tb" data-t="casos">Casos</button>
+      <button class="tb" data-t="secs">Secciones</button>
+      <button class="tb" data-t="adv">Avanzado</button>
+    </div>
+
+    <div class="tc on" id="t-props">
+      <div class="pr"><span class="pk">Volumen</span><span class="pv" id="pVol">—</span></div>
+      <div class="pr"><span class="pk">Área superficial ≈</span><span class="pv" id="pArea">—</span></div>
+      <div class="pr"><span class="pk">Semieje mayor</span><span class="pv" id="pMax">—</span></div>
+      <div class="pr"><span class="pk">Semieje menor</span><span class="pv" id="pMin">—</span></div>
+      <div class="pr"><span class="pk">Relación a/c</span><span class="pv" id="pRatio">—</span></div>
+      <br>
+      <p class="it">El <strong>volumen</strong> generaliza la esfera: <strong>V = ⁴⁄₃ π a b c</strong>. Con a = b = c = r se recupera V = ⁴⁄₃ π r³.</p>
+      <p class="it">El <strong>área superficial</strong> no tiene forma elemental en el caso general — requiere <em>integrales elípticas</em>.</p>
+    </div>
+
+    <div class="tc" id="t-casos">
+      <div class="cc" onclick="applyP(1,1,1)">
+        <div class="cct">⚪ Esfera · a = b = c</div>
+        <div class="ccd">Curvatura gaussiana constante. V = ⁴⁄₃ π r³.</div>
+      </div>
+      <div class="cc" onclick="applyP(1.2,1.2,0.78)">
+        <div class="cct">🌍 Esferoide oblato · c &lt; a = b</div>
+        <div class="ccd">Achatado en el polo. La Tierra, Saturno y Júpiter.</div>
+      </div>
+      <div class="cc" onclick="applyP(0.7,0.7,1.9)">
+        <div class="cct">🏈 Esferoide prolato · c &gt; a = b</div>
+        <div class="ccd">Alargado en el eje z. Balas, huevos, estrellas de neutrones.</div>
+      </div>
+      <div class="cc" onclick="applyP(2.0,1.0,0.55)">
+        <div class="cct">📐 Elipsoide general · a ≠ b ≠ c</div>
+        <div class="ccd">Los tres semiejes son distintos. Mecánica de sólidos y estadística multivariada.</div>
+      </div>
+    </div>
+
+    <div class="tc" id="t-secs">
+      <p class="it">Cualquier sección con un plano coordenado produce siempre una <strong>elipse</strong> (o círculo si los semiejes coinciden).</p>
+      <div class="ser">
+        <div class="sd2" style="background:var(--gold)"></div>
+        <div><div class="sn" style="color:var(--gold)">Plano z = 0</div><div class="se" id="sq-xy">x²/a² + y²/b² = 1</div></div>
+      </div>
+      <div class="ser">
+        <div class="sd2" style="background:var(--orange)"></div>
+        <div><div class="sn" style="color:var(--orange)">Plano y = 0</div><div class="se" id="sq-xz">x²/a² + z²/c² = 1</div></div>
+      </div>
+      <div class="ser">
+        <div class="sd2" style="background:var(--green)"></div>
+        <div><div class="sn" style="color:var(--green)">Plano x = 0</div><div class="se" id="sq-yz">y²/b² + z²/c² = 1</div></div>
+      </div>
+      <p class="it" style="margin-top:8px">El elipsoide puede pensarse como un <em>haz de elipses</em> en todas las orientaciones posibles.</p>
+    </div>
+
+    <div class="tc" id="t-adv">
+      <p class="it">En formulación matricial, el elipsoide centrado en el origen es el conjunto de puntos <strong>x</strong> que satisfacen:</p>
+      <div class="mx">
+        <strong>xᵀ A x = 1</strong>
+        <div style="margin-top:7px;font-size:10px;color:var(--dim)" id="mxDisp">A = diag(1/a², 1/b², 1/c²)</div>
+      </div>
+      <p class="it">donde <strong>A</strong> es simétrica definida positiva. Sus <em>autovectores</em> son las direcciones principales; sus <em>autovalores</em> son 1/a², 1/b², 1/c².</p>
+      <p class="it">El elipsoide es la <strong>imagen de la esfera unidad</strong> bajo la transformación lineal <strong>diag(a, b, c)</strong>.</p>
+      <div class="mx" style="font-size:10px">
+        <span style="color:var(--dim);display:block;margin-bottom:4px">Forma trasladada:</span>
+        (x−x₀)²/a² + (y−y₀)²/b² + (z−z₀)²/c² = 1
+      </div>
+      <p class="it">En <strong>estadística multivariada</strong>, los elipsoides de nivel son curvas de igual densidad de ℕ(μ, Σ), donde A = Σ⁻¹.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-ttl">Aplicaciones</div>
+    <div class="tags">
+      <span class="tag">🌍 Geodesia</span>
+      <span class="tag">📊 Estadística</span>
+      <span class="tag">⚗️ Cristalografía</span>
+      <span class="tag">🔭 Astronomía</span>
+      <span class="tag">🤖 Robótica</span>
+      <span class="tag">💡 Óptica</span>
+    </div>
+  </div>
+</aside>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div id="footer-inner">
+    Material elaborado por el profesor <strong>Sergio Gevatschnaider</strong>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════
+//  ELIPSOIDE EDUCATIVO — Motor 3D + Selector de Temas
+// ══════════════════════════════════════════════════════════════
+
+const P = { a:1.5, b:1.0, c:0.7 };
+let autoRot = true, showSolid = true, showWire = false;
+let showAxes = true, showGrid = true;
+let sSxy = false, sSxz = false, sSyz = false;
+let currentTheme = 'dark';
+
+// ── Themes ────────────────────────────────────────────────────
+const THEMES = {
+  dark: {
+    label:'Oscuro',
+    css:{'--bg':'#020818','--panel-bg':'rgba(4,9,31,.82)','--panel-b':'rgba(0,140,255,.1)','--panel-bh':'rgba(0,200,255,.25)','--text':'#c8dfff','--dim':'rgba(160,200,255,.45)','--accent':'#00d4ff','--accent2':'#0068ff','--xc':'#ff5577','--yc':'#3dffaa','--zc':'#6699ff','--gold':'#ffd060','--orange':'#ff8840','--green':'#6fff50'},
+    bgHex:0x020818, hdrBg:'linear-gradient(180deg,rgba(2,8,24,.95) 0%,transparent 100%)',
+    shaderA:[0.02,0.18,0.72], shaderB:[0.0,0.72,1.0], rimC:[0.05,0.55,1.0],
+    starC:0x7799cc, starOp:0.55, glowC:0x0044ff, wireC:0x22aaff,
+    axC:[0xff5577,0x3dffaa,0x6699ff], gC1:0x1a2a55, gC2:0x0e1830,
+    ambC:0x112244, ambI:0.8, kC:0x5599ff, kI:1.1, fC:0xff7744, fI:0.35, rC:0x00ffbb, rI:0.25
+  },
+  light: {
+    label:'Claro',
+    css:{'--bg':'#eef2ff','--panel-bg':'rgba(255,255,255,.88)','--panel-b':'rgba(0,60,200,.18)','--panel-bh':'rgba(0,80,255,.35)','--text':'#0a1540','--dim':'rgba(40,70,160,.65)','--accent':'#0044cc','--accent2':'#0022aa','--xc':'#cc1133','--yc':'#007744','--zc':'#1144cc','--gold':'#996600','--orange':'#aa4400','--green':'#226600'},
+    bgHex:0xeef2ff, hdrBg:'linear-gradient(180deg,rgba(238,242,255,.97) 0%,transparent 100%)',
+    shaderA:[0.2,0.38,0.88], shaderB:[0.42,0.65,1.0], rimC:[0.15,0.45,0.95],
+    starC:0xaabbdd, starOp:0.2, glowC:0x3366ff, wireC:0x4477ff,
+    axC:[0xcc1133,0x007744,0x1144cc], gC1:0xbbc8ee, gC2:0xccd5f0,
+    ambC:0x8899cc, ambI:1.1, kC:0x4466ff, kI:1.3, fC:0xff8844, fI:0.2, rC:0x0088cc, rI:0.2
+  },
+  midnight: {
+    label:'Medianoche',
+    css:{'--bg':'#000814','--panel-bg':'rgba(0,8,28,.9)','--panel-b':'rgba(30,80,200,.18)','--panel-bh':'rgba(50,140,255,.3)','--text':'#aaccff','--dim':'rgba(100,150,230,.5)','--accent':'#4488ff','--accent2':'#2255dd','--xc':'#ff6688','--yc':'#00ffcc','--zc':'#88aaff','--gold':'#ffcc44','--orange':'#ff9944','--green':'#88ff66'},
+    bgHex:0x000814, hdrBg:'linear-gradient(180deg,rgba(0,8,20,.97) 0%,transparent 100%)',
+    shaderA:[0.0,0.04,0.28], shaderB:[0.0,0.38,0.88], rimC:[0.15,0.5,1.0],
+    starC:0x4466aa, starOp:0.6, glowC:0x001166, wireC:0x1144bb,
+    axC:[0xff6688,0x00ffcc,0x88aaff], gC1:0x07133a, gC2:0x040c22,
+    ambC:0x040c20, ambI:0.6, kC:0x2255ff, kI:1.3, fC:0xff4422, fI:0.25, rC:0x00ffcc, rI:0.2
+  },
+  sunset: {
+    label:'Atardecer',
+    css:{'--bg':'#18060a','--panel-bg':'rgba(28,8,12,.85)','--panel-b':'rgba(200,60,0,.18)','--panel-bh':'rgba(255,100,0,.3)','--text':'#ffe4cc','--dim':'rgba(230,140,90,.55)','--accent':'#ff7733','--accent2':'#dd4400','--xc':'#ff4455','--yc':'#ffcc22','--zc':'#ff9966','--gold':'#ffdd44','--orange':'#ff6622','--green':'#ddee44'},
+    bgHex:0x18060a, hdrBg:'linear-gradient(180deg,rgba(24,6,10,.97) 0%,transparent 100%)',
+    shaderA:[0.45,0.08,0.02], shaderB:[0.88,0.38,0.06], rimC:[1.0,0.5,0.1],
+    starC:0x774433, starOp:0.5, glowC:0x882200, wireC:0xff5522,
+    axC:[0xff4455,0xffcc22,0xff9966], gC1:0x3a0f00, gC2:0x220800,
+    ambC:0x220606, ambI:0.7, kC:0xff8844, kI:1.1, fC:0xff2200, fI:0.4, rC:0xffcc00, rI:0.3
+  },
+  forest: {
+    label:'Bosque',
+    css:{'--bg':'#031208','--panel-bg':'rgba(5,20,10,.85)','--panel-b':'rgba(0,160,60,.15)','--panel-bh':'rgba(0,230,80,.3)','--text':'#ccffdd','--dim':'rgba(100,210,140,.5)','--accent':'#00dd88','--accent2':'#009955','--xc':'#ff8844','--yc':'#44ffaa','--zc':'#66ffcc','--gold':'#bbff44','--orange':'#ffaa44','--green':'#88ff44'},
+    bgHex:0x031208, hdrBg:'linear-gradient(180deg,rgba(3,18,8,.97) 0%,transparent 100%)',
+    shaderA:[0.01,0.22,0.08], shaderB:[0.04,0.62,0.22], rimC:[0.1,0.9,0.4],
+    starC:0x336644, starOp:0.5, glowC:0x003322, wireC:0x22aa66,
+    axC:[0xff8844,0x44ffaa,0x66ffcc], gC1:0x082d15, gC2:0x041a0d,
+    ambC:0x061c0c, ambI:0.7, kC:0x33ff99, kI:1.1, fC:0xffaa44, fI:0.3, rC:0x00ffaa, rI:0.25
+  }
+};
+
+// ── Renderer & Scene ──────────────────────────────────────────
+const canvas = document.getElementById('cv');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x020818, 1);
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth/window.innerHeight, 0.05, 200);
+camera.position.set(0, 1.2, 6.5);
+camera.lookAt(0, 0, 0);
+
+window.addEventListener('resize', () => {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+// ── Stars ─────────────────────────────────────────────────────
+let starMat;
+(function() {
+  const N = 900, pos = new Float32Array(N*3);
+  for (let i = 0; i < N; i++) {
+    pos[i*3]   = (Math.random()-0.5)*130;
+    pos[i*3+1] = (Math.random()-0.5)*130;
+    pos[i*3+2] = (Math.random()-0.5)*130 - 15;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  starMat = new THREE.PointsMaterial({ color:0x7799cc, size:0.055, transparent:true, opacity:0.55 });
+  scene.add(new THREE.Points(g, starMat));
+  // Second layer — larger faint stars
+  const N2 = 200, pos2 = new Float32Array(N2*3);
+  for (let i = 0; i < N2; i++) {
+    pos2[i*3]   = (Math.random()-0.5)*150;
+    pos2[i*3+1] = (Math.random()-0.5)*150;
+    pos2[i*3+2] = (Math.random()-0.5)*150 - 20;
+  }
+  const g2 = new THREE.BufferGeometry();
+  g2.setAttribute('position', new THREE.BufferAttribute(pos2, 3));
+  scene.add(new THREE.Points(g2, new THREE.PointsMaterial({ color:0x99bbff, size:0.1, transparent:true, opacity:0.2 })));
+})();
+
+// ── Lights ────────────────────────────────────────────────────
+let ambLight = new THREE.AmbientLight(0x112244, 0.8); scene.add(ambLight);
+let keyLight = new THREE.DirectionalLight(0x5599ff, 1.1); keyLight.position.set(5,7,5); scene.add(keyLight);
+let fillLight = new THREE.DirectionalLight(0xff7744, 0.35); fillLight.position.set(-5,-3,-4); scene.add(fillLight);
+let rimLight = new THREE.DirectionalLight(0x00ffbb, 0.25); rimLight.position.set(0,-6,2); scene.add(rimLight);
+
+// ── Rotation Group ─────────────────────────────────────────────
+const RG = new THREE.Group();
+scene.add(RG);
+
+// ── Ellipsoid (custom shader with theme-able colors) ───────────
+const sphGeo = new THREE.SphereGeometry(1, 80, 56);
+
+const ellMat = new THREE.ShaderMaterial({
+  uniforms: {
+    camPos:    { value: camera.position },
+    uOpacity:  { value: 0.55 },
+    uTime:     { value: 0.0 },
+    uColorA:   { value: new THREE.Color(0.02, 0.18, 0.72) },
+    uColorB:   { value: new THREE.Color(0.0,  0.72, 1.0)  },
+    uRimColor: { value: new THREE.Color(0.05, 0.55, 1.0)  },
+  },
+  vertexShader: `
+    varying vec3 vNormal;
+    varying vec3 vWorldPos;
+    void main() {
+      vNormal   = normalize(normalMatrix * normal);
+      vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform vec3  camPos;
+    uniform float uOpacity;
+    uniform float uTime;
+    uniform vec3  uColorA;
+    uniform vec3  uColorB;
+    uniform vec3  uRimColor;
+    varying vec3 vNormal;
+    varying vec3 vWorldPos;
+    void main() {
+      vec3 vd      = normalize(camPos - vWorldPos);
+      float ndv    = abs(dot(normalize(vNormal), vd));
+      float fresnel = pow(1.0 - ndv, 2.8);
+
+      float t   = vNormal.y * 0.5 + 0.5;
+      vec3  col = mix(uColorA, uColorB, t);
+
+      vec3  ld   = normalize(vec3(3.0, 5.0, 4.0));
+      float diff = max(dot(normalize(vNormal), ld), 0.0);
+      col += uColorB * diff * 0.4;
+
+      col += uRimColor * fresnel * 0.92;
+
+      float pulse = sin(uTime * 1.8) * 0.014 + 1.0;
+      col *= pulse;
+
+      float alpha = uOpacity + fresnel * 0.28;
+      gl_FragColor = vec4(col, alpha);
+    }
+  `,
+  transparent: true,
+  side: THREE.DoubleSide,
+  depthWrite: false,
+});
+
+const ellMesh = new THREE.Mesh(sphGeo, ellMat);
+RG.add(ellMesh);
+
+const glowMat = new THREE.MeshBasicMaterial({ color:0x0044ff, transparent:true, opacity:0.045, side:THREE.BackSide });
+const glowMesh = new THREE.Mesh(new THREE.SphereGeometry(1.04, 36, 28), glowMat);
+RG.add(glowMesh);
+
+const wireMat = new THREE.MeshBasicMaterial({ color:0x22aaff, wireframe:true, transparent:true, opacity:0.13 });
+const wireMesh = new THREE.Mesh(sphGeo, wireMat);
+wireMesh.visible = false;
+RG.add(wireMesh);
+
+// ── Axes ───────────────────────────────────────────────────────
+let AX, AX_MATS = [];
+
+function makeArrow(dir, color, len) {
+  const g = new THREE.Group();
+  const lm = new THREE.LineBasicMaterial({ color, transparent:true, opacity:0.9 });
+  AX_MATS.push(lm);
+  g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), dir.clone().multiplyScalar(len)]), lm));
+  const cm = new THREE.MeshBasicMaterial({ color });
+  AX_MATS.push(cm);
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.048, 0.19, 8), cm);
+  cone.position.copy(dir.clone().multiplyScalar(len));
+  if (dir.x > 0.9) cone.rotation.z = -Math.PI/2;
+  else if (dir.z > 0.9) cone.rotation.x = Math.PI/2;
+  g.add(cone);
+  const nm = new THREE.LineBasicMaterial({ color, transparent:true, opacity:0.15 });
+  AX_MATS.push(nm);
+  g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), dir.clone().multiplyScalar(-len*0.6)]), nm));
+  return g;
+}
+
+function buildAxes(colors) {
+  if (AX) { RG.remove(AX); AX_MATS.forEach(m => m.dispose()); AX_MATS = []; }
+  AX = new THREE.Group();
+  AX.add(makeArrow(new THREE.Vector3(1,0,0), colors[0], 3.8));
+  AX.add(makeArrow(new THREE.Vector3(0,1,0), colors[1], 3.8));
+  AX.add(makeArrow(new THREE.Vector3(0,0,1), colors[2], 3.8));
+  RG.add(AX);
+  AX.visible = showAxes;
+}
+buildAxes([0xff5577, 0x3dffaa, 0x6699ff]);
+
+// Origin dot
+const origMat = new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.65 });
+RG.add(new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 8), origMat));
+
+// ── Grid ───────────────────────────────────────────────────────
+let gridRef = new THREE.GridHelper(10, 20, 0x1a2a55, 0x0e1830);
+gridRef.position.y = -2.8;
+scene.add(gridRef);
+
+// ── Cross-sections ─────────────────────────────────────────────
+let secXY, secXZ, secYZ;
+function buildSections() {
+  if (secXY) { RG.remove(secXY); secXY.geometry.dispose(); }
+  if (secXZ) { RG.remove(secXZ); secXZ.geometry.dispose(); }
+  if (secYZ) { RG.remove(secYZ); secYZ.geometry.dispose(); }
+  const { a, b, c } = P; const N = 160;
+  function mkLine(pts, color) {
+    return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
+      new THREE.LineBasicMaterial({ color, linewidth:2 }));
+  }
+  secXY = mkLine(Array.from({length:N+1},(_,i)=>{const t=(i/N)*Math.PI*2;return new THREE.Vector3(a*Math.cos(t),b*Math.sin(t),0);}), 0xffd060);
+  secXY.visible = sSxy; RG.add(secXY);
+  secXZ = mkLine(Array.from({length:N+1},(_,i)=>{const t=(i/N)*Math.PI*2;return new THREE.Vector3(a*Math.cos(t),0,c*Math.sin(t));}), 0xff8840);
+  secXZ.visible = sSxz; RG.add(secXZ);
+  secYZ = mkLine(Array.from({length:N+1},(_,i)=>{const t=(i/N)*Math.PI*2;return new THREE.Vector3(0,b*Math.cos(t),c*Math.sin(t));}), 0x6fff50);
+  secYZ.visible = sSyz; RG.add(secYZ);
+}
+buildSections();
+
+// ── Update all ─────────────────────────────────────────────────
+function updateAll() {
+  const { a, b, c } = P;
+  [ellMesh, wireMesh, glowMesh].forEach(m => m.scale.set(a, b, c));
+  buildSections();
+  document.getElementById('ea').textContent = `${a.toFixed(2)}²`;
+  document.getElementById('eb').textContent = `${b.toFixed(2)}²`;
+  document.getElementById('ec').textContent = `${c.toFixed(2)}²`;
+  const a2=(a*a).toFixed(2), b2=(b*b).toFixed(2), c2=(c*c).toFixed(2);
+  document.getElementById('eq-num').innerHTML = `
+    <div class="ef x"><span class="en" style="font-size:11px">x²</span><div class="eb"></div><span class="ed" style="font-size:11px">${a2}</span></div>
+    <span class="eop">+</span>
+    <div class="ef y"><span class="en" style="font-size:11px">y²</span><div class="eb"></div><span class="ed" style="font-size:11px">${b2}</span></div>
+    <span class="eop">+</span>
+    <div class="ef z"><span class="en" style="font-size:11px">z²</span><div class="eb"></div><span class="ed" style="font-size:11px">${c2}</span></div>
+    <span class="eeq">&nbsp;= 1</span>
+  `;
+  const V = (4/3)*Math.PI*a*b*c;
+  document.getElementById('pVol').textContent = `${V.toFixed(3)} u³`;
+  const p=1.6075, area=4*Math.PI*Math.pow((Math.pow(a*b,p)+Math.pow(a*c,p)+Math.pow(b*c,p))/3, 1/p);
+  document.getElementById('pArea').textContent = `${area.toFixed(3)} u²`;
+  const s = [a,b,c].sort((x,y)=>y-x);
+  document.getElementById('pMax').textContent = s[0].toFixed(3);
+  document.getElementById('pMin').textContent = s[2].toFixed(3);
+  document.getElementById('pRatio').textContent = (a/c).toFixed(3);
+  document.getElementById('sq-xy').textContent = `x²/${a.toFixed(2)}² + y²/${b.toFixed(2)}² = 1`;
+  document.getElementById('sq-xz').textContent = `x²/${a.toFixed(2)}² + z²/${c.toFixed(2)}² = 1`;
+  document.getElementById('sq-yz').textContent = `y²/${b.toFixed(2)}² + z²/${c.toFixed(2)}² = 1`;
+  document.getElementById('mxDisp').textContent = `A = diag(1/${a2}, 1/${b2}, 1/${c2})`;
+  const eps=0.09, badge=document.getElementById('badge'), obs=document.getElementById('obs');
+  const ab=Math.abs(a-b)<eps, bc=Math.abs(b-c)<eps, ac=Math.abs(a-c)<eps;
+  if(ab && bc){ badge.className='sphere'; badge.textContent='⚪ Esfera · a = b = c'; obs.textContent='Curvatura gaussiana constante en todas las direcciones.';}
+  else if(ab && c < a-eps){ badge.className='oblate'; badge.textContent='🌍 Esferoide Oblato · c < a = b'; obs.textContent='Achatado en el eje z. Como la Tierra o Saturno.';}
+  else if(ab && c > a+eps){ badge.className='prolate'; badge.textContent='🏈 Esferoide Prolato · c > a = b'; obs.textContent='Alargado en el eje z. Como un balón de rugby.';}
+  else if(ac && !ab){ badge.className='oblate'; badge.textContent='Esferoide · a = c ≠ b'; obs.textContent='Esferoide de revolución en torno al eje y.';}
+  else if(bc && !ab){ badge.className='oblate'; badge.textContent='Esferoide · b = c ≠ a'; obs.textContent='Esferoide de revolución en torno al eje x.';}
+  else { badge.className='general'; badge.textContent='📐 Elipsoide General · a ≠ b ≠ c'; obs.textContent='Tres semiejes distintos. Forma completamente asimétrica.';}
+  setFill('sa', a); setFill('sb', b); setFill('sc', c);
+}
+
+function setFill(id, val) {
+  const el = document.getElementById(id);
+  const pct = ((val - 0.2)/(3.0 - 0.2)*100).toFixed(1)+'%';
+  el.style.setProperty('--p', pct);
+}
+
+// ── Axis label positioning ────────────────────────────────────
+const lblDefs = [
+  { id:'lbl-a', local: () => new THREE.Vector3(P.a + 0.35, 0.12, 0) },
+  { id:'lbl-b', local: () => new THREE.Vector3(0.12, P.b + 0.35, 0) },
+  { id:'lbl-c', local: () => new THREE.Vector3(0.12, 0, P.c + 0.35) },
+];
+const lblText = [
+  () => `a = ${P.a.toFixed(2)}`,
+  () => `b = ${P.b.toFixed(2)}`,
+  () => `c = ${P.c.toFixed(2)}`,
+];
+
+function updateLabels() {
+  RG.updateMatrixWorld(true);
+  const hw = window.innerWidth/2, hh = window.innerHeight/2;
+  lblDefs.forEach((def, i) => {
+    const el = document.getElementById(def.id);
+    if (!el) return;
+    const wp = def.local().applyMatrix4(RG.matrixWorld);
+    const p = wp.clone().project(camera);
+    if (p.z > 1) { el.style.opacity = '0'; return; }
+    el.style.opacity = '1';
+    el.style.left = (p.x * hw + hw + 6) + 'px';
+    el.style.top  = (-p.y * hh + hh - 8) + 'px';
+    el.textContent = lblText[i]();
+  });
+}
+
+// ── Theme application ─────────────────────────────────────────
+function applyTheme(name) {
+  currentTheme = name;
+  const T = THEMES[name];
+  const r = document.documentElement;
+  Object.entries(T.css).forEach(([k,v]) => r.style.setProperty(k, v));
+  renderer.setClearColor(T.bgHex, 1);
+  ellMat.uniforms.uColorA.value.setRGB(...T.shaderA);
+  ellMat.uniforms.uColorB.value.setRGB(...T.shaderB);
+  ellMat.uniforms.uRimColor.value.setRGB(...T.rimC);
+  starMat.color.setHex(T.starC);
+  starMat.opacity = T.starOp;
+  glowMat.color.setHex(T.glowC);
+  wireMat.color.setHex(T.wireC);
+  ambLight.color.setHex(T.ambC); ambLight.intensity = T.ambI;
+  keyLight.color.setHex(T.kC);  keyLight.intensity  = T.kI;
+  fillLight.color.setHex(T.fC); fillLight.intensity = T.fI;
+  rimLight.color.setHex(T.rC);  rimLight.intensity  = T.rI;
+  // Rebuild grid
+  scene.remove(gridRef);
+  gridRef.geometry.dispose();
+  if (Array.isArray(gridRef.material)) gridRef.material.forEach(m=>m.dispose());
+  else gridRef.material.dispose();
+  gridRef = new THREE.GridHelper(10, 20, T.gC1, T.gC2);
+  gridRef.position.y = -2.8;
+  gridRef.visible = showGrid;
+  scene.add(gridRef);
+  // Rebuild axes
+  buildAxes(T.axC);
+  // Header
+  document.getElementById('hdr').style.background = T.hdrBg;
+  // Theme panel state
+  document.querySelectorAll('.tp-opt').forEach(opt => opt.classList.toggle('on', opt.dataset.theme === name));
+  document.getElementById('thLabel').textContent = T.label;
+  document.getElementById('thDot').style.background = T.css['--accent'];
+  document.getElementById('thDot').style.boxShadow  = `0 0 7px ${T.css['--accent']}`;
+  // Sync toggle states
+  document.getElementById('tAxes').dispatchEvent(new Event('sync'));
+}
+
+// ── Theme panel toggle ────────────────────────────────────────
+function toggleThemePanel(e) {
+  e.stopPropagation();
+  document.getElementById('theme-panel').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const panel = document.getElementById('theme-panel');
+  const btn   = document.getElementById('theme-btn');
+  if (!panel.contains(e.target) && !btn.contains(e.target)) panel.classList.remove('open');
+});
+
+// ── Mouse / Touch interaction ─────────────────────────────────
+let drag = false, prev = {x:0,y:0}, vel = {x:0,y:0};
+canvas.addEventListener('mousedown', e => { drag=true; autoRot=false; document.getElementById('tAuto').checked=false; prev={x:e.clientX,y:e.clientY}; });
+canvas.addEventListener('mouseup',   () => { drag=false; });
+canvas.addEventListener('mouseleave',() => { drag=false; });
+canvas.addEventListener('mousemove', e => {
+  if (!drag) return;
+  const dx=e.clientX-prev.x, dy=e.clientY-prev.y;
+  vel.x=dy*0.007; vel.y=dx*0.007;
+  RG.rotation.x+=vel.x; RG.rotation.y+=vel.y;
+  prev={x:e.clientX,y:e.clientY};
+});
+canvas.addEventListener('touchstart', e => { drag=true; autoRot=false; document.getElementById('tAuto').checked=false; const t=e.touches[0]; prev={x:t.clientX,y:t.clientY}; },{passive:true});
+canvas.addEventListener('touchmove',  e => { if(!drag)return; const t=e.touches[0]; RG.rotation.x+=(t.clientY-prev.y)*0.007; RG.rotation.y+=(t.clientX-prev.x)*0.007; prev={x:t.clientX,y:t.clientY}; e.preventDefault(); },{passive:false});
+canvas.addEventListener('touchend',  () => { drag=false; });
+canvas.addEventListener('wheel', e => { camera.position.z=Math.max(2.8,Math.min(14,camera.position.z+e.deltaY*0.006)); e.preventDefault(); },{passive:false});
+
+// ── Slider events ─────────────────────────────────────────────
+['sa','sb','sc'].forEach((id, i) => {
+  document.getElementById(id).addEventListener('input', e => {
+    const key = ['a','b','c'][i];
+    P[key] = parseFloat(e.target.value);
+    document.getElementById(['va','vb','vc'][i]).textContent = P[key].toFixed(2);
+    updateAll();
+  });
+});
+
+// ── Toggle events ─────────────────────────────────────────────
+document.getElementById('tSolid').onchange = e => { showSolid=e.target.checked; ellMesh.visible=showSolid; glowMesh.visible=showSolid; };
+document.getElementById('tWire').onchange  = e => { showWire=e.target.checked; wireMesh.visible=showWire; };
+document.getElementById('tAxes').onchange  = e => { showAxes=e.target.checked; AX.visible=showAxes; document.querySelectorAll('.ax-lbl').forEach(l=>l.style.display=showAxes?'':'none'); };
+document.getElementById('tGrid').onchange  = e => { showGrid=e.target.checked; gridRef.visible=showGrid; };
+document.getElementById('tAuto').onchange  = e => { autoRot=e.target.checked; };
+document.getElementById('tSxy').onchange   = e => { sSxy=e.target.checked; if(secXY) secXY.visible=sSxy; };
+document.getElementById('tSxz').onchange   = e => { sSxz=e.target.checked; if(secXZ) secXZ.visible=sSxz; };
+document.getElementById('tSyz').onchange   = e => { sSyz=e.target.checked; if(secYZ) secYZ.visible=sSyz; };
+
+// ── Presets ───────────────────────────────────────────────────
+document.querySelectorAll('.pb').forEach(btn => {
+  btn.addEventListener('click', () => {
+    applyP(parseFloat(btn.dataset.a), parseFloat(btn.dataset.b), parseFloat(btn.dataset.c));
+    document.querySelectorAll('.pb').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+  });
+});
+function applyP(a, b, c) {
+  P.a=a; P.b=b; P.c=c;
+  ['sa','sb','sc'].forEach((id,i)=>{
+    document.getElementById(id).value=[a,b,c][i];
+    document.getElementById(['va','vb','vc'][i]).textContent=[a,b,c][i].toFixed(2);
+  });
+  updateAll();
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+document.querySelectorAll('.tb').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.tc').forEach(c=>c.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('t-'+btn.dataset.t).classList.add('on');
+  });
+});
+
+// ── Animation loop ────────────────────────────────────────────
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  ellMat.uniforms.uTime.value = t;
+  ellMat.uniforms.camPos.value.copy(camera.position);
+  if (autoRot && !drag) {
+    RG.rotation.y += 0.004;
+    RG.rotation.x  = Math.sin(t * 0.18) * 0.22;
+  }
+  if (!drag && !autoRot) {
+    vel.x *= 0.9; vel.y *= 0.9;
+    RG.rotation.x += vel.x; RG.rotation.y += vel.y;
+  }
+  updateLabels();
+  renderer.render(scene, camera);
+}
+
+// ── Init ──────────────────────────────────────────────────────
+updateAll();
+applyTheme('dark');
+setTimeout(() => document.getElementById('loading').classList.add('out'), 700);
+animate();
+</script>
+</body>
+</html>

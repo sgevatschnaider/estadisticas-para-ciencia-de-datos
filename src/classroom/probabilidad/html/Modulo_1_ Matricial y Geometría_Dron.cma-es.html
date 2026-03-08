@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMA-ES Avanzado: Optimización Evolutiva Interactiva</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: linear-gradient(135deg, #0a0a0c 0%, #1a1a2e 100%);
+            color: #e0e0e0; 
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh;
+        }
+        
+        canvas { 
+            background: radial-gradient(circle at 30% 30%, #1a1a2e 0%, #0d0d15 100%);
+            cursor: crosshair; 
+            flex-grow: 1;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
+        }
+
+        /* Panel de Información */
+        .info-panel { 
+            position: absolute; 
+            top: 20px; 
+            left: 20px; 
+            background: rgba(15, 15, 25, 0.97); 
+            border-radius: 16px; 
+            border: 1px solid rgba(74, 175, 255, 0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 20px rgba(74, 175, 255, 0.1);
+            max-width: 380px; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100; 
+            backdrop-filter: blur(10px);
+        }
+        
+        .info-panel.collapsed { 
+            max-height: 50px; 
+            max-width: 240px; 
+        }
+        
+        .info-header { 
+            padding: 15px 18px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: pointer; 
+            background: linear-gradient(135deg, rgba(74, 175, 255, 0.1) 0%, rgba(74, 175, 255, 0.05) 100%);
+            border-radius: 16px 16px 0 0;
+            border-bottom: 1px solid rgba(74, 175, 255, 0.2);
+        }
+        
+        .info-header:hover {
+            background: linear-gradient(135deg, rgba(74, 175, 255, 0.15) 0%, rgba(74, 175, 255, 0.08) 100%);
+        }
+        
+        .info-content { 
+            padding: 18px; 
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .info-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .info-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+        
+        .info-content::-webkit-scrollbar-thumb {
+            background: rgba(74, 175, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        /* Estadísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, rgba(74, 175, 255, 0.08) 0%, rgba(74, 175, 255, 0.03) 100%);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(74, 175, 255, 0.2);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 175, 255, 0.2);
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        
+        .stat-value {
+            font-size: 22px;
+            color: #4af;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .stat-value.success { color: #4f4; }
+        .stat-value.warning { color: #fa4; }
+        .stat-value.danger { color: #f44; }
+
+        /* Controles */
+        .controls-section {
+            background: rgba(255,255,255,0.03);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .controls-section h4 {
+            color: #4af;
+            font-size: 13px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .control-label {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        input[type="range"] {
+            width: 140px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #4af;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(74, 175, 255, 0.5);
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #5bf;
+        }
+
+        /* Botones */
+        button {
+            background: linear-gradient(135deg, #4af 0%, #39d 100%);
+            border: none;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(74, 175, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 175, 255, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .btn-toggle {
+            background: transparent;
+            color: #4af;
+            padding: 4px 12px;
+            font-size: 11px;
+            border: 1px solid #4af;
+            box-shadow: none;
+        }
+        
+        .btn-toggle:hover {
+            background: rgba(74, 175, 255, 0.1);
+        }
+        
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border: 1px solid rgba(74, 175, 255, 0.3);
+            color: #4af;
+            box-shadow: none;
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, rgba(74, 175, 255, 0.2) 0%, rgba(74, 175, 255, 0.1) 100%);
+        }
+
+        /* Modo de visualización */
+        .viz-modes {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        
+        .viz-mode-btn {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: 11px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(74, 175, 255, 0.2);
+            color: #aaa;
+            box-shadow: none;
+        }
+        
+        .viz-mode-btn.active {
+            background: linear-gradient(135deg, #4af 0%, #39d 100%);
+            color: white;
+            border-color: #4af;
+        }
+
+        /* Información contextual */
+        .info-text {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        
+        .info-text b {
+            color: #fff;
+        }
+        
+        .highlight {
+            color: #4af;
+            font-weight: 600;
+        }
+        
+        .highlight-success {
+            color: #4f4;
+            font-weight: 600;
+        }
+        
+        .highlight-danger {
+            color: #f44;
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer-credit {
+            width: 100%;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            padding: 14px 0;
+            background: rgba(10, 10, 12, 0.95);
+            border-top: 1px solid rgba(74, 175, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .footer-credit strong {
+            color: #4af;
+        }
+
+        /* Animaciones */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Leyenda */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 11px;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .info-panel {
+                max-width: 95%;
+                left: 10px;
+                right: 10px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="info-panel" id="infoPanel">
+    <div class="info-header" onclick="toggleInfo()">
+        <span style="font-weight: 700; color: #4af; font-size: 15px;">🚁 CMA-ES: Navegación Inteligente</span>
+        <button class="btn-toggle" id="toggleBtn">CONTRAER</button>
+    </div>
+    
+    <div class="info-content">
+        <!-- Estadísticas principales -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-label">Generación</div>
+                <div class="stat-value" id="genCounter">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Fitness</div>
+                <div class="stat-value" id="fitnessValue">∞</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Sigma (σ)</div>
+                <div class="stat-value" id="sigmaValue">1.6</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Convergencia</div>
+                <div class="stat-value" id="convergenceValue">0%</div>
+            </div>
+        </div>
+
+        <!-- Modos de visualización -->
+        <div class="viz-modes">
+            <button class="viz-mode-btn active" onclick="setVizMode('standard')" id="btnStandard">Estándar</button>
+            <button class="viz-mode-btn" onclick="setVizMode('heatmap')" id="btnHeatmap">Mapa de Calor</button>
+            <button class="viz-mode-btn" onclick="setVizMode('trails')" id="btnTrails">Estelas</button>
+        </div>
+
+        <!-- Controles de parámetros -->
+        <div class="controls-section">
+            <h4>⚙️ Parámetros del Algoritmo</h4>
+            <div class="control-row">
+                <span class="control-label">Población:</span>
+                <input type="range" id="popSizeSlider" min="20" max="100" value="45" oninput="updateParam('population', this.value)">
+                <span class="control-label" id="popSizeLabel">45</span>
+            </div>
+            <div class="control-row">
+                <span class="control-label">Velocidad:</span>
+                <input type="range" id="speedSlider" min="50" max="2000" value="600" oninput="updateParam('speed', this.value)">
+                <span class="control-label" id="speedLabel">600ms</span>
+            </div>
+            <div class="control-row">
+                <span class="control-label">Mutación:</span>
+                <input type="range" id="mutationSlider" min="0.05" max="0.4" step="0.05" value="0.18" oninput="updateParam('mutation', this.value)">
+                <span class="control-label" id="mutationLabel">0.18</span>
+            </div>
+        </div>
+
+        <!-- Información del contexto -->
+        <div class="info-text">
+            <b>Escenario:</b> Un dron de entrega debe encontrar la ruta óptima hacia el cliente evitando el <span class="highlight-danger">edificio prohibido</span>.
+        </div>
+        
+        <div class="info-text">
+            <b>Solución Evolutiva:</b> La <span class="highlight">trayectoria azul</span> muestra cómo el algoritmo aprende a rodear obstáculos adaptando su matriz de covarianza.
+        </div>
+        
+        <div class="info-text">
+            <b>Geometría Adaptativa:</b> La elipse representa la distribución de búsqueda. Se deforma para aprender la <span class="highlight-success">geometría del problema</span>.
+        </div>
+
+        <!-- Leyenda -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4af;"></div>
+                <span>Población Elite</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #888;"></div>
+                <span>Población Rechazada</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f44;"></div>
+                <span>Zona Prohibida</span>
+            </div>
+        </div>
+
+        <!-- Botones de control -->
+        <div class="btn-group">
+            <button onclick="restartSimulation()">🔄 REINICIAR</button>
+            <button class="btn-secondary" onclick="togglePause()" id="pauseBtn">⏸ PAUSAR</button>
+        </div>
+        
+        <div class="btn-group" style="margin-top: 8px;">
+            <button class="btn-secondary" onclick="addObstacle()">➕ OBSTÁCULO</button>
+            <button class="btn-secondary" onclick="clearObstacles()">🗑️ LIMPIAR</button>
+        </div>
+        
+        <p style="font-size: 11px; color: #666; margin-top: 12px; text-align: center; font-style: italic;">
+            💡 Clic en el mapa para reubicar al cliente<br>
+            🎯 Clic derecho para agregar obstáculos
+        </p>
+    </div>
+</div>
+
+<canvas id="simCanvas"></canvas>
+
+<div class="footer-credit">
+    Visualización Avanzada de <strong>CMA-ES</strong> (Covariance Matrix Adaptation Evolution Strategy)<br>
+    Desarrollada por el Profesor <strong>Sergio Gevatschnaider</strong> | Versión Mejorada 2.0
+</div>
+
+<script>
+// ============================================================================
+// CONFIGURACIÓN Y VARIABLES GLOBALES
+// ============================================================================
+
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+
+let width, height;
+let target = { x: 0, y: 0 };
+let obstacles = [];
+let mean, C, sigma, timerId, generation = 0;
+let pathHistory = [];
+let fitnessHistory = [];
+let heatmapData = [];
+let isPaused = false;
+let vizMode = 'standard';
+
+// Parámetros del algoritmo (modificables)
+let config = {
+    populationSize: 45,
+    mu_selection: 12,
+    delayMs: 600,
+    ccov: 0.18,
+    initialSigma: 1.6,
+    sigmaDecay: 0.93,
+    sigmaGrow: 1.05,
+    convergenceThreshold: 40
+};
+
+// ============================================================================
+// FUNCIONES DE INTERFAZ
+// ============================================================================
+
+function toggleInfo() {
+    const panel = document.getElementById('infoPanel');
+    const btn = document.getElementById('toggleBtn');
+    panel.classList.toggle('collapsed');
+    btn.innerText = panel.classList.contains('collapsed') ? "EXPANDIR" : "CONTRAER";
+}
+
+function togglePause() {
+    isPaused = !isPaused;
+    const btn = document.getElementById('pauseBtn');
+    btn.innerHTML = isPaused ? '▶️ REANUDAR' : '⏸ PAUSAR';
+    if (!isPaused) step();
+}
+
+function setVizMode(mode) {
+    vizMode = mode;
+    ['btnStandard', 'btnHeatmap', 'btnTrails'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+    });
+    document.getElementById('btn' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+}
+
+function updateParam(param, value) {
+    switch(param) {
+        case 'population':
+            config.populationSize = parseInt(value);
+            config.mu_selection = Math.floor(config.populationSize * 0.27);
+            document.getElementById('popSizeLabel').innerText = value;
+            break;
+        case 'speed':
+            config.delayMs = parseInt(value);
+            document.getElementById('speedLabel').innerText = value + 'ms';
+            break;
+        case 'mutation':
+            config.ccov = parseFloat(value);
+            document.getElementById('mutationLabel').innerText = value;
+            break;
+    }
+}
+
+function addObstacle() {
+    const x = Math.random() * width * 0.6 + width * 0.2;
+    const y = Math.random() * height * 0.6 + height * 0.2;
+    const r = Math.min(width, height) * (0.08 + Math.random() * 0.08);
+    obstacles.push({ x, y, r });
+}
+
+function clearObstacles() {
+    obstacles = [obstacles[0]]; // Mantener solo el obstáculo principal
+}
+
+// ============================================================================
+// FUNCIONES DE SIMULACIÓN
+// ============================================================================
+
+function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight - 45;
+    target.x = width * 0.85;
+    target.y = height * 0.25;
+    obstacles = [{ 
+        x: width * 0.5, 
+        y: height * 0.5, 
+        r: Math.min(width, height) * 0.18 
+    }];
+    restartSimulation();
+}
+
+function restartSimulation() {
+    clearTimeout(timerId);
+    generation = 0;
+    pathHistory = [];
+    fitnessHistory = [];
+    heatmapData = [];
+    isPaused = false;
+    document.getElementById('pauseBtn').innerHTML = '⏸ PAUSAR';
+    updateUI(0, Infinity, config.initialSigma, 0);
+    
+    mean = [width * 0.15, height * 0.85];
+    C = [[3500, 0], [0, 3500]];
+    sigma = config.initialSigma;
+    step();
+}
+
+function updateUI(gen, fitness, sig, convergence) {
+    document.getElementById('genCounter').innerText = gen;
+    
+    const fitnessEl = document.getElementById('fitnessValue');
+    if (fitness === Infinity) {
+        fitnessEl.innerText = '∞';
+        fitnessEl.className = 'stat-value';
+    } else {
+        fitnessEl.innerText = fitness.toFixed(1);
+        if (fitness < 50) fitnessEl.className = 'stat-value success';
+        else if (fitness < 200) fitnessEl.className = 'stat-value warning';
+        else fitnessEl.className = 'stat-value danger';
+    }
+    
+    document.getElementById('sigmaValue').innerText = sig.toFixed(3);
+    document.getElementById('convergenceValue').innerText = convergence.toFixed(0) + '%';
+}
+
+function randomNormal() {
+    let u = 0, v = 0;
+    while(u === 0) u = Math.random();
+    while(v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+function getEigenData(mat) {
+    const a = mat[0][0], b = mat[0][1], d = mat[1][1];
+    const trace = a + d;
+    const det = a * d - b * b;
+    const gap = Math.sqrt(Math.max(0, (trace * trace / 4) - det));
+    const l1 = trace / 2 + gap;
+    const l2 = trace / 2 - gap;
+    const angle = 0.5 * Math.atan2(2 * b, a - d);
+    return { l1, l2, angle };
+}
+
+function evaluateFitness(x, y) {
+    let dTarget = Math.hypot(x - target.x, y - target.y);
+    
+    // Penalización por obstáculos
+    for (let obs of obstacles) {
+        let dObstacle = Math.hypot(x - obs.x, y - obs.y);
+        if (dObstacle < obs.r) {
+            dTarget += 20000;
+            break;
+        }
+    }
+    
+    return dTarget;
+}
+
+function step() {
+    if (isPaused) return;
+    
+    generation++;
+    pathHistory.push([...mean]);
+    
+    const eig = getEigenData(C);
+    const rL1 = Math.sqrt(Math.max(1, eig.l1));
+    const rL2 = Math.sqrt(Math.max(1, eig.l2));
+    let pop = [];
+
+    // Generar población
+    for (let i = 0; i < config.populationSize; i++) {
+        const z1 = randomNormal(), z2 = randomNormal();
+        let x = (z1 * rL1 * Math.cos(eig.angle) - z2 * rL2 * Math.sin(eig.angle)) * sigma + mean[0];
+        let y = (z1 * rL1 * Math.sin(eig.angle) + z2 * rL2 * Math.cos(eig.angle)) * sigma + mean[1];
+        
+        let fitness = evaluateFitness(x, y);
+        pop.push({ x, y, fitness });
+        
+        // Acumular datos para mapa de calor
+        if (vizMode === 'heatmap') {
+            heatmapData.push({ x, y, fitness, gen: generation });
+            if (heatmapData.length > 2000) heatmapData.shift();
+        }
+    }
+
+    // Selección
+    pop.sort((a, b) => a.fitness - b.fitness);
+    let selected = pop.slice(0, config.mu_selection);
+    let oldMean = [...mean];
+    let bestFitness = pop[0].fitness;
+    fitnessHistory.push(bestFitness);
+
+    // Actualizar media
+    let newMean = [0, 0];
+    selected.forEach(p => {
+        newMean[0] += p.x / config.mu_selection;
+        newMean[1] += p.y / config.mu_selection;
+    });
+    mean = newMean;
+
+    // Actualizar matriz de covarianza
+    let estC = [[0, 0], [0, 0]];
+    selected.forEach(p => {
+        let dx = (p.x - oldMean[0]) / sigma;
+        let dy = (p.y - oldMean[1]) / sigma;
+        estC[0][0] += (dx * dx) / config.mu_selection;
+        estC[0][1] += (dx * dy) / config.mu_selection;
+        estC[1][1] += (dy * dy) / config.mu_selection;
+    });
+    
+    C[0][0] = (1-config.ccov)*C[0][0] + config.ccov*estC[0][0];
+    C[0][1] = (1-config.ccov)*C[0][1] + config.ccov*estC[0][1];
+    C[1][1] = (1-config.ccov)*C[1][1] + config.ccov*estC[1][1];
+    C[1][0] = C[0][1];
+
+    // Adaptación de sigma
+    if (bestFitness < config.convergenceThreshold) {
+        sigma *= config.sigmaDecay;
+    } else if (sigma < 2.5) {
+        sigma *= config.sigmaGrow;
+    }
+
+    // Calcular convergencia
+    const convergence = Math.min(100, Math.max(0, 100 - (bestFitness / 10)));
+    
+    updateUI(generation, bestFitness, sigma, convergence);
+    draw(pop, eig, selected);
+    
+    timerId = setTimeout(step, config.delayMs);
+}
+
+// ============================================================================
+// FUNCIONES DE VISUALIZACIÓN
+// ============================================================================
+
+function draw(pop, eig, selected) {
+    // Fondo con gradiente
+    const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height));
+    gradient.addColorStop(0, '#1a1a2e');
+    gradient.addColorStop(1, '#0d0d15');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+
+    // Mapa de calor (si está activo)
+    if (vizMode === 'heatmap') {
+        drawHeatmap();
+    }
+
+    // Dibujar grid sutil
+    drawGrid();
+
+    // Dibujar obstáculos
+    obstacles.forEach((obs, idx) => {
+        const isMain = idx === 0;
+        ctx.fillStyle = isMain ? 'rgba(244, 68, 68, 0.08)' : 'rgba(244, 100, 68, 0.06)';
+        ctx.strokeStyle = isMain ? '#f44' : '#fa6';
+        ctx.lineWidth = isMain ? 2 : 1.5;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(obs.x, obs.y, obs.r, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Etiqueta
+        if (isMain) {
+            ctx.fillStyle = '#f44';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText("EDIFICIO", obs.x, obs.y);
+            ctx.fillText("PROHIBIDO", obs.x, obs.y + 15);
+        }
+    });
+
+    // Dibujar trayectoria histórica
+    if (pathHistory.length > 1) {
+        if (vizMode === 'trails') {
+            // Estelas con degradado
+            for (let i = 1; i < pathHistory.length; i++) {
+                const alpha = (i / pathHistory.length) * 0.8;
+                ctx.strokeStyle = `rgba(74, 175, 255, ${alpha})`;
+                ctx.lineWidth = 2 + (i / pathHistory.length) * 2;
+                ctx.beginPath();
+                ctx.moveTo(pathHistory[i-1][0], pathHistory[i-1][1]);
+                ctx.lineTo(pathHistory[i][0], pathHistory[i][1]);
+                ctx.stroke();
+            }
+        } else {
+            // Trayectoria estándar
+            const gradientPath = ctx.createLinearGradient(
+                pathHistory[0][0], pathHistory[0][1],
+                pathHistory[pathHistory.length-1][0], pathHistory[pathHistory.length-1][1]
+            );
+            gradientPath.addColorStop(0, 'rgba(74, 175, 255, 0.3)');
+            gradientPath.addColorStop(1, 'rgba(74, 175, 255, 0.8)');
+            
+            ctx.strokeStyle = gradientPath;
+            ctx.lineWidth = 4;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(74, 175, 255, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(pathHistory[0][0], pathHistory[0][1]);
+            for (let i = 1; i < pathHistory.length; i++) {
+                ctx.lineTo(pathHistory[i][0], pathHistory[i][1]);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    // Dibujar objetivo (cliente)
+    ctx.save();
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#f44';
+    ctx.fillStyle = '#f44';
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, 12, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+    
+    // Anillo exterior
+    ctx.strokeStyle = 'rgba(244, 68, 68, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, 18, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // Etiqueta
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText("🎯 CLIENTE", target.x, target.y - 28);
+
+    // Dibujar elipse de distribución
+    ctx.save();
+    ctx.translate(mean[0], mean[1]);
+    ctx.rotate(eig.angle);
+    
+    // Elipse con gradiente
+    const ellipseGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.sqrt(eig.l1)*2*sigma);
+    ellipseGrad.addColorStop(0, 'rgba(74, 175, 255, 0.15)');
+    ellipseGrad.addColorStop(1, 'rgba(74, 175, 255, 0.02)');
+    ctx.fillStyle = ellipseGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, Math.sqrt(eig.l1)*2*sigma, Math.sqrt(eig.l2)*2*sigma, 0, 0, Math.PI*2);
+    ctx.fill();
+    
+    // Borde de elipse
+    ctx.strokeStyle = '#4af';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, Math.sqrt(eig.l1)*2*sigma, Math.sqrt(eig.l2)*2*sigma, 0, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // Ejes principales
+    ctx.strokeStyle = 'rgba(74, 175, 255, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-Math.sqrt(eig.l1)*2*sigma, 0);
+    ctx.lineTo(Math.sqrt(eig.l1)*2*sigma, 0);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, -Math.sqrt(eig.l2)*2*sigma);
+    ctx.lineTo(0, Math.sqrt(eig.l2)*2*sigma);
+    ctx.stroke();
+    
+    ctx.restore();
+
+    // Dibujar población
+    pop.forEach((p, i) => {
+        const isSelected = i < config.mu_selection;
+        
+        if (isSelected) {
+            // Partículas seleccionadas con glow
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = '#4af';
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3.5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        } else {
+            // Partículas no seleccionadas
+            ctx.fillStyle = 'rgba(100, 100, 120, 0.3)';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2);
+            ctx.fill();
+        }
+    });
+
+    // Dibujar centro de masa (media)
+    ctx.save();
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#4af';
+    ctx.fillStyle = '#4af';
+    ctx.beginPath();
+    ctx.arc(mean[0], mean[1], 6, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+    
+    // Anillo exterior del dron
+    ctx.strokeStyle = '#4af';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(mean[0], mean[1], 10, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // Etiqueta del dron
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText("🚁 DRON", mean[0], mean[1] - 18);
+
+    // Línea de conexión dron-objetivo
+    ctx.strokeStyle = 'rgba(74, 175, 255, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(mean[0], mean[1]);
+    ctx.lineTo(target.x, target.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Distancia
+    const dist = Math.hypot(mean[0] - target.x, mean[1] - target.y);
+    const midX = (mean[0] + target.x) / 2;
+    const midY = (mean[1] + target.y) / 2;
+    ctx.fillStyle = 'rgba(74, 175, 255, 0.8)';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${dist.toFixed(0)}px`, midX, midY - 5);
+}
+
+function drawGrid() {
+    ctx.strokeStyle = 'rgba(74, 175, 255, 0.05)';
+    ctx.lineWidth = 1;
+    const gridSize = 50;
+    
+    for (let x = 0; x < width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+    }
+    
+    for (let y = 0; y < height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+    }
+}
+
+function drawHeatmap() {
+    const recentData = heatmapData.slice(-1000);
+    const maxGen = Math.max(...recentData.map(d => d.gen));
+    
+    recentData.forEach(point => {
+        const age = (maxGen - point.gen) / 50;
+        const alpha = Math.max(0, 0.3 - age * 0.05);
+        const hue = Math.max(0, 240 - (point.fitness / 1000) * 120);
+        ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+// ============================================================================
+// EVENT LISTENERS
+// ============================================================================
+
+window.addEventListener('mousedown', e => {
+    if (e.button === 0) { // Click izquierdo
+        if(e.target.tagName !== 'BUTTON' && 
+           e.target.tagName !== 'INPUT' && 
+           !document.getElementById('infoPanel').contains(e.target)) {
+            target.x = e.clientX;
+            target.y = e.clientY;
+        }
+    }
+});
+
+window.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    if (!document.getElementById('infoPanel').contains(e.target)) {
+        const x = e.clientX;
+        const y = e.clientY;
+        const r = Math.min(width, height) * 0.08;
+        obstacles.push({ x, y, r });
+    }
+});
+
+window.addEventListener('resize', resize);
+
+// Atajos de teclado
+window.addEventListener('keydown', e => {
+    if (e.key === ' ') {
+        e.preventDefault();
+        togglePause();
+    } else if (e.key === 'r' || e.key === 'R') {
+        restartSimulation();
+    } else if (e.key === '1') {
+        setVizMode('standard');
+    } else if (e.key === '2') {
+        setVizMode('heatmap');
+    } else if (e.key === '3') {
+        setVizMode('trails');
+    }
+});
+
+// ============================================================================
+// INICIALIZACIÓN
+// ============================================================================
+
+resize();
+</script>
+
+</body>
+</html>
