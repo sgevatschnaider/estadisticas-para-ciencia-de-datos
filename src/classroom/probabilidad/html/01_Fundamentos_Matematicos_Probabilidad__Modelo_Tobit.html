@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelo Tobit — Variable Dependiente Limitada</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --ink: #0f0e0c;
+    --paper: #f7f3ed;
+    --paper2: #ede8e0;
+    --amber: #c8873a;
+    --amber-light: #e8a855;
+    --gold: #b5902a;
+    --crimson: #a83232;
+    --teal: #2a7a6e;
+    --teal-light: #3aaa99;
+    --slate: #3a4a5a;
+    --muted: #7a6f63;
+    --rule: #c8bfb2;
+    --card-bg: #ffffff;
+    --card-border: var(--rule);
+    --p-color: #2a2520;
+    --nav-bg: var(--paper2);
+    --main-bg: var(--paper);
+  }
+
+  /* ── DARK THEME ── */
+  html.dark {
+    --ink: #e8e2d8;
+    --paper: #12110f;
+    --paper2: #1c1a17;
+    --amber: #e8a855;
+    --amber-light: #f0c070;
+    --gold: #d4a84a;
+    --crimson: #e06060;
+    --teal: #4abfaf;
+    --teal-light: #5ad4c0;
+    --slate: #9ab0c4;
+    --muted: #8a8070;
+    --rule: #2e2b26;
+    --card-bg: #1c1a17;
+    --card-border: #2e2b26;
+    --p-color: #c8c0b0;
+    --nav-bg: #17150f;
+    --main-bg: #12110f;
+  }
+
+  /* ── SEPIA THEME ── */
+  html.sepia {
+    --ink: #2c1f0e;
+    --paper: #f2e8d5;
+    --paper2: #e8dbc4;
+    --amber: #b5722a;
+    --amber-light: #d4924a;
+    --gold: #9a7820;
+    --crimson: #8a2020;
+    --teal: #2a6858;
+    --teal-light: #3a9080;
+    --slate: #3a3020;
+    --muted: #6a5a40;
+    --rule: #c4b090;
+    --card-bg: #f8f0e0;
+    --card-border: #c4b090;
+    --p-color: #2c1f0e;
+    --nav-bg: #e8dbc4;
+    --main-bg: #f2e8d5;
+  }
+
+  /* ── SLATE THEME ── */
+  html.slate {
+    --ink: #d0dce8;
+    --paper: #0f1520;
+    --paper2: #162030;
+    --amber: #60a8d8;
+    --amber-light: #80c4f0;
+    --gold: #50a0cc;
+    --crimson: #e07080;
+    --teal: #50c8a8;
+    --teal-light: #60e0c0;
+    --slate: #80a8c8;
+    --muted: #607088;
+    --rule: #243040;
+    --card-bg: #162030;
+    --card-border: #243040;
+    --p-color: #a8bcd0;
+    --nav-bg: #0f1520;
+    --main-bg: #0f1520;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--main-bg);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    min-height: 100vh;
+    transition: background 0.35s ease, color 0.35s ease;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 3.5rem 4rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -45deg, transparent, transparent 40px,
+      rgba(200,135,58,0.04) 40px, rgba(200,135,58,0.04) 41px
+    );
+  }
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--amber-light);
+    margin-bottom: 1rem;
+    opacity: 0.9;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    position: relative;
+    max-width: 680px;
+  }
+  header h1 em {
+    font-style: italic;
+    color: var(--amber-light);
+  }
+  .header-sub {
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: rgba(247,243,237,0.65);
+    font-style: italic;
+    max-width: 560px;
+    position: relative;
+  }
+  .author-line {
+    margin-top: 2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: rgba(247,243,237,0.4);
+    position: relative;
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .author-line span { color: var(--amber); opacity: 0.8; }
+
+  /* ── THEME SWITCHER ── */
+  .theme-switcher {
+    position: fixed;
+    top: 1.2rem;
+    right: 1.4rem;
+    z-index: 999;
+    display: flex;
+    gap: 0.4rem;
+    background: rgba(15,14,12,0.75);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(200,135,58,0.25);
+    border-radius: 40px;
+    padding: 0.35rem 0.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .theme-btn {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    background: none;
+  }
+  .theme-btn:hover { transform: scale(1.15); }
+  .theme-btn.active { border-color: var(--amber-light); }
+  .theme-btn[data-theme="light"] { background: #f7f3ed; }
+  .theme-btn[data-theme="dark"]  { background: #1c1a17; }
+  .theme-btn[data-theme="sepia"] { background: #e8dbc4; }
+  .theme-btn[data-theme="slate"] { background: #162030; }
+  .theme-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: rgba(200,135,58,0.6);
+    display: flex; align-items: center; padding: 0 0.3rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ── NAV PILLS ── */
+  nav {
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--rule);
+    padding: 0 4rem;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+  }
+  nav a {
+    display: block;
+    padding: 0.85rem 1.4rem;
+    text-decoration: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--amber);
+    border-bottom-color: var(--amber);
+  }
+
+  /* ── LAYOUT ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
+
+  section { margin-bottom: 5rem; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 0.5rem;
+  }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--slate);
+    margin: 2rem 0 0.8rem;
+  }
+  p { margin-bottom: 1.1rem; color: var(--p-color); }
+
+  hr.rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 2.5rem 0;
+  }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-left: 3px solid var(--amber);
+    background: rgba(200,135,58,0.07);
+    padding: 1.2rem 1.6rem;
+    margin: 2rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .callout.danger {
+    border-left-color: var(--crimson);
+    background: rgba(168,50,50,0.06);
+  }
+  .callout.teal {
+    border-left-color: var(--teal);
+    background: rgba(42,122,110,0.07);
+  }
+  .callout-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 0.5rem;
+  }
+  .callout.danger .callout-title { color: var(--crimson); }
+  .callout.teal .callout-title { color: var(--teal); }
+
+  /* ── MATH DISPLAY ── */
+  .math-block {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 1.6rem 2rem;
+    border-radius: 4px;
+    margin: 1.8rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    line-height: 2;
+    overflow-x: auto;
+  }
+  .math-block .comment { color: var(--muted); font-size: 0.78rem; }
+  .math-block .amber { color: var(--amber-light); }
+  .math-block .teal { color: var(--teal-light); }
+  .math-block .red { color: #e07070; }
+
+  /* ── INTERACTIVE CARDS ── */
+  .viz-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    margin: 2.5rem 0;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .viz-card-header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 1rem 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .viz-card-header .viz-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--amber-light);
+  }
+  .viz-card-header .viz-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    background: rgba(200,135,58,0.2);
+    color: var(--amber-light);
+    padding: 0.2rem 0.6rem;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+  }
+  .viz-body { padding: 1.8rem; }
+
+  /* ── CONTROLS ── */
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 1.6rem;
+  }
+  .control-group label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .control-group label span {
+    color: var(--amber);
+    font-weight: 500;
+  }
+  input[type=range] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--rule);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    background: var(--amber);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(200,135,58,0.2);
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 1.2rem 0;
+  }
+  .stat-chip {
+    flex: 1;
+    min-width: 130px;
+    background: var(--paper2);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.8rem 1rem;
+    text-align: center;
+  }
+  .stat-chip .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.2rem;
+  }
+  .stat-chip .stat-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .stat-chip.highlight .stat-val { color: var(--teal); }
+  .stat-chip.warn .stat-val { color: var(--crimson); }
+
+  /* ── TWO-COL ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } nav { padding: 0 1rem; } header { padding: 2.5rem 1.5rem 2rem; } main { padding: 3rem 1.2rem; } }
+
+  /* ── TABLE ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    margin: 1.5rem 0;
+  }
+  .data-table th {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.6rem 1rem;
+    text-align: left;
+    letter-spacing: 0.1em;
+    font-weight: 400;
+  }
+  .data-table td {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .data-table tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+  .val-censored { color: var(--crimson); font-weight: 500; }
+  .val-real { color: var(--teal); }
+
+  /* ── FORMULA PILLS ── */
+  .formula-pills { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .pill {
+    background: var(--ink);
+    color: var(--amber-light);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── SECTION DIVIDER ── */
+  .section-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    background: var(--amber);
+    color: var(--ink);
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 50%;
+    margin-right: 0.8rem;
+    flex-shrink: 0;
+  }
+  .section-heading {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── LIKELIHOOD VIZ ── */
+  .likelihood-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 750px) { .likelihood-panel { grid-template-columns: 1fr; } }
+
+  /* ── TOOLTIP ── */
+  .tooltip-trigger {
+    border-bottom: 1px dashed var(--amber);
+    cursor: help;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    color: rgba(247,243,237,0.4);
+    text-align: center;
+    padding: 2.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+  }
+  footer span { color: var(--amber); opacity: 0.8; }
+
+  canvas { max-width: 100%; }
+  html.dark canvas, html.slate canvas { background: transparent; }
+  html.dark .viz-body, html.slate .viz-body { background: var(--card-bg); }
+  html.sepia .viz-body { background: var(--card-bg); }
+
+  .tag-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+  .tag { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.7rem; border: 1px solid var(--rule); border-radius: 2px; color: var(--muted); }
+
+  .insight-box {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2rem 2.5rem;
+    border-radius: 6px;
+    margin: 2.5rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .insight-box::before {
+    content: '"';
+    position: absolute;
+    top: -0.5rem;
+    left: 1.2rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 8rem;
+    color: rgba(200,135,58,0.15);
+    line-height: 1;
+  }
+  .insight-box p {
+    color: rgba(247,243,237,0.85);
+    font-size: 1.05rem;
+    font-style: italic;
+    position: relative;
+  }
+  .insight-box .source {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--amber);
+    margin-top: 0.8rem;
+    font-style: normal;
+  }
+
+  .compare-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--rule);
+    margin: 0.4rem 0 0.8rem;
+    overflow: hidden;
+  }
+  .compare-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="theme-switcher">
+  <span class="theme-label">tema</span>
+  <button class="theme-btn active" data-theme="light" title="Claro" aria-label="Tema claro">☀️</button>
+  <button class="theme-btn" data-theme="dark"  title="Oscuro" aria-label="Tema oscuro">🌙</button>
+  <button class="theme-btn" data-theme="sepia" title="Sepia" aria-label="Tema sepia">📜</button>
+  <button class="theme-btn" data-theme="slate" title="Pizarrón" aria-label="Tema pizarrón">🔷</button>
+</div>
+
+<header>
+  <div class="header-tag">Applied Econometrics · Módulo V · Variable Dependiente Limitada</div>
+  <h1>El Modelo <em>Tobit</em><br>y la Censura de Datos</h1>
+  <p class="header-sub">Cuando el instrumento de medición no puede capturar la realidad completa: fundamentos, sesgos y estimación por máxima verosimilitud.</p>
+  <div class="author-line">
+    <div>Modelo: <span>James Tobin (1958)</span></div>
+    <div>Efectos marginales: <span>McDonald & Moffitt (1980)</span></div>
+    <div>Caso: <span>Efecto techo en exámenes</span></div>
+  </div>
+</header>
+
+<nav>
+  <a href="#s1" class="active">1. Censura vs Truncamiento</a>
+  <a href="#s2">2. Variable Latente</a>
+  <a href="#s3">3. Sesgo MCO</a>
+  <a href="#s4">4. Verosimilitud</a>
+  <a href="#s5">5. Efectos Marginales</a>
+  <a href="#s6">6. Simulador</a>
+</nav>
+
+<main>
+
+<section id="s1">
+  <div class="section-heading">
+    <span class="section-number">1</span>
+    <div>
+      <div class="section-label">Conceptos Fundamentales</div>
+      <h2>Censura vs. Truncamiento</h2>
+    </div>
+  </div>
+
+  <p>Antes de formular el modelo, es crucial distinguir entre dos patrones de datos limitados que suelen confundirse. La diferencia no es apenas semántica: determina qué modelo econométrico es apropiado y cuánta información disponemos realmente.</p>
+
+  <div class="two-col">
+    <div class="callout danger">
+      <div class="callout-title">✂ Truncamiento</div>
+      <p style="margin:0; font-size:0.95rem;">Las observaciones fuera del rango <strong>desaparecen por completo</strong> de la muestra. No conocemos ni <em>yᵢ</em> ni <em>xᵢ</em> para esos individuos. <br><br><strong>Ejemplo:</strong> Solo encuestamos a personas que ya compraron un automóvil. Quienes no compraron no existen en nuestra base de datos.</p>
+    </div>
+    <div class="callout teal">
+      <div class="callout-title">⊠ Censura (dominio Tobit)</div>
+      <p style="margin:0; font-size:0.95rem;">Observamos <strong>xᵢ para toda la muestra</strong>, pero la variable dependiente está restringida a un límite. Sabemos que el evento no superó (o superó) un umbral y registramos ese valor límite. <br><br><strong>Ejemplo:</strong> Todos los alumnos rindieron el examen; los que sabían más de 100 puntos igual registran 100.</p>
+    </div>
+  </div>
+
+  <div class="viz-card">
+    <div class="viz-card-header">
+      <span class="viz-title">Visualización comparativa — Muestra completa vs. datos limitados</span>
+      <span class="viz-badge">interactivo</span>
+    </div>
+    <div class="viz-body">
+      <div class="controls-grid">
+        <div class="control-group">
+          <label>Umbral de censura / techo: <span id="censor_thresh_lbl">100</span> pts</label>
+          <input type="range" id="censor_thresh" min="60" max="110" value="100" step="2">
+        </div>
+        <div class="control-group">
+          <label>Tamaño de muestra (N): <span id="n_sample_lbl">200</span></label>
+          <input type="range" id="n_sample" min="50" max="400" value="200" step="10">
+        </div>
+        <div class="control-group">
+          <label>Ruido / dispersión (σ): <span id="sigma_lbl">12</span></label>
+          <input type="range" id="sigma_ctrl" min="4" max="30" value="12" step="1">
+        </div>
+      </div>
+      <div class="stats-row" id="stats_row1">
+        <div class="stat-chip"><div class="stat-label">Total obs.</div><div class="stat-val" id="s1_total">200</div></div>
+        <div class="stat-chip warn"><div class="stat-label">% censuradas</div><div class="stat-val" id="s1_pct">—</div></div>
+        <div class="stat-chip highlight"><div class="stat-label">β₁ verdadero</div><div class="stat-val">3.0</div></div>
+        <div class="stat-chip warn"><div class="stat-label">β₁ MCO (sesgado)</div><div class="stat-val" id="s1_ols">—</div></div>
+      </div>
+      <canvas id="chart_scatter" height="320"></canvas>
+      <p style="font-size:0.82rem; color:var(--muted); margin-top:0.8rem; text-align:center; font-style:italic;">
+        Puntos <span style="color:#e07070">■ rojos</span> = observaciones censuradas en el techo. 
+        Puntos <span style="color:var(--teal-light)">■ verdes</span> = observaciones reales. 
+        La barra naranja es el verdadero β₁; la roja es el MCO sobre datos censurados.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="section-heading">
+    <span class="section-number">2</span>
+    <div>
+      <div class="section-label">Formulación Matemática</div>
+      <h2>La Variable Latente y* — El Caso del Examen</h2>
+    </div>
+  </div>
+
+  <p>El corazón del modelo Tobit es la distinción entre el <strong>proceso real subyacente</strong> (inobservable) y la <strong>medición que registramos</strong>. En el caso del examen, esto es especialmente intuitivo:</p>
+
+  <div class="insight-box">
+    <p>Un estudiante con 80 horas de estudio podría tener un conocimiento equivalente a 115 puntos, pero el instrumento solo puede registrar 100. La calificación observada <em>distorsiona sistemáticamente</em> la relación entre esfuerzo y conocimiento.</p>
+    <div class="source">— Motivación del Efecto Techo (censura por la derecha)</div>
+  </div>
+
+  <div class="math-block">
+    <span class="comment">── Proceso latente (inobservable) ──────────────────────────────────</span><br>
+    yᵢ* = β₀ + β₁·Horas_Estudioᵢ + εᵢ <span class="comment"> donde εᵢ ~ N(0, σ²)</span><br><br>
+    <span class="comment">── Regla de observación (censura por la derecha en c = 100) ────────</span><br>
+    yᵢ = <span class="amber">min(yᵢ*, 100)</span>   ←→   yᵢ = {  yᵢ* si yᵢ* &lt; 100<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{  100  si yᵢ* ≥ 100<br><br>
+    <span class="comment">── Para censura por la izquierda en c = 0 ──────────────────────────</span><br>
+    yᵢ = <span class="teal">max(yᵢ*, 0)</span>   ←→   yᵢ = {  yᵢ* si yᵢ* &gt; 0<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{  0    si yᵢ* ≤ 0
+  </div>
+
+  <p>Los parámetros de interés son <strong>β₁</strong> (el efecto de una hora extra de estudio sobre el conocimiento real) y <strong>σ</strong> (la variabilidad del proceso). El objetivo del estimador Tobit es recuperar estos parámetros sin el sesgo que introduce la censura.</p>
+
+  <div class="viz-card">
+    <div class="viz-card-header">
+      <span class="viz-title">Distribución de la Variable Latente y* vs. Variable Observada y</span>
+      <span class="viz-badge">interactivo</span>
+    </div>
+    <div class="viz-body">
+      <div class="controls-grid">
+        <div class="control-group">
+          <label>β₁ · x̄ (media de y*): <span id="mu_star_lbl">72</span> pts</label>
+          <input type="range" id="mu_star" min="40" max="110" value="72" step="1">
+        </div>
+        <div class="control-group">
+          <label>σ (desv. estándar de y*): <span id="sigma2_lbl">18</span> pts</label>
+          <input type="range" id="sigma2" min="5" max="40" value="18" step="1">
+        </div>
+      </div>
+      <canvas id="chart_latent" height="280"></canvas>
+      <p style="font-size:0.82rem; color:var(--muted); margin-top:0.8rem; text-align:center; font-style:italic;">
+        El área <span style="color:var(--amber)">naranja</span> = masa puntual acumulada en y=100 (probabilidad de censura).
+        La curva <span style="color:var(--teal-light)">verde</span> = distribución latente real.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="s3">
+  <div class="section-heading">
+    <span class="section-number">3</span>
+    <div>
+      <div class="section-label">Diagnóstico del Sesgo</div>
+      <h2>Por qué MCO fracasa: sesgo de atenuación</h2>
+    </div>
+  </div>
+
+  <p>Mínimos Cuadrados Ordinarios minimiza la suma de cuadrados de residuos <strong>sin importar la estructura probabilística</strong> de los datos. Al enfrentar censura, comete un error sistemático e irreparable:</p>
+
+  <div class="callout danger">
+    <div class="callout-title">⚠ El supuesto violado</div>
+    <p style="margin:0; font-size:0.95rem;">MCO requiere que <strong>E[εᵢ | xᵢ] = 0</strong> (errores ortogonales a los regresores). Con censura, las observaciones en el techo tienen todas <em>εᵢ > 0</em> por construcción: los alumnos más hábiles fueron "cortados". El error ya no es independiente de xᵢ, y el estimador MCO es <strong>inconsistente</strong>.</p>
+  </div>
+
+  <div class="viz-card">
+    <div class="viz-card-header">
+      <span class="viz-title">Demostración del Sesgo MCO bajo distintos niveles de censura</span>
+      <span class="viz-badge">interactivo</span>
+    </div>
+    <div class="viz-body">
+      <div class="controls-grid">
+        <div class="control-group">
+          <label>Techo del examen (c): <span id="ceiling_lbl">100</span></label>
+          <input type="range" id="ceiling_ctrl" min="50" max="130" value="100" step="2">
+        </div>
+        <div class="control-group">
+          <label>σ del error: <span id="sigma3_lbl">15</span></label>
+          <input type="range" id="sigma3" min="5" max="35" value="15" step="1">
+        </div>
+      </div>
+      <canvas id="chart_bias" height="300"></canvas>
+      <div class="stats-row">
+        <div class="stat-chip"><div class="stat-label">β₁ verdadero</div><div class="stat-val highlight" style="color:var(--teal)">3.0</div></div>
+        <div class="stat-chip warn"><div class="stat-label">β₁ MCO</div><div class="stat-val" id="b1_ols">—</div></div>
+        <div class="stat-chip highlight"><div class="stat-label">Sesgo MCO</div><div class="stat-val" id="b1_bias">—</div></div>
+        <div class="stat-chip"><div class="stat-label">% censuradas</div><div class="stat-val" id="b1_pct">—</div></div>
+      </div>
+      <p style="font-size:0.82rem; color:var(--muted); text-align:center; font-style:italic;">
+        Desplace el techo hacia valores más bajos para ver cómo aumenta el sesgo de MCO.
+        La línea <span style="color:var(--teal-light)">verde</span> es la verdadera relación; la <span style="color:var(--crimson)">roja</span> es el ajuste MCO.
+      </p>
+    </div>
+  </div>
+
+  <h3>¿Cuánto sesgo introduce MCO?</h3>
+  <p>El resultado analítico (Amemiya, 1984) muestra que el estimador MCO converge a:</p>
+  <div class="math-block">
+    <span class="comment">── Límite en probabilidad del estimador MCO ──────────────────────</span><br>
+    plim β̂₁<span class="red">ᴹᶜᴼ</span> = β₁ · <span class="amber">Φ(xᵀβ/σ)</span>   ← ponderado por prob. de no censura<br><br>
+    <span class="comment">── Proporción del sesgo ──────────────────────────────────────────</span><br>
+    Sesgo relativo = 1 − Φ(xᵀβ/σ) = <span class="red">proporción censurada</span>
+  </div>
+  <p>El sesgo MCO es exactamente proporcional al porcentaje de datos censurados. Con un 30% de alumnos en el techo, MCO subestima el verdadero β₁ en aproximadamente un 30%.</p>
+</section>
+
+<section id="s4">
+  <div class="section-heading">
+    <span class="section-number">4</span>
+    <div>
+      <div class="section-label">Estimación Consistente</div>
+      <h2>Función de Verosimilitud Tobit</h2>
+    </div>
+  </div>
+
+  <p>La solución de Tobin es construir una función de verosimilitud que <strong>respete explícitamente la estructura de censura</strong>. La log-verosimilitud combina dos contribuciones probabilísticas distintas:</p>
+
+  <div class="math-block">
+    <span class="comment">── Para observaciones no censuradas (yᵢ &lt; c) ─────────────────────</span><br>
+    ℓᵢ = log[ <span class="teal">(1/σ) · ϕ((yᵢ − xᵢᵀβ)/σ)</span> ]<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;= densidad normal en el valor observado<br><br>
+    <span class="comment">── Para observaciones censuradas (yᵢ = c = 100) ───────────────────</span><br>
+    ℓᵢ = log[ <span class="amber">1 − Φ((c − xᵢᵀβ)/σ)</span> ]<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;= probabilidad de que y* supere el techo<br><br>
+    <span class="comment">── Log-verosimilitud total ───────────────────────────────────────</span><br>
+    logL(β,σ) = Σ<span class="teal">[yᵢ&lt;c]</span> ℓᵢ + Σ<span class="amber">[yᵢ=c]</span> ℓᵢ
+  </div>
+
+  <div class="formula-pills">
+    <span class="pill">ϕ(z) = (1/√2π) exp(−z²/2)</span>
+    <span class="pill">Φ(z) = ∫₋∞ᶻ ϕ(t) dt</span>
+    <span class="pill">λ(z) = ϕ(z)/Φ(z)  [Razón de Mills]</span>
+  </div>
+
+  <div class="viz-card">
+    <div class="viz-card-header">
+      <span class="viz-title">Superficie de Log-Verosimilitud — Contribuciones censurada vs. no censurada</span>
+      <span class="viz-badge">interactivo</span>
+    </div>
+    <div class="viz-body">
+      <div class="controls-grid">
+        <div class="control-group">
+          <label>Horas de estudio del alumno xᵢ: <span id="xi_lbl">20</span> hrs</label>
+          <input type="range" id="xi_ctrl" min="5" max="40" value="20" step="1">
+        </div>
+        <div class="control-group">
+          <label>Parámetro β₁ (a explorar): <span id="beta_lbl">3.0</span></label>
+          <input type="range" id="beta_ctrl" min="0.5" max="6" value="3.0" step="0.1">
+        </div>
+        <div class="control-group">
+          <label>σ: <span id="sigma4_lbl">15</span></label>
+          <input type="range" id="sigma4" min="5" max="30" value="15" step="1">
+        </div>
+      </div>
+      <div class="likelihood-panel">
+        <div>
+          <canvas id="chart_lik1" height="240"></canvas>
+          <p style="font-size:0.75rem;color:var(--muted);text-align:center;font-style:italic;margin-top:0.4rem;">Contribución del alumno NO censurado (y* &lt; 100)</p>
+        </div>
+        <div>
+          <canvas id="chart_lik2" height="240"></canvas>
+          <p style="font-size:0.75rem;color:var(--muted);text-align:center;font-style:italic;margin-top:0.4rem;">Contribución del alumno CENSURADO (y* ≥ 100)</p>
+        </div>
+      </div>
+      <div id="lik_readout" style="font-family:'DM Mono',monospace;font-size:0.8rem;background:var(--ink);color:var(--paper);padding:0.8rem 1.2rem;border-radius:4px;margin-top:1rem;line-height:2;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s5">
+  <div class="section-heading">
+    <span class="section-number">5</span>
+    <div>
+      <div class="section-label">Interpretación de Resultados</div>
+      <h2>Efectos Marginales — Descomposición McDonald-Moffitt</h2>
+    </div>
+  </div>
+
+  <p>Este es el punto más crítico: <strong>β en el modelo Tobit NO es el efecto marginal sobre y observado</strong>. Es el efecto sobre la variable latente y*. Para obtener efectos interpretables, se aplica la descomposición de McDonald & Moffitt (1980):</p>
+
+  <div class="math-block">
+    <span class="comment">── Efecto Total Incondicional ────────────────────────────────────</span><br>
+    ∂E[yᵢ]/∂xₖ = <span class="amber">βₖ · Φ(xᵀβ/σ)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= coef. latente × prob. de no estar censurado<br><br>
+    <span class="comment">── Descomposición McDonald-Moffitt ───────────────────────────────</span><br>
+    = <span class="teal">βₖ · Φ(xᵀβ/σ)</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">[MARGEN EXTENSIVO]</span><br>
+    + <span class="amber">Φ(xᵀβ/σ) · βₖ · [1 − λ(z)·(z + λ(z))]</span>&nbsp;&nbsp;<span class="comment">[MARGEN INTENSIVO]</span><br><br>
+    donde z = xᵀβ/σ &nbsp;&nbsp;y&nbsp;&nbsp; λ(z) = ϕ(z)/Φ(z)
+  </div>
+
+  <div class="viz-card">
+    <div class="viz-card-header">
+      <span class="viz-title">Efectos Marginales vs. horas de estudio — Margen extensivo e intensivo</span>
+      <span class="viz-badge">interactivo</span>
+    </div>
+    <div class="viz-body">
+      <div class="controls-grid">
+        <div class="control-group">
+          <label>β₁ (coef. latente): <span id="me_beta_lbl">3.0</span></label>
+          <input type="range" id="me_beta" min="0.5" max="6" value="3.0" step="0.1">
+        </div>
+        <div class="control-group">
+          <label>β₀ (intercepto): <span id="me_b0_lbl">20</span></label>
+          <input type="range" id="me_b0" min="0" max="60" value="20" step="2">
+        </div>
+        <div class="control-group">
+          <label>σ: <span id="me_sigma_lbl">15</span></label>
+          <input type="range" id="me_sigma" min="5" max="35" value="15" step="1">
+        </div>
+      </div>
+      <canvas id="chart_margeff" height="300"></canvas>
+      <p style="font-size:0.82rem; color:var(--muted); text-align:center; font-style:italic; margin-top:0.8rem;">
+        <span style="color:var(--amber)">— Efecto total incondicional</span> · 
+        <span style="color:var(--teal-light)">— Margen extensivo (prob. de salir de censura)</span> · 
+        <span style="color:#c07090">— Margen intensivo (dado que y > 0)</span>
+      </p>
+      <div id="me_readout" style="font-family:'DM Mono',monospace;font-size:0.78rem;background:var(--paper2);padding:0.8rem 1.2rem;border-radius:4px;margin-top:0.8rem;border:1px solid var(--rule);line-height:1.9;color:var(--ink);"></div>
+    </div>
+  </div>
+</section>
+
+<section id="s6">
+  <div class="section-heading">
+    <span class="section-number">6</span>
+    <div>
+      <div class="section-label">Simulador Completo</div>
+      <h2>MCO vs. Tobit — Recuperación de Parámetros</h2>
+    </div>
+  </div>
+
+  <p>Este simulador genera datos del proceso verdadero, aplica la censura del techo, y compara el estimador MCO (sesgado) con una aproximación del estimador Tobit. Observe cómo el Tobit recupera los parámetros verdaderos independientemente del nivel de censura.</p>
+
+  <div class="viz-card">
+    <div class="viz-card-header">
+      <span class="viz-title">Simulador Monte Carlo — Comparación MCO vs. Tobit</span>
+      <span class="viz-badge">simulación</span>
+    </div>
+    <div class="viz-body">
+      <div class="controls-grid">
+        <div class="control-group">
+          <label>β₀ verdadero: <span id="sim_b0_lbl">20</span></label>
+          <input type="range" id="sim_b0" min="0" max="60" value="20" step="2">
+        </div>
+        <div class="control-group">
+          <label>β₁ verdadero: <span id="sim_b1_lbl">3.0</span></label>
+          <input type="range" id="sim_b1" min="0.5" max="6" value="3.0" step="0.1">
+        </div>
+        <div class="control-group">
+          <label>σ verdadero: <span id="sim_sigma_lbl">15</span></label>
+          <input type="range" id="sim_sigma" min="5" max="35" value="15" step="1">
+        </div>
+        <div class="control-group">
+          <label>Techo c: <span id="sim_ceil_lbl">100</span></label>
+          <input type="range" id="sim_ceil" min="50" max="130" value="100" step="2">
+        </div>
+      </div>
+      <canvas id="chart_sim" height="340"></canvas>
+      <div class="stats-row" style="margin-top:1.2rem;">
+        <div class="stat-chip"><div class="stat-label">β₁ verdadero</div><div class="stat-val highlight" id="sim_true">3.0</div></div>
+        <div class="stat-chip warn"><div class="stat-label">β₁ MCO</div><div class="stat-val" id="sim_ols_val">—</div></div>
+        <div class="stat-chip highlight"><div class="stat-label">β₁ Tobit (MLE)</div><div class="stat-val" id="sim_tobit_val">—</div></div>
+        <div class="stat-chip"><div class="stat-label">% censuradas</div><div class="stat-val" id="sim_pct">—</div></div>
+      </div>
+
+      <div id="compare_bars" style="margin-top:1.2rem;"></div>
+
+      <p style="font-size:0.82rem; color:var(--muted); text-align:center; font-style:italic; margin-top:1rem;">
+        La línea <span style="color:var(--teal-light)">verde</span> = ajuste Tobit (recupera β verdadero).
+        La línea <span style="color:var(--crimson)">roja</span> = ajuste MCO (sesgada por la censura).
+        La línea <span style="color:var(--amber)">naranja</span> = verdadera relación latente.
+      </p>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  <div>Modelo Tobit · James Tobin (1958) · Econometría de Variable Dependiente Limitada</div>
+  <div style="margin-top:0.5rem;">McDonald & Moffitt (1980) · Amemiya (1984) · <span>Simulación interactiva con Chart.js</span></div>
+  <div style="margin-top:1.5rem; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.05em; color: var(--amber-light);">Material elaborado por el profesor Sergio Gevatschnaider</div>
+</footer>
+
+<script>
+// ────────────────────────────────────────────────────────────
+//  UTILITY FUNCTIONS
+// ────────────────────────────────────────────────────────────
+function randn() {
+  let u=0,v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function normalPDF(x,mu=0,sigma=1){
+  return (1/(sigma*Math.sqrt(2*Math.PI)))*Math.exp(-0.5*((x-mu)/sigma)**2);
+}
+function normalCDF(x){
+  const t=1/(1+0.2316419*Math.abs(x));
+  const poly=t*(0.319381530+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));
+  const p=1-normalPDF(x)*poly;
+  return x>=0?p:1-p;
+}
+function phi(x){return normalPDF(x);}
+function Phi(x){return normalCDF(x);}
+
+// OLS regression
+function ols(xs,ys){
+  const n=xs.length,mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;
+  let num=0,den=0;
+  for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);den+=(xs[i]-mx)**2;}
+  const b1=den?num/den:0;
+  return {b0:my-b1*mx,b1};
+}
+
+// Tobit MLE approximation (grid search over beta1, sigma)
+function tobitMLE(xs,ys,c,b0est){
+  // Simple gradient-free grid search
+  const b1range=[0.5,7]; const sigrange=[5,40];
+  let bestLL=-Infinity,bestB1=2,bestSig=15;
+  for(let b1=b1range[0];b1<=b1range[1];b1+=0.15){
+    for(let sig=sigrange[0];sig<=sigrange[1];sig+=1){
+      let ll=0;
+      for(let i=0;i<xs.length;i++){
+        const mu=b0est+b1*xs[i];
+        if(ys[i]<c){
+          const z=(ys[i]-mu)/sig;
+          ll+=Math.log(Math.max(phi(z)/sig,1e-300));
+        } else {
+          const z=(c-mu)/sig;
+          ll+=Math.log(Math.max(1-Phi(z),1e-300));
+        }
+      }
+      if(ll>bestLL){bestLL=ll;bestB1=b1;bestSig=sig;}
+    }
+  }
+  return {b1:bestB1,sig:bestSig,ll:bestLL};
+}
+
+function genData(N,b0,b1,sigma,ceil){
+  const xs=[],ys_star=[],ys=[],censored=[];
+  for(let i=0;i<N;i++){
+    const x=5+Math.random()*30;
+    const ystar=b0+b1*x+randn()*sigma;
+    const y=Math.min(ystar,ceil);
+    xs.push(x); ys_star.push(ystar); ys.push(y);
+    censored.push(ystar>=ceil);
+  }
+  return {xs,ys_star,ys,censored};
+}
+
+// ────────────────────────────────────────────────────────────
+//  CHART 1 — SCATTER: CENSORED vs REAL
+// ────────────────────────────────────────────────────────────
+let chart_scatter;
+function buildScatter(){
+  const thresh=+document.getElementById('censor_thresh').value;
+  const N=+document.getElementById('n_sample').value;
+  const sigma=+document.getElementById('sigma_ctrl').value;
+  document.getElementById('censor_thresh_lbl').textContent=thresh;
+  document.getElementById('n_sample_lbl').textContent=N;
+  document.getElementById('sigma_lbl').textContent=sigma;
+
+  const d=genData(N,15,3,sigma,thresh);
+  const pct=(d.censored.filter(Boolean).length/N*100).toFixed(1);
+  document.getElementById('s1_total').textContent=N;
+  document.getElementById('s1_pct').textContent=pct+'%';
+
+  const real=[],cens=[];
+  for(let i=0;i<N;i++){
+    const pt={x:d.xs[i],y:d.ys[i]};
+    (d.censored[i]?cens:real).push(pt);
+  }
+
+  const olsFit=ols(d.xs,d.ys);
+  document.getElementById('s1_ols').textContent=olsFit.b1.toFixed(2);
+
+  const xmin=5,xmax=35;
+  const trueLine=[{x:xmin,y:15+3*xmin},{x:xmax,y:15+3*xmax}];
+  const olsLine=[{x:xmin,y:olsFit.b0+olsFit.b1*xmin},{x:xmax,y:olsFit.b0+olsFit.b1*xmax}];
+
+  const ctx=document.getElementById('chart_scatter').getContext('2d');
+  if(chart_scatter) chart_scatter.destroy();
+  const tc1=getThemeColors();
+  chart_scatter=new Chart(ctx,{
+    data:{
+      datasets:[
+        {type:'scatter',label:'Observaciones reales',data:real,backgroundColor:'rgba(58,170,153,0.45)',pointRadius:4,pointHoverRadius:6},
+        {type:'scatter',label:'Observaciones censuradas',data:cens,backgroundColor:'rgba(168,50,50,0.55)',pointRadius:4},
+        {type:'line',label:'β₁ verdadero (3.0)',data:trueLine,borderColor:'#e8a855',borderWidth:2.5,pointRadius:0,fill:false},
+        {type:'line',label:'MCO (sesgado)',data:olsLine,borderColor:'#a83232',borderWidth:2,pointRadius:0,borderDash:[6,3],fill:false},
+        {type:'line',label:`Techo c=${thresh}`,data:[{x:xmin,y:thresh},{x:xmax,y:thresh}],borderColor:'rgba(200,135,58,0.5)',borderWidth:1.5,pointRadius:0,borderDash:[3,3],fill:false}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{labels:{font:{family:'DM Mono'},color:tc1.legendColor,boxWidth:12}}},
+      scales:{
+        x:{title:{display:true,text:'Horas de Estudio (X)',font:{family:'DM Mono'},color:tc1.tickColor},grid:{color:tc1.gridColor},ticks:{color:tc1.tickColor}},
+        y:{title:{display:true,text:'Calificación observada (y)',font:{family:'DM Mono'},color:tc1.tickColor},grid:{color:tc1.gridColor},ticks:{color:tc1.tickColor}}
+      }
+    }
+  });
+}
+
+['censor_thresh','n_sample','sigma_ctrl'].forEach(id=>
+  document.getElementById(id).addEventListener('input',buildScatter));
+
+// ────────────────────────────────────────────────────────────
+//  CHART 2 — LATENT DISTRIBUTION
+// ────────────────────────────────────────────────────────────
+let chart_latent;
+function buildLatent(){
+  const mu=+document.getElementById('mu_star').value;
+  const sigma=+document.getElementById('sigma2').value;
+  document.getElementById('mu_star_lbl').textContent=mu;
+  document.getElementById('sigma2_lbl').textContent=sigma;
+  const c=100;
+  const xs=[],pdf_full=[],pdf_observed=[];
+  const step=0.8;
+  for(let x=mu-4*sigma;x<=c;x+=step){
+    xs.push(x.toFixed(1));
+    const p=normalPDF(x,mu,sigma);
+    pdf_full.push(p);
+    pdf_observed.push(x<c?p:null);
+  }
+  // Area at c (censor mass)
+  const pcens=(1-Phi((c-mu)/sigma));
+
+  const ctx=document.getElementById('chart_latent').getContext('2d');
+  if(chart_latent) chart_latent.destroy();
+  const tc2=getThemeColors();
+  chart_latent=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:xs,
+      datasets:[
+        {label:'Distribución y* (latente)',data:pdf_full,borderColor:'rgba(58,170,153,0.9)',backgroundColor:'rgba(58,170,153,0.12)',fill:true,tension:0.4,pointRadius:0,borderWidth:2.5},
+        {label:'Contribución censurada',data:xs.map(x=>Number(x)>=(c-step)?normalPDF(c,mu,sigma)*pcens*8:null),borderColor:'rgba(200,135,58,0.9)',backgroundColor:'rgba(200,135,58,0.35)',fill:true,tension:0.4,pointRadius:0,borderWidth:2}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{labels:{font:{family:'DM Mono'},color:tc2.legendColor,boxWidth:12}},
+        annotation:{},
+        tooltip:{callbacks:{label:ctx=>`Densidad: ${ctx.parsed.y.toFixed(4)}`}}
+      },
+      scales:{
+        x:{title:{display:true,text:'Valor de y* (conocimiento real)',font:{family:'DM Mono'},color:tc2.tickColor},ticks:{maxTicksLimit:8,color:tc2.tickColor},grid:{color:tc2.gridColor}},
+        y:{title:{display:true,text:'Densidad de probabilidad',font:{family:'DM Mono'},color:tc2.tickColor},ticks:{color:tc2.tickColor},grid:{color:tc2.gridColor}}
+      }
+    }
+  });
+}
+['mu_star','sigma2'].forEach(id=>document.getElementById(id).addEventListener('input',buildLatent));
+
+// ────────────────────────────────────────────────────────────
+//  CHART 3 — BIAS DEMO
+// ────────────────────────────────────────────────────────────
+let chart_bias;
+function buildBias(){
+  const c=+document.getElementById('ceiling_ctrl').value;
+  const sigma=+document.getElementById('sigma3').value;
+  document.getElementById('ceiling_lbl').textContent=c;
+  document.getElementById('sigma3_lbl').textContent=sigma;
+
+  const d=genData(300,15,3,sigma,c);
+  const pct=(d.censored.filter(Boolean).length/300*100).toFixed(1);
+  document.getElementById('b1_pct').textContent=pct+'%';
+
+  const fit=ols(d.xs,d.ys);
+  document.getElementById('b1_ols').textContent=fit.b1.toFixed(2);
+  document.getElementById('b1_bias').textContent=((3-fit.b1)/3*100).toFixed(1)+'%';
+
+  const real=[],cens=[];
+  for(let i=0;i<d.xs.length;i++){
+    const pt={x:d.xs[i],y:d.ys[i]};
+    (d.censored[i]?cens:real).push(pt);
+  }
+  const xmin=5,xmax=35;
+
+  const ctx=document.getElementById('chart_bias').getContext('2d');
+  if(chart_bias) chart_bias.destroy();
+  const tc3=getThemeColors();
+  chart_bias=new Chart(ctx,{
+    data:{
+      datasets:[
+        {type:'scatter',label:'No censuradas',data:real,backgroundColor:'rgba(58,170,153,0.35)',pointRadius:3},
+        {type:'scatter',label:'Censuradas',data:cens,backgroundColor:'rgba(168,50,50,0.45)',pointRadius:3},
+        {type:'line',label:'Verdadera (β₁=3)',data:[{x:xmin,y:15+3*xmin},{x:xmax,y:15+3*xmax}],borderColor:'#3aaa99',borderWidth:2.5,pointRadius:0,fill:false},
+        {type:'line',label:'MCO sesgado',data:[{x:xmin,y:fit.b0+fit.b1*xmin},{x:xmax,y:fit.b0+fit.b1*xmax}],borderColor:'#a83232',borderWidth:2.5,pointRadius:0,fill:false},
+        {type:'line',label:`Techo c=${c}`,data:[{x:xmin,y:c},{x:xmax,y:c}],borderColor:'rgba(200,135,58,0.6)',borderWidth:1.5,pointRadius:0,borderDash:[4,4],fill:false}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{labels:{font:{family:'DM Mono'},color:tc3.legendColor,boxWidth:12}}},
+      scales:{x:{title:{display:true,text:'Horas de Estudio',font:{family:'DM Mono'},color:tc3.tickColor},ticks:{color:tc3.tickColor},grid:{color:tc3.gridColor}},
+              y:{title:{display:true,text:'Calificación',font:{family:'DM Mono'},color:tc3.tickColor},ticks:{color:tc3.tickColor},grid:{color:tc3.gridColor}}}}
+  });
+}
+['ceiling_ctrl','sigma3'].forEach(id=>document.getElementById(id).addEventListener('input',buildBias));
+
+// ────────────────────────────────────────────────────────────
+//  CHART 4 — LIKELIHOOD CONTRIBUTIONS
+// ────────────────────────────────────────────────────────────
+let chart_lik1, chart_lik2;
+function buildLikelihood(){
+  const xi=+document.getElementById('xi_ctrl').value;
+  const beta=+document.getElementById('beta_ctrl').value;
+  const sigma=+document.getElementById('sigma4').value;
+  document.getElementById('xi_lbl').textContent=xi;
+  document.getElementById('beta_lbl').textContent=beta.toFixed(1);
+  document.getElementById('sigma4_lbl').textContent=sigma;
+
+  const mu=20+beta*xi; // b0=20 fixed
+  const c=100;
+
+  // Non-censored: vary y from 40 to 100
+  const ys1=[],ll1=[];
+  for(let y=40;y<c;y+=1){
+    ys1.push(y.toFixed(0));
+    const lv=Math.log(Math.max(phi((y-mu)/sigma)/sigma,1e-300));
+    ll1.push(lv);
+  }
+  // Censored: vary beta from 0 to 6
+  const betas=[],ll2=[];
+  for(let b=0;b<=6;b+=0.1){
+    const mu2=20+b*xi;
+    const z=(c-mu2)/sigma;
+    betas.push(b.toFixed(1));
+    ll2.push(Math.log(Math.max(1-Phi(z),1e-300)));
+  }
+
+  const ctx1=document.getElementById('chart_lik1').getContext('2d');
+  const ctx2=document.getElementById('chart_lik2').getContext('2d');
+  if(chart_lik1) chart_lik1.destroy();
+  if(chart_lik2) chart_lik2.destroy();
+  const tc4=getThemeColors();
+
+  chart_lik1=new Chart(ctx1,{
+    type:'line',
+    data:{labels:ys1,datasets:[{label:'log ℓ (no censurada)',data:ll1,borderColor:'#3aaa99',backgroundColor:'rgba(58,170,153,0.1)',fill:true,tension:0.4,pointRadius:0,borderWidth:2.5}]},
+    options:{responsive:true,plugins:{legend:{labels:{font:{family:'DM Mono'},color:tc4.legendColor,boxWidth:12}}},
+      scales:{x:{title:{display:true,text:'Valor observado yᵢ',font:{family:'DM Mono'},color:tc4.tickColor},ticks:{maxTicksLimit:8,color:tc4.tickColor},grid:{color:tc4.gridColor}},
+              y:{title:{display:true,text:'log-Verosimilitud',font:{family:'DM Mono'},color:tc4.tickColor},ticks:{color:tc4.tickColor},grid:{color:tc4.gridColor}}}}
+  });
+
+  chart_lik2=new Chart(ctx2,{
+    type:'line',
+    data:{labels:betas,datasets:[{label:'log ℓ (censurada) vs β₁',data:ll2,borderColor:'#c8873a',backgroundColor:'rgba(200,135,58,0.1)',fill:true,tension:0.4,pointRadius:0,borderWidth:2.5}]},
+    options:{responsive:true,plugins:{legend:{labels:{font:{family:'DM Mono'},color:tc4.legendColor,boxWidth:12}}},
+      scales:{x:{title:{display:true,text:'β₁ (valor explorado)',font:{family:'DM Mono'},color:tc4.tickColor},ticks:{maxTicksLimit:8,color:tc4.tickColor},grid:{color:tc4.gridColor}},
+              y:{title:{display:true,text:'log-Verosimilitud',font:{family:'DM Mono'},color:tc4.tickColor},ticks:{color:tc4.tickColor},grid:{color:tc4.gridColor}}}}
+  });
+
+  const z=(c-mu)/sigma;
+  const p_cens=(1-Phi(z))*100;
+  document.getElementById('lik_readout').innerHTML=
+    `<span style="color:var(--amber-light)">xᵢ = ${xi} hrs</span>  |  μ(y*) = ${mu.toFixed(1)} pts  |  σ = ${sigma}  |  c = 100
+<span style="color:var(--teal-light)">P(observación no censurada)</span> = ${(100-p_cens).toFixed(1)}%
+<span style="color:#e07070">P(observación censurada, y*≥100)</span> = ${p_cens.toFixed(1)}%
+<span style="color:rgba(247,243,237,0.5)">Razón de Mills λ(z) = ϕ(z)/Φ(z) = ${(phi(z)/Math.max(Phi(z),0.001)).toFixed(4)}</span>`;
+}
+['xi_ctrl','beta_ctrl','sigma4'].forEach(id=>document.getElementById(id).addEventListener('input',buildLikelihood));
+
+// ────────────────────────────────────────────────────────────
+//  CHART 5 — MARGINAL EFFECTS
+// ────────────────────────────────────────────────────────────
+let chart_margeff;
+function buildMargEff(){
+  const beta1=+document.getElementById('me_beta').value;
+  const b0=+document.getElementById('me_b0').value;
+  const sigma=+document.getElementById('me_sigma').value;
+  document.getElementById('me_beta_lbl').textContent=beta1.toFixed(1);
+  document.getElementById('me_b0_lbl').textContent=b0;
+  document.getElementById('me_sigma_lbl').textContent=sigma;
+  const c=100;
+  const xs=[],tot=[],ext=[],intens=[];
+  for(let x=5;x<=35;x+=0.5){
+    const mu=b0+beta1*x;
+    const z=mu/sigma; // for left-censoring at 0
+    // For right censoring at c:
+    const zr=(c-mu)/sigma;
+    const Phir=Phi(zr), phir=phi(zr);
+    // Total unconditional: dE[y]/dx = beta * Phi((c-mu)/sigma) ... (approx for right-censor)
+    const total=beta1*Phir;
+    // Extensive: beta * phi(zr)/sigma  ... change in prob of being uncensored
+    const extensive=(beta1/sigma)*phir;
+    // Intensive: Phir * beta * (1 - lambda*z - lambda^2)
+    const lam=Phir>0.001?phir/Phir:0;
+    const intensive=Phir*beta1*(1 - lam*(zr+lam));
+    xs.push(x.toFixed(1));
+    tot.push(total);
+    ext.push(extensive);
+    intens.push(intensive);
+  }
+  const ctx=document.getElementById('chart_margeff').getContext('2d');
+  if(chart_margeff) chart_margeff.destroy();
+  const tc5=getThemeColors();
+  chart_margeff=new Chart(ctx,{
+    type:'line',
+    data:{labels:xs,datasets:[
+      {label:'Efecto total ∂E[y]/∂x',data:tot,borderColor:'#c8873a',borderWidth:2.5,pointRadius:0,tension:0.4,fill:false},
+      {label:'Margen extensivo',data:ext,borderColor:'#3aaa99',borderWidth:2,pointRadius:0,tension:0.4,borderDash:[5,3],fill:false},
+      {label:'Margen intensivo',data:intens,borderColor:'#c07090',borderWidth:2,pointRadius:0,tension:0.4,borderDash:[2,4],fill:false}
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{font:{family:'DM Mono'},color:tc5.legendColor,boxWidth:12}}},
+      scales:{x:{title:{display:true,text:'Horas de Estudio (x)',font:{family:'DM Mono'},color:tc5.tickColor},ticks:{maxTicksLimit:8,color:tc5.tickColor},grid:{color:tc5.gridColor}},
+              y:{title:{display:true,text:'Efecto marginal',font:{family:'DM Mono'},color:tc5.tickColor},ticks:{color:tc5.tickColor},grid:{color:tc5.gridColor}}}}
+  });
+  // Readout at x=20
+  const x0=20, mu0=b0+beta1*x0;
+  const zr0=(c-mu0)/sigma, Ph0=Phi(zr0), ph0=phi(zr0);
+  const lam0=Ph0>0.001?ph0/Ph0:0;
+  const tot0=beta1*Ph0;
+  document.getElementById('me_readout').innerHTML=
+    `Evaluado en x = 20 horas de estudio:
+μ(y*) = ${b0} + ${beta1.toFixed(1)}·20 = ${mu0.toFixed(1)} pts    |    P(no censurado) = ${(Ph0*100).toFixed(1)}%
+Efecto total  ∂E[y]/∂x = ${beta1.toFixed(1)} × ${Ph0.toFixed(3)} = <strong>${tot0.toFixed(3)}</strong>
+Razón de Mills λ = ${lam0.toFixed(4)}    |    β₁ latente = ${beta1.toFixed(1)}`;
+}
+['me_beta','me_b0','me_sigma'].forEach(id=>document.getElementById(id).addEventListener('input',buildMargEff));
+
+// ────────────────────────────────────────────────────────────
+//  CHART 6 — FULL SIMULATOR
+// ────────────────────────────────────────────────────────────
+let chart_sim;
+function buildSim(){
+  const b0=+document.getElementById('sim_b0').value;
+  const b1=+document.getElementById('sim_b1').value;
+  const sigma=+document.getElementById('sim_sigma').value;
+  const c=+document.getElementById('sim_ceil').value;
+  document.getElementById('sim_b0_lbl').textContent=b0;
+  document.getElementById('sim_b1_lbl').textContent=b1.toFixed(1);
+  document.getElementById('sim_sigma_lbl').textContent=sigma;
+  document.getElementById('sim_ceil_lbl').textContent=c;
+  document.getElementById('sim_true').textContent=b1.toFixed(1);
+
+  const d=genData(300,b0,b1,sigma,c);
+  const pct=(d.censored.filter(Boolean).length/300*100).toFixed(1);
+  document.getElementById('sim_pct').textContent=pct+'%';
+
+  const olsFit=ols(d.xs,d.ys);
+  document.getElementById('sim_ols_val').textContent=olsFit.b1.toFixed(2);
+
+  // Tobit: grid search
+  const tb=tobitMLE(d.xs,d.ys,c,b0);
+  document.getElementById('sim_tobit_val').textContent=tb.b1.toFixed(2);
+
+  // Compare bars
+  const trueB=b1, olsB=olsFit.b1, tobitB=tb.b1;
+  const maxB=Math.max(trueB,olsB,tobitB)*1.15;
+  document.getElementById('compare_bars').innerHTML=`
+    <div style="font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Comparación de estimaciones para β₁</div>
+    <div style="margin-bottom:0.6rem;"><span style="display:inline-block;width:120px;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--teal)">β₁ verdadero</span>
+      <div class="compare-bar"><div class="compare-bar-fill" style="width:${trueB/maxB*100}%;background:var(--teal)"></div></div>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--teal)">${trueB.toFixed(2)}</span>
+    </div>
+    <div style="margin-bottom:0.6rem;"><span style="display:inline-block;width:120px;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--crimson)">MCO</span>
+      <div class="compare-bar"><div class="compare-bar-fill" style="width:${olsB/maxB*100}%;background:var(--crimson)"></div></div>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--crimson)">${olsB.toFixed(2)} (sesgo ${((trueB-olsB)/trueB*100).toFixed(1)}%)</span>
+    </div>
+    <div><span style="display:inline-block;width:120px;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--amber)">Tobit MLE</span>
+      <div class="compare-bar"><div class="compare-bar-fill" style="width:${tobitB/maxB*100}%;background:var(--amber)"></div></div>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--amber)">${tobitB.toFixed(2)} (error ${((Math.abs(trueB-tobitB)/trueB)*100).toFixed(1)}%)</span>
+    </div>`;
+
+  const real=[],cens=[];
+  for(let i=0;i<d.xs.length;i++){
+    const pt={x:d.xs[i],y:d.ys[i]};
+    (d.censored[i]?cens:real).push(pt);
+  }
+  const xmin=5,xmax=35;
+
+  const ctx=document.getElementById('chart_sim').getContext('2d');
+  if(chart_sim) chart_sim.destroy();
+  const tc6=getThemeColors();
+  chart_sim=new Chart(ctx,{
+    data:{
+      datasets:[
+        {type:'scatter',label:'No censuradas',data:real,backgroundColor:'rgba(58,170,153,0.3)',pointRadius:3},
+        {type:'scatter',label:'Censuradas',data:cens,backgroundColor:'rgba(168,50,50,0.4)',pointRadius:3},
+        {type:'line',label:`Verdadera (β₁=${b1.toFixed(1)})`,data:[{x:xmin,y:b0+b1*xmin},{x:xmax,y:b0+b1*xmax}],borderColor:'#e8a855',borderWidth:2.5,pointRadius:0,fill:false},
+        {type:'line',label:'MCO (sesgado)',data:[{x:xmin,y:olsFit.b0+olsFit.b1*xmin},{x:xmax,y:olsFit.b0+olsFit.b1*xmax}],borderColor:'#a83232',borderWidth:2.5,pointRadius:0,fill:false},
+        {type:'line',label:`Tobit MLE (β₁≈${tb.b1.toFixed(2)})`,data:[{x:xmin,y:b0+tb.b1*xmin},{x:xmax,y:b0+tb.b1*xmax}],borderColor:'#3aaa99',borderWidth:2.5,pointRadius:0,borderDash:[6,2],fill:false},
+        {type:'line',label:`Techo c=${c}`,data:[{x:xmin,y:c},{x:xmax,y:c}],borderColor:'rgba(200,135,58,0.5)',borderWidth:1.5,pointRadius:0,borderDash:[3,3],fill:false}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{labels:{font:{family:'DM Mono'},color:tc6.legendColor,boxWidth:12}}},
+      scales:{x:{title:{display:true,text:'Horas de Estudio',font:{family:'DM Mono'},color:tc6.tickColor},ticks:{color:tc6.tickColor},grid:{color:tc6.gridColor}},
+              y:{title:{display:true,text:'Calificación',font:{family:'DM Mono'},color:tc6.tickColor},ticks:{color:tc6.tickColor},grid:{color:tc6.gridColor}}}}
+  });
+}
+['sim_b0','sim_b1','sim_sigma','sim_ceil'].forEach(id=>document.getElementById(id).addEventListener('input',buildSim));
+
+// ────────────────────────────────────────────────────────────
+//  NAV ACTIVE STATE
+// ────────────────────────────────────────────────────────────
+document.querySelectorAll('nav a').forEach(a=>{
+  a.addEventListener('click',function(){
+    document.querySelectorAll('nav a').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// ────────────────────────────────────────────────────────────
+//  THEME SWITCHER
+// ────────────────────────────────────────────────────────────
+const THEMES = {
+  light: { gridColor: 'rgba(0,0,0,0.06)', tickColor: '#7a6f63', legendColor: '#3a4a5a' },
+  dark:  { gridColor: 'rgba(255,255,255,0.06)', tickColor: '#8a8070', legendColor: '#a8b8c8' },
+  sepia: { gridColor: 'rgba(44,31,14,0.08)', tickColor: '#6a5a40', legendColor: '#3a2a10' },
+  slate: { gridColor: 'rgba(128,168,200,0.08)', tickColor: '#607088', legendColor: '#80a8c8' }
+};
+let currentTheme = 'light';
+
+function applyTheme(theme) {
+  currentTheme = theme;
+  const html = document.documentElement;
+  html.className = theme === 'light' ? '' : theme;
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === theme);
+  });
+  // Rebuild all charts with new colors
+  buildScatter(); buildLatent(); buildBias();
+  buildLikelihood(); buildMargEff(); buildSim();
+}
+
+document.querySelectorAll('.theme-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+});
+
+function getThemeColors() { return THEMES[currentTheme] || THEMES.light; }
+
+// ────────────────────────────────────────────────────────────
+//  INIT ALL
+// ────────────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  buildScatter();
+  buildLatent();
+  buildBias();
+  buildLikelihood();
+  buildMargEff();
+  buildSim();
+});
+</script>
+</body>
+</html>
