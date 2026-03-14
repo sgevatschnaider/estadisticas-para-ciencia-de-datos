@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Elipsoide en Geometría de Datos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Code+Pro:wght@300;400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
+
+/* ═══ DARK THEME ═══ */
+:root,[data-theme="dark"]{
+  --bg:#060b12; --surface:#0d1623; --card:#101c2e; --card2:#0e1828;
+  --border:#1a2e48; --border2:#223550;
+  --teal:#2dd4bf; --teal2:#5eead4; --amber:#f59e0b; --amber2:#fcd34d;
+  --rose:#fb7185; --violet:#a78bfa; --green:#34d399; --sky:#38bdf8;
+  --text:#e2e8f4; --muted:#7a90aa; --dim:#4a6080;
+  --math-bg:#080e18; --math-bdr:#1e3050;
+  --nav-bg:rgba(6,11,18,.94); --header-top:#030508;
+  --p-color:#c4d0e0; --result-bg:#080e18; --shadow:0 12px 40px rgba(0,0,0,.7);
+  --glow-teal:0 0 24px rgba(45,212,191,.18); --glow-amber:0 0 24px rgba(245,158,11,.18);
+}
+/* ═══ LIGHT THEME ═══ */
+[data-theme="light"]{
+  --bg:#f8f5ef; --surface:#ede9e0; --card:#ffffff; --card2:#f5f0e8;
+  --border:#d6cdb8; --border2:#c8bfa8;
+  --teal:#0d9488; --teal2:#0f766e; --amber:#92400e; --amber2:#b45309;
+  --rose:#be123c; --violet:#6d28d9; --green:#065f46; --sky:#0369a1;
+  --text:#1a1612; --muted:#6b5e4a; --dim:#9c8c78;
+  --math-bg:#faf7f2; --math-bdr:#c8b898;
+  --nav-bg:rgba(248,245,239,.95); --header-top:#ede9df;
+  --p-color:#352d22; --result-bg:#f0ebe2; --shadow:0 12px 40px rgba(0,0,0,.12);
+  --glow-teal:0 0 0 transparent; --glow-amber:0 0 0 transparent;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;line-height:1.8;overflow-x:hidden;transition:background .4s,color .4s;}
+
+/* ═══ FLOATING THEME BTN ═══ */
+#themeBtn{position:fixed;bottom:26px;right:26px;z-index:9999;width:52px;height:52px;border-radius:50%;border:2px solid var(--amber);background:var(--card);color:var(--amber);font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:transform .3s,background .4s,border-color .4s;outline:none;}
+#themeBtn:hover{transform:scale(1.15) rotate(22deg);}
+.tip-float{position:absolute;right:58px;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:'Source Code Pro',monospace;font-size:.62rem;padding:3px 9px;border-radius:5px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;}
+#themeBtn:hover .tip-float{opacity:1;}
+
+/* ═══ HEADER ═══ */
+header{position:relative;padding:90px 40px 70px;text-align:center;overflow:hidden;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(45,212,191,.06) 0%, transparent 70%),
+             linear-gradient(180deg,var(--header-top) 0%,var(--bg) 100%);
+  border-bottom:1px solid var(--border);}
+.starfield{position:absolute;inset:0;pointer-events:none;}
+.badge-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:26px;}
+.badge{font-family:'Source Code Pro',monospace;font-size:.65rem;letter-spacing:.18em;
+  color:var(--teal);border:1px solid var(--teal);padding:3px 12px;border-radius:20px;
+  background:rgba(45,212,191,.06);}
+.badge.amber{color:var(--amber);border-color:var(--amber);background:rgba(245,158,11,.06);}
+header h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,5vw,3.8rem);font-weight:700;
+  color:var(--text);max-width:900px;margin:0 auto 18px;line-height:1.15;transition:color .4s;}
+header h1 em{color:var(--teal);font-style:italic;}
+.subtitle{font-family:'Source Code Pro',monospace;font-size:.82rem;color:var(--muted);max-width:700px;margin:0 auto;}
+
+/* ═══ NAV ═══ */
+nav{position:sticky;top:0;z-index:200;background:var(--nav-bg);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);display:flex;overflow-x:auto;transition:background .4s,border-color .4s;}
+nav a{font-family:'Source Code Pro',monospace;font-size:.68rem;letter-spacing:.07em;
+  color:var(--muted);text-decoration:none;padding:13px 16px;border-bottom:2px solid transparent;
+  white-space:nowrap;transition:color .2s,border-color .2s;}
+nav a:hover{color:var(--teal);border-color:var(--teal);}
+
+/* ═══ MAIN ═══ */
+main{max-width:1120px;margin:0 auto;padding:0 28px 90px;}
+
+/* ═══ CONTROL BAR ═══ */
+.ctrl-bar{display:flex;gap:10px;align-items:center;margin:38px 0 0;padding:12px 16px;
+  background:var(--card);border:1px solid var(--border);border-radius:10px;flex-wrap:wrap;transition:background .4s,border-color .4s;}
+.ctrl-bar span{font-family:'Source Code Pro',monospace;font-size:.68rem;color:var(--muted);flex:1;min-width:160px;}
+.cb{font-family:'Source Code Pro',monospace;font-size:.68rem;padding:6px 14px;border-radius:6px;
+  border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .2s;}
+.cb:hover{border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,.07);}
+
+/* ═══ SECTION ═══ */
+.section{margin:60px 0 0;opacity:0;transform:translateY(28px);transition:opacity .65s,transform .65s;}
+.section.visible{opacity:1;transform:none;}
+
+.section-header{display:flex;align-items:center;gap:14px;padding-bottom:14px;
+  border-bottom:1px solid var(--border);cursor:pointer;user-select:none;transition:border-color .4s;}
+.section-header:hover .stog{background:var(--teal);color:#000;border-color:var(--teal);}
+.snum{font-family:'Source Code Pro',monospace;font-size:.68rem;color:var(--teal);
+  border:1px solid var(--teal);padding:2px 8px;border-radius:4px;flex-shrink:0;}
+.section-header h2{font-family:'Cormorant Garamond',serif;font-size:clamp(1.15rem,2.8vw,1.8rem);
+  font-weight:700;color:var(--text);flex:1;transition:color .4s;}
+.stog{flex-shrink:0;width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+  background:var(--card);color:var(--teal);font-size:.8rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .25s;pointer-events:none;}
+
+.sbody{overflow:hidden;max-height:9999px;opacity:1;padding-top:26px;
+  transition:max-height .55s cubic-bezier(.4,0,.2,1),opacity .4s,padding .4s;}
+.sbody.collapsed{max-height:0;opacity:0;padding-top:0;}
+
+/* ═══ CARDS ═══ */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:28px 32px;margin:22px 0;position:relative;overflow:hidden;
+  transition:background .4s,border-color .4s,box-shadow .25s;}
+.card:hover{box-shadow:var(--shadow);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.card.teal::before{background:linear-gradient(90deg,var(--teal),var(--sky));}
+.card.amber::before{background:linear-gradient(90deg,var(--amber),var(--rose));}
+.card.rose::before{background:linear-gradient(90deg,var(--rose),var(--violet));}
+.card.violet::before{background:linear-gradient(90deg,var(--violet),var(--teal));}
+.card.green::before{background:linear-gradient(90deg,var(--green),var(--teal));}
+.card.sky::before{background:linear-gradient(90deg,var(--sky),var(--violet));}
+
+.clabel{font-family:'Source Code Pro',monospace;font-size:.65rem;letter-spacing:.15em;
+  text-transform:uppercase;margin-bottom:12px;}
+.card.teal  .clabel{color:var(--teal);}
+.card.amber .clabel{color:var(--amber);}
+.card.rose  .clabel{color:var(--rose);}
+.card.violet .clabel{color:var(--violet);}
+.card.green .clabel{color:var(--green);}
+.card.sky   .clabel{color:var(--sky);}
+
+p{margin-bottom:14px;color:var(--p-color);font-size:1.02rem;transition:color .4s;}
+strong{color:var(--text);}
+
+/* ═══ MATH BLOCK ═══ */
+.mblock{background:var(--math-bg);border:1px solid var(--math-bdr);border-radius:8px;
+  padding:20px 26px;margin:18px 0;text-align:center;font-size:1.08em;overflow-x:auto;
+  transition:background .4s,border-color .4s;}
+
+/* ═══ COLS ═══ */
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+@media(max-width:720px){.cols2,.cols3{grid-template-columns:1fr;}}
+
+/* ═══ CANVAS WRAP ═══ */
+.cvwrap{background:var(--math-bg);border:1px solid var(--border);border-radius:10px;padding:16px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;transition:background .4s,border-color .4s;}
+.cvlabel{font-family:'Source Code Pro',monospace;font-size:.72rem;color:var(--amber);
+  letter-spacing:.1em;text-align:center;}
+canvas{border-radius:6px;display:block;}
+
+/* ═══ SLIDER WRAP ═══ */
+.slwrap{background:var(--math-bg);border:1px solid var(--border);border-radius:10px;
+  padding:20px;margin:18px 0;transition:background .4s,border-color .4s;}
+.slrow{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap;}
+.slrow label{font-family:'Source Code Pro',monospace;font-size:.75rem;color:var(--muted);min-width:90px;}
+input[type=range]{flex:1;min-width:120px;accent-color:var(--teal);}
+.slval{font-family:'Source Code Pro',monospace;font-size:.8rem;color:var(--teal);min-width:55px;text-align:right;}
+
+/* ═══ RESULT BOX ═══ */
+.rbox{background:var(--result-bg);border:1px solid var(--border);border-radius:8px;
+  padding:13px 16px;font-family:'Source Code Pro',monospace;font-size:.78rem;line-height:1.9;
+  margin-top:10px;transition:background .4s,border-color .4s;}
+.rl{color:var(--muted);}.rv{color:var(--teal);}.rb{color:var(--rose);}.rg{color:var(--green);}
+.ra{color:var(--amber);}
+
+/* ═══ ALERT ═══ */
+.alert{display:flex;gap:14px;align-items:flex-start;border-radius:10px;padding:16px 20px;margin:20px 0;}
+.alert.teal{background:rgba(45,212,191,.08);border:1px solid rgba(45,212,191,.3);}
+.alert.amber{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);}
+.alert.rose{background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.3);}
+.alert.green{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3);}
+[data-theme="light"] .alert.teal{background:rgba(13,148,136,.07);}
+[data-theme="light"] .alert.amber{background:rgba(146,64,14,.07);}[data-theme="light"] .alert.rose{background:rgba(190,18,60,.07);}
+[data-theme="light"] .alert.green{background:rgba(6,95,70,.07);}
+.alert-icon{font-size:1.45rem;flex-shrink:0;margin-top:1px;}
+.alert p{margin:0;font-size:.97rem;}
+.alert.teal p{color:var(--teal2);}
+.alert.amber p{color:var(--amber2);}
+.alert.rose p{color:var(--rose);}
+.alert.green p{color:var(--green);}
+[data-theme="light"] .alert.teal p{color:var(--teal);}
+[data-theme="light"] .alert.amber p{color:var(--amber);}
+
+/* ═══ STEPS ═══ */
+.steps{counter-reset:st;}
+.step{position:relative;padding:14px 16px 14px 56px;margin:10px 0;
+  background:var(--card2);border-radius:8px;border-left:3px solid var(--teal);transition:background .4s;}
+.step::before{counter-increment:st;content:counter(st);position:absolute;left:15px;top:50%;
+  transform:translateY(-50%);width:26px;height:26px;background:var(--teal);color:#000;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Source Code Pro',monospace;font-size:.78rem;font-weight:700;}
+
+/* ═══ FIRMA BOX ═══ */
+.firma{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:24px 0;}
+@media(max-width:750px){.firma{grid-template-columns:1fr;}}
+.firma-card{border-radius:12px;padding:22px;text-align:center;border:1px solid var(--border);
+  background:var(--card);transition:all .3s;}
+.firma-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
+.firma-icon{font-size:2.2rem;margin-bottom:10px;}
+.firma-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;margin-bottom:6px;}
+.firma-card.teal .firma-title{color:var(--teal);}
+.firma-card.amber .firma-title{color:var(--amber);}
+.firma-card.violet .firma-title{color:var(--violet);}
+.firma-sub{font-family:'Source Code Pro',monospace;font-size:.68rem;color:var(--muted);line-height:1.5;}
+
+/* ═══ TABLE ═══ */
+.ctable{width:100%;border-collapse:collapse;font-size:.9rem;margin:20px 0;}
+.ctable th{background:var(--math-bg);padding:10px 14px;text-align:left;
+  font-family:'Source Code Pro',monospace;font-size:.68rem;letter-spacing:.1em;
+  color:var(--amber);border-bottom:2px solid var(--amber);transition:background .4s;}
+.ctable td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--p-color);
+  vertical-align:top;transition:all .4s;}
+.ctable tr:hover td{background:rgba(255,255,255,.02);}
+
+/* ═══ TAG ═══ */
+.tag{display:inline-block;font-family:'Source Code Pro',monospace;font-size:.65rem;
+  padding:2px 9px;border-radius:10px;margin-right:5px;vertical-align:middle;}
+.tag.t{background:rgba(45,212,191,.12);color:var(--teal);border:1px solid rgba(45,212,191,.25);}
+.tag.a{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25);}
+.tag.r{background:rgba(251,113,133,.12);color:var(--rose);border:1px solid rgba(251,113,133,.25);}
+.tag.v{background:rgba(167,139,250,.12);color:var(--violet);border:1px solid rgba(167,139,250,.25);}
+
+/* ═══ BTN ═══ */
+.btn{font-family:'Source Code Pro',monospace;font-size:.72rem;padding:7px 16px;
+  border-radius:6px;border:none;cursor:pointer;font-weight:600;transition:transform .15s,opacity .15s;}
+.btn.teal{background:var(--teal);color:#000;}
+.btn.amber{background:var(--amber);color:#000;}
+.btn:hover{transform:scale(1.04);opacity:.9;}
+
+/* ═══ FOOTER ═══ */
+footer{text-align:center;padding:28px;border-top:1px solid var(--border);
+  font-family:'Source Code Pro',monospace;font-size:.68rem;color:var(--muted);transition:border-color .4s;}
+
+*,*::before,*::after{transition-property:background-color,border-color,color,opacity;transition-duration:.35s;}
+canvas,input[type=range]{transition:none!important;}
+</style>
+</head>
+<body>
+
+<!-- THEME BTN -->
+<button id="themeBtn" onclick="toggleTheme()">
+  <span id="themeIco">☀️</span>
+  <span class="tip-float" id="themeTip">Modo claro</span>
+</button>
+
+<!-- HEADER -->
+<header>
+  <canvas class="starfield" id="stars"></canvas>
+  <div style="position:relative">
+    <div class="badge-row">
+      <span class="badge">GEOMETRÍA DE DATOS</span>
+      <span class="badge amber">ÁLGEBRA ESPECTRAL</span>
+      <span class="badge">ELIPSOIDES · COVARIANZA</span>
+    </div>
+    <h1>El <em>Elipsoide</em> como<br>Objeto Geométrico</h1>
+    <p class="subtitle">qué representa · por qué aparece · tres firmas geométricas: degeneración · anisotropía · alineación</p>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <a href="#s0">00 · Introducción</a>
+  <a href="#s1">01 · Descomposición Espectral</a>
+  <a href="#s2">02 · Dependencia Lineal</a>
+  <a href="#s3">03 · Multicolinealidad</a>
+  <a href="#s4">04 · Independencia Estadística</a>
+  <a href="#s5">05 · Tres Firmas</a>
+</nav>
+
+<main>
+
+<div class="ctrl-bar">
+  <span>📐 Secciones interactivas — clic en encabezado o usa:</span>
+  <button class="cb" onclick="expandAll()">▼ Expandir todo</button>
+  <button class="cb" onclick="collapseAll()">▲ Colapsar todo</button>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S0 · INTRODUCCIÓN
+════════════════════════════════════════════ -->
+<div class="section" id="s0">
+  <div class="section-header" onclick="toggleSection('s0')">
+    <span class="snum">00</span>
+    <h2>El Elipsoide como Objeto Geométrico</h2>
+    <span class="stog" id="tog-s0">▲</span>
+  </div>
+  <div class="sbody" id="bod-s0">
+
+    <p>En geometría de los datos, muchas nociones se "ven" en el <strong>elipsoide asociado a una forma cuadrática positiva</strong> (o semidefinida positiva). Hay dos matrices que aparecen una y otra vez:</p>
+
+    <div class="cols2">
+      <div class="card teal">
+        <div class="clabel">Covarianza Poblacional</div>
+        <p>La covarianza \(\Sigma = \operatorname{Cov}(Z)\) de un vector aleatorio \(Z \in \mathbb{R}^p\) describe la <strong>dispersión de la nube de puntos</strong> en el espacio de variables. Sus autovectores apuntan a las direcciones de mayor/menor variabilidad.</p>
+      </div>
+      <div class="card amber">
+        <div class="clabel">Gram Matrix X⊤X</div>
+        <p>Cuando trabajas con datos finitos en una matriz de diseño \(X \in \mathbb{R}^{n \times p}\), la matriz \(X^\top X\) (o su versión escalada \(\tfrac{1}{n}X^\top X\)) describe la <strong>geometría del subespacio columna</strong> y el producto interno inducido por los datos.</p>
+      </div>
+    </div>
+
+    <p>En ambos casos, la forma cuadrática define regiones del tipo:</p>
+
+    <div class="mblock">
+      $$\mathcal{E}_\Sigma(c) = \bigl\{x \in \mathbb{R}^p : (x-\mu)^\top \Sigma^{-1}(x-\mu) \leq c\bigr\}$$
+    </div>
+
+    <p>cuando \(\Sigma\) es invertible. Este conjunto es un <strong>elipsoide centrado en \(\mu\)</strong>. Si \(\Sigma\) no es invertible, las "curvas de nivel" se convierten en un objeto degenerado contenido en un subespacio de menor dimensión.</p>
+
+    <div class="alert teal">
+      <span class="alert-icon">🔭</span>
+      <p>Toda la riqueza de la estadística multivariada — dependencia lineal, multicolinealidad, independencia — se puede <strong>leer visualmente</strong> sobre la forma del elipsoide: si colapsa, si se estira, si rota.</p>
+    </div>
+
+    <!-- INTERACTIVE: live ellipse explorer -->
+    <div class="card violet">
+      <div class="clabel">Explorador Interactivo · Elipsoide en R²</div>
+      <p>Ajusta los parámetros de la matriz de covarianza \(\Sigma\) y observa en tiempo real cómo cambia la forma del elipsoide:</p>
+      <div class="slwrap">
+        <div class="slrow">
+          <label>\(\lambda_1\) (eje 1)</label>
+          <input type="range" id="lam1" min="0.05" max="4" step="0.05" value="2.0" oninput="drawExplorer()">
+          <span class="slval" id="lam1v">2.00</span>
+        </div>
+        <div class="slrow">
+          <label>\(\lambda_2\) (eje 2)</label>
+          <input type="range" id="lam2" min="0.05" max="4" step="0.05" value="0.5" oninput="drawExplorer()">
+          <span class="slval" id="lam2v">0.50</span>
+        </div>
+        <div class="slrow">
+          <label>Ángulo \(\theta\)</label>
+          <input type="range" id="theta" min="0" max="180" step="1" value="30" oninput="drawExplorer()">
+          <span class="slval" id="thetav">30°</span>
+        </div>
+        <div class="cols2">
+          <div class="cvwrap">
+            <div class="cvlabel">Elipsoide de la distribución</div>
+            <canvas id="explorerCanvas" width="300" height="260"></canvas>
+          </div>
+          <div>
+            <div class="rbox" id="explorerInfo"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S1 · DESCOMPOSICIÓN ESPECTRAL
+════════════════════════════════════════════ -->
+<div class="section" id="s1">
+  <div class="section-header" onclick="toggleSection('s1')">
+    <span class="snum">01</span>
+    <h2>La Razón Espectral: Autovalores como Semiejes</h2>
+    <span class="stog" id="tog-s1">▲</span>
+  </div>
+  <div class="sbody" id="bod-s1">
+
+    <p>La descomposición más limpia parte de que \(\Sigma\) es simétrica semidefinida positiva. Entonces admite la <strong>descomposición espectral</strong>:</p>
+
+    <div class="mblock">
+      $$\Sigma = Q\Lambda Q^\top, \qquad \Lambda = \operatorname{diag}(\lambda_1, \ldots, \lambda_p), \quad \lambda_i \geq 0$$
+    </div>
+
+    <p>con \(Q\) ortogonal (sus columnas son los autovectores). Cambiando coordenadas a \(u = Q^\top(x - \mu)\), la condición del elipsoide se vuelve:</p>
+
+    <div class="mblock">
+      $$\sum_{i=1}^p \frac{u_i^2}{\lambda_i} \leq c$$
+    </div>
+
+    <p>interpretando \(\tfrac{u_i^2}{\lambda_i}\) como infinito si \(\lambda_i = 0\) salvo que \(u_i = 0\). De aquí se leen dos hechos cruciales:</p>
+
+    <div class="cols2">
+      <div class="card teal">
+        <div class="clabel">Hecho 1 · Ejes Principales</div>
+        <p>Las <strong>columnas de \(Q\)</strong> (autovectores) son las <em>direcciones de los ejes principales</em> del elipsoide. El elipsoide está alineado con los autovectores de \(\Sigma\).</p>
+        <div class="mblock" style="margin:10px 0">$$Q = [q_1 \mid q_2 \mid \cdots \mid q_p]$$</div>
+      </div>
+      <div class="card amber">
+        <div class="clabel">Hecho 2 · Longitud de Semiejes</div>
+        <p>Las <strong>longitudes de los semiejes</strong> son \(\sqrt{c\,\lambda_i}\). Si \(\lambda_i\) es grande → dispersión grande; si \(\lambda_i\) es pequeño → nube comprimida; si \(\lambda_i = 0\) → aplastamiento.</p>
+        <div class="mblock" style="margin:10px 0">$$\text{semieje}_i = \sqrt{c \cdot \lambda_i}$$</div>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE: eigenvalue animation -->
+    <div class="card sky">
+      <div class="clabel">Demo Interactiva · Autovalores y Forma del Elipsoide</div>
+      <p>Mueve los autovalores y observa cómo cambia cada semieje. El <span style="color:var(--teal)">teal</span> indica el eje principal, el <span style="color:var(--rose)">rosa</span> el secundario.</p>
+      <div class="slwrap">
+        <div class="slrow">
+          <label>\(\lambda_1\)</label>
+          <input type="range" id="ev1" min="0.01" max="5" step="0.01" value="3" oninput="drawSpectral()">
+          <span class="slval" id="ev1v">3.00</span>
+        </div>
+        <div class="slrow">
+          <label>\(\lambda_2\)</label>
+          <input type="range" id="ev2" min="0.01" max="5" step="0.01" value="1" oninput="drawSpectral()">
+          <span class="slval" id="ev2v">1.00</span>
+        </div>
+        <div class="cols2">
+          <div class="cvwrap">
+            <div class="cvlabel">Elipsoide en coordenadas propias</div>
+            <canvas id="spectralCanvas" width="300" height="270"></canvas>
+          </div>
+          <div class="rbox" id="spectralInfo" style="align-self:flex-start"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert amber">
+      <span class="alert-icon">💡</span>
+      <p>Con esto podemos reinterpretar dependencia lineal, multicolinealidad e independencia como fenómenos que afectan <strong>autovalores</strong> (degeneración/anisotropía) y <strong>autovectores</strong> (rotación/alineación).</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S2 · DEPENDENCIA LINEAL
+════════════════════════════════════════════ -->
+<div class="section" id="s2">
+  <div class="section-header" onclick="toggleSection('s2')">
+    <span class="snum">02</span>
+    <h2>Dependencia Lineal: el Elipsoide Colapsa</h2>
+    <span class="stog" id="tog-s2">▲</span>
+  </div>
+  <div class="sbody" id="bod-s2">
+
+    <p>Supón que \(Z \in \mathbb{R}^p\) satisface una <strong>relación lineal exacta</strong>. Eso significa que existe un vector \(a \neq 0\) tal que:</p>
+
+    <div class="mblock">$$a^\top Z = \text{constante} \quad \text{(casi seguramente)}$$</div>
+
+    <p>En particular, la varianza de esa combinación lineal es exactamente cero:</p>
+
+    <div class="mblock">$$\operatorname{Var}(a^\top Z) = a^\top \Sigma\, a = 0$$</div>
+
+    <p>Como \(\Sigma\) es semidefinida positiva, la identidad \(a^\top \Sigma\, a = 0\) fuerza que \(a\) pertenezca al <strong>núcleo de \(\Sigma\)</strong>: \(\Sigma\, a = 0\). Por lo tanto \(\Sigma\) tiene al menos un autovalor nulo:</p>
+
+    <div class="mblock">
+      $$\lambda_{\min} = 0, \qquad \det(\Sigma) = 0, \qquad \operatorname{rank}(\Sigma) < p$$
+    </div>
+
+    <div class="cols2">
+      <div class="card rose">
+        <div class="clabel">¿Qué pasa con el elipsoide?</div>
+        <p>Cuando \(\lambda_{\min} = 0\):</p>
+        <div class="steps">
+          <div class="step">Existe una dirección donde el semieje \(\sqrt{c\cdot\lambda_{\min}} = 0\). El elipsoide <strong>pierde dimensión</strong>.</div>
+          <div class="step">El conjunto \(\mathcal{E}_\Sigma(c)\) ya no es un cuerpo "gordo" en \(\mathbb{R}^p\), sino un elipsoide degenerado en un subespacio de dimensión \(\operatorname{rank}(\Sigma)\).</div>
+          <div class="step">El volumen (proporcional a \(\sqrt{\det(\Sigma)}\)) se <strong>anula</strong>. La nube no ocupa volumen en \(\mathbb{R}^p\): vive en un conjunto de medida Lebesgue \(p\)-dimensional igual a cero.</div>
+        </div>
+      </div>
+
+      <div class="cvwrap" style="min-height:280px">
+        <div class="cvlabel">Animación · elipsoide colapsando (λ₂ → 0)</div>
+        <canvas id="collapseCanvas" width="280" height="250"></canvas>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="btn teal" onclick="startCollapse()">▶ Colapsar</button>
+          <button class="btn amber" onclick="resetCollapse()">↺ Reiniciar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXAMPLE R2 -->
+    <div class="card amber">
+      <div class="clabel">Ejemplo en R² · Y = 2X</div>
+      <p>Si \(Y = 2X\), entonces \((X,Y)\) cae sobre la recta \(y = 2x\). La covarianza tiene rango 1. Las curvas de nivel que "deberían" ser elipses se convierten en un <strong>segmento</strong> sobre esa recta: hay dispersión en la dirección de la recta y cero dispersión en la dirección perpendicular.</p>
+      <div class="mblock">
+        $$\Sigma = \begin{pmatrix}\sigma^2 & 2\sigma^2 \\ 2\sigma^2 & 4\sigma^2\end{pmatrix}, \qquad \det(\Sigma) = 4\sigma^4 - 4\sigma^4 = 0$$
+      </div>
+      <div class="cvwrap" style="margin-top:12px">
+        <div class="cvlabel">Nube de puntos sobre y = 2x — elipse degenerada (segmento)</div>
+        <canvas id="degenerateCanvas" width="400" height="240"></canvas>
+      </div>
+    </div>
+
+    <!-- X⊤X singularity -->
+    <div class="card teal">
+      <div class="clabel">El mismo fenómeno con X⊤X (geometría de la regresión)</div>
+      <p>En datos finitos, si las columnas de \(X \in \mathbb{R}^{n \times p}\) son linealmente dependientes, entonces \(\operatorname{rank}(X) < p\) y \(X^\top X\) es singular. El objeto geométrico relevante para regresión es:</p>
+      <div class="mblock">$$\bigl\{\beta \in \mathbb{R}^p : \beta^\top(X^\top X)\,\beta \leq c\bigr\}$$</div>
+      <p>Si \(X^\top X\) es singular, hay direcciones \(v \neq 0\) con:</p>
+      <div class="mblock">$$\|Xv\|^2 = v^\top X^\top X\, v = 0$$</div>
+      <p>Eso significa que moverte en la dirección \(v\) <strong>no cambia \(X\beta\)</strong>. En regresión, esto se traduce en <strong>no identificabilidad</strong>: distintos \(\beta\) producen el mismo ajuste y el mínimo cuadrático no tiene solución única.</p>
+      <div class="alert rose" style="margin-top:12px">
+        <span class="alert-icon">⚠️</span>
+        <p>El elipsoide de confianza en el espacio de \(\beta\) se "abre" infinitamente en la dirección nula: no hay manera de acotar \(\hat\beta\) en esa dirección.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S3 · MULTICOLINEALIDAD
+════════════════════════════════════════════ -->
+<div class="section" id="s3">
+  <div class="section-header" onclick="toggleSection('s3')">
+    <span class="snum">03</span>
+    <h2>Multicolinealidad: el Elipsoide se Estira al Extremo</h2>
+    <span class="stog" id="tog-s3">▲</span>
+  </div>
+  <div class="sbody" id="bod-s3">
+
+    <p>La multicolinealidad es la versión <em>"casi"</em> del caso anterior: no hay un autovalor exactamente cero, pero hay uno <strong>muy pequeño</strong>. Entonces \(\Sigma\) (o \(X^\top X\)) es invertible, pero está cerca de ser singular:</p>
+
+    <div class="mblock">
+      $$0 < \lambda_{\min} \ll \lambda_{\max}, \qquad \kappa(\Sigma) = \frac{\lambda_{\max}}{\lambda_{\min}} \gg 1$$
+    </div>
+
+    <div class="card amber">
+      <div class="clabel">¿Qué significa sobre el elipsoide de los datos?</div>
+      <p>Para la covarianza \(\Sigma\), los semiejes \(\sqrt{c\,\lambda_i}\) muestran una <strong>anisotropía extrema</strong>:</p>
+      <div class="steps">
+        <div class="step">Si un \(\lambda_i\) es enorme y otro es diminuto, el elipsoide se vuelve un <strong>"cigarro"</strong> (en 2D/3D) o una <strong>"lámina"</strong> (en dimensiones mayores): hay una dirección donde la nube se extiende y otra donde está fuertemente comprimida.</div>
+        <div class="step">No hay colapso total, pero la nube está <em>casi contenida</em> en un subespacio de menor dimensión. El elipsoide existe, pero es extremadamente delgado.</div>
+        <div class="step">En \(\mathbb{R}^2\), si \(x_2 \approx x_1\), la nube \((x_1, x_2)\) queda cerca de la diagonal. El eje principal apunta aproximadamente a \((1,1)\) y el eje pequeño a \((1,-1)\).</div>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE: condition number slider -->
+    <div class="card teal">
+      <div class="clabel">Demo Interactiva · Número de Condición \(\kappa\)</div>
+      <p>Ajusta el número de condición \(\kappa = \lambda_{\max}/\lambda_{\min}\) y observa cómo el elipsoide de datos se convierte en un "cigarro":</p>
+      <div class="slwrap">
+        <div class="slrow">
+          <label>\(\kappa\) (condición)</label>
+          <input type="range" id="kappa" min="1" max="200" step="1" value="5" oninput="drawCondition()">
+          <span class="slval" id="kappav">5</span>
+        </div>
+        <div class="slrow">
+          <label>Ángulo \(\theta\)</label>
+          <input type="range" id="kappaTheta" min="0" max="180" step="1" value="45" oninput="drawCondition()">
+          <span class="slval" id="kappaThetav">45°</span>
+        </div>
+        <div class="cols2">
+          <div class="cvwrap">
+            <div class="cvlabel">Elipsoide de datos (casi cigarro)</div>
+            <canvas id="condCanvas" width="290" height="260"></canvas>
+          </div>
+          <div class="cvwrap">
+            <div class="cvlabel">Elipsoide de incertidumbre de β̂ (inverso)</div>
+            <canvas id="condInvCanvas" width="290" height="260"></canvas>
+          </div>
+        </div>
+        <div class="rbox" id="condInfo"></div>
+      </div>
+    </div>
+
+    <!-- BETA UNCERTAINTY -->
+    <div class="card rose">
+      <div class="clabel">¿Por qué "explota" en regresión? · El Elipsoide de Incertidumbre de β̂</div>
+      <p>En el modelo lineal \(y = X\beta + \varepsilon\) con \(\varepsilon \sim (0, \sigma^2 I)\), se tiene:</p>
+      <div class="mblock">
+        $$\operatorname{Cov}(\hat\beta) = \sigma^2 (X^\top X)^{-1}$$
+      </div>
+      <p>Ahora aparece la inversión, que <strong>intercambia "corto" por "largo"</strong>: si \(X^\top X\) tiene autovalores \(\lambda_i\), entonces \((X^\top X)^{-1}\) tiene autovalores \(1/\lambda_i\). Por tanto:</p>
+      <div class="mblock">
+        $$\lambda_{\min}\text{ pequeño} \;\Longrightarrow\; \frac{1}{\lambda_{\min}}\text{ enorme}$$
+      </div>
+      <p>El elipsoide de confianza de \(\hat\beta\) es:</p>
+      <div class="mblock">
+        $$(\beta - \hat\beta)^\top \bigl(\operatorname{Cov}(\hat\beta)\bigr)^{-1} (\beta - \hat\beta) \leq c$$
+      </div>
+      <p>Como \(\bigl(\operatorname{Cov}(\hat\beta)\bigr)^{-1} \propto X^\top X\), la incertidumbre en \(\beta\) es grande justo en las direcciones donde \(X^\top X\) es pequeño. En palabras geométricas:</p>
+      <div class="steps">
+        <div class="step">Hay <strong>direcciones del espacio de parámetros</strong> en las que el mapa \(\beta \mapsto X\beta\) casi no cambia.</div>
+        <div class="step">Si el modelo apenas "ve" cambios en esas direcciones, el <strong>ruido hace que \(\hat\beta\) pueda moverse muchísimo</strong> ahí sin penalización fuerte en el error cuadrático.</div>
+        <div class="step">Eso produce <strong>coeficientes grandes, signos opuestos, y altísima sensibilidad</strong> a pequeñas perturbaciones — los famosos "saltos" de coeficientes en multicolinealidad.</div>
+      </div>
+      <div class="alert amber" style="margin-top:16px">
+        <span class="alert-icon">🔑</span>
+        <p><strong>Sentido geométrico profundo:</strong> El elipsoide de los predictores es casi degenerado (cigarro), y al invertir la geometría, el elipsoide de incertidumbre de los coeficientes se vuelve gigantesco en las <em>direcciones complementarias</em>.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S4 · INDEPENDENCIA ESTADÍSTICA
+════════════════════════════════════════════ -->
+<div class="section" id="s4">
+  <div class="section-header" onclick="toggleSection('s4')">
+    <span class="snum">04</span>
+    <h2>Independencia Estadística: Alineación del Elipsoide</h2>
+    <span class="stog" id="tog-s4">▲</span>
+  </div>
+  <div class="sbody" id="bod-s4">
+
+    <p>Para dos variables \(X, Y\), si son independientes entonces \(\operatorname{Cov}(X,Y) = 0\). En dimensión 2, eso hace que \(\Sigma\) sea diagonal:</p>
+
+    <div class="mblock">
+      $$\Sigma = \begin{pmatrix}\sigma_X^2 & 0 \\ 0 & \sigma_Y^2\end{pmatrix}$$
+    </div>
+
+    <p>Las curvas de nivel cuadráticas son entonces:</p>
+
+    <div class="mblock">
+      $$\frac{(x-\mu_X)^2}{\sigma_X^2} + \frac{(y-\mu_Y)^2}{\sigma_Y^2} \leq c$$
+    </div>
+
+    <p>Estas son <strong>elipses alineadas con los ejes</strong>, es decir, no rotadas. La rotación del elipsoide en 2D está gobernada por el término fuera de la diagonal: cuando \(\Sigma_{12} \neq 0\), la elipse se inclina.</p>
+
+    <!-- INTERACTIVE: rho rotation demo -->
+    <div class="card violet">
+      <div class="clabel">Demo Interactiva · Correlación ρ y Rotación del Elipsoide</div>
+      <p>Mueve \(\rho\) y observa cómo la correlación rota la elipse. En \(\rho = 0\) los ejes están alineados con los ejes coordenados.</p>
+      <div class="slwrap">
+        <div class="slrow">
+          <label>ρ (correlación)</label>
+          <input type="range" id="rhoSlider" min="-0.99" max="0.99" step="0.01" value="0" oninput="drawRho()">
+          <span class="slval" id="rhov">0.00</span>
+        </div>
+        <div class="slrow">
+          <label>\(\sigma_X\)</label>
+          <input type="range" id="sigX" min="0.3" max="3" step="0.05" value="1.5" oninput="drawRho()">
+          <span class="slval" id="sigXv">1.50</span>
+        </div>
+        <div class="slrow">
+          <label>\(\sigma_Y\)</label>
+          <input type="range" id="sigY" min="0.3" max="3" step="0.05" value="0.8" oninput="drawRho()">
+          <span class="slval" id="sigYv">0.80</span>
+        </div>
+        <div class="cols2">
+          <div class="cvwrap">
+            <div class="cvlabel">Elipse de nivel de la covarianza</div>
+            <canvas id="rhoCanvas" width="290" height="270"></canvas>
+          </div>
+          <div class="rbox" id="rhoInfo" style="align-self:flex-start"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THE TRAP -->
+    <div class="card rose">
+      <div class="clabel">La Trampa · "Alineado" no implica independencia en general</div>
+      <p>El elipsoide puede <strong>engañar</strong> porque \(\Sigma\) sólo captura información de <em>segundo orden</em>. Puedes tener distribuciones donde:</p>
+      <div class="cols2">
+        <div>
+          <p><strong>\(\operatorname{Cov}(X,Y) = 0\)</strong> — el elipsoide sale alineado.</p>
+          <p>Pero la <strong>dependencia es total y no lineal</strong>.</p>
+          <p><strong>Ejemplo:</strong> \(Y = X^2\) con \(X\) simétrica. La nube está sobre una <em>parábola</em>. La covarianza da cero por simetría, por lo que el elipsoide "parece" no inclinado, pero la distribución conjunta no factoriza: \(p(x,y) \neq p(x)p(y)\).</p>
+          <div class="alert rose" style="margin-top:10px">
+            <span class="alert-icon">⚡</span>
+            <p>El elipsoide describe un <em>"promedio cuadrático"</em> de dispersión; <strong>no describe la forma real de la masa</strong>.</p>
+          </div>
+        </div>
+        <div class="cvwrap">
+          <div class="cvlabel">Y=X² — elipse alineada pero dependencia perfecta</div>
+          <canvas id="parabolaTrapCanvas" width="270" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAUSSIAN EXCEPTION -->
+    <div class="card green">
+      <div class="clabel">Por qué en Gaussianas SÍ funciona</div>
+      <p>En una normal multivariada \(\mathcal{N}(\mu, \Sigma)\), las curvas de nivel de la densidad son <strong>exactamente elipsoides de Mahalanobis</strong>, y la distribución queda completamente determinada por \(\mu\) y \(\Sigma\). Por eso, en gaussianas:</p>
+      <div class="mblock">
+        $$\Sigma \text{ diagonal (o por bloques)} \iff \text{independencia (o independencia por bloques)}$$
+      </div>
+      <p>La rotación/inclinación del elipsoide es un <strong>reflejo fiel de dependencia lineal</strong>, y en este caso "cero correlación" coincide con independencia.</p>
+
+      <div class="cols2" style="margin-top:16px">
+        <div class="cvwrap">
+          <div class="cvlabel">Gaussiana · ρ=0, ejes alineados → INDEPENDIENTE</div>
+          <canvas id="gaussFree" width="270" height="240"></canvas>
+        </div>
+        <div class="cvwrap">
+          <div class="cvlabel">Gaussiana · ρ=0.8, elipse rotada → DEPENDIENTE</div>
+          <canvas id="gaussDep" width="270" height="240"></canvas>
+        </div>
+      </div>
+
+      <div class="alert green" style="margin-top:14px">
+        <span class="alert-icon">⭐</span>
+        <p>Esta es la razón geométrica de la frase: en gaussianas, el elipsoide no es sólo una aproximación; es <strong>literalmente la geometría exacta de la densidad</strong>. La densidad normal es constante en cada elipsoide de Mahalanobis.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     S5 · TRES FIRMAS
+════════════════════════════════════════════ -->
+<div class="section" id="s5">
+  <div class="section-header" onclick="toggleSection('s5')">
+    <span class="snum">05</span>
+    <h2>Conexión Final: Las Tres Firmas Geométricas</h2>
+    <span class="stog" id="tog-s5">▲</span>
+  </div>
+  <div class="sbody" id="bod-s5">
+
+    <p>Los tres conceptos se distinguen por tres <strong>"firmas" geométricas</strong> sobre el elipsoide de \(\Sigma\) o de \(X^\top X\):</p>
+
+    <div class="firma">
+      <div class="firma-card teal">
+        <div class="firma-icon">📉</div>
+        <div class="firma-title">Degeneración</div>
+        <div class="firma-sub">Dependencia lineal exacta<br>Algún λᵢ = 0<br>El elipsoide pierde dimensión<br>Volumen = 0</div>
+      </div>
+      <div class="firma-card amber">
+        <div class="firma-icon">🥒</div>
+        <div class="firma-title">Anisotropía Extrema</div>
+        <div class="firma-sub">Multicolinealidad<br>0 &lt; λ_min ≪ λ_max<br>Elipsoide "cigarro"<br>κ(Σ) ≫ 1</div>
+      </div>
+      <div class="firma-card violet">
+        <div class="firma-icon">🔄</div>
+        <div class="firma-title">Alineación / Rotación</div>
+        <div class="firma-sub">Independencia estadística<br>Σ diagonal ↔ ejes alineados<br>Solo en gaussianas: alineación ↔ independencia</div>
+      </div>
+    </div>
+
+    <!-- SUMMARY TABLE -->
+    <table class="ctable">
+      <thead>
+        <tr>
+          <th>Firma</th>
+          <th>Fenómeno</th>
+          <th>Autovalores</th>
+          <th>Consecuencia en Regresión</th>
+          <th>Forma del Elipsoide</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag t">Degeneración</span></td>
+          <td>Dependencia lineal exacta</td>
+          <td>\(\lambda_{\min} = 0\)</td>
+          <td>No identificabilidad: \(\hat\beta\) no único</td>
+          <td>Colapsa a subespacio</td>
+        </tr>
+        <tr>
+          <td><span class="tag a">Anisotropía</span></td>
+          <td>Multicolinealidad</td>
+          <td>\(0 < \lambda_{\min} \ll \lambda_{\max}\)</td>
+          <td>Coeficientes inestables, grandes</td>
+          <td>"Cigarro" extremadamente alargado</td>
+        </tr>
+        <tr>
+          <td><span class="tag v">Alineación</span></td>
+          <td>Indep. estadística (gaussiana)</td>
+          <td>\(\Sigma\) diagonal</td>
+          <td>Predictores ortogonales, estables</td>
+          <td>Ejes alineados con coordenadas</td>
+        </tr>
+        <tr>
+          <td><span class="tag r">Trampa</span></td>
+          <td>Indep. estadística (no gaussiana)</td>
+          <td>\(\Sigma\) diagonal pero falso</td>
+          <td>Covarianza cero ≠ independencia</td>
+          <td>Parece alineado pero oculta dependencia</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- INTERACTIVE: all three together -->
+    <div class="card sky">
+      <div class="clabel">Panel Comparativo · Las Tres Firmas</div>
+      <p>Observa simultáneamente las tres formas del elipsoide según el autovalor pequeño:</p>
+      <div class="cols3">
+        <div class="cvwrap">
+          <div class="cvlabel">① Degeneración (λ₂=0)</div>
+          <canvas id="firma1" width="220" height="200"></canvas>
+        </div>
+        <div class="cvwrap">
+          <div class="cvlabel">② Anisotropía (λ₂≪λ₁)</div>
+          <canvas id="firma2" width="220" height="200"></canvas>
+        </div>
+        <div class="cvwrap">
+          <div class="cvlabel">③ Alineación (Σ diagonal)</div>
+          <canvas id="firma3" width="220" height="200"></canvas>
+        </div>
+      </div>
+      <div class="slwrap" style="margin-top:16px">
+        <div class="slrow">
+          <label>Transición λ₂</label>
+          <input type="range" id="firmaSlider" min="0" max="2" step="0.01" value="0.1" oninput="drawFirmas()">
+          <span class="slval" id="firmav">0.10</span>
+        </div>
+        <div class="rbox" id="firmaInfo"></div>
+      </div>
+    </div>
+
+    <div class="card violet">
+      <div class="clabel">Moraleja Geométrica Final</div>
+      <p>El elipsoide de Mahalanobis es el <strong>objeto canónico</strong> de la estadística multivariada. Sus tres propiedades — tamaño de semiejes, orientación de ejes, si colapsa o no — son el vocabulario para describir todo el zoológico de situaciones que aparecen en datos reales:</p>
+      <div class="steps">
+        <div class="step"><strong>Verificar \(\det(\Sigma) = 0\)</strong> (o número de condición infinito) es detectar dependencia lineal exacta — el elipsoide se aplana a una dimensión menor.</div>
+        <div class="step"><strong>Verificar que \(\kappa(\Sigma) \gg 1\)</strong> es detectar multicolinealidad — el elipsoide existe pero es un "cigarro"; la inversión en regresión hace gigantesca la incertidumbre de \(\hat\beta\).</div>
+        <div class="step"><strong>Ver que \(\Sigma\) es diagonal</strong> dice que los ejes del elipsoide coinciden con los ejes coordenados — en gaussianas esto equivale a independencia; en distribuciones no gaussianas es una condición necesaria pero no suficiente.</div>
+        <div class="step">En <strong>distribuciones no gaussianas</strong>, el elipsoide es una imagen de primer/segundo orden: puede mostrar "normalidad" elipsoidal y ocultar dependencias de orden superior (como el caso \(Y = X^2\)).</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<footer>
+  El Elipsoide en Geometría de Datos &nbsp;·&nbsp; Álgebra Espectral · Covarianza · Regresión
+  &nbsp;·&nbsp; Visualización interactiva con Canvas + MathJax &nbsp;·&nbsp;
+  <span id="themeLabel">🌙 Tema Oscuro</span>
+  <br><br>
+  <span style="opacity: 0.8;">Material elaborado por el profesor Sergio Gevatschnaider</span>
+</footer>
+
+<script>
+// ════════════════════════════════════════════
+//  TEMA
+// ════════════════════════════════════════════
+let isDark = true;
+function toggleTheme(){
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark?'dark':'light');
+  document.getElementById('themeIco').textContent   = isDark?'☀️':'🌙';
+  document.getElementById('themeTip').textContent   = isDark?'Modo claro':'Modo oscuro';
+  document.getElementById('themeLabel').textContent = isDark?'🌙 Tema Oscuro':'☀️ Tema Claro';
+  const b = document.getElementById('themeBtn');
+  b.style.transform='scale(1.3) rotate(35deg)';
+  setTimeout(()=>{b.style.transform='';},270);
+  requestAnimationFrame(()=>{ redrawAll(); });
+}
+
+// ════════════════════════════════════════════
+//  COLLAPSIBLE
+// ════════════════════════════════════════════
+const SIDS=['s0','s1','s2','s3','s4','s5'];
+function toggleSection(id){
+  const b=document.getElementById('bod-'+id);
+  const t=document.getElementById('tog-'+id);
+  const open=!b.classList.contains('collapsed');
+  b.classList.toggle('collapsed',open);
+  t.textContent=open?'▼':'▲';
+  t.style.background=open?'rgba(45,212,191,.18)':'';
+}
+function expandAll(){ SIDS.forEach(id=>{
+  document.getElementById('bod-'+id).classList.remove('collapsed');
+  const t=document.getElementById('tog-'+id); t.textContent='▲'; t.style.background='';
+});}
+function collapseAll(){ SIDS.forEach(id=>{
+  document.getElementById('bod-'+id).classList.add('collapsed');
+  const t=document.getElementById('tog-'+id); t.textContent='▼'; t.style.background='rgba(45,212,191,.18)';
+});}
+
+// ════════════════════════════════════════════
+//  CANVAS UTILS
+// ════════════════════════════════════════════
+function themeColors(){
+  return isDark
+    ? { bg:'#060b12', grid:'#1a2e48', text:'#7a90aa', teal:'#2dd4bf',
+        amber:'#f59e0b', rose:'#fb7185', violet:'#a78bfa', green:'#34d399', sky:'#38bdf8',
+        white:'#e2e8f4', dim:'#4a6080' }
+    : { bg:'#faf7f2', grid:'#d6cdb8', text:'#6b5e4a', teal:'#0d9488',
+        amber:'#92400e', rose:'#be123c', violet:'#6d28d9', green:'#065f46', sky:'#0369a1',
+        white:'#1a1612', dim:'#9c8c78' };
+}
+
+function clearCanvas(ctx, w, h){
+  const C = themeColors();
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0,0,w,h);
+}
+
+function drawGrid(ctx, cx, cy, scale, w, h){
+  const C = themeColors();
+  ctx.strokeStyle = C.grid;
+  ctx.lineWidth = 0.5;
+  // grid lines
+  for(let gx = -20; gx <= 20; gx++){
+    const px = cx + gx*scale;
+    ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,h); ctx.stroke();
+  }
+  for(let gy = -20; gy <= 20; gy++){
+    const py = cy + gy*scale;
+    ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(w,py); ctx.stroke();
+  }
+  // axes
+  ctx.strokeStyle = C.dim; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(w,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,h); ctx.stroke();
+  // axis labels
+  ctx.fillStyle = C.text; ctx.font = '11px Source Code Pro, monospace';
+  ctx.fillText('x', w-14, cy-6);
+  ctx.fillText('y', cx+6, 12);
+}
+
+function drawEllipse(ctx, cx, cy, a, b, angle, color, fillColor, lw=2){
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.ellipse(0, 0, a, b, 0, 0, 2*Math.PI);
+  if(fillColor){ ctx.fillStyle = fillColor; ctx.fill(); }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawArrow(ctx, x1, y1, x2, y2, color, lw=2){
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw;
+  const dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy);
+  const ux=dx/len, uy=dy/len;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  // arrowhead
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2-8*ux+5*uy, y2-8*uy-5*ux); // hmm
+  ctx.lineTo(x2-8*ux-5*uy, y2-8*uy+5*ux);
+  ctx.closePath(); ctx.fill();
+}
+
+// ════════════════════════════════════════════
+//  STARFIELD BACKGROUND
+// ════════════════════════════════════════════
+(function(){
+  const canvas = document.getElementById('stars');
+  const updateSize = ()=>{ canvas.width=canvas.offsetWidth; canvas.height=canvas.offsetHeight; drawStars(); };
+  const stars = Array.from({length:80},()=>({ x:Math.random(), y:Math.random(), r:Math.random()*1.5+0.3, a:Math.random() }));
+  function drawStars(){
+    if(!isDark){ const c=canvas.getContext('2d'); c.clearRect(0,0,canvas.width,canvas.height); return; }
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    stars.forEach(s=>{
+      ctx.beginPath();
+      ctx.arc(s.x*canvas.width, s.y*canvas.height, s.r, 0, 2*Math.PI);
+      ctx.fillStyle = `rgba(200,220,255,${0.2+s.a*0.4})`;
+      ctx.fill();
+    });
+  }
+  window.addEventListener('resize', updateSize);
+  updateSize();
+})();
+
+// ════════════════════════════════════════════
+//  EXPLORER (S0)
+// ════════════════════════════════════════════
+function drawExplorer(){
+  const l1 = +document.getElementById('lam1').value;
+  const l2 = +document.getElementById('lam2').value;
+  const th = +document.getElementById('theta').value * Math.PI/180;
+  document.getElementById('lam1v').textContent = l1.toFixed(2);
+  document.getElementById('lam2v').textContent = l2.toFixed(2);
+  document.getElementById('thetav').textContent = document.getElementById('theta').value+'°';
+
+  const canvas = document.getElementById('explorerCanvas');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2;
+  const sc = 55;
+  clearCanvas(ctx, W, H);
+  drawGrid(ctx, cx, cy, sc, W, H);
+
+  const C = themeColors();
+  // Draw 3 confidence ellipses
+  for(let c=1;c<=3;c++){
+    const a = Math.sqrt(c*l1)*sc, b = Math.sqrt(c*l2)*sc;
+    const alpha = c==1?0.18:c==2?0.1:0.06;
+    drawEllipse(ctx, cx, cy, a, b, -th, C.teal,
+      isDark?`rgba(45,212,191,${alpha})`:`rgba(13,148,136,${alpha})`, 1.5);
+  }
+  // Draw axes
+  const a1=Math.sqrt(l1)*sc*1.1, a2=Math.sqrt(l2)*sc*1.1;
+  ctx.strokeStyle=C.teal; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(cx-a1*Math.cos(th),cy+a1*Math.sin(th));
+  ctx.lineTo(cx+a1*Math.cos(th),cy-a1*Math.sin(th)); ctx.stroke();
+  ctx.strokeStyle=C.rose;
+  ctx.beginPath(); ctx.moveTo(cx-a2*Math.sin(th),cy-a2*Math.cos(th));
+  ctx.lineTo(cx+a2*Math.sin(th),cy+a2*Math.cos(th)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  const det = l1*l2;
+  const kap = l1>0&&l2>0 ? (l1/l2).toFixed(2) : '∞';
+  document.getElementById('explorerInfo').innerHTML =
+    `<span class="rl">λ₁ (eje principal)  = </span><span class="rv">${l1.toFixed(2)}</span><br>`+
+    `<span class="rl">λ₂ (eje secundario) = </span><span class="rv">${l2.toFixed(2)}</span><br>`+
+    `<span class="rl">Ángulo θ            = </span><span class="rv">${document.getElementById('theta').value}°</span><br>`+
+    `<span class="rl">Semieje 1 (c=1)     = </span><span class="ra">${Math.sqrt(l1).toFixed(3)}</span><br>`+
+    `<span class="rl">Semieje 2 (c=1)     = </span><span class="ra">${Math.sqrt(l2).toFixed(3)}</span><br>`+
+    `<span class="rl">det(Σ) = λ₁·λ₂      = </span><span class="${det<0.001?'rb':'rg'}">${det.toFixed(4)}</span><br>`+
+    `<span class="rl">κ = λ₁/λ₂           = </span><span class="${+kap>20?'rb':'ra'}">${kap}</span>`;
+}
+
+// ════════════════════════════════════════════
+//  SPECTRAL (S1)
+// ════════════════════════════════════════════
+function drawSpectral(){
+  const l1 = +document.getElementById('ev1').value;
+  const l2 = +document.getElementById('ev2').value;
+  document.getElementById('ev1v').textContent = l1.toFixed(2);
+  document.getElementById('ev2v').textContent = l2.toFixed(2);
+
+  const canvas = document.getElementById('spectralCanvas');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2, sc=48;
+  clearCanvas(ctx, W, H);
+  drawGrid(ctx, cx, cy, sc, W, H);
+
+  const C = themeColors();
+  for(let c=1;c<=3;c++){
+    const a=Math.sqrt(c*l1)*sc, b=Math.sqrt(c*l2)*sc;
+    const alpha=c==1?.2:c==2?.11:.06;
+    drawEllipse(ctx,cx,cy,a,b,0,C.teal,
+      isDark?`rgba(45,212,191,${alpha})`:`rgba(13,148,136,${alpha})`,1.5);
+  }
+  // Axis arrows
+  const sa=Math.sqrt(l1)*sc*1.3, sb=Math.sqrt(l2)*sc*1.3;
+  drawArrow(ctx,cx,cy,cx+sa,cy,C.teal,2.5);
+  drawArrow(ctx,cx,cy,cx,cy-sb,C.rose,2.5);
+
+  ctx.fillStyle=C.teal; ctx.font='12px Source Code Pro,monospace';
+  ctx.fillText(`√λ₁=${Math.sqrt(l1).toFixed(2)}`,cx+sa+5,cy-4);
+  ctx.fillStyle=C.rose;
+  ctx.fillText(`√λ₂=${Math.sqrt(l2).toFixed(2)}`,cx+5,cy-sb-5);
+
+  const det=l1*l2, kap=l2>0.001?l1/l2:Infinity;
+  document.getElementById('spectralInfo').innerHTML=
+    `<span class="rl">λ₁ = </span><span class="rv">${l1.toFixed(2)}</span><br>`+
+    `<span class="rl">λ₂ = </span><span class="rv">${l2.toFixed(2)}</span><br>`+
+    `<span class="rl">√λ₁ (semieje) = </span><span class="ra">${Math.sqrt(l1).toFixed(3)}</span><br>`+
+    `<span class="rl">√λ₂ (semieje) = </span><span class="ra">${Math.sqrt(l2).toFixed(3)}</span><br>`+
+    `<span class="rl">det(Σ)        = </span><span class="${det<0.05?'rb':'rg'}">${det.toFixed(4)}</span><br>`+
+    `<span class="rl">κ(Σ)          = </span><span class="${kap>30?'rb':kap>5?'ra':'rg'}">${kap===Infinity?'∞':kap.toFixed(1)}</span><br>`+
+    `<span class="rl">Estado        = </span><span class="${det<0.001?'rb':kap>30?'ra':'rg'}">${det<0.001?'SINGULAR ✗':kap>30?'CASI SINGULAR ⚠':'BIEN COND. ✓'}</span>`;
+}
+
+// ════════════════════════════════════════════
+//  COLLAPSE ANIMATION (S2)
+// ════════════════════════════════════════════
+let collapseAnim = null, collapseL2 = 1.5;
+function drawCollapse(l2){
+  const canvas = document.getElementById('collapseCanvas');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2, sc=50;
+  clearCanvas(ctx, W, H);
+  drawGrid(ctx, cx, cy, sc, W, H);
+  const C = themeColors();
+  const l1=3.0, th=Math.PI/6;
+  if(l2>0.01){
+    drawEllipse(ctx,cx,cy,Math.sqrt(l1)*sc,Math.sqrt(l2)*sc,-th,C.teal,
+      isDark?'rgba(45,212,191,.12)':'rgba(13,148,136,.1)',2);
+  }
+  // Degenerate line when l2 -> 0
+  if(l2<0.15){
+    const len=Math.sqrt(l1)*sc*2.2;
+    ctx.strokeStyle=C.rose; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx-len*Math.cos(th),cy+len*Math.sin(th));
+    ctx.lineTo(cx+len*Math.cos(th),cy-len*Math.sin(th));
+    ctx.stroke();
+  }
+  ctx.fillStyle=C.text; ctx.font='11px Source Code Pro,monospace';
+  ctx.fillText(`λ₂ = ${l2.toFixed(3)}`, 10, H-10);
+  ctx.fillText(`det = ${(l1*l2).toFixed(4)}`, 10, H-24);
+  if(l2<0.05){ ctx.fillStyle=C.rose; ctx.fillText('COLAPSO ↓', W-90, H-10); }
+}
+function startCollapse(){
+  if(collapseAnim) cancelAnimationFrame(collapseAnim);
+  collapseL2 = 1.5;
+  function step(){
+    collapseL2 = Math.max(0, collapseL2 - 0.012);
+    drawCollapse(collapseL2);
+    if(collapseL2 > 0) collapseAnim = requestAnimationFrame(step);
+  }
+  step();
+}
+function resetCollapse(){ collapseL2=1.5; drawCollapse(collapseL2); }
+drawCollapse(1.5);
+
+// ════════════════════════════════════════════
+//  DEGENERATE EXAMPLE Y=2X (S2)
+// ════════════════════════════════════════════
+function drawDegenerate(){
+  const canvas = document.getElementById('degenerateCanvas');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2, sc=35;
+  clearCanvas(ctx, W, H);
+  drawGrid(ctx, cx, cy, sc, W, H);
+  const C = themeColors();
+  // Scatter on y=2x
+  for(let i=0;i<80;i++){
+    const x=(Math.random()-0.5)*4;
+    const noise=(Math.random()-0.5)*0.08;
+    const y=2*x+noise;
+    const px=cx+x*sc, py=cy-y*sc;
+    ctx.beginPath(); ctx.arc(px,py,3.5,0,2*Math.PI);
+    ctx.fillStyle=isDark?'rgba(45,212,191,.6)':'rgba(13,148,136,.6)'; ctx.fill();
+  }
+  // Line y=2x
+  ctx.strokeStyle=C.amber; ctx.lineWidth=2; ctx.setLineDash([5,3]);
+  ctx.beginPath(); ctx.moveTo(0, cy+0*2*sc); ctx.lineTo(W, cy-(W-cx)/sc*2*sc); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=C.amber; ctx.font='12px Source Code Pro,monospace';
+  ctx.fillText('y = 2x', cx+10, cy-40);
+  ctx.fillStyle=C.rose; ctx.font='11px Source Code Pro,monospace';
+  ctx.fillText('rank(Σ) = 1, det(Σ) = 0', 10, H-12);
+  ctx.fillText('Elipse → segmento (colapso)', 10, H-26);
+}
+drawDegenerate();
+
+// ════════════════════════════════════════════
+//  CONDITION NUMBER (S3)
+// ════════════════════════════════════════════
+function drawCondition(){
+  const k = +document.getElementById('kappa').value;
+  const th = +document.getElementById('kappaTheta').value * Math.PI/180;
+  document.getElementById('kappav').textContent = k;
+  document.getElementById('kappaThetav').textContent = document.getElementById('kappaTheta').value+'°';
+
+  const lmax=2.5, lmin=lmax/k;
+
+  // DATA ellipse
+  const c1 = document.getElementById('condCanvas');
+  const ctx1 = c1.getContext('2d');
+  const W=c1.width, H=c1.height, cx=W/2, cy=H/2, sc=50;
+  clearCanvas(ctx1, W, H);
+  drawGrid(ctx1, cx, cy, sc, W, H);
+  const C = themeColors();
+  for(let cc=1;cc<=3;cc++){
+    const a=Math.sqrt(cc*lmax)*sc, b=Math.min(Math.sqrt(cc*lmin)*sc,140);
+    drawEllipse(ctx1,cx,cy,a,b,-th,C.teal,isDark?`rgba(45,212,191,${0.15/cc})`:`rgba(13,148,136,${0.12/cc})`,2);
+  }
+  ctx1.fillStyle=C.text; ctx1.font='11px Source Code Pro,monospace';
+  ctx1.fillText(`κ=${k}, λ_min=${lmin.toFixed(3)}`, 8, H-10);
+
+  // INVERSE ellipse (β uncertainty)
+  const c2 = document.getElementById('condInvCanvas');
+  const ctx2 = c2.getContext('2d');
+  clearCanvas(ctx2, W, H);
+  drawGrid(ctx2, cx, cy, sc, W, H);
+  // inverted: big axis becomes small, small axis becomes big
+  const linvMax = 1/lmin, linvMin = 1/lmax;
+  for(let cc=1;cc<=3;cc++){
+    const a=Math.min(Math.sqrt(cc*linvMax)*sc*0.7,130), b=Math.sqrt(cc*linvMin)*sc*0.7;
+    drawEllipse(ctx2,cx,cy,a,b,-th,C.rose,isDark?`rgba(251,113,133,${0.15/cc})`:`rgba(190,18,60,${0.1/cc})`,2);
+  }
+  ctx2.fillStyle=C.text; ctx2.font='11px Source Code Pro,monospace';
+  ctx2.fillText(`1/λ_min=${(1/lmin).toFixed(1)} (enorme)`, 8, H-10);
+
+  document.getElementById('condInfo').innerHTML=
+    `<span class="rl">κ(X⊤X)           = </span><span class="${k>50?'rb':k>10?'ra':'rg'}">${k}</span><br>`+
+    `<span class="rl">λ_max (datos)     = </span><span class="rv">${lmax.toFixed(2)}</span><br>`+
+    `<span class="rl">λ_min (datos)     = </span><span class="rb">${lmin.toFixed(4)}</span><br>`+
+    `<span class="rl">1/λ_min (β̂ incer.)= </span><span class="rb">${(1/lmin).toFixed(1)} ← enorme</span><br>`+
+    `<span class="rl">Estado β̂         = </span><span class="${k>50?'rb':k>10?'ra':'rg'}">${k>50?'MUY INESTABLE ✗':k>10?'INESTABLE ⚠':'ESTABLE ✓'}</span>`;
+}
+
+// ════════════════════════════════════════════
+//  RHO / ROTATION (S4)
+// ════════════════════════════════════════════
+function drawRho(){
+  const rho = +document.getElementById('rhoSlider').value;
+  const sx  = +document.getElementById('sigX').value;
+  const sy  = +document.getElementById('sigY').value;
+  document.getElementById('rhov').textContent  = rho.toFixed(2);
+  document.getElementById('sigXv').textContent = sx.toFixed(2);
+  document.getElementById('sigYv').textContent = sy.toFixed(2);
+
+  const canvas = document.getElementById('rhoCanvas');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2, sc=55;
+  clearCanvas(ctx, W, H);
+  drawGrid(ctx, cx, cy, sc, W, H);
+  const C = themeColors();
+
+  // Σ = [[sx², rho*sx*sy],[rho*sx*sy, sy²]]
+  const a11=sx*sx, a12=rho*sx*sy, a22=sy*sy;
+  // Eigenvalues
+  const tr=a11+a22, det2=a11*a22-a12*a12;
+  const l1=(tr+Math.sqrt(Math.max(0,tr*tr-4*det2)))/2;
+  const l2=(tr-Math.sqrt(Math.max(0,tr*tr-4*det2)))/2;
+  // Eigenvector angle
+  const angle = a12===0 ? 0 : 0.5*Math.atan2(2*a12, a11-a22);
+
+  for(let cc=1;cc<=3;cc++){
+    const ea=Math.sqrt(cc*l1)*sc, eb=Math.sqrt(Math.max(0,cc*l2))*sc;
+    drawEllipse(ctx,cx,cy,ea,eb,-angle,C.violet,
+      isDark?`rgba(167,139,250,${0.15/cc})`:`rgba(109,40,217,${0.1/cc})`,2);
+  }
+  // Axes
+  const aa=Math.sqrt(l1)*sc*1.2;
+  ctx.strokeStyle=C.violet; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  ctx.moveTo(cx-aa*Math.cos(angle),cy+aa*Math.sin(angle));
+  ctx.lineTo(cx+aa*Math.cos(angle),cy-aa*Math.sin(angle)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Cloud
+  for(let i=0;i<120;i++){
+    const u1=Math.random(),u2=Math.random();
+    const z1=Math.sqrt(-2*Math.log(Math.max(u1,1e-10)))*Math.cos(2*Math.PI*u2);
+    const z2=Math.sqrt(-2*Math.log(Math.max(u1,1e-10)))*Math.sin(2*Math.PI*u2);
+    const x=sx*z1, y=rho*sy*z1+Math.sqrt(Math.max(0,1-rho*rho))*sy*z2;
+    const px=cx+x*sc*0.5, py=cy-y*sc*0.5;
+    if(px>0&&px<W&&py>0&&py<H){
+      ctx.beginPath(); ctx.arc(px,py,2,0,2*Math.PI);
+      ctx.fillStyle=isDark?'rgba(167,139,250,.35)':'rgba(109,40,217,.3)'; ctx.fill();
+    }
+  }
+
+  const aligned = Math.abs(rho)<0.02;
+  document.getElementById('rhoInfo').innerHTML=
+    `<span class="rl">ρ              = </span><span class="${Math.abs(rho)>0.7?'rb':Math.abs(rho)>0.3?'ra':'rg'}">${rho.toFixed(2)}</span><br>`+
+    `<span class="rl">σ_X            = </span><span class="rv">${sx.toFixed(2)}</span><br>`+
+    `<span class="rl">σ_Y            = </span><span class="rv">${sy.toFixed(2)}</span><br>`+
+    `<span class="rl">Cov(X,Y)       = </span><span class="ra">${(rho*sx*sy).toFixed(3)}</span><br>`+
+    `<span class="rl">λ₁ (semieje)   = </span><span class="rv">${l1.toFixed(3)}</span><br>`+
+    `<span class="rl">λ₂ (semieje)   = </span><span class="rv">${l2.toFixed(3)}</span><br>`+
+    `<span class="rl">Ángulo rotación= </span><span class="ra">${(angle*180/Math.PI).toFixed(1)}°</span><br>`+
+    `<span class="rl">Ejes alineados = </span><span class="${aligned?'rg':'rb'}">${aligned?'SÍ (ρ≈0) ✓':'NO (elipse rotada)'}</span><br>`+
+    `<span class="rl">En gaussiana:  = </span><span class="${aligned?'rg':'rb'}">${aligned?'INDEPENDIENTE ✓':'DEPENDIENTE ✗'}</span>`;
+}
+
+// ════════════════════════════════════════════
+//  PARABOLA TRAP (S4)
+// ════════════════════════════════════════════
+function drawParabolaTrap(){
+  const canvas = document.getElementById('parabolaTrapCanvas');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, cx=W/2, cy=H/1.4, sc=90;
+  clearCanvas(ctx, W, H);
+  drawGrid(ctx, cx, cy, sc, W, H);
+  const C = themeColors();
+
+  // Scatter on y=x²
+  for(let i=0;i<100;i++){
+    const x=(Math.random()-0.5)*2.2;
+    const y=x*x + (Math.random()-0.5)*0.06;
+    const px=cx+x*sc, py=cy-y*sc;
+    if(py>0&&py<H){ ctx.beginPath(); ctx.arc(px,py,3,0,2*Math.PI);
+      ctx.fillStyle=isDark?'rgba(167,139,250,.6)':'rgba(109,40,217,.5)'; ctx.fill(); }
+  }
+  // Parabola curve
+  ctx.strokeStyle=C.violet; ctx.lineWidth=2; ctx.beginPath();
+  for(let x=-1.2;x<=1.2;x+=0.02){
+    const px=cx+x*sc, py=cy-x*x*sc;
+    x===-1.2?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+
+  // "Aligned" ellipse (Cov=0)
+  drawEllipse(ctx, cx, cy-0.5*sc, 1.0*sc, 0.38*sc, 0, C.rose,
+    isDark?'rgba(251,113,133,.08)':'rgba(190,18,60,.06)', 1.5);
+
+  ctx.fillStyle=C.rose; ctx.font='11px Source Code Pro,monospace';
+  ctx.fillText('Cov=0 → elipse alineada', 10, 16);
+  ctx.fillText('PERO nube en parábola ≠ indep.', 10, 30);
+}
+drawParabolaTrap();
+
+// ════════════════════════════════════════════
+//  GAUSSIAN DEMO (S4)
+// ════════════════════════════════════════════
+function gsample(rho,n){
+  const pts=[];
+  for(let i=0;i<n;i++){
+    const u1=Math.random(),u2=Math.random();
+    const z1=Math.sqrt(-2*Math.log(Math.max(u1,1e-9)))*Math.cos(2*Math.PI*u2);
+    const z2=Math.sqrt(-2*Math.log(Math.max(u1,1e-9)))*Math.sin(2*Math.PI*u2);
+    pts.push([z1, rho*z1+Math.sqrt(Math.max(0,1-rho*rho))*z2]);
+  }
+  return pts;
+}
+function drawGaussDemo(canvasId, rho, ellipseColor){
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2, sc=44;
+  clearCanvas(ctx, W, H);
+  drawGrid(ctx, cx, cy, sc, W, H);
+  const C = themeColors();
+  const pts=gsample(rho,180);
+  pts.forEach(([x,y])=>{
+    const px=cx+x*sc,py=cy-y*sc;
+    if(px>2&&px<W-2&&py>2&&py<H-2){
+      ctx.beginPath(); ctx.arc(px,py,2.5,0,2*Math.PI);
+      ctx.fillStyle=ellipseColor+'88'; ctx.fill();
+    }
+  });
+  // Sigma = [[1,rho],[rho,1]]
+  const tr2=2, d2=1-rho*rho;
+  const l1g=(tr2+Math.sqrt(Math.max(0,tr2*tr2-4*d2)))/2;
+  const l2g=(tr2-Math.sqrt(Math.max(0,tr2*tr2-4*d2)))/2;
+  const angG=rho===0?0:0.5*Math.atan2(2*rho,0);
+  for(let cc=1;cc<=2;cc++){
+    const ea=Math.sqrt(cc*l1g)*sc,eb=Math.sqrt(Math.max(0,cc*l2g))*sc;
+    drawEllipse(ctx,cx,cy,ea,eb,-angG,ellipseColor,undefined,2);
+  }
+}
+drawGaussDemo('gaussFree',0,'#2dd4bf');
+drawGaussDemo('gaussDep',0.8,'#a78bfa');
+
+// ════════════════════════════════════════════
+//  THREE FIRMAS PANEL (S5)
+// ════════════════════════════════════════════
+function drawFirmaCanvas(canvasId, l1, l2, angle, color){
+  const canvas=document.getElementById(canvasId);
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2, sc=42;
+  clearCanvas(ctx, W, H);
+  drawGrid(ctx, cx, cy, sc/2, W, H);
+  const C=themeColors();
+  if(l2>0.002){
+    drawEllipse(ctx,cx,cy,Math.sqrt(l1)*sc,Math.sqrt(l2)*sc,angle,color,
+      isDark?color+'22':color+'18',2);
+  }
+  if(l2<0.05){
+    const len=Math.sqrt(l1)*sc*1.5;
+    ctx.strokeStyle=C.rose; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx-len*Math.cos(angle),cy+len*Math.sin(angle));
+    ctx.lineTo(cx+len*Math.cos(angle),cy-len*Math.sin(angle)); ctx.stroke();
+  }
+  ctx.fillStyle=C.text; ctx.font='10px Source Code Pro,monospace';
+  ctx.fillText(`λ₁=${l1.toFixed(1)} λ₂=${l2.toFixed(3)}`, 6, H-8);
+}
+
+function drawFirmas(){
+  const l2 = +document.getElementById('firmaSlider').value;
+  document.getElementById('firmav').textContent = l2.toFixed(2);
+  const C = themeColors();
+  // 1: degeneration (l2 → 0)
+  drawFirmaCanvas('firma1', 3.0, Math.max(0,l2-1.9), Math.PI/5, C.rose);
+  // 2: anisotropy (l2 small but >0)
+  drawFirmaCanvas('firma2', 3.0, Math.max(0.02,l2), Math.PI/4, C.amber);
+  // 3: aligned (fixed small l2, no rotation)
+  drawFirmaCanvas('firma3', 2.0, Math.max(0.3,l2), 0, C.teal);
+
+  const l2eff = Math.max(0,l2-1.9);
+  const kap2 = l2>0.02?3/l2:Infinity;
+  document.getElementById('firmaInfo').innerHTML=
+    `<span class="rl">Firma 1 (Degeneración): λ₂  = </span><span class="rb">${l2eff.toFixed(3)} ${l2eff<0.02?'→ COLAPSO ✗':''}</span><br>`+
+    `<span class="rl">Firma 2 (Anisotropía): κ    = </span><span class="${kap2>30?'rb':kap2>5?'ra':'rg'}">${kap2>1e4?'∞ (cigarro)':kap2.toFixed(1)}</span><br>`+
+    `<span class="rl">Firma 3 (Alineación): ángulo = </span><span class="rg">0° (Σ diagonal)</span>`;
+}
+
+// ════════════════════════════════════════════
+//  REDRAW ALL (theme switch)
+// ════════════════════════════════════════════
+function redrawAll(){
+  drawExplorer(); drawSpectral(); drawCollapse(collapseL2); drawDegenerate();
+  drawCondition(); drawRho(); drawParabolaTrap();
+  drawGaussDemo('gaussFree',0,'#2dd4bf');
+  drawGaussDemo('gaussDep',0.8,'#a78bfa');
+  drawFirmas();
+}
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+drawExplorer(); drawSpectral(); drawCondition(); drawRho(); drawFirmas();
+
+// Scroll reveal
+const obs=new IntersectionObserver(en=>{
+  en.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:.07});
+document.querySelectorAll('.section').forEach(s=>obs.observe(s));
+
+window.addEventListener('load',()=>{
+  if(window.MathJax) MathJax.typesetPromise && MathJax.typesetPromise();
+});
+</script>
+</body>
+</html>
