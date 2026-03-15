@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cuestionario · Dependencia lineal, independencia estadística y geometría de datos</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --surface: #111318;
+      --card: #161a23;
+      --border: #252b3a;
+      --accent1: #f0c040;
+      --accent2: #3de6c8;
+      --accent3: #f06060;
+      --accent4: #8b6fff;
+      --text: #e8e8f0;
+      --muted: #7a7f9a;
+      --answer-bg: #0d1520;
+      --header-bg1: #0e1420;
+      --header-bg2: #0b0c10;
+      --progress-bg: rgba(11,12,16,0.92);
+      --radius: 14px;
+      --transition: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    [data-theme="light"] {
+      --bg: #f4f5f8;
+      --surface: #ecedf2;
+      --card: #ffffff;
+      --border: #d8dae4;
+      --accent1: #c89a00;
+      --accent2: #0a9e87;
+      --accent3: #d94040;
+      --accent4: #6a4fd8;
+      --text: #1a1b26;
+      --muted: #6b7080;
+      --answer-bg: #f0f2f8;
+      --header-bg1: #e8eaf2;
+      --header-bg2: #f4f5f8;
+      --progress-bg: rgba(244,245,248,0.94);
+    }
+
+    [data-theme="sepia"] {
+      --bg: #f5efe2;
+      --surface: #ede7d6;
+      --card: #fdf8f0;
+      --border: #d4c9b0;
+      --accent1: #a06820;
+      --accent2: #4a8a72;
+      --accent3: #b84040;
+      --accent4: #7055a8;
+      --text: #2c2410;
+      --muted: #7a6a50;
+      --answer-bg: #ede7d6;
+      --header-bg1: #e8e0cc;
+      --header-bg2: #f5efe2;
+      --progress-bg: rgba(245,239,226,0.94);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lora', Georgia, serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 72px 24px 56px;
+      background: linear-gradient(160deg, var(--header-bg1) 0%, var(--header-bg2) 60%);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      transition: background 0.4s ease;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse at center, rgba(240,192,64,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      border: 1px solid rgba(61,230,200,0.35);
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      font-weight: 900;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #f0c040 0%, #ffecaa 40%, #f0c040 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+
+    .subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .author-credit {
+      margin-top: 24px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--accent1);
+      letter-spacing: 0.05em;
+      font-weight: 500;
+      display: inline-block;
+      padding: 8px 20px;
+      background: rgba(240,192,64,0.08);
+      border: 1px solid rgba(240,192,64,0.2);
+      border-radius: 8px;
+    }
+
+    #progress-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--progress-bg);
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: background 0.4s ease;
+    }
+
+    #progress-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--accent1);
+      white-space: nowrap;
+    }
+
+    #progress-bar-outer {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #progress-bar-inner {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent1));
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    #open-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.5s forwards;
+    }
+
+    .card:hover {
+      border-color: rgba(240,192,64,0.25);
+      box-shadow: 0 4px 40px rgba(0,0,0,0.4);
+    }
+
+    .card.open {
+      border-color: rgba(240,192,64,0.45);
+      box-shadow: 0 8px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(240,192,64,0.1);
+    }
+
+    .q-trigger {
+      width: 100%;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 24px 26px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+      gap: 18px;
+      text-align: left;
+    }
+
+    .q-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent1);
+      background: rgba(240,192,64,0.1);
+      border: 1px solid rgba(240,192,64,0.25);
+      border-radius: 6px;
+      padding: 4px 8px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .q-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(0.95rem, 2vw, 1.08rem);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.45;
+      transition: color 0.3s;
+    }
+
+    .card.open .q-title,
+    .card:hover .q-title {
+      color: var(--accent1);
+    }
+
+    .q-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background var(--transition), border-color var(--transition), transform var(--transition);
+      margin-top: 2px;
+    }
+
+    .q-icon svg {
+      transition: transform var(--transition);
+      stroke: var(--muted);
+    }
+
+    .card.open .q-icon {
+      background: var(--accent1);
+      border-color: var(--accent1);
+      transform: scale(1.08);
+    }
+
+    .card.open .q-icon svg {
+      stroke: #000;
+      transform: rotate(180deg);
+    }
+
+    .a-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows var(--transition);
+    }
+
+    .card.open .a-wrap {
+      grid-template-rows: 1fr;
+    }
+
+    .a-inner {
+      overflow: hidden;
+    }
+
+    .a-body {
+      padding: 0 26px 28px 70px;
+      border-top: 1px solid var(--border);
+      background: var(--answer-bg);
+      animation: none;
+    }
+
+    .card.open .a-body {
+      padding-top: 24px;
+    }
+
+    .a-body p {
+      font-size: 0.975rem;
+      line-height: 1.82;
+      color: #c8c8d8;
+      margin-bottom: 14px;
+    }
+
+    .a-body p:last-child { margin-bottom: 0; }
+
+    .math-block {
+      background: rgba(61,230,200,0.06);
+      border-left: 3px solid var(--accent2);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 18px 0;
+      overflow-x: auto;
+      font-size: 1.05rem;
+    }
+
+    .highlight {
+      background: rgba(240,192,64,0.1);
+      border: 1px solid rgba(240,192,64,0.2);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 0.92rem;
+      line-height: 1.75;
+      color: #d8d0b8;
+    }
+
+    .highlight strong {
+      color: var(--accent1);
+      font-style: normal;
+    }
+
+    strong { color: var(--accent2); font-weight: 600; }
+    em { color: var(--muted); font-style: italic; }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin: 0 0 36px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .btn:hover {
+      background: var(--accent1);
+      border-color: var(--accent1);
+      color: #000;
+    }
+
+    .btn-accent {
+      border-color: rgba(61,230,200,0.4);
+      color: var(--accent2);
+    }
+
+    .btn-accent:hover {
+      background: var(--accent2);
+      border-color: var(--accent2);
+      color: #000;
+    }
+
+    footer {
+      text-align: center;
+      padding: 32px 20px 48px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+    }
+
+    .footer-author {
+      color: var(--accent1);
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card:nth-child(1)  { animation-delay: 0.05s; }
+    .card:nth-child(2)  { animation-delay: 0.10s; }
+    .card:nth-child(3)  { animation-delay: 0.15s; }
+    .card:nth-child(4)  { animation-delay: 0.20s; }
+    .card:nth-child(5)  { animation-delay: 0.25s; }
+    .card:nth-child(6)  { animation-delay: 0.30s; }
+    .card:nth-child(7)  { animation-delay: 0.35s; }
+    .card:nth-child(8)  { animation-delay: 0.40s; }
+    .card:nth-child(9)  { animation-delay: 0.45s; }
+    .card:nth-child(10) { animation-delay: 0.50s; }
+
+    #theme-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+      transition: box-shadow 0.3s, border-color 0.3s;
+    }
+
+    #theme-btn:hover {
+      box-shadow: 0 6px 32px rgba(0,0,0,0.45);
+      border-color: var(--accent1);
+    }
+
+    .theme-opt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 100px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.25s, transform 0.2s;
+      position: relative;
+    }
+
+    .theme-opt:hover { transform: scale(1.15); }
+
+    .theme-opt.active {
+      background: var(--accent1);
+    }
+
+    .theme-opt .tip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .theme-opt:hover .tip { opacity: 1; }
+
+    *, *::before, *::after {
+      transition: background-color 0.35s ease, border-color 0.35s ease, color 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .a-wrap { transition: grid-template-rows var(--transition) !important; }
+    #progress-bar-inner { transition: width 0.5s ease !important; }
+    .q-icon svg { transition: transform var(--transition) !important; }
+    .q-icon { transition: background var(--transition), border-color var(--transition), transform var(--transition) !important; }
+
+    @media (max-width: 600px) {
+      .a-body { padding-left: 20px; padding-right: 20px; }
+      .q-trigger { padding: 18px; gap: 12px; }
+      h1 { font-size: 1.9rem; }
+      #theme-btn { bottom: 16px; right: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="theme-btn" role="group" aria-label="Cambiar tema">
+  <button class="theme-opt active" id="opt-dark" onclick="setTheme('dark')" title="Oscuro">🌙<span class="tip">Oscuro</span></button>
+  <button class="theme-opt" id="opt-light" onclick="setTheme('light')" title="Claro">☀️<span class="tip">Claro</span></button>
+  <button class="theme-opt" id="opt-sepia" onclick="setTheme('sepia')" title="Sepia">📜<span class="tip">Sepia</span></button>
+</div>
+
+<header>
+  <div class="tag">Cuestionario Académico · 20 Preguntas</div>
+  <h1>Dependencia lineal,<br>independencia estadística y geometría de datos</h1>
+  <p class="subtitle">Covarianza · Elipsoides · Singularidad · Multicolinealidad · Regresión</p>
+  <div class="author-credit">Cuestionario elaborado a partir de los materiales del módulo</div>
+</header>
+
+<div id="progress-wrap">
+  <span id="progress-text">PROGRESO</span>
+  <div id="progress-bar-outer"><div id="progress-bar-inner"></div></div>
+  <span id="open-count">0 / 20 abiertas</span>
+</div>
+
+<main>
+  <div class="controls">
+    <button class="btn btn-accent" onclick="expandAll()">Expandir todo</button>
+    <button class="btn" onclick="collapseAll()">Colapsar todo</button>
+  </div>
+
+  <div class="card" id="c1">
+    <button class="q-trigger" onclick="toggle(1)">
+      <span class="q-num">01</span>
+      <span class="q-title">¿Qué significa dependencia lineal en términos simples?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La dependencia lineal significa que una variable, un vector o una columna de datos no aporta una dirección realmente nueva porque puede reconstruirse a partir de las demás. Dicho de manera intuitiva, hay redundancia exacta. Si una columna es el doble de otra, no estamos mirando dos informaciones distintas sino la misma información repetida con otra escala.</p>
+<p>Por eso este tema se entiende mejor si se piensa en términos de dimensión efectiva. Aunque parezca que hay varias variables, en realidad el sistema vive en un espacio más pequeño. La consecuencia es que parte de la información es duplicada y que ciertas operaciones, como invertir una matriz o estimar coeficientes únicos en una regresión, dejan de estar bien definidas.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c2">
+    <button class="q-trigger" onclick="toggle(2)">
+      <span class="q-num">02</span>
+      <span class="q-title">¿En qué se diferencia la dependencia lineal de la independencia estadística?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La dependencia lineal pertenece al terreno del álgebra y de la geometría. Describe relaciones exactas entre vectores o columnas, como cuando una combinación de algunas variables reproduce exactamente a otra. La independencia estadística, en cambio, pertenece al terreno probabilístico y se refiere a si conocer una variable cambia o no la información disponible sobre otra.</p>
+<p>La diferencia es profunda porque una relación puede no ser lineal y sin embargo seguir siendo una dependencia estadística fuerte. Del mismo modo, puede no haber dependencia lineal exacta y aun así existir una relación probabilística clara. Una habla de estructura geométrica; la otra, de comportamiento conjunto de variables aleatorias.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c3">
+    <button class="q-trigger" onclick="toggle(3)">
+      <span class="q-num">03</span>
+      <span class="q-title">¿Qué quiere decir que la independencia estadística depende de toda la distribución conjunta?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Quiere decir que no alcanza con mirar una sola medida resumen, como la correlación o la covarianza. Para decidir si dos variables son independientes hay que mirar la forma completa en que se combinan sus valores posibles. En términos formales, la distribución conjunta debe factorizarse como producto de las distribuciones marginales.</p>
+<div class="math-block">$$f_{X,Y}(x,y)=f_X(x)f_Y(y)$$</div>
+<p>La idea de fondo es que la independencia no se detecta solo con una inclinación promedio de la nube de puntos. Se trata de que conocer el valor de una variable no modifique en nada la probabilidad de los valores de la otra. Por eso se dice que es una propiedad global y no una propiedad local o meramente lineal.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c4">
+    <button class="q-trigger" onclick="toggle(4)">
+      <span class="q-num">04</span>
+      <span class="q-title">¿Por qué la correlación cero no garantiza independencia?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Porque la correlación solo mide asociación lineal promedio. Si la relación entre dos variables es curva, simétrica o de otro tipo no lineal, la correlación puede ser cero aunque exista una dependencia fuerte. En otras palabras, la ausencia de correlación solo elimina una forma específica de relación, no todas.</p>
+<p>Esto enseña una lección importante para el análisis de datos. Una nube de puntos puede no mostrar una inclinación recta y, aun así, esconder una estructura perfectamente dependiente. Por eso es un error frecuente tomar correlación nula como sinónimo de independencia. Esa equivalencia solo se vuelve válida bajo hipótesis especiales, como en ciertos modelos gaussianos.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c5">
+    <button class="q-trigger" onclick="toggle(5)">
+      <span class="q-num">05</span>
+      <span class="q-title">¿Por qué el ejemplo \(Y=X^2\) muestra que correlación cero no implica independencia?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Ese ejemplo es decisivo porque si \(Y=X^2\), entonces conocer \(X\) determina completamente a \(Y\). No se trata de una dependencia parcial sino total. Sin embargo, si la distribución de \(X\) es simétrica respecto de cero, la covarianza entre \(X\) y \(X^2\) puede anularse por simetría.</p>
+<div class="math-block">$$\mathrm{Cov}(X,X^2)=0$$</div>
+<p>La conclusión es que una dependencia perfecta puede quedar oculta si uno observa solo una medida lineal. Este ejemplo sirve para separar con claridad tres ideas distintas: dependencia funcional, dependencia estadística y asociación lineal. La primera y la segunda están presentes, pero la tercera puede desaparecer.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c6">
+    <button class="q-trigger" onclick="toggle(6)">
+      <span class="q-num">06</span>
+      <span class="q-title">¿Qué papel cumple la matriz de covarianza en la interpretación geométrica de los datos?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La matriz de covarianza resume cómo se dispersa una nube de datos en el espacio. Sus entradas diagonales registran la variabilidad individual de cada variable y sus entradas fuera de la diagonal registran cómo varían juntas. Pero su importancia va más allá de ser una tabla de números: codifica la forma geométrica global de la nube.</p>
+<p>Gracias a ella se puede saber si la nube está muy extendida, si está aplastada en alguna dirección o si está inclinada respecto de los ejes. Por eso esta matriz funciona como un puente entre estadística y geometría. Cuando una dirección tiene variación nula, la matriz revela que la nube no ocupa todo el espacio aparente, sino uno de menor dimensión.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c7">
+    <button class="q-trigger" onclick="toggle(7)">
+      <span class="q-num">07</span>
+      <span class="q-title">¿Qué expresa la fórmula \(a^\top \Sigma a=\mathrm{Var}(a^\top Z)\)?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Esa fórmula dice que toda combinación lineal de las variables tiene asociada una varianza, y que esa varianza se obtiene directamente a partir de la matriz de covarianza. En lenguaje geométrico, cada vector \(a\) representa una dirección del espacio, y la expresión muestra cuánta variabilidad tiene la nube al proyectarse sobre esa dirección.</p>
+<div class="math-block">$$a^\top \Sigma a=\mathrm{Var}(a^\top Z)$$</div>
+<p>Su valor conceptual es enorme. Si existe una dirección no nula para la cual esa varianza vale cero, significa que la combinación lineal correspondiente no cambia nunca. Eso revela una dependencia lineal exacta. De este modo, la fórmula conecta la idea de colapso geométrico con la idea de singularidad de la matriz.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c8">
+    <button class="q-trigger" onclick="toggle(8)">
+      <span class="q-num">08</span>
+      <span class="q-title">¿Qué es el elipsoide de covarianza y qué información geométrica aporta?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>El elipsoide de covarianza es una figura que representa regiones de igual dispersión alrededor del centro de la nube. Su utilidad no está solo en la ecuación sino en la lectura visual que permite. Muestra la orientación, el alargamiento y el aplanamiento de los datos en distintas direcciones.</p>
+<div class="math-block">$$ (x-\mu)^\top \Sigma^{-1}(x-\mu)\le c $$</div>
+<p>Sus ejes principales indican las direcciones más y menos variables. Si un eje es muy largo, la nube se extiende mucho allí. Si un eje es muy corto, hay poca variación en esa dirección. De este modo, el elipsoide transforma información estadística en una imagen geométrica clara y permite detectar redundancias, anisotropías y alineaciones.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c9">
+    <button class="q-trigger" onclick="toggle(9)">
+      <span class="q-num">09</span>
+      <span class="q-title">¿Qué ocurre con el elipsoide cuando existe dependencia lineal exacta?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Cuando hay dependencia lineal exacta, el elipsoide colapsa. Ya no conserva volumen pleno en el espacio donde parecía vivir, sino que queda atrapado sobre una recta, un plano o un subespacio de menor dimensión. Esto ocurre porque alguna dirección tiene varianza exactamente cero.</p>
+<p>Geométricamente, un semieje desaparece. Algebraicamente, aparece un valor propio nulo. Conceptualmente, ambas descripciones dicen lo mismo: el sistema perdió dimensión efectiva. La nube deja de llenar el espacio y pasa a habitar una estructura más pequeña. Esa degeneración es la firma geométrica más clara de la dependencia lineal exacta.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c10">
+    <button class="q-trigger" onclick="toggle(10)">
+      <span class="q-num">10</span>
+      <span class="q-title">¿Qué relación hay entre singularidad y dependencia lineal?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La singularidad significa que una matriz no puede invertirse. En este contexto, eso no es solo un problema técnico de cálculo sino la manifestación algebraica de una redundancia real. Si una columna puede escribirse a partir de las demás, entonces existe una dirección que el sistema no distingue y la matriz asociada pierde invertibilidad.</p>
+<p>En la matriz de covarianza o en la matriz \(X^\top X\), la singularidad indica que el problema vive en un espacio de menor dimensión que el aparente. Por eso singularidad y dependencia lineal no son fenómenos separados. Son dos lenguajes para describir la misma pérdida de información estructural.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c11">
+    <button class="q-trigger" onclick="toggle(11)">
+      <span class="q-num">11</span>
+      <span class="q-title">¿Qué representa la matriz de Gram \(X^\top X\) en regresión y geometría de datos?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La matriz \(X^\top X\) resume la geometría interna del diseño de regresión. A través de productos internos entre columnas, registra longitudes, ángulos y similitudes entre predictores. Su papel no es meramente computacional. Indica qué direcciones del espacio de parámetros están bien determinadas y cuáles quedan mal distinguídas.</p>
+<p>Cuando dos columnas son muy parecidas, la matriz de Gram refleja esa cercanía. Si una combinación de coeficientes apenas modifica la señal observada, entonces esa dirección queda débilmente identificada. Por eso \(X^\top X\) puede leerse como un mapa geométrico de la información efectiva que contiene el diseño.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c12">
+    <button class="q-trigger" onclick="toggle(12)">
+      <span class="q-num">12</span>
+      <span class="q-title">¿Qué significa que existan direcciones invisibles para el modelo?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Significa que hay cambios en los coeficientes que no alteran la parte observable del modelo. Si existe un vector no nulo \(v\) tal que \(Xv=0\), entonces pasar de un conjunto de coeficientes \(\beta\) a otro conjunto \(\beta+v\) deja exactamente igual el producto \(X\beta\).</p>
+<div class="math-block">$$Xv=0 \quad \Rightarrow \quad X(\beta+v)=X\beta$$</div>
+<p>Desde el punto de vista conceptual, eso destruye la identificabilidad. El modelo no puede distinguir entre diferentes elecciones de coeficientes porque todas producen la misma señal. Este hecho muestra que la dependencia lineal no es una rareza abstracta de matrices, sino un problema central para interpretar parámetros en regresión.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c13">
+    <button class="q-trigger" onclick="toggle(13)">
+      <span class="q-num">13</span>
+      <span class="q-title">¿Qué es la multicolinealidad y por qué no coincide con la dependencia lineal exacta?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La multicolinealidad es una casi redundancia. Las variables no son exactamente combinaciones unas de otras, de modo que la matriz todavía puede invertirse, pero están tan próximas a serlo que el problema se vuelve frágil. Es una situación intermedia entre un diseño bien condicionado y un colapso completo.</p>
+<p>La diferencia con la dependencia lineal exacta es crucial. En la dependencia exacta hay ruptura total de identificabilidad. En la multicolinealidad todavía existe solución formal, pero pequeñas perturbaciones en los datos pueden producir grandes cambios en los coeficientes. No es un colapso absoluto, pero sí una inestabilidad seria.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c14">
+    <button class="q-trigger" onclick="toggle(14)">
+      <span class="q-num">14</span>
+      <span class="q-title">¿Cómo se ve la multicolinealidad en la geometría del elipsoide?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Se ve como un elipsoide extremadamente alargado. Ningún eje desapareció del todo, por eso no hay dependencia lineal exacta, pero uno o más ejes se vuelven muy pequeños en comparación con otros. Esa desproporción indica que ciertas direcciones están muy mal determinadas.</p>
+<p>La imagen es muy útil porque permite distinguir dos escenarios. Si un eje vale exactamente cero, hay degeneración y dependencia lineal exacta. Si el eje es simplemente muy pequeño, hay multicolinealidad. En ambos casos la geometría muestra una dificultad, pero también permite ver de qué tipo es esa dificultad.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c15">
+    <button class="q-trigger" onclick="toggle(15)">
+      <span class="q-num">15</span>
+      <span class="q-title">¿Por qué la multicolinealidad vuelve inestables los coeficientes de regresión?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Porque al invertir una matriz casi singular, los errores pequeños se amplifican. Si el diseño apenas distingue cierta dirección del espacio de coeficientes, entonces un cambio mínimo en la muestra o en el ruido puede empujar mucho la estimación en esa dirección. El resultado es una gran sensibilidad de los coeficientes.</p>
+<div class="math-block">$$\mathrm{Cov}(\hat\beta)=\sigma^2(X^\top X)^{-1}$$</div>
+<p>Eso explica por qué pueden aparecer coeficientes de gran magnitud, signos inestables o interpretaciones contradictorias. La multicolinealidad no siempre arruina la capacidad predictiva del modelo, pero sí deteriora fuertemente la estabilidad y la interpretabilidad de las estimaciones individuales.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c16">
+    <button class="q-trigger" onclick="toggle(16)">
+      <span class="q-num">16</span>
+      <span class="q-title">¿Qué aporta el número de condición al estudio de la multicolinealidad?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>El número de condición mide cuán desequilibrada está la geometría del problema. Si es pequeño, las distintas direcciones del espacio están razonablemente bien escaladas. Si es grande, algunas direcciones están bien determinadas y otras están muy cerca de perderse. Esa desproporción es el sello característico de la multicolinealidad.</p>
+<p>Su valor práctico es que convierte una intuición geométrica en un diagnóstico cuantitativo. Un elipsoide muy estirado tiene un número de condición alto. Eso anticipa que la inversión de la matriz será delicada y que el error o el ruido podrán amplificarse. Por eso se utiliza como alarma de inestabilidad.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c17">
+    <button class="q-trigger" onclick="toggle(17)">
+      <span class="q-num">17</span>
+      <span class="q-title">¿Qué enseña el VIF sobre la redundancia entre predictores?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>El VIF muestra cuánto se infla la varianza de un coeficiente por el parecido excesivo entre un predictor y los demás. Si una variable puede anticiparse bastante bien a partir de otras, entonces aporta poca información nueva y su coeficiente queda sostenido por una base muy débil.</p>
+<p>La enseñanza conceptual del VIF es que la multicolinealidad no solo es un problema de la matriz completa, sino también de la fragilidad informativa de cada predictor individual. Un valor alto señala que la estimación de ese coeficiente será más incierta y más sensible a pequeños cambios en el conjunto de datos.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c18">
+    <button class="q-trigger" onclick="toggle(18)">
+      <span class="q-num">18</span>
+      <span class="q-title">¿Qué significa que un elipsoide esté alineado con los ejes?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Significa que sus direcciones principales coinciden con los ejes coordenados. En dimensión dos, eso equivale a decir que la elipse no aparece rotada. Cuando la covarianza fuera de la diagonal es cero, la figura deja de inclinarse y queda alineada con las referencias del sistema.</p>
+<p>Esa alineación sugiere ausencia de asociación lineal entre las variables, pero no siempre alcanza para concluir independencia estadística. La alineación es una pista geométrica importante, aunque su interpretación depende de la familia de distribuciones que se esté considerando. En algunas clases de modelos dice mucho; en otras, no lo dice todo.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c19">
+    <button class="q-trigger" onclick="toggle(19)">
+      <span class="q-num">19</span>
+      <span class="q-title">¿Por qué en el caso gaussiano la correlación cero sí implica independencia?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Porque dentro de la familia gaussiana la media y la covarianza determinan completamente la distribución conjunta. En ese contexto, la información geométrica que aporta el elipsoide no es parcial, sino total. Si las covarianzas cruzadas desaparecen, la distribución conjunta se separa como producto de distribuciones marginales.</p>
+<p>Eso convierte a la familia gaussiana en una excepción muy importante. Allí la ausencia de inclinación lineal no es solo un dato parcial, sino una descripción completa de la estructura de dependencia. En símbolos, para normales conjuntas, correlación nula e independencia pasan a ser equivalentes.</p>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c20">
+    <button class="q-trigger" onclick="toggle(20)">
+      <span class="q-num">20</span>
+      <span class="q-title">¿Cuál es la síntesis conceptual que unifica dependencia lineal, independencia estadística y multicolinealidad?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La síntesis más poderosa es geométrica. La dependencia lineal exacta aparece como colapso del elipsoide, es decir, como degeneración de la nube en un subespacio de menor dimensión. La multicolinealidad aparece como un elipsoide muy alargado, con direcciones débiles que hacen al sistema inestable. Y la independencia estadística, en el caso gaussiano, aparece como alineación del elipsoide con los ejes.</p>
+<p>Esta visión permite unificar álgebra lineal, estadística y regresión bajo una sola intuición visual. No se trata de memorizar definiciones aisladas, sino de entender que cada fenómeno deja una huella propia en la forma de la nube, en la matriz que la describe y en la estabilidad del problema analítico.</p>
+    </div></div></div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-author">Dependencia lineal · Independencia estadística · Geometría de datos</div>
+  <br>
+  20 preguntas y respuestas desarrolladas en formato HTML interactivo
+  <br>
+  Material elaborado por el profesor Sergio Gevatschnaider
+</footer>
+
+<script>
+  const total = 20;
+  let openSet = new Set();
+
+  function toggle(n) {
+    const card = document.getElementById('c' + n);
+    if (card.classList.contains('open')) {
+      card.classList.remove('open');
+      openSet.delete(n);
+    } else {
+      card.classList.add('open');
+      openSet.add(n);
+      if (window.MathJax) {
+        MathJax.typesetPromise([card]).catch(err => console.log(err));
+      }
+    }
+    updateProgress();
+  }
+
+  function expandAll() {
+    for (let i = 1; i <= total; i++) {
+      const card = document.getElementById('c' + i);
+      card.classList.add('open');
+      openSet.add(i);
+    }
+    updateProgress();
+    if (window.MathJax) {
+      MathJax.typesetPromise(document.querySelectorAll('.card')).catch(err => console.log(err));
+    }
+  }
+
+  function collapseAll() {
+    for (let i = 1; i <= total; i++) {
+      document.getElementById('c' + i).classList.remove('open');
+    }
+    openSet.clear();
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const count = openSet.size;
+    const pct = (count / total * 100).toFixed(0);
+    document.getElementById('progress-bar-inner').style.width = pct + '%';
+    document.getElementById('open-count').textContent = count + ' / ' + total + ' abiertas';
+    document.getElementById('progress-text').textContent = pct + '% COMPLETADO';
+  }
+
+  const themes = ['dark', 'light', 'sepia'];
+
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themes.forEach(th => {
+      document.getElementById('opt-' + th).classList.toggle('active', th === t);
+    });
+    try { localStorage.setItem('quiz-theme', t); } catch(e) {}
+  }
+
+  (function() {
+    try {
+      const saved = localStorage.getItem('quiz-theme');
+      if (saved && themes.includes(saved)) setTheme(saved);
+    } catch(e) {}
+  })();
+
+  document.querySelectorAll('.q-trigger').forEach((btn, idx) => {
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle(idx + 1);
+      }
+    });
+  });
+</script>
+</body>
+</html>
