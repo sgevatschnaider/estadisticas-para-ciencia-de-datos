@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolas Unitarias: L₁, L₂, L∞</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #080c14;
+  --bg2:        #0d1424;
+  --bg3:        #111827;
+  --grid:       rgba(99,118,160,0.13);
+  --border:     rgba(99,118,160,0.22);
+  --text:       #c8d8f0;
+  --text-dim:   #5a6e8a;
+  --l1:         #f59e0b;
+  --l1-faint:   rgba(245,158,11,0.09);
+  --l1-glow:    rgba(245,158,11,0.35);
+  --l2:         #22d3ee;
+  --l2-faint:   rgba(34,211,238,0.09);
+  --l2-glow:    rgba(34,211,238,0.35);
+  --linf:       #e879f9;
+  --linf-faint: rgba(232,121,249,0.09);
+  --linf-glow:  rgba(232,121,249,0.35);
+  --accent:     #f0f6ff;
+  --shadow:     0 4px 28px rgba(0,0,0,0.45);
+  --mono: 'Space Mono', monospace;
+  --serif: 'Cormorant Garamond', serif;
+}
+html.light {
+  --bg:         #eef2f9;
+  --bg2:        #ffffff;
+  --bg3:        #dde4f0;
+  --grid:       rgba(50,80,150,0.09);
+  --border:     rgba(50,80,150,0.18);
+  --text:       #1a2840;
+  --text-dim:   #7a8faa;
+  --l1:         #b45309;
+  --l1-faint:   rgba(180,83,9,0.08);
+  --l1-glow:    rgba(180,83,9,0.25);
+  --l2:         #0369a1;
+  --l2-faint:   rgba(3,105,161,0.08);
+  --l2-glow:    rgba(3,105,161,0.25);
+  --linf:       #7c3aed;
+  --linf-faint: rgba(124,58,237,0.08);
+  --linf-glow:  rgba(124,58,237,0.25);
+  --accent:     #1a2840;
+  --shadow:     0 4px 28px rgba(20,40,80,0.12);
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+body {
+  background:var(--bg); color:var(--text);
+  font-family:var(--mono); min-height:100vh; overflow-x:hidden;
+  transition:background .45s,color .45s;
+}
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+
+/* ─── THEME BUTTON ─── */
+#themeBtn {
+  position:fixed; top:20px; right:20px; z-index:1000;
+  display:flex; align-items:center; gap:9px;
+  background:var(--bg2); border:1.5px solid var(--border);
+  border-radius:50px; padding:7px 15px 7px 9px;
+  cursor:pointer; font-family:var(--mono); font-size:11px; font-weight:700;
+  color:var(--text); letter-spacing:1px;
+  box-shadow:var(--shadow);
+  transition:background .35s,border-color .35s,color .35s,box-shadow .2s,transform .2s;
+  user-select:none;
+}
+#themeBtn:hover {
+  border-color:var(--l2);
+  box-shadow:0 0 18px var(--l2-glow),var(--shadow);
+  transform:translateY(-2px);
+}
+.tb-track {
+  width:34px; height:18px; border-radius:9px;
+  background:var(--bg3); border:1.5px solid var(--border);
+  position:relative; flex-shrink:0;
+  transition:background .35s,border-color .35s;
+}
+html.light .tb-track{background:var(--l2-faint);border-color:var(--l2)}
+.tb-thumb {
+  width:12px; height:12px; border-radius:50%;
+  background:var(--text-dim); position:absolute; top:2px; left:2px;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .35s;
+}
+html.light .tb-thumb{transform:translateX(16px);background:var(--l2)}
+.tb-icon{font-size:14px;line-height:1}
+.tb-sun{display:none}
+html.light .tb-moon{display:none}
+html.light .tb-sun{display:inline}
+
+/* ─── LAYOUT ─── */
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:44px 22px 80px}
+
+header{text-align:center;margin-bottom:52px;animation:fadeDown .6s ease both}
+.tag{
+  display:inline-block;font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--text-dim);border:1px solid var(--border);
+  padding:4px 14px;border-radius:2px;margin-bottom:20px;
+  transition:color .45s,border-color .45s;
+}
+h1{
+  font-family:var(--serif);font-size:clamp(2.2rem,5vw,3.8rem);
+  font-weight:300;line-height:1.1;color:var(--accent);
+  transition:color .45s;
+}
+h1 em{font-style:italic;color:var(--l2);transition:color .45s}
+.subtitle{
+  font-size:12px;color:var(--text-dim);margin-top:14px;line-height:1.85;
+  max-width:580px;margin-left:auto;margin-right:auto;transition:color .45s;
+}
+.badges{display:flex;justify-content:center;gap:14px;margin-top:26px;flex-wrap:wrap}
+.badge{
+  padding:6px 18px;border-radius:2px;font-size:11px;letter-spacing:1.5px;
+  font-weight:700;cursor:pointer;border:1.5px solid;
+  transition:all .25s;user-select:none;
+}
+.badge.l1  {border-color:var(--l1);  color:var(--l1);  background:var(--l1-faint)}
+.badge.l2  {border-color:var(--l2);  color:var(--l2);  background:var(--l2-faint)}
+.badge.linf{border-color:var(--linf);color:var(--linf);background:var(--linf-faint)}
+.badge:hover{filter:brightness(1.25);transform:translateY(-1px)}
+.badge.off{opacity:.25;filter:grayscale(.7)}
+
+.panel{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:4px;margin-bottom:28px;
+  transition:background .45s,border-color .45s;
+}
+.pp{padding:26px 28px}
+.panel-title{
+  font-family:var(--serif);font-size:1.45rem;font-weight:300;
+  color:var(--accent);margin-bottom:6px;transition:color .45s;
+}
+.panel-sub{font-size:11px;color:var(--text-dim);line-height:1.75;margin-bottom:18px;transition:color .45s}
+
+.cwrap{position:relative;display:flex;justify-content:center}
+canvas{display:block}
+
+#tooltip{
+  position:absolute;background:var(--bg3);border:1px solid var(--border);
+  font-size:11px;padding:8px 12px;border-radius:3px;
+  pointer-events:none;display:none;z-index:20;line-height:1.8;
+  transition:background .35s,border-color .35s;
+}
+.t-l1  {color:var(--l1)}
+.t-l2  {color:var(--l2)}
+.t-linf{color:var(--linf)}
+
+.legend{
+  display:flex;justify-content:center;gap:22px;flex-wrap:wrap;
+  margin-top:14px;font-size:11px;color:var(--text-dim);transition:color .45s;
+}
+.legend-item{display:flex;align-items:center;gap:6px}
+.ldot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.hint{text-align:center;font-size:10px;color:var(--text-dim);margin-top:8px;transition:color .45s}
+
+/* morph */
+.morph-hdr{display:flex;align-items:baseline;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.morph-hdr h2{font-family:var(--serif);font-size:1.4rem;font-weight:300;color:var(--accent);transition:color .45s}
+.pval{font-size:22px;font-weight:700;color:var(--l2);min-width:70px;transition:color .45s}
+.srow{display:flex;align-items:center;gap:14px}
+input[type=range]{
+  flex:1;-webkit-appearance:none;height:4px;border-radius:2px;outline:none;cursor:pointer;
+  background:linear-gradient(90deg,var(--l1),var(--l2),var(--linf));
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--l2);box-shadow:0 0 8px var(--l2-glow);
+  transition:background .45s,border-color .45s;
+}
+.slabels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-dim);margin-top:6px;transition:color .45s}
+.btn-anim{
+  background:none;border:1.5px solid var(--l2);color:var(--l2);
+  font-family:var(--mono);font-size:11px;padding:8px 16px;
+  cursor:pointer;border-radius:2px;white-space:nowrap;transition:all .2s;
+}
+.btn-anim:hover{background:var(--l2-faint);box-shadow:0 0 14px var(--l2-glow)}
+.btn-anim.active{background:var(--l2);color:var(--bg)}
+.mwrap{margin-top:18px;display:flex;justify-content:center}
+
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px}
+@media(max-width:680px){.cards{grid-template-columns:1fr}}
+.card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:22px 18px;
+  transition:transform .2s,background .45s,border-color .45s;
+}
+.card:hover{transform:translateY(-3px)}
+.card.l1  {border-top:2px solid var(--l1)}
+.card.l2  {border-top:2px solid var(--l2)}
+.card.linf{border-top:2px solid var(--linf)}
+.card-title{font-family:var(--serif);font-size:1.45rem;font-weight:300;margin-bottom:6px;transition:color .45s}
+.card.l1   .card-title{color:var(--l1)}
+.card.l2   .card-title{color:var(--l2)}
+.card.linf .card-title{color:var(--linf)}
+.card-shape{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;transition:color .45s}
+.formula{
+  font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--accent);
+  background:var(--bg);border:1px solid var(--border);border-radius:3px;
+  padding:9px 12px;margin-bottom:12px;line-height:1.5;text-align:center;
+  transition:background .45s,border-color .45s,color .45s;
+}
+.card-desc{font-size:11px;line-height:1.85;color:var(--text-dim);transition:color .45s}
+.card-desc strong{color:var(--text);transition:color .45s}
+
+/* demo */
+.dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:680px){.dgrid{grid-template-columns:1fr}}
+.dcell{text-align:center}
+.dclabel{font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;transition:color .45s}
+.dcell.l1   .dclabel{color:var(--l1)}
+.dcell.l2   .dclabel{color:var(--l2)}
+.dcell.linf .dclabel{color:var(--linf)}
+
+/* insight */
+.insight{
+  background:linear-gradient(135deg,var(--l2-faint),var(--linf-faint));
+  border:1px solid var(--border);border-radius:4px;padding:28px 30px;text-align:center;
+  transition:background .45s,border-color .45s;
+}
+.insight .big{
+  font-family:var(--serif);font-size:clamp(1.2rem,3vw,1.8rem);
+  font-weight:300;color:var(--accent);line-height:1.4;margin-bottom:10px;
+  font-style:italic;transition:color .45s;
+}
+.insight .big em{color:var(--l2);font-style:normal;transition:color .45s}
+.insight p{font-size:11px;color:var(--text-dim);line-height:1.9;max-width:640px;margin:0 auto;transition:color .45s}
+
+@keyframes fadeDown{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp  {from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)}}
+.a1{animation:fadeUp .7s .40s ease both}
+.a2{animation:fadeUp .7s .50s ease both}
+.a3{animation:fadeUp .7s .60s ease both}
+.a4{animation:fadeUp .7s .70s ease both}
+.a5{animation:fadeUp .7s .80s ease both}
+</style>
+</head>
+<body>
+
+<button id="themeBtn" onclick="toggleTheme()">
+  <div class="tb-track"><div class="tb-thumb"></div></div>
+  <span class="tb-icon tb-moon">🌙</span>
+  <span class="tb-icon tb-sun">☀️</span>
+  <span id="themeLbl">OSCURO</span>
+</button>
+
+<div class="page">
+
+  <header>
+    <div class="tag">Geometría · Métricas · Normas Lp</div>
+    <h1>Bolas Unitarias en <em>L₁</em>, L₂ y L∞</h1>
+    <p class="subtitle">
+      El conjunto de puntos a distancia ≤ 1 del origen cambia radicalmente según la métrica.
+      Misma nube de datos — distinta noción de cercanía.
+    </p>
+    <div class="badges">
+      <div class="badge l1"   id="b-l1"   onclick="toggleShape('l1')">L₁ — ROMBO</div>
+      <div class="badge l2"   id="b-l2"   onclick="toggleShape('l2')">L₂ — CÍRCULO</div>
+      <div class="badge linf" id="b-linf" onclick="toggleShape('linf')">L∞ — CUADRADO</div>
+    </div>
+  </header>
+
+  <!-- MAIN CANVAS -->
+  <div class="panel a1">
+    <div class="pp">
+      <div class="cwrap" id="mainWrap">
+        <canvas id="mainCanvas"></canvas>
+        <div id="tooltip">
+          <div class="t-l1">L₁ ‖x‖₁ = <span id="tt-l1">—</span></div>
+          <div class="t-l2">L₂ ‖x‖₂ = <span id="tt-l2">—</span></div>
+          <div class="t-linf">L∞ ‖x‖∞ = <span id="tt-linf">—</span></div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="ldot" style="background:var(--l1)"></div>L₁ — Manhattan</div>
+        <div class="legend-item"><div class="ldot" style="background:var(--l2)"></div>L₂ — Euclidiana</div>
+        <div class="legend-item"><div class="ldot" style="background:var(--linf)"></div>L∞ — Chebyshev</div>
+      </div>
+      <p class="hint">Mueve el cursor sobre el plano para ver las distancias en tiempo real</p>
+    </div>
+  </div>
+
+  <!-- MORPH PANEL -->
+  <div class="panel a2">
+    <div class="pp">
+      <div class="morph-hdr">
+        <h2>Morfología con norma Lₚ —</h2>
+        <div class="pval" id="pDisplay">p = 2.0</div>
+      </div>
+      <div class="srow">
+        <input type="range" id="pSlider" min="0.5" max="10" step="0.05" value="2">
+        <button class="btn-anim" id="btnAnim" onclick="toggleAnim()">▶ ANIMAR</button>
+      </div>
+      <div class="slabels">
+        <span style="color:var(--l1)">p=1 · rombo</span>
+        <span style="color:var(--l2)">p=2 · círculo</span>
+        <span style="color:var(--linf)">p→∞ · cuadrado</span>
+      </div>
+      <div class="mwrap"><canvas id="morphCanvas" width="420" height="420"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards a3">
+    <div class="card l1">
+      <div class="card-title">Norma L₁</div>
+      <div class="card-shape">▪ Rombo · Manhattan</div>
+      <div class="formula">‖x‖₁ = |x₁| + |x₂| + … + |xₙ|</div>
+      <div class="card-desc">Cuenta "cuadras" en una grilla urbana. Favorece soluciones <strong>dispersas</strong>: la bola tiene vértices sobre los ejes. Base de <strong>LASSO</strong> y selección de variables.</div>
+    </div>
+    <div class="card l2">
+      <div class="card-title">Norma L₂</div>
+      <div class="card-shape">● Círculo · Euclidiana</div>
+      <div class="formula">‖x‖₂ = √(x₁² + x₂² + … + xₙ²)</div>
+      <div class="card-desc">Distancia "en línea recta". La bola es <strong>isotrópica</strong> en todas las direcciones. Base de <strong>Ridge</strong> y k-NN clásico.</div>
+    </div>
+    <div class="card linf">
+      <div class="card-title">Norma L∞</div>
+      <div class="card-shape">■ Cuadrado · Chebyshev</div>
+      <div class="formula">‖x‖∞ = max(|x₁|, |x₂|, …, |xₙ|)</div>
+      <div class="card-desc">Solo importa la <strong>coordenada máxima</strong>. Equivale a movimientos del rey en ajedrez. Aparece en análisis de <strong>robustez</strong> y minimax.</div>
+    </div>
+  </div>
+
+  <!-- NEIGHBOUR DEMO -->
+  <div class="panel a4">
+    <div class="pp">
+      <div class="panel-title">Vecindad en una nube de puntos</div>
+      <p class="panel-sub">Punto fijo (⊕) y vecinos dentro de la bola unitaria centrada en él. Mismos datos — distintos vecinos según la métrica.</p>
+      <div class="dgrid">
+        <div class="dcell l1">  <div class="dclabel">L₁ — Vecinos</div>  <canvas id="nbrL1"   width="260" height="260"></canvas></div>
+        <div class="dcell l2">  <div class="dclabel">L₂ — Vecinos</div>  <canvas id="nbrL2"   width="260" height="260"></canvas></div>
+        <div class="dcell linf"><div class="dclabel">L∞ — Vecinos</div>  <canvas id="nbrLinf" width="260" height="260"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight a5">
+    <div class="big">Misma nube, <em>distinta noción de cercanía</em></div>
+    <p>La métrica no es un detalle técnico: define qué puntos son "similares", qué regiones son "pequeñas" y cómo generaliza un modelo. Algoritmos como k-NN, k-means, LASSO o Ridge se comportan de manera fundamentalmente distinta según la norma elegida.</p>
+  </div>
+
+</div>
+
+<script>
+/* ════════ THEME ════════ */
+const THEMES = {
+  dark: {
+    bg:'#080c14', bg2:'#0d1424',
+    grid:'rgba(99,118,160,0.15)', axis:'rgba(99,118,160,0.42)',
+    dimT:'#5a6e8a', white:'#f0f6ff',
+    l1:'#f59e0b', l2:'#22d3ee', linf:'#e879f9'
+  },
+  light: {
+    bg:'#eef2f9', bg2:'#ffffff',
+    grid:'rgba(50,80,150,0.10)', axis:'rgba(50,80,150,0.30)',
+    dimT:'#7a8faa', white:'#1a2840',
+    l1:'#b45309', l2:'#0369a1', linf:'#7c3aed'
+  }
+};
+let theme = 'dark';
+const C = Object.assign({}, THEMES.dark);
+
+function toggleTheme() {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.classList.toggle('light', theme === 'light');
+  document.getElementById('themeLbl').textContent = theme === 'light' ? 'CLARO' : 'OSCURO';
+  Object.assign(C, THEMES[theme]);
+  drawMain();
+  drawMorph(parseFloat(document.getElementById('pSlider').value));
+  drawAllNeighbours();
+}
+
+/* ════════ SHAPE TOGGLE ════════ */
+const vis = {l1:true, l2:true, linf:true};
+function toggleShape(k) {
+  vis[k] = !vis[k];
+  document.getElementById('b-'+k).classList.toggle('off', !vis[k]);
+  drawMain();
+}
+
+/* ════════ UTILS ════════ */
+function hexRgb(h) {
+  return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+}
+function rgba(hex, a) {
+  const [r,g,b] = hexRgb(hex); return `rgba(${r},${g},${b},${a})`;
+}
+function lerp(h1, h2, t) {
+  const [r1,g1,b1]=hexRgb(h1),[r2,g2,b2]=hexRgb(h2);
+  return `rgb(${~~(r1+(r2-r1)*t)},${~~(g1+(g2-g1)*t)},${~~(b1+(b2-b1)*t)})`;
+}
+function parseRgb(s) {
+  const m = s.match(/\d+/g); return m ? m.map(Number) : [0,0,0];
+}
+
+function drawGrid(ctx, cx, cy, r, W, H) {
+  ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+  const step = r / 2;
+  for (let x = cx%step; x < W; x += step) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = cy%step; y < H; y += step) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  ctx.strokeStyle = C.axis; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(cx,8); ctx.lineTo(cx,H-8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(8,cy); ctx.lineTo(W-8,cy); ctx.stroke();
+  ctx.fillStyle = C.dimT; ctx.font = '10px "Space Mono"'; ctx.textAlign = 'center';
+  [[-1,'−1'],[1,'1']].forEach(([v,l])=>{
+    ctx.fillText(l, cx+v*r, cy+18);
+    ctx.fillText(l, cx+16, cy-v*r);
+  });
+  ctx.fillText('0', cx+14, cy+14);
+  ctx.fillStyle = C.axis; ctx.font = '11px "Space Mono"';
+  ctx.fillText('x', W-12, cy-9);
+  ctx.fillText('y', cx+10, 16);
+}
+
+/* ════════ MAIN CANVAS ════════ */
+const MC = document.getElementById('mainCanvas');
+const mctx = MC.getContext('2d');
+let mW, mH, mCX, mCY, mR;
+
+function resizeMain() {
+  const size = Math.min(document.getElementById('mainWrap').clientWidth, 520);
+  MC.width = MC.height = size;
+  mW = mH = size; mCX = mCY = size/2; mR = size*0.38;
+  drawMain();
+}
+function drawMain() {
+  mctx.clearRect(0,0,mW,mH);
+  mctx.fillStyle = C.bg2; mctx.fillRect(0,0,mW,mH);
+  drawGrid(mctx, mCX, mCY, mR, mW, mH);
+
+  if (vis.linf) {
+    mctx.save();
+    mctx.beginPath(); mctx.rect(mCX-mR, mCY-mR, 2*mR, 2*mR);
+    mctx.fillStyle = rgba(C.linf, 0.07); mctx.fill();
+    mctx.shadowColor=C.linf; mctx.shadowBlur=18;
+    mctx.strokeStyle=C.linf; mctx.lineWidth=2.5; mctx.stroke();
+    mctx.restore();
+  }
+  if (vis.l1) {
+    mctx.save();
+    mctx.beginPath();
+    mctx.moveTo(mCX,mCY-mR); mctx.lineTo(mCX+mR,mCY);
+    mctx.lineTo(mCX,mCY+mR); mctx.lineTo(mCX-mR,mCY);
+    mctx.closePath();
+    mctx.fillStyle = rgba(C.l1, 0.07); mctx.fill();
+    mctx.shadowColor=C.l1; mctx.shadowBlur=18;
+    mctx.strokeStyle=C.l1; mctx.lineWidth=2.5; mctx.stroke();
+    mctx.restore();
+  }
+  if (vis.l2) {
+    mctx.save();
+    mctx.beginPath(); mctx.arc(mCX,mCY,mR,0,Math.PI*2);
+    mctx.fillStyle = rgba(C.l2, 0.07); mctx.fill();
+    mctx.shadowColor=C.l2; mctx.shadowBlur=18;
+    mctx.strokeStyle=C.l2; mctx.lineWidth=2.5; mctx.stroke();
+    mctx.restore();
+  }
+  mctx.beginPath(); mctx.arc(mCX,mCY,4,0,Math.PI*2);
+  mctx.fillStyle=C.white; mctx.fill();
+}
+
+MC.addEventListener('mousemove', function(e) {
+  const rect = MC.getBoundingClientRect();
+  const px = e.clientX-rect.left, py = e.clientY-rect.top;
+  const x = (px-mCX)/mR, y = -(py-mCY)/mR;
+  document.getElementById('tt-l1').textContent   = (Math.abs(x)+Math.abs(y)).toFixed(3);
+  document.getElementById('tt-l2').textContent   = Math.sqrt(x*x+y*y).toFixed(3);
+  document.getElementById('tt-linf').textContent = Math.max(Math.abs(x),Math.abs(y)).toFixed(3);
+  const tt = document.getElementById('tooltip');
+  tt.style.display='block'; tt.style.left=(px+14)+'px'; tt.style.top=(py-10)+'px';
+  drawMain();
+  mctx.save();
+  mctx.setLineDash([4,4]); mctx.strokeStyle='rgba(99,118,160,0.5)'; mctx.lineWidth=1;
+  mctx.beginPath(); mctx.moveTo(px,py); mctx.lineTo(mCX,py); mctx.stroke();
+  mctx.beginPath(); mctx.moveTo(px,py); mctx.lineTo(px,mCY); mctx.stroke();
+  mctx.restore();
+  mctx.beginPath(); mctx.arc(px,py,5,0,Math.PI*2);
+  mctx.fillStyle='rgba(240,246,255,0.9)'; mctx.fill();
+});
+MC.addEventListener('mouseleave', function() {
+  document.getElementById('tooltip').style.display='none';
+  drawMain();
+});
+
+/* ════════ MORPH CANVAS ════════ */
+const MO = document.getElementById('morphCanvas');
+const pctx = MO.getContext('2d');
+const pSlider = document.getElementById('pSlider');
+let animRunning=false, animId=null, animP=2, animDir=1;
+
+function pColor(p) {
+  return p <= 2 ? lerp(C.l1, C.l2, p-1) : lerp(C.l2, C.linf, Math.min((p-2)/6, 1));
+}
+function drawMorph(p) {
+  const W=MO.width, H=MO.height, cx=W/2, cy=H/2, r=W*0.38;
+  pctx.clearRect(0,0,W,H);
+  pctx.fillStyle=C.bg2; pctx.fillRect(0,0,W,H);
+  drawGrid(pctx, cx, cy, r, W, H);
+  const col = pColor(p);
+  const [cr,cg,cb] = parseRgb(col);
+  pctx.beginPath();
+  for (let i=0; i<=500; i++) {
+    const t = (i/500)*Math.PI*2;
+    const ca=Math.cos(t), sa=Math.sin(t);
+    const sc = Math.pow(Math.pow(Math.abs(ca),p)+Math.pow(Math.abs(sa),p), -1/p);
+    const bx = cx+r*sc*ca, by = cy-r*sc*sa;
+    i===0 ? pctx.moveTo(bx,by) : pctx.lineTo(bx,by);
+  }
+  pctx.closePath();
+  pctx.fillStyle=`rgba(${cr},${cg},${cb},0.09)`; pctx.fill();
+  pctx.save();
+  pctx.shadowColor=col; pctx.shadowBlur=20;
+  pctx.strokeStyle=col; pctx.lineWidth=2.5; pctx.stroke();
+  pctx.restore();
+  const pStr = p>=9.5?'∞':p.toFixed(1);
+  pctx.fillStyle=col; pctx.font='bold 14px "Space Mono"'; pctx.textAlign='left';
+  pctx.fillText(`p = ${pStr}`, 16, 28);
+  const note = p<1.2?'Rombo (L₁)':p<1.8?'Transición':p<2.4?'Círculo (L₂)':'→ Cuadrado (L∞)';
+  pctx.fillStyle=C.dimT; pctx.font='10px "Space Mono"';
+  pctx.fillText(note, 16, H-16);
+}
+pSlider.addEventListener('input', function() {
+  const p = parseFloat(this.value);
+  document.getElementById('pDisplay').textContent = `p = ${p>=9.5?'∞':p.toFixed(1)}`;
+  drawMorph(p);
+});
+function toggleAnim() {
+  animRunning = !animRunning;
+  const btn = document.getElementById('btnAnim');
+  if (animRunning) {
+    btn.textContent='■ DETENER'; btn.classList.add('active');
+    animP = parseFloat(pSlider.value); animDir=1; step();
+  } else {
+    btn.textContent='▶ ANIMAR'; btn.classList.remove('active');
+    cancelAnimationFrame(animId);
+  }
+}
+function step() {
+  animP += animDir*0.025;
+  if (animP>=10){animP=10;animDir=-1}
+  if (animP<=0.5){animP=0.5;animDir=1}
+  pSlider.value=animP;
+  document.getElementById('pDisplay').textContent=`p = ${animP>=9.5?'∞':animP.toFixed(1)}`;
+  drawMorph(animP);
+  if (animRunning) animId=requestAnimationFrame(step);
+}
+
+/* ════════ NEIGHBOURS ════════ */
+function rng(s){let x=Math.sin(s+1)*10000;return x-Math.floor(x)}
+const cloud=[];
+for(let i=0;i<50;i++) cloud.push([(rng(i*2)-0.5)*2.8,(rng(i*2+1)-0.5)*2.8]);
+
+function drawNeighbour(id, metric) {
+  const col = metric==='l1'?C.l1:metric==='l2'?C.l2:C.linf;
+  const cv = document.getElementById(id);
+  const ctx = cv.getContext('2d');
+  const W=cv.width, H=cv.height, cx=W/2, cy=H/2, r=W*0.32;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=C.bg2; ctx.fillRect(0,0,W,H);
+  // grid
+  ctx.strokeStyle=C.grid; ctx.lineWidth=1;
+  for(let x=cx%r;x<W;x+=r){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+  for(let y=cy%r;y<H;y+=r){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+  ctx.strokeStyle=C.axis; ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+  // ball
+  const [cr,cg,cb]=hexRgb(col);
+  ctx.save();
+  if(metric==='l1'){
+    ctx.beginPath();
+    ctx.moveTo(cx,cy-r);ctx.lineTo(cx+r,cy);
+    ctx.lineTo(cx,cy+r);ctx.lineTo(cx-r,cy);ctx.closePath();
+  }else if(metric==='l2'){
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  }else{
+    ctx.beginPath();ctx.rect(cx-r,cy-r,2*r,2*r);
+  }
+  ctx.fillStyle=`rgba(${cr},${cg},${cb},0.10)`;ctx.fill();
+  ctx.shadowColor=col;ctx.shadowBlur=14;
+  ctx.strokeStyle=col;ctx.lineWidth=1.8;ctx.stroke();
+  ctx.restore();
+  // points
+  let nb=0;
+  cloud.forEach(([px,py])=>{
+    const d = metric==='l1'?Math.abs(px)+Math.abs(py):metric==='l2'?Math.sqrt(px*px+py*py):Math.max(Math.abs(px),Math.abs(py));
+    const isN=d<=1.0; if(isN)nb++;
+    const sx=cx+px*r, sy=cy-py*r;
+    if(sx<-20||sx>W+20||sy<-20||sy>H+20)return;
+    ctx.beginPath();ctx.arc(sx,sy,isN?5:3,0,Math.PI*2);
+    ctx.fillStyle=isN?col:'rgba(99,118,160,0.45)';
+    if(isN){ctx.shadowColor=col;ctx.shadowBlur=10}else ctx.shadowBlur=0;
+    ctx.fill();ctx.shadowBlur=0;
+  });
+  // query point
+  ctx.beginPath();ctx.arc(cx,cy,7,0,Math.PI*2);
+  ctx.fillStyle=C.white;ctx.shadowColor=C.white;ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
+  ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle=C.bg2;ctx.font='bold 10px "Space Mono"';ctx.textAlign='center';
+  ctx.fillText('+',cx,cy+4);
+  // count
+  ctx.fillStyle=col;ctx.font='10px "Space Mono"';ctx.textAlign='center';
+  ctx.fillText(`${nb} vecinos`,W/2,H-8);
+}
+function drawAllNeighbours(){
+  drawNeighbour('nbrL1','l1');
+  drawNeighbour('nbrL2','l2');
+  drawNeighbour('nbrLinf','linf');
+}
+
+/* ════════ INIT ════════ */
+window.addEventListener('load',()=>{
+  resizeMain();
+  drawMorph(2);
+  drawAllNeighbours();
+});
+window.addEventListener('resize', resizeMain);
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geometría Hiperbólica — Disco de Poincaré</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+[data-theme="dark"] {
+  --bg:#07101d; --bg2:#0d1927; --bg3:#111f33;
+  --border:rgba(100,180,255,0.10); --border2:rgba(100,180,255,0.18);
+  --text:#d4e8ff; --text2:#7da8d8; --text3:#3e6080;
+  --accent:#00d4c8; --warm:#f5a623; --hot:#ff5e1a;
+  --di:#0b1a2e; --do:#060e1a; --ring:rgba(0,212,200,0.25);
+  --gridl:rgba(60,130,210,0.12); --infc:rgba(0,212,200,0.30);
+  --geof:rgba(0,212,200,0.08); --segc:rgba(200,220,255,0.35);
+  --geog:rgba(0,212,200,0.16); --shadow:none;
+}
+[data-theme="light"] {
+  --bg:#eff4f9; --bg2:#ffffff; --bg3:#e2eaf3;
+  --border:rgba(60,100,160,0.14); --border2:rgba(60,100,160,0.22);
+  --text:#1a2a3a; --text2:#3a5a7a; --text3:#7a9ab8;
+  --accent:#0097a7; --warm:#c47800; --hot:#c03a00;
+  --di:#d8eeff; --do:#c0d8f0; --ring:rgba(0,140,160,0.35);
+  --gridl:rgba(60,100,180,0.12); --infc:rgba(0,140,160,0.40);
+  --geof:rgba(0,140,160,0.10); --segc:rgba(30,60,160,0.28);
+  --geog:rgba(0,140,160,0.13); --shadow:0 1px 4px rgba(0,0,0,0.07);
+}
+
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; transition:background .25s,color .25s; }
+
+header { padding:14px 22px; border-bottom:.5px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+header h1 { font-size:15px; font-weight:500; letter-spacing:-.01em; }
+.badge { font-size:9.5px; padding:2px 8px; border-radius:20px; border:.5px solid var(--border2); color:var(--accent); letter-spacing:.07em; text-transform:uppercase; font-weight:500; }
+.spacer { flex:1; }
+
+.icon-btn { width:32px; height:32px; border-radius:8px; border:.5px solid var(--border2); background:transparent; color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.icon-btn:hover { background:var(--bg3); color:var(--text); }
+.icon-btn.sim-on { background:rgba(232,96,48,0.12); border-color:#e86030; color:#e86030; }
+
+.tip-wrap { position:relative; }
+.tip-wrap .tip { position:absolute; top:calc(100% + 6px); right:0; background:var(--bg2); border:.5px solid var(--border2); color:var(--text2); font-size:10px; padding:3px 8px; border-radius:6px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity .15s; z-index:10; }
+.tip-wrap:hover .tip { opacity:1; }
+
+.sim-panel { display:none; align-items:center; gap:8px; flex-wrap:wrap; padding:7px 16px; background:var(--bg3); border-bottom:.5px solid var(--border); font-size:11px; color:var(--text2); transition:background .25s; }
+.sim-panel.visible { display:flex; }
+.smode { padding:4px 10px; border-radius:6px; border:.5px solid var(--border2); background:transparent; color:var(--text2); font-family:'DM Sans',sans-serif; font-size:10.5px; cursor:pointer; transition:all .15s; }
+.smode:hover { background:var(--bg2); color:var(--text); }
+.smode.active { background:rgba(232,96,48,0.10); border-color:#e86030; color:#e86030; }
+.speed-row { display:flex; align-items:center; gap:6px; margin-left:auto; }
+.speed-row input { width:75px; }
+
+.sim-bar-wrap { display:none; height:3px; background:var(--bg3); }
+.sim-bar-wrap.visible { display:block; }
+.sim-bar { height:100%; width:0%; background:#e86030; transition:width .08s linear; }
+
+main { flex:1; display:grid; grid-template-columns:1fr 282px; min-height:0; }
+
+.canvas-area { padding:18px; display:flex; flex-direction:column; align-items:center; gap:11px; }
+
+#diskCanvas { display:block; width:100%; max-width:476px; aspect-ratio:1; border-radius:12px; cursor:crosshair; }
+[data-theme="light"] #diskCanvas { box-shadow:0 2px 14px rgba(0,0,0,0.10); }
+
+.controls { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; max-width:476px; width:100%; }
+
+.btn { padding:6px 11px; border-radius:8px; border:.5px solid var(--border2); background:transparent; color:var(--text2); font-family:'DM Sans',sans-serif; font-size:10.5px; cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:5px; }
+.btn:hover { background:var(--bg3); color:var(--text); }
+.btn.on { background:rgba(0,180,170,0.09); border-color:var(--accent); color:var(--accent); }
+
+.sidebar { border-left:.5px solid var(--border); padding:15px 13px; display:flex; flex-direction:column; gap:11px; overflow-y:auto; }
+
+.card { border:.5px solid var(--border); border-radius:10px; padding:11px 13px; background:var(--bg2); box-shadow:var(--shadow); transition:background .25s,border-color .25s; }
+
+.clabel { font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:var(--text3); font-weight:500; margin-bottom:8px; }
+
+.crow { display:flex; align-items:center; gap:7px; margin-bottom:4px; font-size:11px; }
+.dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.crow code { font-family:'DM Mono',monospace; font-size:10px; color:var(--text); }
+
+.drow { display:flex; justify-content:space-between; align-items:baseline; padding:5px 0; border-bottom:.5px solid var(--border); font-size:10.5px; }
+.drow:last-child { border-bottom:none; }
+.drow .lbl { color:var(--text2); }
+.drow .val { font-family:'DM Mono',monospace; font-size:12px; font-weight:500; }
+
+.fbox { background:var(--bg3); border-radius:7px; padding:8px 9px; font-family:'DM Mono',monospace; font-size:9.5px; color:var(--text3); line-height:1.9; margin-top:8px; }
+
+.ins { border-radius:8px; padding:9px 11px; font-size:11px; line-height:1.55; border-left:2.5px solid; transition:all .3s; }
+.ins.ok  { border-color:var(--accent);  background:rgba(0,180,170,0.07); color:var(--accent); }
+.ins.mid { border-color:var(--warm);    background:rgba(200,140,0,0.07);  color:var(--warm); }
+.ins.hot { border-color:var(--hot);     background:rgba(200,70,0,0.08);   color:var(--hot); }
+
+.legend { display:flex; flex-direction:column; gap:5px; }
+.leg { display:flex; align-items:center; gap:7px; font-size:10.5px; color:var(--text2); }
+.legline { width:18px; height:2px; border-radius:1px; flex-shrink:0; }
+
+.hbar { height:9px; border-radius:5px; width:100%; margin:4px 0 2px; background:linear-gradient(to right,rgb(3,8,22),rgb(8,48,195),rgb(0,205,185),rgb(248,185,0),rgb(255,255,255)); }
+[data-theme="light"] .hbar { background:linear-gradient(to right,rgb(0,10,90),rgb(0,80,210),rgb(0,170,165),rgb(210,150,0),rgb(255,240,200)); }
+.hlbls { display:flex; justify-content:space-between; font-size:9px; color:var(--text3); font-family:'DM Mono',monospace; }
+
+footer { padding:8px 22px; border-top:.5px solid var(--border); font-size:9.5px; color:var(--text3); display:flex; gap:16px; flex-wrap:wrap; }
+
+@media(max-width:680px){
+  main{grid-template-columns:1fr;}
+  .sidebar{border-left:none;border-top:.5px solid var(--border);}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Geometría Hiperbólica</h1>
+  <span class="badge">Disco de Poincaré</span>
+  <div class="spacer"></div>
+  <span style="font-size:11px;color:var(--text3)">Arrastrá A y B</span>
+
+  <!-- SIMULATION -->
+  <div class="tip-wrap">
+    <button class="icon-btn" id="simBtn" onclick="toggleSim()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polygon points="2,1 13,7 2,13" fill="currentColor"/></svg>
+    </button>
+    <span class="tip">Simulación dinámica</span>
+  </div>
+
+  <!-- THEME -->
+  <div class="tip-wrap">
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">
+      <svg id="themeIco" width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <circle cx="7.5" cy="7.5" r="3" fill="currentColor"/>
+        <line x1="7.5" y1="0.5" x2="7.5" y2="2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="7.5" y1="12.5" x2="7.5" y2="14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="0.5" y1="7.5" x2="2.5" y2="7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="12.5" y1="7.5" x2="14.5" y2="7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="2.5" y1="2.5" x2="4" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="11" y1="11" x2="12.5" y2="12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="11" y1="4" x2="12.5" y2="2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="2.5" y1="12.5" x2="4" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <span class="tip">Cambiar tema</span>
+  </div>
+</header>
+
+<!-- SIM CONTROL PANEL -->
+<div class="sim-panel" id="simPanel">
+  <span style="font-weight:500;color:var(--text);font-size:10.5px">Modo:</span>
+  <button class="smode active" id="sm0" onclick="setMode(0)">⬤ Órbitas libres</button>
+  <button class="smode" id="sm1" onclick="setMode(1)">→ B al borde</button>
+  <button class="smode" id="sm2" onclick="setMode(2)">↺ Espiral</button>
+  <button class="smode" id="sm3" onclick="setMode(3)">⟷ Exploración</button>
+  <div class="speed-row">
+    <span style="font-size:10px;color:var(--text3)">Vel.</span>
+    <input type="range" id="spd" min="0.2" max="3.5" step="0.1" value="1" oninput="simSpd=parseFloat(this.value);document.getElementById('spdv').textContent=parseFloat(this.value).toFixed(1)+'×'">
+    <span id="spdv" style="font-size:10px;color:var(--text2);min-width:26px">1.0×</span>
+  </div>
+</div>
+<div class="sim-bar-wrap" id="sbw"><div class="sim-bar" id="sb"></div></div>
+
+<main>
+  <div class="canvas-area">
+    <canvas id="diskCanvas" width="520" height="520"></canvas>
+    <div class="controls">
+      <button class="btn on" id="bE" onclick="tog('E')">
+        <svg width="14" height="2"><line x1="0" y1="1" x2="14" y2="1" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2"/></svg>
+        Euclídeo
+      </button>
+      <button class="btn" id="bC" onclick="tog('C')">
+        <svg width="13" height="13"><circle cx="6.5" cy="6.5" r="5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+        Círculos
+      </button>
+      <button class="btn" id="bH" onclick="tog('H')">
+        <svg width="13" height="9"><rect width="13" height="9" rx="2" fill="url(#hg)"/><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#030816"/><stop offset="50%" stop-color="#00cdb9"/><stop offset="100%" stop-color="#fff"/></linearGradient></defs></svg>
+        Calor
+      </button>
+      <button class="btn" id="bG" onclick="tog('G')">
+        <svg width="13" height="13"><line x1="6.5" y1="0" x2="6.5" y2="13" stroke="currentColor" stroke-width="0.8"/><line x1="0" y1="6.5" x2="13" y2="6.5" stroke="currentColor" stroke-width="0.8"/><circle cx="6.5" cy="6.5" r="5" fill="none" stroke="currentColor" stroke-width="0.8"/></svg>
+        Grilla
+      </button>
+      <button class="btn" id="bT" onclick="tog('T')">
+        <svg width="13" height="12"><polyline points="1,11 6.5,1 12,11" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="3" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="0.9"/></svg>
+        Triángulo
+      </button>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="card">
+      <div class="clabel">Puntos</div>
+      <div class="crow"><div class="dot" style="background:#e86030"></div><span style="color:var(--text2)">A =</span><code id="cA">–</code></div>
+      <div class="crow"><div class="dot" style="background:#3880d8"></div><span style="color:var(--text2)">B =</span><code id="cB">–</code></div>
+    </div>
+
+    <div class="card">
+      <div class="clabel">Distancias</div>
+      <div class="drow"><span class="lbl">d<sub>E</sub> euclídea</span><span class="val" id="dE" style="color:var(--text)">—</span></div>
+      <div class="drow"><span class="lbl">d<sub>H</sub> hiperbólica</span><span class="val" id="dH" style="color:var(--accent)">—</span></div>
+      <div class="drow"><span class="lbl">ratio d<sub>H</sub>/d<sub>E</sub></span><span class="val" id="dR" style="color:var(--warm)">—</span></div>
+      <div class="fbox">d<sub>H</sub>(A,B) = arcosh(<br>&nbsp;1 + 2·‖A−B‖² /<br>&nbsp;(1−‖A‖²)(1−‖B‖²)<br>)</div>
+    </div>
+
+    <div class="ins ok" id="ins">Arrastrá los puntos A y B dentro del disco.</div>
+
+    <div class="card">
+      <div class="clabel">Leyenda</div>
+      <div class="legend">
+        <div class="leg"><div class="legline" style="background:#e86030"></div>Punto A</div>
+        <div class="leg"><div class="legline" style="background:#3880d8"></div>Punto B</div>
+        <div class="leg"><div class="legline" style="background:var(--accent)"></div>Geodésica hiperbólica</div>
+        <div class="leg"><div class="legline" style="background:var(--text3)"></div>Segmento euclídeo</div>
+        <div class="leg"><div class="legline" style="background:#a040d0"></div>Triángulo hiperbólico</div>
+      </div>
+    </div>
+
+    <div class="card" id="heatCard" style="display:none">
+      <div class="clabel">Calor desde A</div>
+      <div class="hbar"></div>
+      <div class="hlbls"><span>0</span><span>2.5</span><span>≥5 (∞)</span></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.6">Cerca del borde, movimientos pequeños implican distancias hiperbólicas enormes.</div>
+    </div>
+
+    <div class="card" id="simCard" style="display:none">
+      <div class="clabel">Simulación</div>
+      <div id="simDesc" style="font-size:10.5px;color:var(--text2);line-height:1.6"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span>Modelo: Disco de Poincaré · K = −1</span>
+  <span>Geodésicas: arcos ortogonales al borde</span>
+  <span>Borde = infinito hiperbólico</span>
+</footer>
+
+<script>
+const cv=document.getElementById('diskCanvas');
+const ctx=cv.getContext('2d');
+const W=520,H=520,OX=260,OY=260,R=237;
+
+let A=[-0.38,0.22], B=[0.48,-0.34];
+let drag=null;
+let sE=true,sC=false,sH=false,sG=false,sT=false;
+let hDirty=true;
+const hv=document.createElement('canvas'); hv.width=W; hv.height=H;
+const hc=hv.getContext('2d');
+
+// sim
+let simOn=false, simMode=0, simT=0, simSpd=1, simRAF=null, lastTS=null;
+
+const toM=(px,py)=>[(px-OX)/R,(OY-py)/R];
+const toC=(x,y)=>[OX+x*R,OY-y*R];
+const ed=(P,Q)=>Math.sqrt((P[0]-Q[0])**2+(P[1]-Q[1])**2);
+
+function hd(P,Q){
+  const dx=P[0]-Q[0],dy=P[1]-Q[1];
+  const a=1-P[0]**2-P[1]**2,b=1-Q[0]**2-Q[1]**2;
+  if(a<=0||b<=0)return Infinity;
+  const v=1+2*(dx**2+dy**2)/(a*b);
+  return v<1?0:Math.log(v+Math.sqrt(v*v-1));
+}
+
+function gC(A,B){
+  const[x1,y1]=A,[x2,y2]=B,cr=x1*y2-x2*y1;
+  if(Math.abs(cr)<1e-7)return null;
+  const rA=x1**2+y1**2,rB=x2**2+y2**2;
+  const Cx=((1+rA)*y2-(1+rB)*y1)/(2*cr);
+  const Cy=(x1*(1+rB)-x2*(1+rA))/(2*cr);
+  return{Cx,Cy,r:Math.sqrt((Cx-x1)**2+(Cy-y1)**2)};
+}
+
+function arc(A,B,n=150){
+  const g=gC(A,B);
+  if(!g){const p=[];for(let i=0;i<=n;i++)p.push([A[0]+(B[0]-A[0])*i/n,A[1]+(B[1]-A[1])*i/n]);return p;}
+  const{Cx,Cy,r}=g;
+  const a1=Math.atan2(A[1]-Cy,A[0]-Cx),a2=Math.atan2(B[1]-Cy,B[0]-Cx);
+  const dCCW=((a2-a1)+2*Math.PI)%(2*Math.PI);
+  const mx=Cx+r*Math.cos(a1+dCCW/2),my=Cy+r*Math.sin(a1+dCCW/2);
+  const ccw=mx**2+my**2<1,sp=ccw?dCCW:-(2*Math.PI-dCCW);
+  const p=[];for(let i=0;i<=n;i++){const a=a1+sp*i/n;p.push([Cx+r*Math.cos(a),Cy+r*Math.sin(a)]);}
+  return p;
+}
+
+function fullG(A,B,n=240){
+  const g=gC(A,B);
+  if(!g){
+    const[x1,y1]=A,[x2,y2]=B,d=ed(A,B);if(d<1e-9)return[A,B];
+    const ux=(x2-x1)/d,uy=(y2-y1)/d;
+    const qb=2*(x1*ux+y1*uy),qc=x1**2+y1**2-1,disc=qb**2-4*qc;
+    if(disc<0)return[A,B];
+    const t1=(-qb+Math.sqrt(disc))/2,t2=(-qb-Math.sqrt(disc))/2;
+    const P1=[x1+t1*ux,y1+t1*uy],P2=[x1+t2*ux,y1+t2*uy];
+    const p=[];for(let i=0;i<=n;i++)p.push([P1[0]+(P2[0]-P1[0])*i/n,P1[1]+(P2[1]-P1[1])*i/n]);return p;
+  }
+  const{Cx,Cy,r}=g,mc=Math.sqrt(Cx**2+Cy**2);
+  if(mc<1e-6)return arc(A,B,n);
+  const phi=Math.atan2(Cy,Cx),al=Math.acos(Math.min(1,1/mc));
+  const ga1=Math.atan2(Math.sin(phi+al)-Cy,Math.cos(phi+al)-Cx);
+  const ga2=Math.atan2(Math.sin(phi-al)-Cy,Math.cos(phi-al)-Cx);
+  const dCCW=((ga2-ga1)+2*Math.PI)%(2*Math.PI);
+  const mx=Cx+r*Math.cos(ga1+dCCW/2),my=Cy+r*Math.sin(ga1+dCCW/2);
+  const ccw=mx**2+my**2<1,sp=ccw?dCCW:-(2*Math.PI-dCCW);
+  const p=[];
+  for(let i=0;i<=n;i++){
+    const a=ga1+sp*i/n,x=Cx+r*Math.cos(a),y=Cy+r*Math.sin(a);
+    if(x**2+y**2<=1.005)p.push([x,y]);
+  }
+  return p;
+}
+
+function hCirc(P,rho,n=180){
+  const[px,py]=P,er=Math.tanh(rho/2),p=[];
+  for(let i=0;i<=n;i++){
+    const t=i/n*2*Math.PI,wx=er*Math.cos(t),wy=er*Math.sin(t);
+    const nx=wx+px,ny=wy+py,dx=1+px*wx+py*wy,dy=px*wy-py*wx,d2=dx**2+dy**2;
+    p.push([(nx*dx+ny*dy)/d2,(ny*dx-nx*dy)/d2]);
+  }
+  return p;
+}
+
+function hCol(t){
+  const s=[[3,8,22],[8,48,195],[0,205,185],[248,185,0],[255,255,255]];
+  const n=s.length-1,i=Math.min(Math.floor(t*n),n-1),f=t*n-i;
+  return s[i].map((v,k)=>Math.round(v+(s[i+1][k]-v)*f));
+}
+
+function buildHeat(){
+  const img=hc.createImageData(W,H),d=img.data;
+  for(let py=0;py<H;py++)for(let px=0;px<W;px++){
+    const[x,y]=toM(px,py);
+    if(x**2+y**2>=0.998)continue;
+    const dist=hd(A,[x,y]),t=Math.min(isFinite(dist)?dist/5.5:1,1);
+    const[r,g,b]=hCol(t),idx=(py*W+px)*4;
+    d[idx]=r;d[idx+1]=g;d[idx+2]=b;d[idx+3]=215;
+  }
+  hc.putImageData(img,0,0);hDirty=false;
+}
+
+function dp(pts){
+  if(!pts||pts.length<2)return;
+  const[sx,sy]=toC(...pts[0]);ctx.moveTo(sx,sy);
+  for(let i=1;i<pts.length;i++){const[px,py]=toC(...pts[i]);ctx.lineTo(px,py);}
+}
+
+function drawPt(P,col,lbl,r=7){
+  const[px,py]=toC(...P);
+  ctx.beginPath();ctx.arc(px,py,r+2.5,0,2*Math.PI);ctx.fillStyle='rgba(0,0,0,0.28)';ctx.fill();
+  ctx.beginPath();ctx.arc(px,py,r,0,2*Math.PI);ctx.fillStyle=col;ctx.fill();
+  ctx.beginPath();ctx.arc(px,py,r,0,2*Math.PI);ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.beginPath();ctx.arc(px,py,2.5,0,2*Math.PI);ctx.fillStyle='rgba(255,255,255,0.8)';ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='bold 12px DM Sans,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lbl,px+12,py-12);
+}
+
+function isLight(){ return document.documentElement.getAttribute('data-theme')==='light'; }
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+  const lt=isLight();
+
+  // disk bg
+  ctx.beginPath();ctx.arc(OX,OY,R,0,2*Math.PI);
+  const dg=ctx.createRadialGradient(OX,OY,0,OX,OY,R);
+  dg.addColorStop(0,lt?'#d8eeff':'#0b1a2e');
+  dg.addColorStop(1,lt?'#bfd5f0':'#060e1a');
+  ctx.fillStyle=dg;ctx.fill();
+
+  ctx.beginPath();ctx.arc(OX,OY,R,0,2*Math.PI);
+  ctx.strokeStyle=lt?'rgba(0,140,160,0.35)':'rgba(0,212,200,0.25)';
+  ctx.lineWidth=1.5;ctx.stroke();
+
+  ctx.save();ctx.beginPath();ctx.arc(OX,OY,R-1,0,2*Math.PI);ctx.clip();
+
+  // grid
+  if(sG){
+    ctx.strokeStyle=lt?'rgba(60,100,180,0.12)':'rgba(60,130,210,0.12)';ctx.lineWidth=0.8;
+    for(let ri=1;ri<=4;ri++){ctx.beginPath();ctx.arc(OX,OY,ri*R/4,0,2*Math.PI);ctx.stroke();}
+    for(let ai=0;ai<8;ai++){
+      const a=ai*Math.PI/8;ctx.beginPath();
+      ctx.moveTo(OX+Math.cos(a)*R,OY+Math.sin(a)*R);
+      ctx.lineTo(OX-Math.cos(a)*R,OY-Math.sin(a)*R);ctx.stroke();
+    }
+  }
+
+  // heatmap
+  if(sH){if(hDirty)buildHeat();ctx.drawImage(hv,0,0);}
+
+  // hyp circles
+  if(sC){
+    const dH=hd(A,B),base=Math.max(0.4,dH);
+    [[base*0.33,0.25],[base*0.66,0.38],[base,0.6]].forEach(([rho,op])=>{
+      const p=hCirc(A,rho);ctx.beginPath();dp(p);
+      ctx.strokeStyle=lt?`rgba(0,140,160,${op+0.15})`:`rgba(0,212,200,${op})`;
+      ctx.lineWidth=1;ctx.stroke();
+    });
+  }
+
+  // triangle
+  if(sT){
+    const C=[0.05,0.62];
+    [[A,B],[B,C],[C,A]].forEach(([P,Q])=>{
+      const p=arc(P,Q,120);ctx.beginPath();dp(p);
+      ctx.strokeStyle=lt?'rgba(140,60,200,0.6)':'rgba(180,80,255,0.5)';
+      ctx.lineWidth=1.5;ctx.setLineDash([]);ctx.stroke();
+    });
+    drawPt([0.05,0.62],'#a040d0','C',6);
+  }
+
+  // full geodesic (faint)
+  const fp=fullG(A,B);
+  if(fp.length>1){ctx.beginPath();dp(fp);ctx.strokeStyle=lt?'rgba(0,140,160,0.09)':'rgba(0,212,200,0.07)';ctx.lineWidth=1;ctx.stroke();}
+
+  // euclidean segment
+  if(sE){
+    const[ax,ay]=toC(...A),[bx,by]=toC(...B);
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);
+    ctx.setLineDash([5,4]);
+    ctx.strokeStyle=lt?'rgba(30,60,160,0.28)':'rgba(200,220,255,0.35)';
+    ctx.lineWidth=1.5;ctx.stroke();ctx.setLineDash([]);
+  }
+
+  // geodesic A→B
+  const ap=arc(A,B);
+  if(ap.length>1){
+    ctx.beginPath();dp(ap);
+    const[ax,ay]=toC(...A),[bx,by]=toC(...B);
+    const gr=ctx.createLinearGradient(ax,ay,bx,by);
+    gr.addColorStop(0,'rgba(232,96,48,0.95)');
+    gr.addColorStop(0.5,lt?'rgba(0,140,160,0.99)':'rgba(0,212,200,0.99)');
+    gr.addColorStop(1,'rgba(56,128,216,0.95)');
+    ctx.strokeStyle=gr;ctx.lineWidth=2.5;ctx.stroke();
+    ctx.beginPath();dp(ap);
+    ctx.strokeStyle=lt?'rgba(0,140,160,0.13)':'rgba(0,212,200,0.16)';
+    ctx.lineWidth=7;ctx.stroke();
+  }
+
+  ctx.restore();
+
+  ctx.fillStyle=lt?'rgba(0,140,160,0.45)':'rgba(0,212,200,0.30)';
+  ctx.font='11px DM Sans,sans-serif';ctx.textAlign='center';
+  ctx.fillText('∞',OX,OY-R-9);
+
+  drawPt(A,'#e86030','A');
+  drawPt(B,'#3880d8','B');
+  updateStats();
+}
+
+function updateStats(){
+  const fmt=v=>v.toFixed(4);
+  const eD=ed(A,B),hD=hd(A,B);
+  const ratio=isFinite(hD)&&eD>0.001?hD/eD:null;
+  const nA=Math.sqrt(A[0]**2+A[1]**2),nB=Math.sqrt(B[0]**2+B[1]**2);
+  document.getElementById('cA').textContent=`(${A[0].toFixed(3)}, ${A[1].toFixed(3)})`;
+  document.getElementById('cB').textContent=`(${B[0].toFixed(3)}, ${B[1].toFixed(3)})`;
+  document.getElementById('dE').textContent=fmt(eD);
+  document.getElementById('dH').textContent=isFinite(hD)?fmt(hD):'∞';
+  document.getElementById('dR').textContent=ratio?fmt(ratio):'∞';
+  const ins=document.getElementById('ins');
+  const mx=Math.max(nA,nB);
+  if(mx>0.88){ins.className='ins hot';ins.textContent='⚠ Borde: la distancia hiperbólica es enorme. El borde representa el infinito.';}
+  else if(mx>0.65||(ratio&&ratio>3)){ins.className='ins mid';ins.textContent='La geometría se aleja de la euclídea. La geodésica se curva notablemente.';}
+  else{ins.className='ins ok';ins.textContent='Cerca del centro, la hiperbólica se asemeja a la euclídea.';}
+}
+
+function tog(k){
+  if(k==='E'){sE=!sE;document.getElementById('bE').classList.toggle('on',sE);}
+  if(k==='C'){sC=!sC;document.getElementById('bC').classList.toggle('on',sC);}
+  if(k==='T'){sT=!sT;document.getElementById('bT').classList.toggle('on',sT);}
+  if(k==='H'){sH=!sH;hDirty=true;document.getElementById('bH').classList.toggle('on',sH);document.getElementById('heatCard').style.display=sH?'block':'none';}
+  if(k==='G'){sG=!sG;document.getElementById('bG').classList.toggle('on',sG);}
+  render();
+}
+
+function toggleTheme(){
+  const html=document.documentElement;
+  const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
+  html.setAttribute('data-theme',next);
+  const ico=document.getElementById('themeIco');
+  if(next==='light'){
+    ico.innerHTML=`<path d="M13,8.5a5.5,5.5 0 0,1-8.85,4.35A6.5,6.5 0 1,0,13,8.5z" fill="currentColor"/>`;
+  } else {
+    ico.innerHTML=`
+      <circle cx="7.5" cy="7.5" r="3" fill="currentColor"/>
+      <line x1="7.5" y1="0.5" x2="7.5" y2="2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="7.5" y1="12.5" x2="7.5" y2="14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="0.5" y1="7.5" x2="2.5" y2="7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="12.5" y1="7.5" x2="14.5" y2="7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="2.5" y1="2.5" x2="4" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="11" y1="11" x2="12.5" y2="12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="11" y1="4" x2="12.5" y2="2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="2.5" y1="12.5" x2="4" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`;
+  }
+  hDirty=true;render();
+}
+
+/* ── SIMULATION MODES ─────────────── */
+const MODES=[
+  {
+    name:'Órbitas libres',
+    desc:'A y B orbitan en trayectorias independientes. Observá cómo la geodésica y las distancias cambian continuamente.',
+    fn(t){
+      const rA=0.52+0.20*Math.sin(t*0.31);
+      const rB=0.60+0.24*Math.sin(t*0.37+0.8);
+      return[[rA*Math.cos(t*0.7),rA*Math.sin(t*0.7)],[rB*Math.cos(t*0.43+1.2),rB*Math.sin(t*0.43+1.2)]];
+    }
+  },
+  {
+    name:'B hacia el borde',
+    desc:'B se acerca lentamente al borde. La distancia hiperbólica crece exponencialmente aunque la euclídea apenas varía.',
+    fn(t){
+      const r=0.08+0.87*Math.abs(Math.sin(t*0.38));
+      const ang=t*0.22;
+      return[[-0.28,0.14],[r*Math.cos(ang),r*Math.sin(ang)]];
+    }
+  },
+  {
+    name:'Espiral hiperbólica',
+    desc:'A sigue una espiral desde el centro hacia el borde. Notá cómo la geodésica se curva a medida que A se aleja.',
+    fn(t){
+      const rho=t*0.20;
+      const er=Math.min(Math.tanh(rho/2),0.93);
+      return[[er*Math.cos(t*0.85),er*Math.sin(t*0.85)],[0.52,-0.28]];
+    }
+  },
+  {
+    name:'Exploración completa',
+    desc:'Ambos puntos recorren el disco completo, mostrando la variación de la métrica hiperbólica en distintas zonas.',
+    fn(t){
+      const rA=0.08+0.80*Math.abs(Math.sin(t*0.19));
+      const rB=0.06+0.82*Math.abs(Math.cos(t*0.15+1.1));
+      return[[rA*Math.cos(t*0.56),rA*Math.sin(t*0.56)],[rB*Math.cos(-t*0.39+0.9),rB*Math.sin(-t*0.39+0.9)]];
+    }
+  }
+];
+
+function clampP(p){const n=Math.sqrt(p[0]**2+p[1]**2);return n>=0.95?[p[0]*0.94/n,p[1]*0.94/n]:p;}
+
+function simStep(ts){
+  if(!simOn)return;
+  if(!lastTS)lastTS=ts;
+  const dt=(ts-lastTS)/1000;lastTS=ts;
+  simT+=dt*simSpd;
+  const[na,nb]=MODES[simMode].fn(simT);
+  A=clampP(na);B=clampP(nb);
+  if(sH)hDirty=true;
+  document.getElementById('sb').style.width=((simT%(12))/(12)*100)+'%';
+  render();
+  simRAF=requestAnimationFrame(simStep);
+}
+
+function toggleSim(){
+  simOn=!simOn;
+  const btn=document.getElementById('simBtn');
+  const panel=document.getElementById('simPanel');
+  const bw=document.getElementById('sbw');
+  const sc=document.getElementById('simCard');
+  if(simOn){
+    btn.classList.add('sim-on');
+    btn.innerHTML=`<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="3.5" height="11" rx="1" fill="currentColor"/><rect x="7.5" y="1" width="3.5" height="11" rx="1" fill="currentColor"/></svg>`;
+    panel.classList.add('visible');bw.classList.add('visible');sc.style.display='block';
+    document.getElementById('simDesc').textContent=MODES[simMode].desc;
+    lastTS=null;simRAF=requestAnimationFrame(simStep);
+    cv.style.cursor='default';
+  } else {
+    btn.classList.remove('sim-on');
+    btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polygon points="2,1 13,7 2,13" fill="currentColor"/></svg>`;
+    panel.classList.remove('visible');bw.classList.remove('visible');sc.style.display='none';
+    if(simRAF){cancelAnimationFrame(simRAF);simRAF=null;}
+    cv.style.cursor='crosshair';
+  }
+}
+
+function setMode(m){
+  simMode=m;simT=0;lastTS=null;
+  for(let i=0;i<4;i++)document.getElementById('sm'+i).classList.toggle('active',i===m);
+  document.getElementById('simDesc').textContent=MODES[m].desc;
+}
+
+/* ── DRAG ─────────────────────────── */
+function gpos(e){
+  const rect=cv.getBoundingClientRect();
+  const sx=W/rect.width,sy=H/rect.height;
+  const cx=e.touches?e.touches[0].clientX:e.clientX;
+  const cy=e.touches?e.touches[0].clientY:e.clientY;
+  return toM((cx-rect.left)*sx,(cy-rect.top)*sy);
+}
+function hit(pos){const dA=ed(pos,A),dB=ed(pos,B),thr=26/R;if(dA<thr&&dA<=dB)return'A';if(dB<thr)return'B';return null;}
+function clampPos(p){const n=Math.sqrt(p[0]**2+p[1]**2);return n>=0.995?[p[0]*0.994/n,p[1]*0.994/n]:p;}
+
+cv.addEventListener('mousedown',e=>{if(!simOn)drag=hit(gpos(e));});
+cv.addEventListener('touchstart',e=>{e.preventDefault();if(!simOn)drag=hit(gpos(e));},{passive:false});
+cv.addEventListener('mousemove',e=>{
+  if(drag){const p=clampPos(gpos(e));if(drag==='A'){A=p;hDirty=true;}else B=p;render();}
+  else if(!simOn){cv.style.cursor=hit(gpos(e))?'grab':'crosshair';}
+});
+cv.addEventListener('touchmove',e=>{
+  e.preventDefault();if(!drag)return;
+  const p=clampPos(gpos(e));if(drag==='A'){A=p;hDirty=true;}else B=p;render();
+},{passive:false});
+window.addEventListener('mouseup',()=>drag=null);
+window.addEventListener('touchend',()=>drag=null);
+
+render();
+</script>
+</body>
+</html>

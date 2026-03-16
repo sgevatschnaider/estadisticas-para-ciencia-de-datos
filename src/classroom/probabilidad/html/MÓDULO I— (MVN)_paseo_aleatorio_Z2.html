@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paseo Aleatorio en ℤ² → Normal Bivariada</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─── */
+:root {
+  --bg0:       #0b0b10;
+  --bg1:       #111118;
+  --bg2:       #181820;
+  --bg3:       #21212c;
+  --bg4:       #2a2a38;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.13);
+  --border3:   rgba(255,255,255,0.22);
+  --t1:        #edeaf8;
+  --t2:        #9b97b8;
+  --t3:        #5a5670;
+  --t4:        #35324a;
+  --accent:    #8b77ff;
+  --accent2:   #c4b5fd;
+  --accent3:   #6d5df0;
+  --hot:       #ff7a45;
+  --hot2:      #ff5722;
+  --cold:      #4da6ff;
+  --green:     #3ddc84;
+  --green2:    #24b865;
+  --pink:      #f472b6;
+  --pink2:     #db2777;
+  --amber:     #fbbf24;
+  --teal:      #2dd4bf;
+  /* canvas colors exposed as vars for JS reading */
+  --cv-bg:     #111118;
+  --cv-grid:   rgba(255,255,255,0.04);
+  --cv-axis:   rgba(255,255,255,0.15);
+  --cv-text:   #5a5670;
+  --cv-text2:  #9b97b8;
+  --cv-dot:    rgba(139,119,255,0.75);
+  --cv-dote:   rgba(196,181,253,0.9);
+  --cv-ell1:   rgba(196,181,253,0.6);
+  --cv-ell2:   rgba(196,181,253,0.32);
+  --cv-ell3:   rgba(196,181,253,0.15);
+  --cv-gauss:  rgba(61,220,132,0.65);
+  --cv-gfill:  rgba(61,220,132,0.1);
+  --cv-walk:   rgba(255,122,69,0.5);
+  --cv-walkd:  #ff7a45;
+  --cv-h1f:    rgba(244,114,182,0.55);
+  --cv-h1e:    rgba(244,114,182,0.9);
+  --cv-h2f:    rgba(77,166,255,0.5);
+  --cv-h2e:    rgba(77,166,255,0.9);
+}
+
+.light {
+  --bg0:       #f5f3ee;
+  --bg1:       #f0ede6;
+  --bg2:       #e8e4db;
+  --bg3:       #dedad0;
+  --bg4:       #d2cdc2;
+  --border:    rgba(0,0,0,0.07);
+  --border2:   rgba(0,0,0,0.12);
+  --border3:   rgba(0,0,0,0.2);
+  --t1:        #1a1728;
+  --t2:        #5a5478;
+  --t3:        #9b96b5;
+  --t4:        #c4c0d6;
+  --accent:    #5b4bcc;
+  --accent2:   #7c6af7;
+  --accent3:   #4336b0;
+  --hot:       #d94f1a;
+  --hot2:      #c43c08;
+  --cold:      #1d6dcc;
+  --green:     #1a9e5c;
+  --green2:    #138048;
+  --pink:      #c0257e;
+  --pink2:     #9d1866;
+  --amber:     #c48a0a;
+  --teal:      #0d9488;
+  --cv-bg:     #f0ede6;
+  --cv-grid:   rgba(0,0,0,0.05);
+  --cv-axis:   rgba(0,0,0,0.18);
+  --cv-text:   #9b96b5;
+  --cv-text2:  #5a5478;
+  --cv-dot:    rgba(91,75,204,0.7);
+  --cv-dote:   rgba(124,106,247,0.9);
+  --cv-ell1:   rgba(91,75,204,0.6);
+  --cv-ell2:   rgba(91,75,204,0.3);
+  --cv-ell3:   rgba(91,75,204,0.13);
+  --cv-gauss:  rgba(26,158,92,0.7);
+  --cv-gfill:  rgba(26,158,92,0.1);
+  --cv-walk:   rgba(217,79,26,0.5);
+  --cv-walkd:  #d94f1a;
+  --cv-h1f:    rgba(192,37,126,0.5);
+  --cv-h1e:    rgba(192,37,126,0.85);
+  --cv-h2f:    rgba(29,109,204,0.45);
+  --cv-h2e:    rgba(29,109,204,0.85);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg0);
+  color: var(--t1);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.65;
+  min-height: 100vh;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+/* ─── LAYOUT ─── */
+.page {
+  max-width: 1020px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+/* ─── HEADER ─── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.header-left h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--t1);
+  line-height: 1.15;
+}
+
+.header-left h1 em {
+  font-style: italic;
+  color: var(--accent2);
+}
+
+.header-left .subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--t3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+/* ─── THEME BUTTON ─── */
+.theme-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  color: var(--t2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.theme-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent2);
+  background: var(--bg4);
+}
+.theme-btn svg {
+  width: 15px; height: 15px;
+  fill: currentColor;
+  transition: transform 0.5s cubic-bezier(.34,1.56,.64,1);
+}
+.theme-btn:hover svg { transform: rotate(30deg); }
+
+/* ─── FORMULA BAR ─── */
+.formula-bar {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 20px;
+  margin-bottom: 26px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 30px;
+  align-items: center;
+}
+.formula-item {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--t2);
+}
+.formula-item b { color: var(--accent2); font-weight: 700; }
+.formula-item sup { font-size: 10px; }
+
+/* ─── CONTROLS ─── */
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+@media (max-width: 640px) { .controls-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 420px) { .controls-grid { grid-template-columns: 1fr; } }
+
+.ctrl-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.ctrl-card label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 8px;
+}
+.ctrl-card label span {
+  color: var(--accent2);
+  font-size: 13px;
+  font-weight: 700;
+}
+input[type=range] {
+  width: 100%;
+  height: 4px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+/* ─── ACTION BUTTONS ─── */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 9px;
+  color: var(--t2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.03em;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: all 0.18s;
+  user-select: none;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent2); background: var(--bg4); }
+.btn:active { transform: scale(0.97); }
+
+.btn.run {
+  background: var(--accent3);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 10px 22px;
+}
+.btn.run:hover { background: var(--accent); }
+
+.btn.on {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(61,220,132,0.07);
+}
+.btn.pulse-anim svg {
+  animation: spin 1.2s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+/* ─── PROGRESS ─── */
+.progress-wrap {
+  height: 5px;
+  background: var(--bg3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+#progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent3), var(--accent2));
+  border-radius: 3px;
+  transition: width 0.2s;
+}
+
+/* ─── CANVAS GRID ─── */
+.viz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.viz-grid.hist-row { grid-template-columns: 1fr 1fr; }
+@media (max-width: 600px) {
+  .viz-grid, .viz-grid.hist-row { grid-template-columns: 1fr; }
+}
+
+.canvas-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 14px 10px;
+  position: relative;
+  overflow: hidden;
+}
+.canvas-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border3), transparent);
+}
+.canvas-card h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--t3);
+  margin-bottom: 10px;
+}
+canvas {
+  width: 100%;
+  display: block;
+  border-radius: 4px;
+}
+
+/* ─── STATS ─── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 26px;
+}
+@media (max-width: 560px) { .stats-row { grid-template-columns: 1fr 1fr; } }
+
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 13px 15px;
+}
+.stat-card .slabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--t3);
+  margin-bottom: 5px;
+}
+.stat-card .sval {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--accent2);
+  line-height: 1;
+}
+.stat-card .ssub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--t4);
+  margin-top: 3px;
+}
+
+/* ─── LEGEND ─── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--t3);
+}
+.leg-item { display: flex; align-items: center; gap: 6px; }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.leg-dash { width: 18px; height: 1.5px; flex-shrink: 0; }
+
+/* ─── STEPS / THEORY ─── */
+.theory-section {
+  margin-top: 30px;
+  border-top: 1px solid var(--border2);
+  padding-top: 26px;
+}
+.theory-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--t1);
+  margin-bottom: 18px;
+}
+
+.step-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.stab {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--t3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 6px 13px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.stab:hover { color: var(--t2); border-color: var(--border2); }
+.stab.active {
+  background: rgba(139,119,255,0.1);
+  border-color: var(--accent);
+  color: var(--accent2);
+}
+
+.step-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 22px 26px;
+  font-size: 15px;
+  color: var(--t2);
+  line-height: 1.75;
+}
+.step-panel h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.step-panel p { margin-bottom: 12px; }
+.step-panel em { color: var(--green); font-style: normal; font-weight: 600; }
+.step-panel strong { color: var(--t1); font-weight: 600; }
+.step-panel .mono-block {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  background: var(--bg0);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 12px 0;
+  color: var(--accent2);
+  line-height: 1.9;
+  overflow-x: auto;
+  white-space: pre;
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Paseo Aleatorio en <em>ℤ²</em><br>→ Normal Bivariada</h1>
+      <div class="subtitle">TCL Multivariado · Convergencia en Distribución</div>
+    </div>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Cambiar tema">
+      <svg id="theme-icon" viewBox="0 0 24 24">
+        <!-- Sol (dark mode) -->
+        <circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+      </svg>
+      <span id="theme-label">Tema claro</span>
+    </button>
+  </div>
+
+  <!-- FORMULA BAR -->
+  <div class="formula-bar">
+    <div class="formula-item"><b>S_n / √n</b> →<sup>d</sup> N(<b>0</b>, Σ)</div>
+    <div class="formula-item">Σ = <b>diag(½, ½)</b> = ½ · I₂</div>
+    <div class="formula-item">E[X_k] = <b>(0,0)</b> · Cov = <b>0</b></div>
+    <div class="formula-item">φ(t) = ½(cos t₁ + cos t₂) → <b>e^(−|t|²/4)</b></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls-grid">
+    <div class="ctrl-card">
+      <label>Pasos por caminata <span id="nv">200</span></label>
+      <input type="range" id="n-sl" min="20" max="2000" value="200" step="20"
+             oninput="nSteps=+this.value;document.getElementById('nv').textContent=this.value">
+    </div>
+    <div class="ctrl-card">
+      <label>Nº de caminatas <span id="wv">80</span></label>
+      <input type="range" id="w-sl" min="5" max="400" value="80" step="5"
+             oninput="nWalks=+this.value;document.getElementById('wv').textContent=this.value">
+    </div>
+    <div class="ctrl-card">
+      <label>Velocidad animación <span id="spv">×1</span></label>
+      <input type="range" id="sp-sl" min="1" max="10" value="1" step="1"
+             oninput="speed=+this.value;document.getElementById('spv').textContent='×'+this.value">
+    </div>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="btn-row">
+
+    <button class="btn run" id="run-btn" onclick="startRun()">
+      <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></svg>
+      Ejecutar simulación
+    </button>
+
+    <button class="btn" id="anim-btn" onclick="toggleSingleAnim()" title="Ver una sola caminata en movimiento">
+      <svg id="anim-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Ver movimiento
+    </button>
+
+    <button class="btn" id="gauss-btn" onclick="toggleLayer('gauss')" title="Mostrar/ocultar gaussiana teórica">
+      <svg viewBox="0 0 24 24"><path d="M2 20 Q6 4 12 4 Q18 4 22 20" stroke="currentColor" fill="none"/></svg>
+      Gaussiana teórica
+    </button>
+
+    <button class="btn" id="ellipse-btn" onclick="toggleLayer('ell')" title="Mostrar/ocultar elipses de nivel">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="10" ry="6"/></svg>
+      Elipses 1σ 2σ 3σ
+    </button>
+
+    <button class="btn" onclick="resetAll()">
+      <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3"/></svg>
+      Reiniciar
+    </button>
+
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap"><div id="progress-bar"></div></div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--accent)"></div> Posición final S_n/√n</div>
+    <div class="leg-item"><div class="leg-dash" style="background:var(--hot)"></div> Caminata activa</div>
+    <div class="leg-item"><div class="leg-dash" style="background:var(--green);border-top:1.5px dashed var(--green);background:none"></div> Densidad N(0,½)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--pink);border-radius:2px"></div> Histograma coord. 1</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--cold);border-radius:2px"></div> Histograma coord. 2</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--green);width:9px;height:9px"></div> Origen</div>
+  </div>
+
+  <!-- MAIN CANVASES -->
+  <div class="viz-grid">
+    <div class="canvas-card">
+      <h3>Nube de posiciones finales · S_n / √n</h3>
+      <canvas id="c-scatter" width="440" height="360"></canvas>
+    </div>
+    <div class="canvas-card">
+      <h3>Trayectoria en ℤ² · caminata activa</h3>
+      <canvas id="c-walk" width="440" height="360"></canvas>
+    </div>
+  </div>
+
+  <!-- HIST CANVASES -->
+  <div class="viz-grid hist-row">
+    <div class="canvas-card">
+      <h3>Histograma coord. X¹ vs N(0, ½)</h3>
+      <canvas id="c-h1" width="440" height="210"></canvas>
+    </div>
+    <div class="canvas-card">
+      <h3>Histograma coord. X² vs N(0, ½)</h3>
+      <canvas id="c-h2" width="440" height="210"></canvas>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="slabel">Media X¹  → 0</div>
+      <div class="sval" id="s-m1">—</div>
+      <div class="ssub">empírica</div>
+    </div>
+    <div class="stat-card">
+      <div class="slabel">Media X²  → 0</div>
+      <div class="sval" id="s-m2">—</div>
+      <div class="ssub">empírica</div>
+    </div>
+    <div class="stat-card">
+      <div class="slabel">Var X¹  → 0.5</div>
+      <div class="sval" id="s-v1">—</div>
+      <div class="ssub">teórico: 0.500</div>
+    </div>
+    <div class="stat-card">
+      <div class="slabel">Cov X¹X²  → 0</div>
+      <div class="sval" id="s-cov">—</div>
+      <div class="ssub">teórico: 0</div>
+    </div>
+  </div>
+
+  <!-- THEORY STEPS -->
+  <div class="theory-section">
+    <div class="theory-title">Demostración paso a paso</div>
+    <div class="step-tabs" id="step-tabs"></div>
+    <div class="step-panel" id="step-panel"></div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
+let isDark       = true;
+let nSteps       = 200;
+let nWalks       = 80;
+let speed        = 1;
+let showGauss    = true;
+let showEll      = true;
+let allPts       = [];
+let runAF        = null;
+let isRunning    = false;
+let animAF       = null;
+let animRunning  = false;
+let walkPath     = [];
+let activeTabIdx = 0;
+
+const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+
+/* ══════════════════════════════════════════════
+   THEME
+══════════════════════════════════════════════ */
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  const icon = document.getElementById('theme-icon');
+  const lbl  = document.getElementById('theme-label');
+  if (isDark) {
+    // sol
+    icon.innerHTML = `<circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>`;
+    lbl.textContent = 'Tema claro';
+  } else {
+    // luna
+    icon.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor" stroke="none"/>`;
+    lbl.textContent = 'Tema oscuro';
+  }
+  redrawAll();
+}
+
+/* ══════════════════════════════════════════════
+   LAYER TOGGLES
+══════════════════════════════════════════════ */
+function toggleLayer(which) {
+  if (which === 'gauss') {
+    showGauss = !showGauss;
+    document.getElementById('gauss-btn').classList.toggle('on', showGauss);
+  } else {
+    showEll = !showEll;
+    document.getElementById('ellipse-btn').classList.toggle('on', showEll);
+  }
+  redrawAll();
+}
+
+/* ══════════════════════════════════════════════
+   COLOR RESOLVER  — reads CSS vars at runtime
+══════════════════════════════════════════════ */
+function C(name) {
+  return getComputedStyle(document.body).getPropertyValue(name).trim();
+}
+
+/* ══════════════════════════════════════════════
+   DRAW: SCATTER
+══════════════════════════════════════════════ */
+function drawScatter(pts) {
+  const cv = document.getElementById('c-scatter');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  ctx.fillStyle = C('--cv-bg');
+  ctx.fillRect(0,0,W,H);
+
+  const RANGE = 3.8;
+  const ox = W/2, oy = H/2;
+  const sc = Math.min(W,H)/(2*RANGE);
+  const tx = (x,y) => [ox + x*sc, oy - y*sc];
+
+  // grid
+  ctx.strokeStyle = C('--cv-grid');
+  ctx.lineWidth = 1;
+  for (let v=-3; v<=3; v++) {
+    if(v===0) continue;
+    ctx.beginPath(); const [gx]=tx(v,0); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke();
+    ctx.beginPath(); const [,gy]=tx(0,v); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke();
+  }
+
+  // gaussian heatmap
+  if (showGauss) {
+    const id = ctx.createImageData(W,H);
+    const sigma2 = 0.5;
+    let maxV = 0;
+    const vals = new Float32Array(W*H);
+    for (let py=0;py<H;py++) for (let px=0;px<W;px++) {
+      const x=(px-ox)/sc, y=-(py-oy)/sc;
+      const v=Math.exp(-(x*x+y*y)/(2*sigma2));
+      vals[py*W+px]=v; if(v>maxV) maxV=v;
+    }
+    const isD = isDark;
+    for (let i=0;i<W*H;i++) {
+      const t=vals[i]/maxV, idx=i*4;
+      if(isD){
+        id.data[idx]   = Math.round(30+t*60);
+        id.data[idx+1] = Math.round(180+t*50);
+        id.data[idx+2] = Math.round(100+t*90);
+        id.data[idx+3] = Math.round(t*90);
+      } else {
+        id.data[idx]   = Math.round(10+t*40);
+        id.data[idx+1] = Math.round(140+t*60);
+        id.data[idx+2] = Math.round(70+t*80);
+        id.data[idx+3] = Math.round(t*75);
+      }
+    }
+    ctx.putImageData(id,0,0);
+  }
+
+  // ellipses
+  if (showEll) {
+    const radii  = [Math.sqrt(0.5), Math.sqrt(2.0), Math.sqrt(4.5)];
+    const colors = [C('--cv-ell1'), C('--cv-ell2'), C('--cv-ell3')];
+    const dashes = [[], [5,4], [3,4]];
+    const lws    = [1.6, 1.1, 0.7];
+    const lbls   = ['1σ', '2σ', '3σ'];
+    radii.forEach((r,i) => {
+      const rPx = r*sc;
+      ctx.beginPath(); ctx.arc(ox,oy,rPx,0,2*Math.PI);
+      ctx.strokeStyle=colors[i]; ctx.lineWidth=lws[i];
+      ctx.setLineDash(dashes[i]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle=C('--cv-text2');
+      ctx.font='10px JetBrains Mono, monospace';
+      ctx.textAlign='left';
+      ctx.fillText(lbls[i], ox+rPx+4, oy - i*14 - 2);
+    });
+  }
+
+  // axes
+  ctx.strokeStyle = C('--cv-axis');
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(0,oy); ctx.lineTo(W,oy);
+  ctx.moveTo(ox,0); ctx.lineTo(ox,H);
+  ctx.stroke();
+
+  // tick labels
+  ctx.fillStyle=C('--cv-text');
+  ctx.font='9.5px JetBrains Mono, monospace';
+  for (let v=-3;v<=3;v++) {
+    if(v===0) continue;
+    const [gx]=tx(v,0); ctx.textAlign='center'; ctx.fillText(v,gx,oy+14);
+    const [,gy]=tx(0,v); ctx.textAlign='right';  ctx.fillText(v,ox-5,gy+3);
+  }
+
+  // axis labels
+  ctx.fillStyle=C('--cv-text2');
+  ctx.font='10.5px JetBrains Mono, monospace';
+  ctx.textAlign='center'; ctx.fillText('S_n¹/√n', W/2, H-4);
+  ctx.save(); ctx.translate(13,H/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('S_n²/√n',0,0); ctx.restore();
+
+  // dots
+  pts.forEach(p => {
+    const [cx,cy]=tx(p[0],p[1]);
+    ctx.beginPath(); ctx.arc(cx,cy,2.8,0,2*Math.PI);
+    ctx.fillStyle=C('--cv-dot'); ctx.fill();
+    ctx.strokeStyle=C('--cv-dote'); ctx.lineWidth=0.5; ctx.stroke();
+  });
+}
+
+/* ══════════════════════════════════════════════
+   DRAW: WALK
+══════════════════════════════════════════════ */
+function drawWalk(path, upTo) {
+  const cv = document.getElementById('c-walk');
+  const ctx = cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=C('--cv-bg'); ctx.fillRect(0,0,W,H);
+
+  const pts = path && path.length>1 ? path.slice(0, Math.min(upTo+1,path.length)) : null;
+
+  if (!pts) {
+    // empty state hint
+    ctx.fillStyle=C('--cv-text');
+    ctx.font='12px JetBrains Mono, monospace';
+    ctx.textAlign='center';
+    ctx.fillText('Presioná "Ver movimiento" para animar', W/2, H/2);
+    return;
+  }
+
+  const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+  const xmin=Math.min(...xs,0), xmax=Math.max(...xs,0);
+  const ymin=Math.min(...ys,0), ymax=Math.max(...ys,0);
+  const pad=36;
+  const rangX=Math.max(xmax-xmin,1), rangY=Math.max(ymax-ymin,1);
+  const sc=Math.min((W-pad*2)/rangX,(H-pad*2)/rangY);
+  const ox=pad+(W-pad*2)/2-((xmin+xmax)/2)*sc;
+  const oy=pad+(H-pad*2)/2+((ymin+ymax)/2)*sc;
+  const tx=(x,y)=>[ox+x*sc, oy-y*sc];
+
+  // grid
+  const step_=Math.max(1,Math.ceil(Math.max(rangX,rangY)/8));
+  ctx.strokeStyle=C('--cv-grid'); ctx.lineWidth=1;
+  for(let v=Math.floor(xmin/step_)*step_;v<=xmax+step_;v+=step_){
+    ctx.beginPath(); const[gx]=tx(v,0); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke();
+  }
+  for(let v=Math.floor(ymin/step_)*step_;v<=ymax+step_;v+=step_){
+    ctx.beginPath(); const[,gy]=tx(0,v); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke();
+  }
+
+  // axes
+  ctx.strokeStyle=C('--cv-axis'); ctx.lineWidth=0.8;
+  const [aox,aoy]=tx(0,0);
+  ctx.beginPath(); ctx.moveTo(0,aoy); ctx.lineTo(W,aoy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(aox,0); ctx.lineTo(aox,H); ctx.stroke();
+
+  // trail gradient
+  ctx.lineWidth=1.5; ctx.lineJoin='round';
+  for (let i=1;i<pts.length;i++) {
+    const t=i/pts.length;
+    const alpha=0.2+t*0.5;
+    ctx.beginPath();
+    const [x0,y0]=tx(pts[i-1][0],pts[i-1][1]);
+    const [x1,y1]=tx(pts[i][0],pts[i][1]);
+    ctx.moveTo(x0,y0); ctx.lineTo(x1,y1);
+    ctx.strokeStyle=isDark
+      ? `rgba(255,122,69,${alpha})`
+      : `rgba(217,79,26,${alpha})`;
+    ctx.stroke();
+  }
+
+  // origin dot (green)
+  const [ox2,oy2]=tx(0,0);
+  ctx.beginPath(); ctx.arc(ox2,oy2,5,0,2*Math.PI);
+  ctx.fillStyle=C('--green'); ctx.fill();
+
+  // current pos
+  const last=pts[pts.length-1];
+  const [lx,ly]=tx(last[0],last[1]);
+  ctx.beginPath(); ctx.arc(lx,ly,6,0,2*Math.PI);
+  ctx.fillStyle=C('--cv-walkd'); ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=1.5; ctx.stroke();
+
+  // info
+  ctx.fillStyle=C('--cv-text2');
+  ctx.font='10.5px JetBrains Mono, monospace';
+  ctx.textAlign='left';
+  ctx.fillText(`paso ${pts.length-1} / ${nSteps}`,10,16);
+  ctx.fillText(`pos: (${last[0]}, ${last[1]})`,10,30);
+
+  // final normalized point shown as a tiny accent dot
+  const sn=nSteps;
+  const [fnx,fny]=tx(last[0],last[1]);
+  // label final pos normalized
+  ctx.fillStyle=C('--accent2');
+  ctx.font='9.5px JetBrains Mono, monospace';
+  ctx.textAlign='left';
+  ctx.fillText(`S_n/√n = (${(last[0]/Math.sqrt(sn)).toFixed(2)}, ${(last[1]/Math.sqrt(sn)).toFixed(2)})`,10,44);
+}
+
+/* ══════════════════════════════════════════════
+   DRAW: HISTOGRAM
+══════════════════════════════════════════════ */
+function drawHist(pts, coord, cvId, fillKey, edgeKey) {
+  const cv=document.getElementById(cvId);
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=C('--cv-bg'); ctx.fillRect(0,0,W,H);
+
+  if(pts.length<3) return;
+
+  const vals=pts.map(p=>p[coord]);
+  const mn=Math.min(...vals), mx=Math.max(...vals);
+  const range=Math.max(mx-mn,0.1);
+  const nBins=Math.max(12,Math.min(45,Math.round(Math.sqrt(pts.length)*1.6)));
+  const bw=range/nBins;
+  const bins=new Array(nBins).fill(0);
+  vals.forEach(v=>{
+    let bi=Math.floor((v-mn)/bw);
+    if(bi>=nBins) bi=nBins-1;
+    if(bi<0) bi=0;
+    bins[bi]++;
+  });
+
+  const maxCnt=Math.max(...bins,1);
+  const pad={l:38,r:12,t:16,b:30};
+  const dw=W-pad.l-pad.r, dh=H-pad.t-pad.b;
+
+  // bars
+  const fCol=C(fillKey), eCol=C(edgeKey);
+  bins.forEach((cnt,i)=>{
+    const bx=pad.l+(i/nBins)*dw;
+    const bwPx=Math.max(dw/nBins-1,1);
+    const bh=(cnt/(maxCnt*1.12))*dh;
+    const by=pad.t+dh-bh;
+    ctx.fillStyle=fCol; ctx.fillRect(bx,by,bwPx,bh);
+    ctx.strokeStyle=eCol; ctx.lineWidth=0.5; ctx.strokeRect(bx,by,bwPx,bh);
+  });
+
+  // gaussian curve
+  const sigma2=0.5;
+  const totalArea=pts.length*bw;
+  ctx.beginPath();
+  let first=true;
+  for(let px=0;px<=dw;px++){
+    const x=mn+(px/dw)*range;
+    const density=(1/Math.sqrt(2*Math.PI*sigma2))*Math.exp(-x*x/(2*sigma2));
+    const py=pad.t+dh-(density*totalArea/(maxCnt*1.12))*dh;
+    if(first){ctx.moveTo(pad.l+px,py);first=false;}
+    else ctx.lineTo(pad.l+px,py);
+  }
+  ctx.strokeStyle=C('--cv-gauss'); ctx.lineWidth=2; ctx.stroke();
+
+  // axes
+  ctx.strokeStyle=C('--cv-axis'); ctx.lineWidth=0.8;
+  ctx.beginPath();
+  ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,pad.t+dh);
+  ctx.lineTo(pad.l+dw,pad.t+dh); ctx.stroke();
+
+  // x ticks
+  ctx.fillStyle=C('--cv-text');
+  ctx.font='9.5px JetBrains Mono, monospace';
+  ctx.textAlign='center';
+  for(let i=0;i<=5;i++){
+    const v=mn+(i/5)*range;
+    ctx.fillText(v.toFixed(1), pad.l+(i/5)*dw, H-6);
+  }
+
+  // count
+  ctx.fillStyle=C('--cv-text2');
+  ctx.font='10px JetBrains Mono, monospace';
+  ctx.textAlign='right';
+  ctx.fillText(`n=${pts.length}`,W-6,20);
+}
+
+/* ══════════════════════════════════════════════
+   UPDATE STATS
+══════════════════════════════════════════════ */
+function updateStats(pts) {
+  if(!pts.length) return;
+  const n=pts.length;
+  const m1=pts.reduce((s,p)=>s+p[0],0)/n;
+  const m2=pts.reduce((s,p)=>s+p[1],0)/n;
+  const v1=pts.reduce((s,p)=>s+p[0]*p[0],0)/n - m1*m1;
+  const cov=pts.reduce((s,p)=>s+(p[0]-m1)*(p[1]-m2),0)/n;
+  document.getElementById('s-m1').textContent=m1.toFixed(4);
+  document.getElementById('s-m2').textContent=m2.toFixed(4);
+  document.getElementById('s-v1').textContent=v1.toFixed(4);
+  document.getElementById('s-cov').textContent=cov.toFixed(4);
+}
+
+/* ══════════════════════════════════════════════
+   REDRAW ALL
+══════════════════════════════════════════════ */
+function redrawAll() {
+  drawScatter(allPts);
+  drawHist(allPts,0,'c-h1','--cv-h1f','--cv-h1e');
+  drawHist(allPts,1,'c-h2','--cv-h2f','--cv-h2e');
+  if(walkPath.length>1) drawWalk(walkPath, walkPath.length-1);
+  else drawWalk(null,0);
+}
+
+/* ══════════════════════════════════════════════
+   RUN: BATCH SIMULATION
+══════════════════════════════════════════════ */
+function startRun() {
+  if(isRunning){ cancelAnimationFrame(runAF); isRunning=false; }
+  allPts=[];
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('progress-bar').style.width='0%';
+  const total=nWalks;
+  let done=0;
+
+  function batch(){
+    const bs=Math.min(speed*3, total-done);
+    for(let i=0;i<bs;i++){
+      let x=0,y=0;
+      for(let j=0;j<nSteps;j++){
+        const d=DIRS[Math.floor(Math.random()*4)];
+        x+=d[0]; y+=d[1];
+      }
+      const s=Math.sqrt(nSteps);
+      allPts.push([x/s,y/s]);
+      done++;
+    }
+    const pct=(done/total)*100;
+    document.getElementById('progress-bar').style.width=pct+'%';
+    drawScatter(allPts);
+    drawHist(allPts,0,'c-h1','--cv-h1f','--cv-h1e');
+    drawHist(allPts,1,'c-h2','--cv-h2f','--cv-h2e');
+    updateStats(allPts);
+    if(done<total){
+      runAF=requestAnimationFrame(batch);
+    } else {
+      isRunning=false;
+      document.getElementById('run-btn').disabled=false;
+      setTimeout(()=>{ document.getElementById('progress-bar').style.width='0%'; },800);
+    }
+  }
+  isRunning=true;
+  runAF=requestAnimationFrame(batch);
+}
+
+/* ══════════════════════════════════════════════
+   SINGLE WALK ANIMATION
+══════════════════════════════════════════════ */
+function genWalkPath(n){
+  let x=0,y=0;
+  const pts=[[0,0]];
+  for(let i=0;i<n;i++){
+    const d=DIRS[Math.floor(Math.random()*4)];
+    x+=d[0]; y+=d[1];
+    pts.push([x,y]);
+  }
+  return pts;
+}
+
+function toggleSingleAnim(){
+  if(animRunning){
+    cancelAnimationFrame(animAF);
+    animRunning=false;
+    document.getElementById('anim-btn').classList.remove('on','pulse-anim');
+    document.getElementById('anim-icon').innerHTML=`<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>`;
+    return;
+  }
+  // Start
+  animRunning=true;
+  document.getElementById('anim-btn').classList.add('on','pulse-anim');
+  document.getElementById('anim-icon').innerHTML=`<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`;
+
+  function runOnce(){
+    walkPath=genWalkPath(nSteps);
+    let step=0;
+    function frame(){
+      if(!animRunning) return;
+      step=Math.min(step+speed*3, nSteps);
+      drawWalk(walkPath, step);
+      if(step<nSteps){
+        animAF=requestAnimationFrame(frame);
+      } else {
+        // Add final normalized point to scatter
+        const s=Math.sqrt(nSteps);
+        const last=walkPath[walkPath.length-1];
+        allPts.push([last[0]/s, last[1]/s]);
+        drawScatter(allPts);
+        drawHist(allPts,0,'c-h1','--cv-h1f','--cv-h1e');
+        drawHist(allPts,1,'c-h2','--cv-h2f','--cv-h2e');
+        updateStats(allPts);
+        // Pause then restart
+        setTimeout(()=>{ if(animRunning) runOnce(); }, 600);
+      }
+    }
+    animAF=requestAnimationFrame(frame);
+  }
+  runOnce();
+}
+
+/* ══════════════════════════════════════════════
+   RESET
+══════════════════════════════════════════════ */
+function resetAll(){
+  cancelAnimationFrame(runAF);
+  cancelAnimationFrame(animAF);
+  isRunning=false; animRunning=false;
+  allPts=[]; walkPath=[];
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('progress-bar').style.width='0%';
+  document.getElementById('anim-btn').classList.remove('on','pulse-anim');
+  document.getElementById('anim-icon').innerHTML=`<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>`;
+  ['s-m1','s-m2','s-v1','s-cov'].forEach(id=>document.getElementById(id).textContent='—');
+  redrawAll();
+}
+
+/* ══════════════════════════════════════════════
+   THEORY STEPS
+══════════════════════════════════════════════ */
+const STEPS=[
+  {
+    label:'Paso 1',
+    title:'El paseo aleatorio en ℤ²',
+    body:`En cada instante <strong>k</strong>, el caminante elige uniformemente uno de cuatro vectores: <strong>(±1, 0)</strong> o <strong>(0, ±1)</strong>, cada uno con probabilidad <em>¼</em>. Los incrementos X_k son i.i.d. y la posición tras <em>n</em> pasos es:`,
+    mono:`S_n = X_1 + X_2 + ... + X_n     (suma de n vectores i.i.d. en ℝ²)
+
+Cada X_k toma exactamente uno de los 4 valores con prob. 1/4.
+El caminante solo se mueve en pasos de largo 1, en eje horizontal o vertical.`,
+    after:`Por <strong>simetría perfecta</strong> no hay dirección preferida. En cada paso, los desplazamientos positivos y negativos se cancelan en media.`
+  },
+  {
+    label:'Paso 2',
+    title:'Media del incremento E[X_k] = (0,0)',
+    body:`Calculamos la esperanza de cada coordenada. Por simetría (igual probabilidad de +1 y −1):`,
+    mono:`E[X_k^(1)] = 1·(1/4) + (−1)·(1/4) + 0·(1/4) + 0·(1/4) = 0
+
+E[X_k^(2)] = 0·(1/4) + 0·(1/4) + 1·(1/4) + (−1)·(1/4) = 0
+
+∴  E[X_k] = (0, 0)    →    sin deriva`,
+    after:`La caminata es <em>no sesgada</em>. El origen es el centro de masa de la distribución de S_n para todo n.`
+  },
+  {
+    label:'Paso 3',
+    title:'Matriz de covarianza Σ',
+    body:`En cada paso <strong>solo una coordenada cambia</strong>, por lo que X^(1)·X^(2) = 0 siempre. Las varianzas se calculan desde la probabilidad ½ de moverse en cada eje:`,
+    mono:`Var(X_k^(1)) = E[(X_k^(1))²] = 1·(1/2) + 0·(1/2) = 1/2
+
+Var(X_k^(2)) = 1/2
+
+Cov(X_k^(1), X_k^(2)) = E[X_k^(1)·X_k^(2)] = 0
+
+            ⎛ 1/2   0  ⎞
+        Σ = ⎜          ⎟  =  (1/2)·I₂
+            ⎝  0   1/2 ⎠`,
+    after:`La isotropía de Σ (diagonal con entradas iguales) es consecuencia directa de la <em>simetría de 4 direcciones</em> del paseo.`
+  },
+  {
+    label:'Paso 4',
+    title:'TCL Multivariado',
+    body:`Los X_k son i.i.d. en <strong>ℝ²</strong>, con media 0 y covarianza finita Σ. El Teorema Central del Límite multivariado establece:`,
+    mono:`          S_n
+         ———    →ᵈ  N( 0, Σ )     cuando n → ∞
+          √n
+
+Equivalentemente:  S_n  ≈ᵈ  N( 0, n·Σ ) = N( 0, diag(n/2, n/2) )
+
+La convergencia es en distribución (ley de probabilidad),
+no trayectoria a trayectoria.`,
+    after:`La información esencial que sobrevive al límite es: la <strong>media</strong> (centro) y la <strong>covarianza</strong> (dispersión y correlación).`
+  },
+  {
+    label:'Paso 5',
+    title:'Demostración vía φ(t) — funciones características',
+    body:`La <strong>función característica</strong> de un incremento es φ_X(t) = ½(cos t₁ + cos t₂). Usando Taylor: cos x = 1 − x²/2 + o(x²):`,
+    mono:`φ_{S_n/√n}(t) = [ φ_X(t/√n) ]ⁿ
+
+             = [ ½(cos(t₁/√n) + cos(t₂/√n)) ]ⁿ
+
+             = [ 1 − (t₁²+t₂²)/(4n) + o(1/n) ]ⁿ
+
+             ─────────────────────────────────────────
+             →  exp( −(t₁²+t₂²)/4 )
+             ─────────────────────────────────────────
+             = φ_{N(0, diag(½,½))}(t)    ✓`,
+    after:`El límite <em>e^(−|t|²/4)</em> es exactamente la función característica de N(0, ½·I₂). Por el teorema de continuidad de Lévy, esto implica convergencia en distribución.`
+  },
+  {
+    label:'Paso 6',
+    title:'Interpretación geométrica — elipses de nivel',
+    body:`Para n grande, la nube de puntos S_n/√n forma una distribución gaussiana bidimensional. Las curvas de nivel de la densidad son:`,
+    mono:`f(x,y) ∝ exp( −x²/2·(1/2) − y²/2·(1/2) )
+             = exp( −x² − y² )
+
+Iso-densidades: { (x,y) : x² + y² = c² }  → círculos
+
+Radio al nivel kσ:  r_k = k · √(1/2)  =  k/√2
+
+  1σ → r = 1/√2  ≈ 0.707
+  2σ → r = 2/√2  ≈ 1.414
+  3σ → r = 3/√2  ≈ 2.121`,
+    after:`Si las varianzas en X¹ y X² fueran distintas (paseo anisótropo), las iso-densidades serían <em>elipses</em> en lugar de círculos. Acá son círculos por la isotropía de Σ.`
+  }
+];
+
+function buildTabs(){
+  const el=document.getElementById('step-tabs');
+  el.innerHTML='';
+  STEPS.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.className='stab'+(i===activeTabIdx?' active':'');
+    b.textContent=s.label;
+    b.onclick=()=>setTab(i);
+    el.appendChild(b);
+  });
+}
+
+function setTab(i){
+  activeTabIdx=i;
+  buildTabs();
+  const s=STEPS[i];
+  document.getElementById('step-panel').innerHTML=`
+    <h4>${s.title}</h4>
+    <p>${s.body}</p>
+    <div class="mono-block">${s.mono}</div>
+    <p>${s.after}</p>
+  `;
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+// Set initial button states
+document.getElementById('gauss-btn').classList.toggle('on', showGauss);
+document.getElementById('ellipse-btn').classList.toggle('on', showEll);
+
+buildTabs();
+setTab(0);
+redrawAll();
+
+// Re-draw on resize
+window.addEventListener('resize', ()=>{ redrawAll(); });
+</script>
+</body>
+</html>

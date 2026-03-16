@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="noir">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Crédito Fantasma — Forense Estadístico</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@300;400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<!-- MathJax -->
+<script>
+MathJax = {
+  tex: { inlineMath:[['$','$'],['\\(','\\)']], displayMath:[['$$','$$'],['\\[','\\]']], tags:'none' },
+  options: { skipHtmlTags:['script','noscript','style','textarea','pre'] },
+  startup: { typeset: false }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+/* ═══════════════ THEMES ═══════════════ */
+[data-theme="noir"]     { --bg:#070b14;--bg2:#0d1424;--bg3:#111827;--panel:#0f1729;--border:#1e2d4a;--accent:#00c8ff;--accent2:#00ffb3;--danger:#ff3860;--warn:#ffb347;--safe:#00e676;--muted:#4a6080;--text:#c8d8f0;--text2:#7a90b0;--gold:#f0c060;--dot-legit:#3a6090;--body-grid:rgba(0,200,255,.03); }
+[data-theme="ivory"]    { --bg:#f4f1ea;--bg2:#ede9df;--bg3:#e8e3d8;--panel:#faf8f3;--border:#d8cfc0;--accent:#1a56a0;--accent2:#1a8060;--danger:#c0232e;--warn:#c07010;--safe:#207040;--muted:#9a8a78;--text:#2a2218;--text2:#6a5a48;--gold:#b07830;--dot-legit:#6888b0;--body-grid:rgba(160,130,100,.04); }
+[data-theme="crimson"]  { --bg:#0e0608;--bg2:#180a0c;--bg3:#1e0e10;--panel:#160a0c;--border:#3a1418;--accent:#ff6080;--accent2:#ff9060;--danger:#ff2040;--warn:#ff8020;--safe:#60d080;--muted:#704050;--text:#f0c8c8;--text2:#a07080;--gold:#f0a040;--dot-legit:#803050;--body-grid:rgba(255,96,128,.025); }
+[data-theme="terminal"] { --bg:#020c02;--bg2:#051005;--bg3:#081508;--panel:#061006;--border:#1a3a1a;--accent:#00ff41;--accent2:#80ff80;--danger:#ff4040;--warn:#ffcc00;--safe:#00ff41;--muted:#306030;--text:#80ff80;--text2:#409040;--gold:#ccff00;--dot-legit:#1a6020;--body-grid:rgba(0,255,65,.03); }
+
+/* ═══════════════ BASE ═══════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;overflow-x:hidden;transition:background .45s,color .4s;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(var(--body-grid) 1px,transparent 1px),linear-gradient(90deg,var(--body-grid) 1px,transparent 1px);background-size:40px 40px;}
+.wrapper{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 24px 60px;}
+
+/* ─── THEME BAR ─── */
+.theme-bar{position:fixed;top:16px;right:16px;z-index:999;display:flex;gap:7px;align-items:center;background:var(--panel);border:1px solid var(--border);padding:7px 10px;border-radius:50px;box-shadow:0 4px 24px rgba(0,0,0,.4);transition:background .4s,border-color .4s;}
+.theme-bar::before{content:'TEMA';font-size:9px;letter-spacing:2px;color:var(--muted);padding-right:6px;border-right:1px solid var(--border);margin-right:2px;}
+.th-btn{width:32px;height:32px;border-radius:50%;border:2px solid transparent;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:transform .2s,border-color .2s,box-shadow .2s;background:transparent;position:relative;}
+.th-btn:hover{transform:scale(1.2);}
+.th-btn.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,255,.15);transform:scale(1.15);}
+.th-btn .tip{position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);padding:3px 8px;border-radius:3px;font-size:9px;white-space:nowrap;color:var(--text2);letter-spacing:1px;opacity:0;pointer-events:none;transition:opacity .15s;}
+.th-btn:hover .tip{opacity:1;}
+
+/* ─── HEADER ─── */
+header{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin-bottom:36px;padding-top:8px;}
+.case-tag{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);padding:4px 14px;border-radius:2px;background:rgba(0,200,255,.06);transition:color .4s,border-color .4s;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,52px);font-weight:900;line-height:1.1;color:var(--text);transition:color .4s;}
+h1 span{color:var(--accent);transition:color .4s;}
+.subtitle{font-family:'Crimson Pro',serif;font-size:17px;font-style:italic;color:var(--text2);max-width:620px;transition:color .4s;}
+
+/* ─── MAIN GRID ─── */
+.main{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;}
+@media(max-width:900px){.main{grid-template-columns:1fr;}}
+
+/* ─── CANVAS CARD ─── */
+.canvas-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:background .4s,border-color .4s;}
+.canvas-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);transition:border-color .4s,color .4s;}
+.canvas-header .dot{width:8px;height:8px;border-radius:50%;}
+.canvas-header .dot.r{background:#ff5f57;}.canvas-header .dot.y{background:#febc2e;}.canvas-header .dot.g{background:#28c840;}
+canvas{display:block;width:100%;cursor:crosshair;}
+.canvas-footer{padding:10px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;transition:border-color .4s;}
+
+/* ─── SIDE PANEL ─── */
+.side-panel{display:flex;flex-direction:column;gap:16px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:background .4s,border-color .4s;}
+.card-title{padding:12px 16px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:8px;transition:color .4s,border-color .4s;}
+.card-body{padding:16px;}
+
+/* ─── DETECTION BUTTONS ─── */
+.btn-group{display:flex;flex-direction:column;gap:10px;}
+.btn{position:relative;width:100%;padding:14px 18px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;text-align:left;transition:all .2s ease;overflow:hidden;}
+.btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 60%,rgba(255,255,255,.03));pointer-events:none;}
+.btn:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.15);}
+.btn.active-euclidean{border-color:var(--warn);background:rgba(255,179,71,.08);color:var(--warn);}
+.btn.active-mahalanobis{border-color:var(--accent2);background:rgba(0,255,179,.08);color:var(--accent2);}
+.btn-icon{font-size:18px;margin-right:8px;}.btn-label{font-size:12px;font-weight:600;display:block;margin-bottom:2px;}
+.btn-desc{font-size:10px;color:var(--text2);font-family:'Crimson Pro',serif;font-style:italic;}
+.btn-reset{padding:10px 18px;border:1px solid var(--muted);border-radius:6px;background:transparent;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;width:100%;}
+.btn-reset:hover{border-color:var(--danger);color:var(--danger);}
+
+/* ─── VERDICT ─── */
+.verdict{padding:14px 16px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);transition:all .4s ease;font-size:12px;line-height:1.7;min-height:80px;}
+.verdict.safe{border-color:var(--safe);background:rgba(0,230,118,.06);box-shadow:0 0 30px rgba(0,230,118,.1);}
+.verdict.alert{border-color:var(--danger);background:rgba(255,56,96,.06);animation:pulseAlert 1.2s ease-in-out infinite alternate;}
+.verdict.neutral{color:var(--muted);}
+@keyframes pulseAlert{from{box-shadow:0 0 20px rgba(255,56,96,.15);}to{box-shadow:0 0 40px rgba(255,56,96,.4);}}
+.verdict-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.verdict.safe .verdict-label{color:var(--safe);}.verdict.alert .verdict-label{color:var(--danger);}.verdict.neutral .verdict-label{color:var(--muted);}
+.verdict-text{font-family:'Crimson Pro',serif;font-size:14px;}
+
+/* ─── STATS ─── */
+.stat-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid rgba(128,128,128,.08);font-size:11px;}
+.stat-row:last-child{border-bottom:none;}
+.stat-key{color:var(--text2);}.stat-val{color:var(--accent);font-weight:600;transition:color .3s;}
+
+/* ─── LEGEND ─── */
+.legend{display:flex;flex-direction:column;gap:7px;font-size:11px;}
+.legend-item{display:flex;align-items:center;gap:10px;color:var(--text2);}
+.legend-line{width:28px;height:2px;border-radius:1px;}.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* ─── STEPS ─── */
+.steps{display:flex;flex-direction:column;gap:8px;}
+.step{display:flex;align-items:flex-start;gap:10px;font-size:11px;line-height:1.5;}
+.step-num{min-width:20px;height:20px;background:var(--accent);color:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;flex-shrink:0;margin-top:1px;transition:background .4s,color .4s;}
+.step-text{color:var(--text2);font-family:'Crimson Pro',serif;font-size:13px;}
+
+/* ══════════════════════════════════════════
+   THEORY ACCORDION  (full-width, below grid)
+══════════════════════════════════════════ */
+.theory-section {
+  margin-top: 28px;
+}
+.theory-section-title {
+  font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.theory-section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+.accordion { display: flex; flex-direction: column; gap: 10px; }
+
+.acc-item {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  transition: border-color .35s, box-shadow .35s, background .4s;
+}
+.acc-item.acc-active-eucl  { border-color: var(--warn);    box-shadow: 0 0 28px rgba(255,179,71,.12); }
+.acc-item.acc-active-maha  { border-color: var(--accent2); box-shadow: 0 0 28px rgba(0,255,179,.12); }
+
+/* Accordion header / trigger */
+.acc-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; cursor: pointer;
+  user-select: none; transition: background .2s;
+  position: relative;
+}
+.acc-header:hover { background: rgba(255,255,255,.02); }
+.acc-color-tag {
+  width: 4px; align-self: stretch; border-radius: 3px; flex-shrink: 0;
+  transition: background .4s;
+}
+.acc-item.acc-active-eucl .acc-color-tag { background: var(--warn); }
+.acc-item.acc-active-maha .acc-color-tag { background: var(--accent2); }
+.acc-item:not(.acc-active-eucl):not(.acc-active-maha) .acc-color-tag { background: var(--border); }
+
+.acc-title-block { flex: 1; }
+.acc-name {
+  font-size: 13px; font-weight: 600; letter-spacing: 1px;
+  color: var(--text); transition: color .3s;
+  display: flex; align-items: center; gap: 8px;
+}
+.acc-item.acc-active-eucl .acc-name { color: var(--warn); }
+.acc-item.acc-active-maha .acc-name { color: var(--accent2); }
+.acc-badge {
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 20px;
+  border: 1px solid currentColor; opacity: .7;
+  font-family: 'JetBrains Mono', monospace;
+}
+.acc-subtitle {
+  font-family: 'Crimson Pro', serif; font-style: italic;
+  font-size: 13px; color: var(--text2); margin-top: 2px; transition: color .3s;
+}
+.acc-chevron {
+  font-size: 13px; color: var(--muted); transition: transform .3s, color .3s;
+}
+.acc-header[aria-expanded="true"] .acc-chevron { transform: rotate(180deg); }
+.acc-item.acc-active-eucl .acc-chevron  { color: var(--warn); }
+.acc-item.acc-active-maha .acc-chevron { color: var(--accent2); }
+
+/* Live status dot on header */
+.acc-live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--muted); transition: background .4s, box-shadow .4s;
+  flex-shrink: 0;
+}
+.acc-item.acc-active-eucl  .acc-live-dot { background: var(--warn);    box-shadow: 0 0 8px var(--warn); }
+.acc-item.acc-active-maha  .acc-live-dot { background: var(--accent2); box-shadow: 0 0 8px var(--accent2); }
+
+/* Collapsible body */
+.acc-body {
+  display: grid; grid-template-rows: 0fr;
+  transition: grid-template-rows .35s ease;
+}
+.acc-body.open { grid-template-rows: 1fr; }
+.acc-inner { overflow: hidden; }
+
+.acc-content {
+  padding: 0 20px 22px 20px;
+  border-top: 1px solid var(--border);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  margin-top: 0;
+  transition: border-color .4s;
+}
+@media(max-width:700px){ .acc-content { grid-template-columns: 1fr; } }
+
+/* ── Formula block ── */
+.formula-block {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 18px 20px;
+  transition: background .4s, border-color .35s;
+  position: relative; overflow: hidden;
+}
+.acc-item.acc-active-eucl  .formula-block { border-color: rgba(255,179,71,.3); }
+.acc-item.acc-active-maha  .formula-block { border-color: rgba(0,255,179,.3); }
+.formula-block::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  opacity: .3;
+}
+.acc-item.acc-active-eucl  .formula-block::before { background: linear-gradient(90deg,var(--warn),transparent); opacity:.6; }
+.acc-item.acc-active-maha  .formula-block::before { background: linear-gradient(90deg,var(--accent2),transparent); opacity:.6; }
+
+.formula-label {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px;
+}
+.formula-math {
+  color: var(--text); font-size: 15px; line-height: 2;
+  text-align: center;
+}
+/* MathJax color overrides */
+.formula-math .MJX-TEX { color: var(--text); }
+
+/* Live numeric substitution */
+.formula-live {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  color: var(--text2); line-height: 1.8;
+  transition: border-color .4s;
+  min-height: 44px;
+}
+.formula-live .live-val { color: var(--accent); font-weight: 600; }
+.formula-live .live-alert { color: var(--danger); font-weight: 600; }
+.formula-live .live-ok    { color: var(--safe);   font-weight: 600; }
+.formula-live .live-dim   { color: var(--muted); }
+
+/* ── Glossary block ── */
+.glossary-block {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.glossary-title {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 4px;
+}
+.gloss-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 7px; padding: 11px 14px;
+  transition: background .4s, border-color .35s, box-shadow .35s;
+}
+.gloss-row.hl-eucl  { border-color: var(--warn);    background: rgba(255,179,71,.06);  box-shadow: 0 0 14px rgba(255,179,71,.08); }
+.gloss-row.hl-maha  { border-color: var(--accent2); background: rgba(0,255,179,.06);   box-shadow: 0 0 14px rgba(0,255,179,.08); }
+.gloss-row.hl-key   { border-color: var(--danger);  background: rgba(255,56,96,.06);   box-shadow: 0 0 14px rgba(255,56,96,.1);  }
+.gloss-sym {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 700;
+  min-width: 36px; text-align: center;
+  line-height: 1; padding-top: 2px;
+  color: var(--text);
+}
+.gloss-sym.c-eucl   { color: var(--warn); }
+.gloss-sym.c-maha   { color: var(--accent2); }
+.gloss-sym.c-danger { color: var(--danger); }
+.gloss-sym.c-gold   { color: var(--gold); }
+.gloss-body { flex: 1; }
+.gloss-name {
+  font-size: 11px; font-weight: 600; color: var(--text);
+  margin-bottom: 2px; letter-spacing: .5px;
+}
+.gloss-desc {
+  font-family: 'Crimson Pro', serif; font-style: italic;
+  font-size: 13px; color: var(--text2); line-height: 1.4;
+}
+.gloss-insight {
+  margin-top: 4px;
+  font-size: 10px; letter-spacing: .5px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-style: normal;
+}
+.gloss-insight span { color: var(--accent); }
+
+/* ── Key insight banner ── */
+.insight-banner {
+  margin-top: 10px; padding: 14px 18px;
+  border-radius: 7px;
+  border-left: 3px solid var(--accent);
+  background: rgba(0,200,255,.05);
+  font-family: 'Crimson Pro', serif; font-size: 14px; line-height: 1.6;
+  color: var(--text2); grid-column: 1 / -1;
+  transition: border-color .4s, background .4s, color .4s;
+}
+.acc-item.acc-active-eucl  .insight-banner { border-color: var(--warn);    background: rgba(255,179,71,.06); }
+.acc-item.acc-active-maha  .insight-banner { border-color: var(--accent2); background: rgba(0,255,179,.06);  }
+.insight-banner strong { color: var(--text); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ── FLASH ── */
+.theme-flash{position:fixed;inset:0;z-index:9999;pointer-events:none;animation:tflash .4s ease forwards;}
+@keyframes tflash{0%{opacity:.18;}100%{opacity:0;}}
+</style>
+</head>
+<body>
+
+<!-- ── Theme Switcher Pill ── -->
+<div class="theme-bar">
+  <button class="th-btn active" id="th-noir"     onclick="applyTheme('noir')">🌑<span class="tip">Noir Forense</span></button>
+  <button class="th-btn"        id="th-ivory"    onclick="applyTheme('ivory')">☀️<span class="tip">Marfil Académico</span></button>
+  <button class="th-btn"        id="th-crimson"  onclick="applyTheme('crimson')">🩸<span class="tip">Crimson Noir</span></button>
+  <button class="th-btn"        id="th-terminal" onclick="applyTheme('terminal')">💾<span class="tip">Terminal Verde</span></button>
+</div>
+
+<div class="wrapper">
+  <header>
+    <div class="case-tag">⚖ Expediente Forense · Estadística Multivariada</div>
+    <h1>El Crédito <span>Fantasma</span></h1>
+    <p class="subtitle">Euclídeo vs. Mahalanobis — La diferencia entre detectar el fraude y dejarlo pasar</p>
+  </header>
+
+  <!-- ── TOP GRID ── -->
+  <div class="main">
+    <!-- Canvas -->
+    <div class="canvas-card">
+      <div class="canvas-header">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span style="margin-left:8px;">SISTEMA DE ANÁLISIS DE CARTERA · MÓDULO FORENSE</span>
+        <span id="mode-badge" style="margin-left:auto;color:var(--muted);">MODO: ESPERA</span>
+      </div>
+      <canvas id="c" width="900" height="600"></canvas>
+      <div class="canvas-footer">
+        <span id="cursor-coords">Cursor: —</span>
+        <span id="point-count">Puntos legítimos: cargando…</span>
+        <span style="color:var(--accent);">▸ Clic en el lienzo para inyectar crédito sospechoso</span>
+      </div>
+    </div>
+
+    <!-- Side -->
+    <div class="side-panel">
+      <div class="card">
+        <div class="card-title">🔬 Activar Filtro de Detección</div>
+        <div class="card-body">
+          <div class="btn-group">
+            <button class="btn" id="btn-euclidean" onclick="setMode('euclidean')">
+              <span class="btn-icon">⭕</span><span class="btn-label">Auditor Novato</span>
+              <span class="btn-desc">Distancia Euclídea — radio geométrico puro</span>
+            </button>
+            <button class="btn" id="btn-mahalanobis" onclick="setMode('mahalanobis')">
+              <span class="btn-icon">🔴</span><span class="btn-label">Perito Contable</span>
+              <span class="btn-desc">Distancia Mahalanobis — elipses de covarianza</span>
+            </button>
+            <button class="btn" id="btn-both" onclick="setMode('both')">
+              <span class="btn-icon">⚡</span><span class="btn-label">Comparativa Dual</span>
+              <span class="btn-desc">Ambos filtros simultáneos</span>
+            </button>
+          </div>
+          <div style="height:12px;"></div>
+          <button class="btn-reset" onclick="resetPoint()">↺ Borrar punto sospechoso</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Veredicto del Sistema</div>
+        <div class="card-body">
+          <div class="verdict neutral" id="verdict">
+            <div class="verdict-label">Estado</div>
+            <div class="verdict-text" id="verdict-text">Inyecte un crédito en el lienzo y active un filtro para obtener el análisis.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 Métricas del Punto</div>
+        <div class="card-body">
+          <div class="stat-row"><span class="stat-key">Ingresos (X)</span><span class="stat-val" id="stat-x">—</span></div>
+          <div class="stat-row"><span class="stat-key">Crédito (Y)</span><span class="stat-val" id="stat-y">—</span></div>
+          <div class="stat-row"><span class="stat-key">Dist. Euclídea σ</span><span class="stat-val" id="stat-eucl">—</span></div>
+          <div class="stat-row"><span class="stat-key">Dist. Mahalanobis σ</span><span class="stat-val" id="stat-maha">—</span></div>
+          <div class="stat-row"><span class="stat-key">Correlación ρ</span><span class="stat-val" id="stat-corr">—</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🗺 Leyenda</div>
+        <div class="card-body">
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--dot-legit)"></div><span>Crédito legítimo de la cartera</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--gold);box-shadow:0 0 8px var(--gold)"></div><span>Centroide (crédito promedio)</span></div>
+            <div class="legend-item"><div class="legend-line" style="background:var(--warn);opacity:.7"></div><span>Límite Euclídeo (1σ / 2σ / 3σ)</span></div>
+            <div class="legend-item"><div class="legend-line" style="background:var(--accent2);opacity:.7"></div><span>Elipse Mahalanobis (1σ / 2σ / 3σ)</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--danger);box-shadow:0 0 10px var(--danger)"></div><span>Crédito sospechoso inyectado</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📌 Instrucciones</div>
+        <div class="card-body">
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-text">Haga clic cerca del centro pero <em>fuera de la línea diagonal</em> de correlación</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-text">Active <strong>Auditor Novato</strong> (Euclídeo). ¿El fraude es detectado?</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text">Active <strong>Perito Contable</strong> (Mahalanobis). Observe las elipses inclinadas</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-text">Compare: fuera de la elipse 3σ pero dentro del círculo 3σ. ¡Eso es el fraude sofisticado!</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /main -->
+
+  <!-- ══════════════════════════════════════════
+       THEORY ACCORDION
+  ══════════════════════════════════════════ -->
+  <div class="theory-section">
+    <div class="theory-section-title">📐 Marco Teórico — Formalismo Matemático</div>
+    <div class="accordion">
+
+      <!-- ── PANEL 1: Euclidean ── -->
+      <div class="acc-item" id="acc-eucl">
+        <div class="acc-header" onclick="toggleAcc('acc-eucl')" aria-expanded="false" aria-controls="body-eucl">
+          <div class="acc-color-tag"></div>
+          <div class="acc-title-block">
+            <div class="acc-name">
+              ⭕ Distancia Euclídea
+              <span class="acc-badge">Auditor Novato</span>
+            </div>
+            <div class="acc-subtitle">Mide la distancia geométrica directa entre dos puntos en el espacio</div>
+          </div>
+          <div class="acc-live-dot" id="live-dot-eucl"></div>
+          <div class="acc-chevron">▼</div>
+        </div>
+        <div class="acc-body" id="body-eucl">
+          <div class="acc-inner">
+            <div class="acc-content">
+              <!-- Formula -->
+              <div class="formula-block">
+                <div class="formula-label">Fórmula Canónica</div>
+                <div class="formula-math" id="fm-eucl">
+                  $$d_E(\mathbf{x}, \boldsymbol{\mu}) = \sqrt{(\mathbf{x}-\boldsymbol{\mu})^T (\mathbf{x}-\boldsymbol{\mu})}$$
+                </div>
+                <!-- Live numeric substitution -->
+                <div class="formula-live" id="live-eucl">
+                  <span class="live-dim">↳ Inyecte un punto para ver la sustitución numérica</span>
+                </div>
+              </div>
+              <!-- Glossary -->
+              <div class="glossary-block">
+                <div class="glossary-title">Traducción Humana de Símbolos</div>
+                <div class="gloss-row hl-eucl">
+                  <div class="gloss-sym c-gold">𝐱</div>
+                  <div class="gloss-body">
+                    <div class="gloss-name">Vector del punto sospechoso</div>
+                    <div class="gloss-desc">Las coordenadas del crédito a auditar: (Ingresos, Monto otorgado).</div>
+                    <div class="gloss-insight">En el lienzo: <span id="gi-x">—</span></div>
+                  </div>
+                </div>
+                <div class="gloss-row hl-eucl">
+                  <div class="gloss-sym c-gold">μ</div>
+                  <div class="gloss-body">
+                    <div class="gloss-name">Centroide de la cartera</div>
+                    <div class="gloss-desc">El crédito "promedio" de la entidad — el punto dorado en el lienzo.</div>
+                    <div class="gloss-insight">Centro de masa de los <span id="gi-n">—</span> créditos legítimos</div>
+                  </div>
+                </div>
+                <div class="gloss-row">
+                  <div class="gloss-sym" style="font-size:14px;color:var(--text2);">𝐱−μ</div>
+                  <div class="gloss-body">
+                    <div class="gloss-name">Vector desplazamiento</div>
+                    <div class="gloss-desc">¿Qué tan lejos estoy del centro? La Euclídea solo mide esta distancia física, sin considerar la forma de la nube.</div>
+                    <div class="gloss-insight">Ignora que los datos son <span>elípticos</span>, no esféricos</div>
+                  </div>
+                </div>
+              </div>
+              <!-- Insight banner -->
+              <div class="insight-banner">
+                <strong>⚠ El problema ciego de la Euclídea:</strong> trata a todos los ejes por igual y asume que la nube de datos es <em>perfectamente esférica</em>. Un crédito que viola la política interna de correlación pero está geométricamente cerca del centro <strong>pasará el filtro sin alerta</strong>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /acc-eucl -->
+
+      <!-- ── PANEL 2: Mahalanobis ── -->
+      <div class="acc-item" id="acc-maha">
+        <div class="acc-header" onclick="toggleAcc('acc-maha')" aria-expanded="false" aria-controls="body-maha">
+          <div class="acc-color-tag"></div>
+          <div class="acc-title-block">
+            <div class="acc-name">
+              🔴 Distancia de Mahalanobis
+              <span class="acc-badge">Perito Contable</span>
+            </div>
+            <div class="acc-subtitle">Mide la distancia relativa a la estructura interna de correlación de los datos</div>
+          </div>
+          <div class="acc-live-dot" id="live-dot-maha"></div>
+          <div class="acc-chevron">▼</div>
+        </div>
+        <div class="acc-body" id="body-maha">
+          <div class="acc-inner">
+            <div class="acc-content">
+              <!-- Formula -->
+              <div class="formula-block">
+                <div class="formula-label">Fórmula Canónica</div>
+                <div class="formula-math" id="fm-maha">
+                  $$d_M(\mathbf{x}, \boldsymbol{\mu}) = \sqrt{(\mathbf{x}-\boldsymbol{\mu})^T \boldsymbol{\Sigma}^{-1} (\mathbf{x}-\boldsymbol{\mu})}$$
+                </div>
+                <div class="formula-live" id="live-maha">
+                  <span class="live-dim">↳ Inyecte un punto para ver la sustitución numérica</span>
+                </div>
+              </div>
+              <!-- Glossary -->
+              <div class="glossary-block">
+                <div class="glossary-title">Traducción Humana de Símbolos</div>
+                <div class="gloss-row hl-maha">
+                  <div class="gloss-sym c-maha">Σ</div>
+                  <div class="gloss-body">
+                    <div class="gloss-name">Matriz de Covarianza</div>
+                    <div class="gloss-desc">Codifica la varianza de cada variable y su correlación mutua. Define la <em>forma y orientación</em> de la elipse en el lienzo.</div>
+                    <div class="gloss-insight">Σ = <span id="gi-cov">[ cargando… ]</span></div>
+                  </div>
+                </div>
+                <div class="gloss-row hl-key">
+                  <div class="gloss-sym c-danger" style="font-size:16px;">Σ⁻¹</div>
+                  <div class="gloss-body">
+                    <div class="gloss-name">Inversa de Covarianza ← La clave del método</div>
+                    <div class="gloss-desc">Corrige simultáneamente por escala de cada eje <em>y</em> por la correlación entre variables. Transforma la elipse inclinada en un círculo unitario.</div>
+                    <div class="gloss-insight">Sin Σ⁻¹: el fraude se <span>oculta</span>. Con Σ⁻¹: queda <span>expuesto</span>.</div>
+                  </div>
+                </div>
+                <div class="gloss-row hl-maha">
+                  <div class="gloss-sym c-maha" style="font-size:15px;">ρ</div>
+                  <div class="gloss-body">
+                    <div class="gloss-name">Correlación entre variables</div>
+                    <div class="gloss-desc">La política crediticia implícita. Si ρ es alta, un crédito alto exige ingresos altos. Violar esta regla es la huella del fraude.</div>
+                    <div class="gloss-insight">ρ de esta cartera: <span id="gi-rho">—</span></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Insight banner -->
+              <div class="insight-banner">
+                <strong>✅ La ventaja forense de Mahalanobis:</strong> penaliza severamente el movimiento <em>ortogonal</em> a la varianza principal de los datos. El fraude sofisticado que se esconde en el "centro estadístico" pero viola la correlación interna queda <strong>fuera de la elipse de 3σ</strong> — aunque el auditor novato no vea nada anormal.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /acc-maha -->
+
+      <!-- ── PANEL 3: Comparison ── -->
+      <div class="acc-item" id="acc-comp">
+        <div class="acc-header" onclick="toggleAcc('acc-comp')" aria-expanded="false" aria-controls="body-comp">
+          <div class="acc-color-tag" style="background:var(--accent)!important;"></div>
+          <div class="acc-title-block">
+            <div class="acc-name" style="color:var(--accent)!important;">
+              ⚡ ¿Por qué el Fraude se Esconde en el Centro?
+              <span class="acc-badge" style="color:var(--accent);">Intuición Geométrica</span>
+            </div>
+            <div class="acc-subtitle">El argumento pedagógico central del Escenario Forense</div>
+          </div>
+          <div class="acc-live-dot" style="background:var(--accent);box-shadow:0 0 8px var(--accent)"></div>
+          <div class="acc-chevron">▼</div>
+        </div>
+        <div class="acc-body" id="body-comp">
+          <div class="acc-inner">
+            <div class="acc-content" style="grid-template-columns:1fr 1fr;">
+              <div class="formula-block" style="border-color:rgba(255,179,71,.3);">
+                <div class="formula-label" style="color:var(--warn);">Filtro Euclídeo — Visión del Auditor Novato</div>
+                <div class="formula-math">$$d_E = \sqrt{\Delta x^2 + \Delta y^2}$$</div>
+                <div style="margin-top:14px;font-family:'Crimson Pro',serif;font-size:14px;color:var(--text2);line-height:1.7;">
+                  <strong style="color:var(--warn);">Asume:</strong> la nube de puntos es una esfera. Mide distancia lineal al centroide. Un crédito levemente por encima del promedio otorgado a alguien levemente por debajo del promedio de ingresos queda <em>físicamente cerca del centro</em>. El círculo lo cubre. <strong style="color:var(--warn);">Resultado: sin alerta.</strong>
+                </div>
+              </div>
+              <div class="formula-block" style="border-color:rgba(0,255,179,.3);">
+                <div class="formula-label" style="color:var(--accent2);">Filtro Mahalanobis — Visión del Perito Contable</div>
+                <div class="formula-math">$$d_M = \sqrt{(\mathbf{x}-\boldsymbol{\mu})^T \boldsymbol{\Sigma}^{-1} (\mathbf{x}-\boldsymbol{\mu})}$$</div>
+                <div style="margin-top:14px;font-family:'Crimson Pro',serif;font-size:14px;color:var(--text2);line-height:1.7;">
+                  <strong style="color:var(--accent2);">Sabe que:</strong> la nube es una elipse inclinada. La matriz Σ⁻¹ rota y escala el espacio, convirtiendo la elipse en un círculo unitario. El mismo punto sospechoso, que era "central" para la Euclídea, ahora queda <em>muy lejos de la elipse de confianza</em>. <strong style="color:var(--accent2);">Resultado: alerta roja.</strong>
+                </div>
+              </div>
+              <div class="insight-banner" style="grid-column:1/-1;">
+                <strong>La conclusión forense:</strong> el fraude más peligroso <em>rara vez ocurre en los extremos absolutos</em> — eso lo detecta hasta un filtro de máximos y mínimos. El fraude sofisticado rompe la <strong>regla interna de correlación</strong>: ingresos bajos + crédito alto, o ingresos altos + crédito bajo. Mahalanobis es el único método que penaliza este movimiento <em>perpendicular a la varianza principal</em>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /acc-comp -->
+
+    </div><!-- /accordion -->
+  </div><!-- /theory-section -->
+
+</div><!-- /wrapper -->
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// Canvas & state
+// ─────────────────────────────────────────────────────────────
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+let W,H,MARGIN, suspectPoint=null, mode='none', animId, pts=[];
+let centroid,covMatrix,eigenVals,eigenVecs,corrCoef;
+
+const PALETTES={
+  noir:    {dotLegit:'#3a6090',gold:'#f0c060',bg1:'#0d1424',bg2:'#070b14',grid:'rgba(30,45,74,.8)',axis:'rgba(74,96,128,.9)',regr:'rgba(0,200,255,.18)',warn:'rgba(255,179,71,',a2:'rgba(0,255,179,',overlay:'rgba(0,200,255,.06)',danger:'#ff3860',safe:'#00e676',accent:'#00c8ff'},
+  ivory:   {dotLegit:'#6888b0',gold:'#b07830',bg1:'#f8f5ee',bg2:'#ede9df',grid:'rgba(160,140,120,.35)',axis:'rgba(100,80,60,.5)',regr:'rgba(26,86,160,.2)',warn:'rgba(192,112,16,',a2:'rgba(26,128,96,',overlay:'rgba(26,86,160,.05)',danger:'#c0232e',safe:'#207040',accent:'#1a56a0'},
+  crimson: {dotLegit:'#803050',gold:'#f0a040',bg1:'#180a0c',bg2:'#0e0608',grid:'rgba(80,20,30,.9)',axis:'rgba(120,50,60,.9)',regr:'rgba(255,96,128,.15)',warn:'rgba(255,128,32,',a2:'rgba(255,144,96,',overlay:'rgba(255,96,128,.05)',danger:'#ff2040',safe:'#60d080',accent:'#ff6080'},
+  terminal:{dotLegit:'#1a6020',gold:'#ccff00',bg1:'#051005',bg2:'#020c02',grid:'rgba(0,80,0,.9)',axis:'rgba(0,120,0,.9)',regr:'rgba(0,255,65,.15)',warn:'rgba(255,204,0,',a2:'rgba(128,255,128,',overlay:'rgba(0,255,65,.05)',danger:'#ff4040',safe:'#00ff41',accent:'#00ff41'},
+};
+let P=PALETTES.noir;
+
+// ─── RNG ──────────────────────────────────────────────────────
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const rnd=mulberry32(0xDEADBEEF);
+function randn(){let u=0,v=0;while(!u)u=rnd();while(!v)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+// ─── Data & stats ─────────────────────────────────────────────
+function generateData(){pts=[];for(let i=0;i<220;i++){const z1=randn(),z2=randn();pts.push([z1,0.88*z1+Math.sqrt(1-0.88**2)*z2]);}}
+function computeStats(){
+  const n=pts.length;
+  const mx=pts.reduce((s,p)=>s+p[0],0)/n,my=pts.reduce((s,p)=>s+p[1],0)/n;
+  centroid=[mx,my];
+  let sxx=0,syy=0,sxy=0;
+  for(const[x,y] of pts){sxx+=(x-mx)**2;syy+=(y-my)**2;sxy+=(x-mx)*(y-my);}
+  sxx/=n;syy/=n;sxy/=n;
+  covMatrix=[[sxx,sxy],[sxy,syy]];
+  corrCoef=sxy/Math.sqrt(sxx*syy);
+  const tr=sxx+syy,det=sxx*syy-sxy*sxy,disc=Math.sqrt(Math.max(0,(tr/2)**2-det));
+  eigenVals=[tr/2+disc,tr/2-disc];
+  const ang=Math.atan2(eigenVals[0]-sxx,sxy);
+  eigenVecs=[[Math.cos(ang),-Math.sin(ang)],[Math.sin(ang),Math.cos(ang)]];
+}
+
+// ─── Coords ───────────────────────────────────────────────────
+function toCanvas(x,y){const r=5.5;return[MARGIN+(x+r/2)/r*(W-2*MARGIN),H-MARGIN-(y+r/2)/r*(H-2*MARGIN)];}
+function fromCanvas(cx,cy){const r=5.5;return[((cx-MARGIN)/(W-2*MARGIN))*r-r/2,((H-MARGIN-cy)/(H-2*MARGIN))*r-r/2];}
+function scaleX(dx){return dx/5.5*(W-2*MARGIN);}
+function scaleY(dy){return dy/5.5*(H-2*MARGIN);}
+
+// ─── Distances ────────────────────────────────────────────────
+function euclideanSigma(x,y){const[mx,my]=centroid,dx=x-mx,dy=y-my,s=Math.sqrt((covMatrix[0][0]+covMatrix[1][1])/2);return Math.sqrt(dx*dx+dy*dy)/s;}
+function mahalanobisSigma(x,y){
+  const[mx,my]=centroid,dx=x-mx,dy=y-my,[[a,b],[,d]]=covMatrix,det=a*d-b*b;
+  if(Math.abs(det)<1e-12)return 0;
+  return Math.sqrt(Math.max(0,dx*(d/det*dx-b/det*dy)+dy*(-b/det*dx+a/det*dy)));
+}
+function rawEuclidean(x,y){const[mx,my]=centroid,dx=x-mx,dy=y-my;return Math.sqrt(dx*dx+dy*dy);}
+
+// ─── Resize ───────────────────────────────────────────────────
+function resize(){const rect=canvas.getBoundingClientRect();W=canvas.width=rect.width*devicePixelRatio;H=canvas.height=Math.round(W*0.62);MARGIN=Math.round(W*.09);canvas.style.height=(H/devicePixelRatio)+'px';}
+
+// ─── Draw ─────────────────────────────────────────────────────
+function drawGrid(){
+  ctx.strokeStyle=P.grid;ctx.lineWidth=1;
+  for(let g=-3;g<=3;g++){let[cx]=toCanvas(g,0);ctx.beginPath();ctx.moveTo(cx,MARGIN);ctx.lineTo(cx,H-MARGIN);ctx.stroke();let[,cy]=toCanvas(0,g);ctx.beginPath();ctx.moveTo(MARGIN,cy);ctx.lineTo(W-MARGIN,cy);ctx.stroke();}
+  ctx.strokeStyle=P.axis;ctx.lineWidth=1.5;const[ax,ay]=toCanvas(0,0);
+  ctx.beginPath();ctx.moveTo(MARGIN,ay);ctx.lineTo(W-MARGIN,ay);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ax,MARGIN);ctx.lineTo(ax,H-MARGIN);ctx.stroke();
+  ctx.fillStyle=P.axis;ctx.font=`${Math.round(W*.012)}px JetBrains Mono`;ctx.textAlign='center';
+  ctx.fillText('Ingresos Declarados  (X)',W/2,H-Math.round(MARGIN*.28));
+  ctx.save();ctx.translate(Math.round(MARGIN*.24),H/2);ctx.rotate(-Math.PI/2);ctx.fillText('Monto del Crédito  (Y)',0,0);ctx.restore();
+}
+function drawPoints(){for(const[x,y] of pts){const[cx,cy]=toCanvas(x,y);ctx.beginPath();ctx.arc(cx,cy,W*.0035,0,Math.PI*2);ctx.fillStyle=P.dotLegit+'bb';ctx.fill();ctx.strokeStyle=P.dotLegit+'55';ctx.lineWidth=.6;ctx.stroke();}}
+function drawCentroid(){const[cx,cy]=toCanvas(...centroid);ctx.save();ctx.shadowColor=P.gold;ctx.shadowBlur=16;ctx.beginPath();ctx.arc(cx,cy,W*.007,0,Math.PI*2);ctx.fillStyle=P.gold;ctx.fill();ctx.restore();ctx.fillStyle=P.gold+'aa';ctx.font=`bold ${Math.round(W*.011)}px JetBrains Mono`;ctx.textAlign='left';ctx.fillText('μ',cx+W*.012,cy-W*.008);}
+function drawRegressionLine(){const sl=covMatrix[0][1]/covMatrix[0][0],x1=-3.5,x2=3.5,y1=sl*(x1-centroid[0])+centroid[1],y2=sl*(x2-centroid[0])+centroid[1],[c1x,c1y]=toCanvas(x1,y1),[c2x,c2y]=toCanvas(x2,y2);ctx.save();ctx.setLineDash([W*.015,W*.008]);ctx.strokeStyle=P.regr;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(c1x,c1y);ctx.lineTo(c2x,c2y);ctx.stroke();ctx.restore();}
+function drawEuclideanCircles(){const[mx,my]=centroid,s=Math.sqrt((covMatrix[0][0]+covMatrix[1][1])/2),al=['.55','.35','.2'];for(let i=2;i>=0;i--){const[cx,cy]=toCanvas(mx,my),rx=scaleX((i+1)*s);ctx.beginPath();ctx.arc(cx,cy,rx,0,Math.PI*2);ctx.strokeStyle=P.warn+al[i]+')';ctx.lineWidth=1.2+i*.3;ctx.setLineDash([]);ctx.stroke();ctx.fillStyle=P.warn+'.75)';ctx.font=`${Math.round(W*.009)}px JetBrains Mono`;ctx.textAlign='left';ctx.fillText(`${i+1}σ`,cx+rx+W*.005,cy);}}
+function drawMahalanobisEllipses(){const[mx,my]=centroid,[cx,cy]=toCanvas(mx,my),ang=Math.atan2(eigenVecs[0][1],eigenVecs[0][0]),al=['.65','.4','.22'];for(let i=2;i>=0;i--){const k=i+1,a=scaleX(k*Math.sqrt(Math.abs(eigenVals[0]))),b=scaleY(k*Math.sqrt(Math.abs(eigenVals[1])));ctx.save();ctx.translate(cx,cy);ctx.rotate(ang);ctx.beginPath();ctx.ellipse(0,0,a,b,0,0,Math.PI*2);ctx.strokeStyle=P.a2+al[i]+')';ctx.lineWidth=1.2+i*.3;ctx.stroke();ctx.restore();ctx.fillStyle=P.a2+'.75)';ctx.font=`${Math.round(W*.009)}px JetBrains Mono`;ctx.fillText(`${k}σ`,cx+a*Math.cos(ang)+W*.005,cy+a*Math.sin(ang));}}
+function drawSuspectPoint(t){
+  if(!suspectPoint)return;
+  const[sx,sy]=suspectPoint,[cx,cy]=toCanvas(sx,sy),r=W*.012;
+  const maha=mahalanobisSigma(sx,sy),isAlert=(mode==='mahalanobis'||mode==='both')&&maha>3;
+  const isEuclOK=(mode==='euclidean'||mode==='both')&&euclideanSigma(sx,sy)<=3;
+  if(isAlert){const pulse=.5+.5*Math.sin(t*.08);ctx.save();ctx.shadowColor=P.danger;ctx.shadowBlur=20+20*pulse;ctx.beginPath();ctx.arc(cx,cy,r*(1+.5*pulse),0,Math.PI*2);ctx.fillStyle=P.danger+'44';ctx.fill();ctx.restore();}
+  const len=W*.025;ctx.save();ctx.strokeStyle=isAlert?P.danger:(isEuclOK?P.safe:P.accent);ctx.lineWidth=1.5;ctx.globalAlpha=.6;ctx.beginPath();ctx.moveTo(cx-len,cy);ctx.lineTo(cx+len,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(cx,cy-len);ctx.lineTo(cx,cy+len);ctx.stroke();ctx.restore();
+  ctx.save();ctx.shadowColor=isAlert?P.danger:P.accent;ctx.shadowBlur=14;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=isAlert?P.danger:'#ffffff';ctx.fill();ctx.restore();
+}
+function draw(t=0){
+  ctx.clearRect(0,0,W,H);const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,P.bg1);bg.addColorStop(1,P.bg2);ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  drawGrid();drawRegressionLine();
+  if(mode==='euclidean'||mode==='both')drawEuclideanCircles();
+  if(mode==='mahalanobis'||mode==='both')drawMahalanobisEllipses();
+  drawPoints();drawCentroid();drawSuspectPoint(t);
+  ctx.fillStyle=P.overlay;ctx.font=`bold ${Math.round(W*.045)}px Playfair Display,serif`;ctx.textAlign='right';ctx.fillText('CARTERA',W-MARGIN,H-MARGIN-W*.03);
+}
+function loop(t){draw(t);animId=requestAnimationFrame(loop);}
+
+// ─────────────────────────────────────────────────────────────
+// ACCORDION
+// ─────────────────────────────────────────────────────────────
+function toggleAcc(id){
+  const item=document.getElementById(id);
+  const body=item.querySelector('.acc-body');
+  const hdr =item.querySelector('.acc-header');
+  const open=body.classList.contains('open');
+  body.classList.toggle('open',!open);
+  hdr.setAttribute('aria-expanded',String(!open));
+}
+function openAcc(id){
+  const item=document.getElementById(id);
+  const body=item.querySelector('.acc-body');
+  const hdr =item.querySelector('.acc-header');
+  body.classList.add('open');
+  hdr.setAttribute('aria-expanded','true');
+}
+
+// ─── Accordion state sync with active mode ────────────────────
+function syncAccordionMode(){
+  const ei=document.getElementById('acc-eucl'), mi=document.getElementById('acc-maha');
+  ei.classList.remove('acc-active-eucl','acc-active-maha');
+  mi.classList.remove('acc-active-eucl','acc-active-maha');
+  if(mode==='euclidean'){ei.classList.add('acc-active-eucl'); openAcc('acc-eucl');}
+  else if(mode==='mahalanobis'){mi.classList.add('acc-active-maha'); openAcc('acc-maha');}
+  else if(mode==='both'){
+    ei.classList.add('acc-active-eucl'); mi.classList.add('acc-active-maha');
+    openAcc('acc-eucl'); openAcc('acc-maha');
+  }
+}
+
+// ─── Live numeric substitution ────────────────────────────────
+function updateLiveFormulas(){
+  const le=document.getElementById('live-eucl'), lm=document.getElementById('live-maha');
+  const gix=document.getElementById('gi-x');
+  if(!suspectPoint){
+    le.innerHTML='<span class="live-dim">↳ Inyecte un punto para ver la sustitución numérica</span>';
+    lm.innerHTML='<span class="live-dim">↳ Inyecte un punto para ver la sustitución numérica</span>';
+    if(gix) gix.textContent='—';
+    return;
+  }
+  const[px,py]=suspectPoint,[mx,my]=centroid;
+  const dx=(px-mx).toFixed(3), dy=(py-my).toFixed(3);
+  const rawD=rawEuclidean(px,py);
+  const eu=euclideanSigma(px,py), ma=mahalanobisSigma(px,py);
+  const avgS=Math.sqrt((covMatrix[0][0]+covMatrix[1][1])/2);
+  const euClass=eu>3?'live-alert':'live-ok';
+  const maClass=ma>3?'live-alert':'live-ok';
+
+  le.innerHTML=`
+<span class="live-dim">Δx = x − μ =</span> <span class="live-val">${dx}</span>
+&nbsp;&nbsp;<span class="live-dim">Δy = y − μ =</span> <span class="live-val">${dy}</span><br>
+<span class="live-dim">|Δ| =</span> <span class="live-val">${rawD.toFixed(4)}</span>
+&nbsp;&nbsp;<span class="live-dim">÷ σ̄ (${avgS.toFixed(3)}) =</span>
+<span class="${euClass}" style="font-size:13px;">${eu.toFixed(3)} σ</span>
+&nbsp;<span class="live-dim">${eu>3?'⟹ FUERA del círculo':'⟹ dentro del círculo'}</span>`;
+
+  // Cov matrix values
+  const[[a,b],[,d]]=covMatrix, det=a*d-b*b;
+  const iA=(d/det).toFixed(3), iB=(-b/det).toFixed(3), iD=(a/det).toFixed(3);
+  lm.innerHTML=`
+<span class="live-dim">Δ = (${dx}, ${dy})</span><br>
+<span class="live-dim">Σ⁻¹ ≈ [[${iA}, ${iB}], [${iB}, ${iD}]]</span><br>
+<span class="live-dim">d_M² =</span> <span class="live-val">${(ma**2).toFixed(4)}</span>
+&nbsp;&nbsp;<span class="live-dim">→ d_M =</span>
+<span class="${maClass}" style="font-size:13px;">${ma.toFixed(3)} σ</span>
+&nbsp;<span class="live-dim">${ma>3?'⟹ FUERA de la elipse':'⟹ dentro de la elipse'}</span>`;
+
+  if(gix) gix.textContent=`(${(px*100+500).toFixed(0)}k, ${(py*50+250).toFixed(0)}k)`;
+}
+
+// ─── Static glossary after stats computed ─────────────────────
+function updateGlossaryStatic(){
+  const gcov=document.getElementById('gi-cov');
+  const grho=document.getElementById('gi-rho');
+  const gin =document.getElementById('gi-n');
+  if(gcov&&covMatrix){
+    const[[a,b],[,d]]=covMatrix;
+    gcov.textContent=`[[${a.toFixed(3)}, ${b.toFixed(3)}], [${b.toFixed(3)}, ${d.toFixed(3)}]]`;
+  }
+  if(grho) grho.textContent=corrCoef.toFixed(4)+' (correlación fuerte)';
+  if(gin)  gin.textContent=pts.length;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Theme switcher
+// ─────────────────────────────────────────────────────────────
+function applyTheme(name){
+  if(P===PALETTES[name])return;
+  P=PALETTES[name];
+  document.documentElement.setAttribute('data-theme',name);
+  ['noir','ivory','crimson','terminal'].forEach(n=>document.getElementById('th-'+n).classList.toggle('active',n===name));
+  const f=document.createElement('div');f.className='theme-flash';f.style.background=P.accent;document.body.appendChild(f);setTimeout(()=>f.remove(),400);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Mode switching
+// ─────────────────────────────────────────────────────────────
+function setMode(m){
+  mode=m;
+  document.getElementById('btn-euclidean').className='btn'+(m==='euclidean'?' active-euclidean':'');
+  document.getElementById('btn-mahalanobis').className='btn'+(m==='mahalanobis'?' active-mahalanobis':'');
+  document.getElementById('btn-both').className='btn'+(m==='both'?' active-mahalanobis':'');
+  document.getElementById('mode-badge').textContent=`MODO: ${m.toUpperCase()}`;
+  syncAccordionMode();
+  updateVerdict();
+  updateLiveFormulas();
+}
+function resetPoint(){suspectPoint=null;updateStats(null);updateVerdict();updateLiveFormulas();}
+
+// ─────────────────────────────────────────────────────────────
+// Verdict & stats
+// ─────────────────────────────────────────────────────────────
+function updateVerdict(){
+  const vEl=document.getElementById('verdict'),tEl=document.getElementById('verdict-text');
+  if(!suspectPoint){vEl.className='verdict neutral';tEl.textContent='Inyecte un crédito en el lienzo y active un filtro.';return;}
+  if(mode==='none'){vEl.className='verdict neutral';tEl.textContent='Active un filtro de detección para analizar el crédito inyectado.';return;}
+  const eu=euclideanSigma(...suspectPoint),ma=mahalanobisSigma(...suspectPoint);
+  if(mode==='euclidean'){
+    if(eu<=3){vEl.className='verdict safe';tEl.textContent=`✅ SISTEMA: "Sin anomalías." — Euclídea: ${eu.toFixed(2)}σ (≤ 3σ). El fraude pasa desapercibido.`;}
+    else{vEl.className='verdict alert';tEl.textContent=`⚠️ ALERTA Euclídea: ${eu.toFixed(2)}σ > 3σ. El punto es un extremo absoluto.`;}
+  }else if(mode==='mahalanobis'){
+    if(ma>3){vEl.className='verdict alert';tEl.textContent=`🚨 FRAUDE DETECTADO — Mahalanobis: ${ma.toFixed(2)}σ > 3σ. ¡Anomalía geométrica confirmada!`;}
+    else{vEl.className='verdict safe';tEl.textContent=`✅ Mahalanobis: ${ma.toFixed(2)}σ ≤ 3σ. Dentro del patrón normal.`;}
+  }else{
+    const euOK=eu<=3,maOK=ma<=3;
+    if(euOK&&!maOK){vEl.className='verdict alert';tEl.textContent=`🚨 ¡MOMENTO AJÁ! — Euclídeo: ${eu.toFixed(2)}σ (sin alerta) · Mahalanobis: ${ma.toFixed(2)}σ (¡ALERTA!). El fraude se esconde en el "centro" pero viola la correlación.`;}
+    else if(!euOK&&!maOK){vEl.className='verdict alert';tEl.textContent=`🚨 AMBOS alertan. Eu: ${eu.toFixed(2)}σ · Ma: ${ma.toFixed(2)}σ.`;}
+    else{vEl.className='verdict safe';tEl.textContent=`✅ Ambos OK. Eu: ${eu.toFixed(2)}σ · Ma: ${ma.toFixed(2)}σ.`;}
+  }
+}
+function updateStats(pt){
+  if(!pt){['stat-x','stat-y','stat-eucl','stat-maha'].forEach(id=>{document.getElementById(id).textContent='—';document.getElementById(id).style.color='';});return;}
+  const eu=euclideanSigma(...pt),ma=mahalanobisSigma(...pt);
+  document.getElementById('stat-x').textContent=(pt[0]*100+500).toFixed(0)+' k';
+  document.getElementById('stat-y').textContent=(pt[1]*50+250).toFixed(0)+' k';
+  const euEl=document.getElementById('stat-eucl'),maEl=document.getElementById('stat-maha');
+  euEl.textContent=eu.toFixed(3)+'σ';maEl.textContent=ma.toFixed(3)+'σ';
+  euEl.style.color=eu>3?'var(--danger)':'var(--safe)';
+  maEl.style.color=ma>3?'var(--danger)':'var(--safe)';
+  document.getElementById('stat-corr').textContent=corrCoef.toFixed(4);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Mouse
+// ─────────────────────────────────────────────────────────────
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  const cx=(e.clientX-r.left)*devicePixelRatio,cy=(e.clientY-r.top)*devicePixelRatio;
+  const[x,y]=fromCanvas(cx,cy);
+  document.getElementById('cursor-coords').textContent=`Cursor: Ingresos ${(x*100+500).toFixed(0)}k · Crédito ${(y*50+250).toFixed(0)}k`;
+});
+canvas.addEventListener('click',e=>{
+  const r=canvas.getBoundingClientRect();
+  const cx=(e.clientX-r.left)*devicePixelRatio,cy=(e.clientY-r.top)*devicePixelRatio;
+  if(cx<MARGIN||cx>W-MARGIN||cy<MARGIN||cy>H-MARGIN)return;
+  suspectPoint=fromCanvas(cx,cy);
+  updateStats(suspectPoint);updateVerdict();updateLiveFormulas();
+  if(mode==='none')setMode('both');
+  document.getElementById('point-count').textContent=`Puntos legítimos: ${pts.length} · Sospechoso: inyectado`;
+  // Auto-open relevant accordion panels
+  if(mode==='euclidean'||mode==='both') openAcc('acc-eucl');
+  if(mode==='mahalanobis'||mode==='both') openAcc('acc-maha');
+});
+
+// ─────────────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────────────
+function init(){
+  resize();generateData();computeStats();
+  document.getElementById('point-count').textContent=`Puntos legítimos: ${pts.length}`;
+  document.getElementById('stat-corr').textContent=corrCoef.toFixed(4);
+  updateGlossaryStatic();
+  cancelAnimationFrame(animId);loop(0);
+  // Typeset MathJax after a small delay
+  setTimeout(()=>{ if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise(); },600);
+}
+window.addEventListener('resize',()=>resize());
+window.addEventListener('load',init);
+</script>
+</body>
+</html>
