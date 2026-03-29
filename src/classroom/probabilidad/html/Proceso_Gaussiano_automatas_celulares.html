@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Proceso Gaussiano + Autómata Celular</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#04060f;
+  --bg2:#080d1c;
+  --bg3:#0c1228;
+  --border:#132038;
+  --accent1:#00e5ff;
+  --accent2:#39ff14;
+  --accent3:#ff2d6b;
+  --accent4:#ffcc00;
+  --text:#b8cce0;
+  --dim:#3a5070;
+  --glow1:rgba(0,229,255,.25);
+  --glow2:rgba(57,255,20,.25);
+  --glow3:rgba(255,45,107,.25);
+  --mono:'Share Tech Mono', monospace;
+  --disp:'Rajdhani', sans-serif;
+}
+[data-theme="paper"] {
+  --bg:#f0ece3;
+  --bg2:#e8e2d6;
+  --bg3:#ddd6c8;
+  --border:#b0a090;
+  --accent1:#0a4a8a;
+  --accent2:#1a6a2a;
+  --accent3:#8a1a30;
+  --accent4:#7a5500;
+  --text:#18182a;
+  --dim:#7a6a58;
+  --glow1:rgba(10,74,138,.15);
+  --glow2:rgba(26,106,42,.15);
+  --glow3:rgba(138,26,48,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--mono);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.04) 3px,rgba(0,0,0,.04) 4px);pointer-events:none;z-index:999}
+[data-theme="paper"] body::before{display:none}
+.grid-bg{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:44px 44px;opacity:.35;pointer-events:none}
+.wrap{max-width:1220px;margin:0 auto;padding:16px;position:relative;z-index:1}
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:12px;border-bottom:1px solid var(--accent1);margin-bottom:16px;gap:12px}
+.hdr h1{font-family:var(--disp);font-size:1.9rem;font-weight:700;color:var(--accent1);letter-spacing:3px;text-shadow:0 0 24px var(--glow1)}
+.hdr p{font-size:.7rem;color:var(--dim);letter-spacing:1.4px;margin-top:4px;line-height:1.4}
+.hdr-right{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{font-family:var(--mono);font-size:.75rem;padding:6px 14px;border:1px solid var(--accent1);background:transparent;color:var(--accent1);cursor:pointer;letter-spacing:1px;transition:all .2s;white-space:nowrap}
+.btn:hover{background:var(--glow1);box-shadow:0 0 14px var(--glow1)}
+.btn.on{background:var(--accent1);color:var(--bg);box-shadow:0 0 20px var(--glow1)}
+.btn-g{border-color:var(--accent2);color:var(--accent2)}
+.btn-g:hover{background:var(--glow2);box-shadow:0 0 14px var(--glow2)}
+.btn-g.on{background:var(--accent2);color:var(--bg);box-shadow:0 0 20px var(--glow2)}
+.btn-r{border-color:var(--accent3);color:var(--accent3)}
+.btn-r:hover{background:var(--glow3);box-shadow:0 0 14px var(--glow3)}
+.layout{display:grid;grid-template-columns:1fr 250px;gap:14px}
+.left{display:flex;flex-direction:column;gap:12px}
+.grid-panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bottom-panels{display:grid;grid-template-columns:1.15fr .85fr;gap:12px}
+.cbox{border:1px solid var(--border);background:var(--bg2);position:relative;overflow:hidden}
+.cbox::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent1),transparent)}
+.cbox-label{position:absolute;top:6px;left:10px;font-size:.6rem;color:var(--dim);letter-spacing:2px;z-index:5;pointer-events:none}
+canvas{display:block;width:100%}
+.stats{display:flex;flex-direction:column;gap:10px}
+.scard{border:1px solid var(--border);background:var(--bg2);padding:10px;position:relative}
+.scard::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent2),transparent)}
+.s-lbl{font-size:.6rem;color:var(--dim);letter-spacing:2px;margin-bottom:4px}
+.s-val{font-family:var(--disp);font-weight:700;font-size:1.55rem;color:var(--accent2);text-shadow:0 0 10px var(--glow2)}
+.s-val.c1{color:var(--accent1);text-shadow:0 0 10px var(--glow1)}
+.s-val.c3{color:var(--accent3);text-shadow:0 0 8px var(--glow3)}
+.s-val.c4{color:var(--accent4);text-shadow:0 0 8px rgba(255,204,0,.3)}
+.prog{height:2px;background:var(--border);margin-top:6px}
+.prog-f{height:100%;background:linear-gradient(90deg,var(--accent1),var(--accent2));transition:width .4s}
+.legend{border:1px solid var(--border);background:var(--bg2);padding:10px}
+.leg-t{font-size:.6rem;color:var(--dim);letter-spacing:2px;margin-bottom:7px}
+.leg-i{display:flex;align-items:center;gap:7px;font-size:.68rem;margin-bottom:4px;color:var(--text)}
+.leg-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.leg-box{width:15px;height:10px;flex-shrink:0;border:1px solid rgba(255,255,255,.15)}
+.ctrl{border:1px solid var(--border);background:var(--bg2);padding:12px 14px;margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:relative}
+.ctrl::before{content:'';position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent1),transparent)}
+.sldr-grp{display:flex;align-items:center;gap:7px;font-size:.7rem;color:var(--dim)}
+.sel{font-family:var(--mono);font-size:.72rem;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 7px;min-width:110px}
+input[type=range]{width:96px;accent-color:var(--accent1);cursor:pointer}
+.sbar{flex:1;font-size:.68rem;color:var(--dim);min-width:180px;overflow:hidden;white-space:nowrap}
+#stxt{color:var(--accent1)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.cur{animation:blink 1s infinite}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.overlay.show{display:flex}
+.obox{border:1px solid var(--accent1);background:var(--bg2);max-width:780px;width:100%;padding:24px;box-shadow:0 0 40px var(--glow1);max-height:90vh;overflow:auto}
+.obox h2{font-family:var(--disp);color:var(--accent1);font-size:1.35rem;letter-spacing:2px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px}
+.obox p{font-size:.8rem;line-height:1.72;color:var(--text);margin-bottom:10px}
+.obox .tag{display:inline-block;border:1px solid var(--accent2);color:var(--accent2);font-size:.65rem;padding:2px 8px;margin:3px 3px 3px 0}
+.obox .close{float:right;cursor:pointer;color:var(--accent3);font-size:.75rem}
+.footer-note{margin-top:18px;padding:14px 10px;border-top:1px solid var(--border);text-align:center;font-size:.82rem;color:var(--dim);letter-spacing:.6px}
+@media(max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .legend{grid-column:1/-1}
+}
+@media(max-width:760px){
+  .grid-panels,.bottom-panels,.stats{grid-template-columns:1fr}
+  .hdr{flex-direction:column;align-items:flex-start}
+  .hdr-right{justify-content:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeInfo()">
+  <div class="obox">
+    <span class="close" onclick="closeInfo()">✕ CERRAR</span>
+    <h2>PROCESO GAUSSIANO + AUTÓMATA CELULAR</h2>
+    <p><strong style="color:var(--accent1)">Idea central.</strong> El autómata celular genera la microdinámica local y discreta de la grilla. El proceso gaussiano no intenta modelar directamente el estado binario completo, sino reconstruir un <em>campo macroscópico continuo</em> derivado del autómata, en esta demo la densidad local de activación.</p>
+    <p><strong style="color:var(--accent1)">Micro vs. macro.</strong> Primero evoluciona el autómata con una regla local de propagación. Luego, para cada celda, se calcula una densidad local en una ventana vecina. Sobre un subconjunto observado de celdas se ajusta un GP espacial con kernel RBF o kernel basado en distancia de grafo.</p>
+    <p><strong style="color:var(--accent1)">Qué aporta el GP.</strong> Aporta suavizado espacial, interpolación en regiones no observadas, cuantificación explícita de incertidumbre y una geometría probabilística sobre la grilla. Por eso aparecen separados el campo real, la media posterior y el mapa de desviación estándar.</p>
+    <p><strong style="color:var(--accent1)">Aplicaciones.</strong> Esta metodología sirve para propagación de incendios, difusión epidémica, ocupación urbana, presión de uso del suelo, percolación, propagación de información, análisis de frentes de crecimiento y calibración de simuladores de dinámica discreta.</p>
+    <p><strong style="color:var(--accent1)">Lectura correcta de la demo.</strong> El mapa del autómata muestra el microestado binario. El mapa de densidad muestra el observable mesoscópico derivado del AC. La media GP reconstruye ese campo a partir de observaciones parciales. El mapa de incertidumbre marca dónde el modelo sabe menos.</p>
+    <div style="margin-top:10px">
+      <span class="tag">AUTÓMATA CELULAR</span>
+      <span class="tag">CAMPO LATENTE</span>
+      <span class="tag">REGRESIÓN ESPACIAL</span>
+      <span class="tag">INCERTIDUMBRE</span>
+      <span class="tag">KERNEL SOBRE GRILLA</span>
+      <span class="tag">GEOMETRÍA PROBABILÍSTICA</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hdr">
+    <div>
+      <h1>GP ∥ AUTÓMATA CELULAR</h1>
+      <p>MICRODINÁMICA DISCRETA + CAMPO CONTINUO LATENTE · RECONSTRUCCIÓN ESPACIAL CON INCERTIDUMBRE</p>
+    </div>
+    <div class="hdr-right">
+      <button class="btn" onclick="toggleTheme()">◑ TEMA</button>
+      <button class="btn" onclick="openInfo()">? HELP</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="left">
+      <div class="grid-panels">
+        <div class="cbox" style="height:290px">
+          <span class="cbox-label">AUTÓMATA CELULAR · MICROESTADO BINARIO x_t(i,j)</span>
+          <canvas id="caCanvas" height="290"></canvas>
+        </div>
+        <div class="cbox" style="height:290px">
+          <span class="cbox-label">DENSIDAD LOCAL REAL y_t(i,j) ∈ [0,1]</span>
+          <canvas id="densityCanvas" height="290"></canvas>
+        </div>
+        <div class="cbox" style="height:290px">
+          <span class="cbox-label">MEDIA POSTERIOR GP μ(i,j)</span>
+          <canvas id="meanCanvas" height="290"></canvas>
+        </div>
+        <div class="cbox" style="height:290px">
+          <span class="cbox-label">INCERTIDUMBRE GP σ(i,j)</span>
+          <canvas id="sigmaCanvas" height="290"></canvas>
+        </div>
+      </div>
+
+      <div class="bottom-panels">
+        <div class="cbox" style="height:200px">
+          <span class="cbox-label">CORTE CENTRAL · DENSIDAD REAL VS MEDIA GP ± 2σ</span>
+          <canvas id="sliceCanvas" height="200"></canvas>
+        </div>
+        <div class="cbox" style="height:200px">
+          <span class="cbox-label">HEATMAP DEL KERNEL ENTRE OBSERVACIONES</span>
+          <canvas id="kernelCanvas" height="200"></canvas>
+        </div>
+      </div>
+
+      <div class="cbox" style="height:125px">
+        <span class="cbox-label">HISTORIAL · FRACCIÓN ACTIVA, RMSE DEMO Y σ MEDIA</span>
+        <canvas id="historyCanvas" height="125"></canvas>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="scard">
+        <div class="s-lbl">TIEMPO t</div>
+        <div class="s-val c1" id="sv-time">000</div>
+        <div class="prog"><div class="prog-f" id="pg" style="width:0%"></div></div>
+      </div>
+      <div class="scard">
+        <div class="s-lbl">CELDAS ACTIVAS</div>
+        <div class="s-val" id="sv-active">0.000</div>
+      </div>
+      <div class="scard">
+        <div class="s-lbl">OBSERVADAS</div>
+        <div class="s-val c4" id="sv-obs">0</div>
+      </div>
+      <div class="scard">
+        <div class="s-lbl">RMSE DEMO</div>
+        <div class="s-val c3" id="sv-rmse">—</div>
+      </div>
+      <div class="scard">
+        <div class="s-lbl">σ MEDIA</div>
+        <div class="s-val" id="sv-sigma">—</div>
+      </div>
+      <div class="scard">
+        <div class="s-lbl">KERNEL</div>
+        <div class="s-val c1" id="sv-kernel" style="font-size:1rem">RBF</div>
+      </div>
+      <div class="legend">
+        <div class="leg-t">REFERENCIAS</div>
+        <div class="leg-i"><div class="leg-box" style="background:#ffcc00"></div>Celda activa</div>
+        <div class="leg-i"><div class="leg-box" style="background:#06101d"></div>Celda inactiva</div>
+        <div class="leg-i"><div class="leg-dot" style="background:var(--accent3)"></div>Observación real</div>
+        <div class="leg-i"><div class="leg-box" style="background:rgba(0,229,255,.18)"></div>Banda GP ± 2σ</div>
+        <div class="leg-i"><div class="leg-dot" style="background:var(--accent1)"></div>Media GP</div>
+        <div class="leg-i"><div class="leg-dot" style="background:var(--accent4)"></div>Densidad real</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ctrl">
+    <button class="btn-g btn" id="btn-run" onclick="toggleAuto()">▶ AUTO RUN</button>
+    <button class="btn" onclick="stepOnce()">⊳ PASO</button>
+    <button class="btn" onclick="addObservationAtMaxSigma()">◎ OBSERVAR σ MÁX</button>
+    <button class="btn-r btn" onclick="resetSim()">⟳ RESET</button>
+
+    <div class="sldr-grp">
+      REGLA
+      <select class="sel" id="ruleSel" onchange="setRule(this.value)">
+        <option value="fire">FUEGO</option>
+        <option value="contagion">CONTAGIO</option>
+        <option value="life">LIFE-SMOOTH</option>
+      </select>
+    </div>
+    <div class="sldr-grp">
+      KERNEL
+      <select class="sel" id="kernelSel" onchange="setKernel(this.value)">
+        <option value="rbf">RBF EUCLÍDEO</option>
+        <option value="graph">RBF DIST. GRAFO</option>
+      </select>
+    </div>
+    <div class="sldr-grp">VEL <input type="range" id="sl-speed" min="70" max="900" value="240" step="10" oninput="setSpeed(this.value)"><span id="sp-v" style="width:44px">240ms</span></div>
+    <div class="sldr-grp">OBS % <input type="range" id="sl-obs" min="6" max="40" value="18" step="1" oninput="setObsFrac(this.value)"><span id="ob-v" style="width:35px">18%</span></div>
+    <div class="sldr-grp">ℓ <input type="range" id="sl-ls" min="0.7" max="5" value="2.3" step="0.1" oninput="setLengthScale(this.value)"><span id="ls-v" style="width:34px">2.3</span></div>
+    <div class="sldr-grp">NOISE <input type="range" id="sl-noise" min="0.01" max="0.16" value="0.05" step="0.01" oninput="setNoise(this.value)"><span id="no-v" style="width:36px">0.05</span></div>
+    <div class="sldr-grp">β <input type="range" id="sl-beta" min="0.20" max="1.00" value="0.62" step="0.02" oninput="setBeta(this.value)"><span id="be-v" style="width:36px">0.62</span></div>
+    <div class="sbar"><span id="stxt">LISTO · EL GP RECONSTRUYE UN CAMPO DERIVADO DEL AUTÓMATA <span class="cur">█</span></span></div>
+  </div>
+
+  <div class="footer-note">Material elaborado por el profesor Sergio Gevatschnaider</div>
+</div>
+
+<script>
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const randn=()=>{let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+const sigmoid=x=>1/(1+Math.exp(-x));
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function cols(){return {bg:css('--bg2'),bg3:css('--bg3'),border:css('--border'),text:css('--text'),dim:css('--dim'),c1:css('--accent1'),c2:css('--accent2'),c3:css('--accent3'),c4:css('--accent4')};}
+function setStatus(m){document.getElementById('stxt').innerHTML=m+' <span class="cur">█</span>';}
+
+function cholesky(A){
+  const n=A.length, L=Array.from({length:n},()=>new Float64Array(n));
+  for(let i=0;i<n;i++){
+    for(let j=0;j<=i;j++){
+      let s=A[i][j];
+      for(let k=0;k<j;k++) s -= L[i][k]*L[j][k];
+      if(i===j) L[i][j]=Math.sqrt(Math.max(s,1e-10));
+      else L[i][j]=s/L[j][j];
+    }
+  }
+  return L;
+}
+function fwd(L,b){const n=L.length,x=new Float64Array(n);for(let i=0;i<n;i++){let s=b[i];for(let j=0;j<i;j++)s-=L[i][j]*x[j];x[i]=s/L[i][i];}return x;}
+function bwd(L,b){const n=L.length,x=new Float64Array(n);for(let i=n-1;i>=0;i--){let s=b[i];for(let j=i+1;j<n;j++)s-=L[j][i]*x[j];x[i]=s/L[i][i];}return x;}
+
+class SpatialGP{
+  constructor(ls=2.3,sf=1.0,sn=0.05,kind='rbf'){
+    this.ls=ls; this.sf=sf; this.sn=sn; this.kind=kind;
+    this.X=[]; this.y=[]; this.L=null; this.alpha=null; this.K=null;
+  }
+  dist(a,b){
+    const dx=a[0]-b[0], dy=a[1]-b[1];
+    if(this.kind==='graph') return Math.abs(dx)+Math.abs(dy);
+    return Math.sqrt(dx*dx+dy*dy);
+  }
+  k(a,b){
+    const d=this.dist(a,b)/this.ls;
+    return this.sf*this.sf*Math.exp(-0.5*d*d);
+  }
+  fit(X,y){
+    this.X=X.map(v=>[v[0],v[1]]);
+    this.y=Float64Array.from(y);
+    const n=X.length;
+    this.K=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>this.k(X[i],X[j])));
+    for(let i=0;i<n;i++) this.K[i][i]+=this.sn*this.sn;
+    this.L=cholesky(this.K);
+    this.alpha=bwd(this.L,fwd(this.L,this.y));
+  }
+  predict(Xs){
+    if(!this.X.length) return Xs.map(()=>({m:0.5,s:1}));
+    return Xs.map(x=>{
+      const ks=Float64Array.from(this.X.map(xt=>this.k(x,xt)));
+      let m=0; for(let i=0;i<ks.length;i++) m += ks[i]*this.alpha[i];
+      const v=fwd(this.L,ks);
+      let s2=this.k(x,x); for(let i=0;i<v.length;i++) s2 -= v[i]*v[i];
+      s2=Math.max(s2,1e-10);
+      return {m,s:Math.sqrt(s2)};
+    });
+  }
+}
+
+const N=20;
+const MAXT=280;
+const coords=[];
+for(let i=0;i<N;i++) for(let j=0;j<N;j++) coords.push([i,j]);
+
+let S={
+  grid:[], density:[], mean:[], sigma:[], obsMask:[], obsIdx:[], obsX:[], obsY:[],
+  gp:new SpatialGP(), t:0, running:false, timer:null, speed:240, obsFrac:0.18,
+  ls:2.3, noise:0.05, beta:0.62, rule:'fire', kernel:'rbf',
+  histActive:[], histRmse:[], histSigma:[]
+};
+
+const caCanvas=document.getElementById('caCanvas'), densityCanvas=document.getElementById('densityCanvas'), meanCanvas=document.getElementById('meanCanvas'), sigmaCanvas=document.getElementById('sigmaCanvas'), sliceCanvas=document.getElementById('sliceCanvas'), kernelCanvas=document.getElementById('kernelCanvas'), historyCanvas=document.getElementById('historyCanvas');
+const caCtx=caCanvas.getContext('2d'), densityCtx=densityCanvas.getContext('2d'), meanCtx=meanCanvas.getContext('2d'), sigmaCtx=sigmaCanvas.getContext('2d'), sliceCtx=sliceCanvas.getContext('2d'), kernelCtx=kernelCanvas.getContext('2d'), historyCtx=historyCanvas.getContext('2d');
+
+function resizeCanvases(){
+  [caCanvas,densityCanvas,meanCanvas,sigmaCanvas,sliceCanvas,kernelCanvas,historyCanvas].forEach(c=>{c.width=c.parentElement.clientWidth;});
+}
+
+function makeSeedGrid(){
+  const g=Array.from({length:N},()=>Array(N).fill(0));
+  if(S.rule==='life'){
+    for(let i=0;i<N;i++) for(let j=0;j<N;j++) g[i][j]=Math.random()<0.30?1:0;
+  } else {
+    const c=Math.floor(N/2);
+    for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++) g[c+di][c+dj]=1;
+    for(let k=0;k<Math.floor(N*1.6);k++){
+      const i=Math.floor(rnd(0,N)), j=Math.floor(rnd(0,N));
+      if(Math.random()<0.18) g[i][j]=1;
+    }
+    for(let i=0;i<N;i++) for(let j=0;j<N;j++) if(Math.random()<0.025) g[i][j]=1;
+  }
+  return g;
+}
+
+function getCell(g,i,j){
+  if(i<0||j<0||i>=N||j>=N) return 0;
+  return g[i][j];
+}
+function neighborCount(g,i,j){
+  let s=0;
+  for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++) if(di||dj) s += getCell(g,i+di,j+dj);
+  return s;
+}
+function stepCA(){
+  const g=S.grid, ng=Array.from({length:N},()=>Array(N).fill(0));
+  for(let i=0;i<N;i++){
+    for(let j=0;j<N;j++){
+      const x=g[i][j], n=neighborCount(g,i,j);
+      let next=0;
+      if(S.rule==='fire'){
+        if(x===1){
+          next=Math.random()<0.22?0:1;
+        } else {
+          const p=1-Math.pow(1-S.beta*0.36, n);
+          next=Math.random()<p?1:0;
+        }
+      } else if(S.rule==='contagion'){
+        if(x===1){
+          next=Math.random()<0.78?1:0;
+        } else {
+          const p=sigmoid(-2.6 + S.beta*0.95*n);
+          next=Math.random()<p?1:0;
+        }
+      } else if(S.rule==='life'){
+        if(x===1) next=(n===2 || n===3)?1:0;
+        else next=n===3?1:0;
+        if(Math.random()<0.015) next=1-next;
+      }
+      ng[i][j]=next;
+    }
+  }
+  S.grid=ng;
+  S.t++;
+}
+
+function computeDensity(){
+  const d=Array.from({length:N},()=>Array(N).fill(0));
+  for(let i=0;i<N;i++){
+    for(let j=0;j<N;j++){
+      let s=0,c=0;
+      for(let di=-1;di<=1;di++){
+        for(let dj=-1;dj<=1;dj++){
+          const ii=i+di,jj=j+dj;
+          if(ii>=0&&jj>=0&&ii<N&&jj<N){s+=S.grid[ii][jj]; c++;}
+        }
+      }
+      d[i][j]=s/c;
+    }
+  }
+  S.density=d;
+}
+
+function sampleObservations(){
+  const total=N*N;
+  const target=Math.max(8,Math.floor(total*S.obsFrac));
+  const idx=[...Array(total).keys()];
+  for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [idx[i],idx[j]]=[idx[j],idx[i]];}
+  S.obsMask=Array(total).fill(false);
+  S.obsIdx=idx.slice(0,target);
+  S.obsIdx.forEach(k=>S.obsMask[k]=true);
+  S.obsX=S.obsIdx.map(k=>coords[k]);
+  S.obsY=S.obsIdx.map(k=>{
+    const [i,j]=coords[k];
+    return clamp(S.density[i][j] + randn()*S.noise, 0, 1);
+  });
+}
+
+function fitGP(){
+  S.gp=new SpatialGP(S.ls,1.0,S.noise,S.kernel);
+  S.gp.fit(S.obsX,S.obsY);
+  const preds=S.gp.predict(coords);
+  S.mean=Array.from({length:N},()=>Array(N).fill(0));
+  S.sigma=Array.from({length:N},()=>Array(N).fill(0));
+  preds.forEach((p,idx)=>{
+    const [i,j]=coords[idx];
+    S.mean[i][j]=clamp(p.m,0,1);
+    S.sigma[i][j]=p.s;
+  });
+}
+
+function currentStats(){
+  let active=0, rmse=0, avgSigma=0;
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+    active += S.grid[i][j];
+    rmse += (S.mean[i][j]-S.density[i][j])**2;
+    avgSigma += S.sigma[i][j];
+  }
+  active /= (N*N);
+  rmse = Math.sqrt(rmse/(N*N));
+  avgSigma /= (N*N);
+  return {active, rmse, avgSigma};
+}
+
+function updateMetricsHistory(){
+  const m=currentStats();
+  S.histActive.push(m.active);
+  S.histRmse.push(m.rmse);
+  S.histSigma.push(m.avgSigma);
+  if(S.histActive.length>MAXT){S.histActive.shift();S.histRmse.shift();S.histSigma.shift();}
+}
+
+function updateStatsPanel(){
+  const m=currentStats();
+  document.getElementById('sv-time').textContent=String(S.t).padStart(3,'0');
+  document.getElementById('pg').style.width=((S.t%MAXT)/MAXT*100)+'%';
+  document.getElementById('sv-active').textContent=m.active.toFixed(3);
+  document.getElementById('sv-obs').textContent=S.obsIdx.length;
+  document.getElementById('sv-rmse').textContent=m.rmse.toFixed(4);
+  document.getElementById('sv-sigma').textContent=m.avgSigma.toFixed(4);
+  document.getElementById('sv-kernel').textContent=S.kernel==='rbf'?'RBF':'GRAPH';
+}
+
+function resetSim(){
+  stopAuto();
+  S.grid=makeSeedGrid();
+  S.t=0;
+  S.histActive=[]; S.histRmse=[]; S.histSigma=[];
+  computeDensity();
+  sampleObservations();
+  fitGP();
+  updateMetricsHistory();
+  updateStatsPanel();
+  drawAll();
+  setStatus('SISTEMA REINICIADO · CAMPO LATENTE RECONSTRUIDO DESDE OBSERVACIONES PARCIALES');
+}
+
+function oneStep(){
+  if(S.t>=MAXT){stopAuto(); setStatus('LÍMITE DE DEMO ALCANZADO · REINICIA O CONTINÚA MANUALMENTE'); return;}
+  stepCA();
+  computeDensity();
+  sampleObservations();
+  fitGP();
+  updateMetricsHistory();
+  updateStatsPanel();
+  drawAll();
+}
+
+function addObservationAtMaxSigma(){
+  let best=-1, bi=0;
+  for(let idx=0;idx<coords.length;idx++){
+    if(S.obsMask[idx]) continue;
+    const [i,j]=coords[idx];
+    if(S.sigma[i][j]>best){best=S.sigma[i][j]; bi=idx;}
+  }
+  if(best<0){setStatus('NO QUEDAN NODOS SIN OBSERVAR'); return;}
+  S.obsMask[bi]=true;
+  S.obsIdx.push(bi);
+  S.obsX.push(coords[bi]);
+  const [i,j]=coords[bi];
+  S.obsY.push(clamp(S.density[i][j] + randn()*S.noise,0,1));
+  fitGP();
+  updateMetricsHistory();
+  updateStatsPanel();
+  drawAll();
+  setStatus(`OBSERVACIÓN ACTIVA AGREGADA EN (${i},${j}) · σ=${best.toFixed(4)}`);
+}
+
+function toggleAuto(){S.running?stopAuto():startAuto();}
+function startAuto(){
+  S.running=true;
+  const b=document.getElementById('btn-run'); b.textContent='⏸ PAUSAR'; b.classList.add('on');
+  setStatus('EJECUTANDO · EL AUTÓMATA EVOLUCIONA Y EL GP RECONSTRUYE EL CAMPO');
+  schedule();
+}
+function stopAuto(){S.running=false; clearTimeout(S.timer); const b=document.getElementById('btn-run'); b.textContent='▶ AUTO RUN'; b.classList.remove('on');}
+function schedule(){ if(!S.running) return; S.timer=setTimeout(()=>{oneStep(); schedule();}, S.speed); }
+function stepOnce(){ if(!S.running) oneStep(); }
+function setSpeed(v){S.speed=+v; document.getElementById('sp-v').textContent=v+'ms';}
+function setObsFrac(v){S.obsFrac=(+v)/100; document.getElementById('ob-v').textContent=v+'%'; computeDensity(); sampleObservations(); fitGP(); updateMetricsHistory(); updateStatsPanel(); drawAll();}
+function setLengthScale(v){S.ls=+v; document.getElementById('ls-v').textContent=(+v).toFixed(1); fitGP(); updateMetricsHistory(); updateStatsPanel(); drawAll();}
+function setNoise(v){S.noise=+v; document.getElementById('no-v').textContent=(+v).toFixed(2); computeDensity(); sampleObservations(); fitGP(); updateMetricsHistory(); updateStatsPanel(); drawAll();}
+function setBeta(v){S.beta=+v; document.getElementById('be-v').textContent=(+v).toFixed(2);}
+function setRule(v){S.rule=v; resetSim();}
+function setKernel(v){S.kernel=v; fitGP(); updateMetricsHistory(); updateStatsPanel(); drawAll();}
+let theme='dark';
+function toggleTheme(){theme=theme==='dark'?'paper':'dark'; document.documentElement.setAttribute('data-theme', theme==='paper'?'paper':''); drawAll();}
+function openInfo(){document.getElementById('overlay').classList.add('show');}
+function closeInfo(){document.getElementById('overlay').classList.remove('show');}
+
+function drawGridMap(ctx, field, mode){
+  const W=ctx.canvas.width, H=ctx.canvas.height, cl=cols();
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=cl.bg; ctx.fillRect(0,0,W,H);
+  const padTop=24,pad=10;
+  const size=Math.min((W-2*pad)/N,(H-padTop-pad)/N);
+  const ox=(W-size*N)/2, oy=padTop+(H-padTop-size*N)/2;
+  for(let i=0;i<N;i++){
+    for(let j=0;j<N;j++){
+      let fill='#06101d';
+      if(mode==='binary') fill=field[i][j] ? '#ffcc00' : '#06101d';
+      else if(mode==='density'){
+        const v=field[i][j];
+        const r=Math.round(8+v*255), g=Math.round(20+v*180), b=Math.round(36+v*70);
+        fill=`rgb(${r},${g},${b})`;
+      } else if(mode==='mean'){
+        const v=field[i][j];
+        const c=Math.round(15+v*220);
+        fill=`rgb(0,${Math.round(80+v*150)},${c})`;
+      } else if(mode==='sigma'){
+        const vmax=Math.max(...S.sigma.flat()) || 1;
+        const v=field[i][j]/vmax;
+        fill=`rgb(${Math.round(30+v*225)},${Math.round(12+v*80)},${Math.round(60+v*180)})`;
+      }
+      ctx.fillStyle=fill;
+      ctx.fillRect(ox+j*size, oy+i*size, size-1, size-1);
+    }
+  }
+  if(mode==='density' || mode==='mean'){
+    ctx.strokeStyle='rgba(255,255,255,.22)';
+    ctx.lineWidth=1;
+    for(const idx of S.obsIdx){
+      const [i,j]=coords[idx];
+      const x=ox+j*size+size/2, y=oy+i*size+size/2;
+      ctx.beginPath(); ctx.arc(x,y,Math.max(2,size*0.18),0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle=cols().c3; ctx.beginPath(); ctx.arc(x,y,Math.max(1.4,size*0.12),0,Math.PI*2); ctx.fill();
+    }
+  }
+}
+
+function drawSlice(){
+  const ctx=sliceCtx, W=ctx.canvas.width, H=ctx.canvas.height, cl=cols();
+  const PAD={t:26,b:26,l:42,r:14};
+  const pw=W-PAD.l-PAD.r, ph=H-PAD.t-PAD.b;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=cl.bg; ctx.fillRect(0,0,W,H);
+  const row=Math.floor(N/2);
+  const real=S.density[row], mean=S.mean[row], sig=S.sigma[row];
+  const ymax=Math.max(1, ...real, ...mean.map((m,i)=>m+2*sig[i]));
+  const ymin=Math.min(0, ...real, ...mean.map((m,i)=>m-2*sig[i]));
+  const yr=Math.max(1e-6, ymax-ymin);
+  const tx=i=>PAD.l+(i/(N-1))*pw;
+  const ty=y=>PAD.t+ph-(y-ymin)/yr*ph;
+  ctx.strokeStyle=cl.border; ctx.lineWidth=.6;
+  for(let k=0;k<=4;k++){const y=ymin+k*yr/4, cy=ty(y); ctx.beginPath(); ctx.moveTo(PAD.l,cy); ctx.lineTo(PAD.l+pw,cy); ctx.stroke();}
+  ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+ph); ctx.lineTo(PAD.l+pw,PAD.t+ph); ctx.stroke();
+  ctx.beginPath();
+  for(let i=0;i<N;i++) i===0?ctx.moveTo(tx(i),ty(mean[i]+2*sig[i])):ctx.lineTo(tx(i),ty(mean[i]+2*sig[i]));
+  for(let i=N-1;i>=0;i--) ctx.lineTo(tx(i),ty(mean[i]-2*sig[i]));
+  ctx.closePath(); ctx.fillStyle='rgba(0,229,255,.12)'; ctx.fill();
+  ctx.beginPath(); for(let i=0;i<N;i++) i===0?ctx.moveTo(tx(i),ty(real[i])):ctx.lineTo(tx(i),ty(real[i])); ctx.strokeStyle=cl.c4; ctx.lineWidth=2; ctx.stroke();
+  ctx.beginPath(); for(let i=0;i<N;i++) i===0?ctx.moveTo(tx(i),ty(mean[i])):ctx.lineTo(tx(i),ty(mean[i])); ctx.strokeStyle=cl.c1; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle=cl.dim; ctx.font='9px Share Tech Mono'; ctx.textAlign='center';
+  for(let i=0;i<N;i+=3) ctx.fillText(i, tx(i), PAD.t+ph+14);
+}
+
+function drawKernel(){
+  const ctx=kernelCtx, W=ctx.canvas.width, H=ctx.canvas.height, cl=cols();
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=cl.bg; ctx.fillRect(0,0,W,H);
+  const K=S.gp.K;
+  if(!K || !K.length){ctx.fillStyle=cl.dim; ctx.fillText('SIN KERNEL',W/2,H/2); return;}
+  const n=K.length, padTop=24,pad=10;
+  const size=Math.min((W-2*pad)/n, (H-padTop-pad)/n);
+  const ox=(W-size*n)/2, oy=padTop+(H-padTop-size*n)/2;
+  let max=-Infinity,min=Infinity;
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++){max=Math.max(max,K[i][j]); min=Math.min(min,K[i][j]);}
+  const range=Math.max(1e-10, max-min);
+  for(let i=0;i<n;i++){
+    for(let j=0;j<n;j++){
+      const v=(K[i][j]-min)/range;
+      const r=Math.round(10+v*60), g=Math.round(35+v*220), b=Math.round(55+v*255);
+      ctx.fillStyle=`rgb(${r},${g},${b})`;
+      ctx.fillRect(ox+j*size, oy+i*size, size, size);
+    }
+  }
+  ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.strokeRect(ox,oy,size*n,size*n);
+}
+
+function drawHistory(){
+  const ctx=historyCtx, W=ctx.canvas.width, H=ctx.canvas.height, cl=cols();
+  const PAD={t:20,b:20,l:42,r:14};
+  const pw=W-PAD.l-PAD.r, ph=H-PAD.t-PAD.b;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=cl.bg; ctx.fillRect(0,0,W,H);
+  const n=S.histActive.length;
+  if(n<2){ctx.fillStyle=cl.dim; ctx.font='10px Share Tech Mono'; ctx.textAlign='center'; ctx.fillText('ACUMULANDO HISTORIAL...',W/2,H/2); return;}
+  const all=[...S.histActive, ...S.histRmse, ...S.histSigma];
+  const ymin=Math.min(0,...all), ymax=Math.max(...all)+0.02, yr=Math.max(1e-6, ymax-ymin);
+  const tx=i=>PAD.l+(i/(n-1))*pw, ty=y=>PAD.t+ph-(y-ymin)/yr*ph;
+  ctx.strokeStyle=cl.border; ctx.lineWidth=.6;
+  for(let k=0;k<=4;k++){const y=ymin+k*yr/4, cy=ty(y); ctx.beginPath(); ctx.moveTo(PAD.l,cy); ctx.lineTo(PAD.l+pw,cy); ctx.stroke();}
+  ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+ph); ctx.lineTo(PAD.l+pw,PAD.t+ph); ctx.stroke();
+  const drawSeries=(arr,color)=>{ctx.beginPath(); arr.forEach((y,i)=>i===0?ctx.moveTo(tx(i),ty(y)):ctx.lineTo(tx(i),ty(y))); ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();};
+  drawSeries(S.histActive, cl.c4);
+  drawSeries(S.histRmse, cl.c3);
+  drawSeries(S.histSigma, cl.c1);
+  ctx.fillStyle=cl.dim; ctx.font='9px Share Tech Mono'; ctx.textAlign='left';
+  ctx.fillText('activa', PAD.l+4, PAD.t+10);
+  ctx.fillStyle=cl.c4; ctx.fillRect(PAD.l+42,PAD.t+4,12,3);
+  ctx.fillStyle=cl.dim; ctx.fillText('rmse', PAD.l+64, PAD.t+10);
+  ctx.fillStyle=cl.c3; ctx.fillRect(PAD.l+96,PAD.t+4,12,3);
+  ctx.fillStyle=cl.dim; ctx.fillText('σ media', PAD.l+118, PAD.t+10);
+  ctx.fillStyle=cl.c1; ctx.fillRect(PAD.l+172,PAD.t+4,12,3);
+}
+
+function drawAll(){
+  drawGridMap(caCtx,S.grid,'binary');
+  drawGridMap(densityCtx,S.density,'density');
+  drawGridMap(meanCtx,S.mean,'mean');
+  drawGridMap(sigmaCtx,S.sigma,'sigma');
+  drawSlice();
+  drawKernel();
+  drawHistory();
+}
+
+window.addEventListener('resize',()=>{resizeCanvases(); drawAll();});
+resizeCanvases();
+resetSim();
+</script>
+</body>
+</html>

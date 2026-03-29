@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Proceso Gaussiano + Programación Genética</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#050814;
+  --bg2:#0b1222;
+  --bg3:#101a31;
+  --panel:#0f1830cc;
+  --border:#183156;
+  --text:#c7d8ec;
+  --muted:#6f86a6;
+  --c1:#29d4ff;
+  --c2:#67ff8c;
+  --c3:#ff5d8f;
+  --c4:#ffd54a;
+  --c5:#9d8cff;
+  --gl1:rgba(41,212,255,.24);
+  --gl2:rgba(103,255,140,.20);
+  --gl3:rgba(255,93,143,.20);
+  --gl4:rgba(255,213,74,.18);
+  --shadow:0 10px 35px rgba(0,0,0,.28);
+  --mono:'Share Tech Mono', monospace;
+  --disp:'Rajdhani', sans-serif;
+}
+[data-theme="paper"]{
+  --bg:#f3efe7;
+  --bg2:#ece6db;
+  --bg3:#dfd6c8;
+  --panel:#f9f6f0dd;
+  --border:#b9ab97;
+  --text:#1d2431;
+  --muted:#6e665c;
+  --c1:#0e5fa8;
+  --c2:#2a7a37;
+  --c3:#a51d48;
+  --c4:#8a6410;
+  --c5:#6140c7;
+  --gl1:rgba(14,95,168,.14);
+  --gl2:rgba(42,122,55,.14);
+  --gl3:rgba(165,29,72,.12);
+  --gl4:rgba(138,100,16,.12);
+  --shadow:0 8px 28px rgba(90,70,40,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--mono);overflow-x:hidden}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(circle at 15% 20%, var(--gl1), transparent 26%),
+    radial-gradient(circle at 82% 18%, var(--gl3), transparent 22%),
+    radial-gradient(circle at 72% 78%, var(--gl2), transparent 24%),
+    linear-gradient(180deg, transparent, rgba(0,0,0,.12));
+}
+.grid{position:fixed;inset:0;pointer-events:none;opacity:.25;z-index:0;
+  background-image:linear-gradient(var(--border) 1px, transparent 1px),linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size:42px 42px;
+}
+.wrap{max-width:1380px;margin:0 auto;padding:18px;position:relative;z-index:1}
+.header{
+  display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+  margin-bottom:16px;padding:14px 16px;border:1px solid var(--border);background:var(--panel);
+  backdrop-filter: blur(8px); box-shadow: var(--shadow); border-radius:20px;
+}
+.hgroup h1{
+  font-family:var(--disp);font-weight:700;font-size:2rem;letter-spacing:2px;color:var(--c1);
+  text-shadow:0 0 18px var(--gl1);
+}
+.hgroup p{font-size:.78rem;color:var(--muted);line-height:1.6;max-width:880px}
+.header-right{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.btn{
+  background:transparent;border:1px solid var(--c1);color:var(--c1);padding:8px 14px;border-radius:12px;
+  cursor:pointer;font-family:var(--mono);font-size:.76rem;letter-spacing:.8px;transition:.18s ease;white-space:nowrap;
+}
+.btn:hover{transform:translateY(-1px);background:var(--gl1);box-shadow:0 0 18px var(--gl1)}
+.btn.on{background:var(--c1);color:var(--bg);box-shadow:0 0 22px var(--gl1)}
+.btn-g{border-color:var(--c2);color:var(--c2)}
+.btn-g:hover{background:var(--gl2);box-shadow:0 0 18px var(--gl2)}
+.btn-g.on{background:var(--c2);color:var(--bg)}
+.btn-r{border-color:var(--c3);color:var(--c3)}
+.btn-r:hover{background:var(--gl3);box-shadow:0 0 18px var(--gl3)}
+.layout{display:grid;grid-template-columns:1.4fr .9fr;gap:16px}
+.left, .right{display:flex;flex-direction:column;gap:16px}
+.card{
+  position:relative;border:1px solid var(--border);background:var(--panel);backdrop-filter:blur(10px);
+  border-radius:22px;padding:14px;box-shadow:var(--shadow);overflow:hidden;
+}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c1),transparent,var(--c5),transparent)}
+.card-label{font-size:.64rem;letter-spacing:2px;color:var(--muted);margin-bottom:10px}
+.canvas-wrap{height:340px}
+.canvas-wrap.small{height:185px}
+.canvas-wrap.tiny{height:140px}
+canvas{display:block;width:100%;height:100%}
+.stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.stat{border:1px solid var(--border);background:rgba(0,0,0,.05);border-radius:16px;padding:12px;min-height:94px}
+[data-theme="paper"] .stat{background:rgba(255,255,255,.22)}
+.stat .k{font-size:.62rem;color:var(--muted);letter-spacing:1.8px;margin-bottom:7px}
+.stat .v{font-family:var(--disp);font-size:1.45rem;font-weight:700;color:var(--c2);line-height:1.05}
+.stat .v.c1{color:var(--c1)} .stat .v.c3{color:var(--c3)} .stat .v.c4{color:var(--c4)} .stat .v.c5{color:var(--c5)}
+.expr-box{margin-top:12px;border:1px solid var(--border);border-radius:16px;padding:12px;background:rgba(0,0,0,.06)}
+[data-theme="paper"] .expr-box{background:rgba(255,255,255,.25)}
+.expr-title{font-size:.65rem;color:var(--muted);letter-spacing:1.6px;margin-bottom:8px}
+.expr{font-size:.82rem;line-height:1.65;color:var(--text);word-break:break-word}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:14px;background:rgba(0,0,0,.05)}
+[data-theme="paper"] .row{background:rgba(255,255,255,.22)}
+.row span,.row label{font-size:.7rem;color:var(--muted)}
+input[type=range]{accent-color:var(--c1);width:120px;cursor:pointer}
+select{
+  background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:7px 9px;
+  font-family:var(--mono);font-size:.72rem;outline:none
+}
+.status{margin-top:12px;padding:12px;border-radius:14px;border:1px solid var(--border);color:var(--muted);font-size:.72rem;background:rgba(0,0,0,.05)}
+[data-theme="paper"] .status{background:rgba(255,255,255,.22)}
+.blink{animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.kernel-list{display:grid;gap:10px;margin-top:12px}
+.kitem{border:1px solid var(--border);border-radius:14px;padding:10px;background:rgba(0,0,0,.05)}
+[data-theme="paper"] .kitem{background:rgba(255,255,255,.22)}
+.kitem .head{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;font-size:.68rem;color:var(--muted)}
+.kitem .body{font-size:.78rem;line-height:1.55}
+.legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.leg{display:flex;gap:8px;align-items:center;font-size:.72rem;color:var(--text)}
+.sw{width:18px;height:10px;border-radius:4px;flex:0 0 auto}
+.footer{margin-top:16px;padding:12px 16px;border-radius:18px;border:1px solid var(--border);background:var(--panel);text-align:center;font-size:.84rem;color:var(--muted)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+.overlay.show{display:flex}
+.modal{
+  width:min(980px,96vw);max-height:90vh;overflow:auto;background:var(--bg2);border:1px solid var(--c1);
+  border-radius:24px;padding:22px;box-shadow:0 0 40px var(--gl1)
+}
+.modal h2{font-family:var(--disp);font-size:1.6rem;color:var(--c1);margin-bottom:10px}
+.modal p{font-size:.86rem;line-height:1.8;color:var(--text);margin-bottom:12px}
+.modal h3{font-family:var(--disp);font-size:1.1rem;color:var(--c2);margin:16px 0 8px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.tag{padding:4px 10px;border:1px solid var(--border);border-radius:999px;font-size:.68rem;color:var(--c4)}
+.close{float:right;color:var(--c3);cursor:pointer;font-size:.8rem}
+.note{font-size:.72rem;color:var(--muted);line-height:1.65;margin-top:8px}
+@media (max-width: 1100px){.layout{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width: 760px){.header{flex-direction:column;align-items:flex-start}.header-right{justify-content:flex-start}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.legend{grid-template-columns:1fr}.canvas-wrap{height:300px}}
+</style>
+</head>
+<body>
+<div class="grid"></div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this) closeInfo()">
+  <div class="modal">
+    <span class="close" onclick="closeInfo()">✕ CERRAR</span>
+    <h2>Proceso Gaussiano + Programación Genética</h2>
+    <p>Esta simulación representa una idea central de investigación: usar <strong>programación genética</strong> para evolucionar <strong>kernels válidos</strong> de un proceso gaussiano. En lugar de fijar de antemano un kernel RBF, periódico o racional cuadrático, la programación genética construye expresiones simbólicas a partir de componentes base y operaciones de suma o producto.</p>
+    <p>La restricción importante es matemática: la demo solo combina kernels que preservan <strong>semidefinitud positiva</strong>. Por eso se usan bloques como RBF, lineal, periódico, racional cuadrático y constante, junto con suma y producto. Así, el proceso gaussiano sigue siendo un modelo probabilístico coherente sobre funciones.</p>
+    <h3>Qué hace el modelo</h3>
+    <p>Primero se generan datos sintéticos de entrenamiento. Luego una población de árboles-kernel compite según su capacidad predictiva. Cada individuo define una geometría distinta de semejanza entre entradas, y esa geometría induce una media posterior, bandas de incertidumbre y una matriz de covarianza diferente. El objetivo evolutivo de esta demo es reducir el error predictivo sobre una grilla densa de validación y, al mismo tiempo, mostrar el log marginal likelihood como diagnóstico probabilístico complementario.</p>
+    <h3>Aplicaciones de esta metodología</h3>
+    <p>Una aplicación natural es la <strong>descubierta automática de kernels</strong>: en series temporales, señales científicas, datos espaciales o mediciones periódicas, la programación genética puede proponer estructuras que mezclen tendencia, suavidad, repetición y escalas múltiples. También es útil en <strong>modelado simbólico asistido por probabilidad</strong>, porque combina interpretabilidad estructural con cuantificación de incertidumbre.</p>
+    <p>Otra aplicación aparece en <strong>optimización evolutiva asistida por modelos sustitutos</strong>. Allí la programación genética puede buscar programas, reglas o kernels, mientras que el proceso gaussiano resume lo aprendido y ayuda a comparar candidatos con menos evaluaciones costosas. En ingeniería, control, química computacional, diseño de materiales y calibración de simuladores, esta lógica resulta especialmente valiosa cuando cada evaluación real es cara.</p>
+    <p>Desde un punto de vista conceptual, esta demo une tres ideas: una <strong>representación simbólica</strong> del kernel, una <strong>geometría probabilística</strong> definida por la covarianza y una <strong>búsqueda evolutiva</strong> que explora el espacio de estructuras posibles. No evoluciona programas arbitrarios, sino funciones de covarianza que cambian la forma en que el proceso gaussiano entiende el espacio de entrada.</p>
+    <div class="tags">
+      <span class="tag">Programación genética</span>
+      <span class="tag">Kernels válidos</span>
+      <span class="tag">Proceso gaussiano</span>
+      <span class="tag">Geometría probabilística</span>
+      <span class="tag">Descubierta automática</span>
+      <span class="tag">Incertidumbre</span>
+      <span class="tag">Series temporales</span>
+      <span class="tag">Surrogate modeling</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="header">
+    <div class="hgroup">
+      <h1>PROCESO GAUSSIANO ∥ PROGRAMACIÓN GENÉTICA</h1>
+      <p>Demo interactiva donde la programación genética evoluciona expresiones-kernel y el proceso gaussiano usa la mejor estructura encontrada para ajustar una función, estimar incertidumbre y mostrar la geometría inducida por la covarianza.</p>
+    </div>
+    <div class="header-right">
+      <button class="btn" onclick="toggleTheme()">◑ TEMA</button>
+      <button class="btn" onclick="openInfo()">? MODELO</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="left">
+      <div class="card">
+        <div class="card-label">POSTERIOR DEL PROCESO GAUSSIANO · FUNCIÓN VERDADERA · DATOS · MEDIA POSTERIOR · BANDA 95%</div>
+        <div class="canvas-wrap"><canvas id="mainCanvas"></canvas></div>
+        <div class="legend">
+          <div class="leg"><div class="sw" style="background:rgba(255,255,255,.35)"></div>Función verdadera</div>
+          <div class="leg"><div class="sw" style="background:var(--c1)"></div>Media posterior</div>
+          <div class="leg"><div class="sw" style="background:rgba(41,212,255,.18);height:12px"></div>Intervalo 95%</div>
+          <div class="leg"><div class="sw" style="background:var(--c3)"></div>Datos observados</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">MATRIZ K(x, x′) DEL MEJOR KERNEL EVOLUCIONADO · HEATMAP DE SEMEJANZA</div>
+        <div class="canvas-wrap small"><canvas id="heatCanvas"></canvas></div>
+        <div class="note">El heatmap muestra cómo el kernel mejor encontrado mide semejanza entre pares de entradas. Estructuras diagonales, periódicas o mixtas revelan la geometría que el modelo aprende.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">HISTORIAL EVOLUTIVO · MEJOR RMSE DE VALIDACIÓN POR GENERACIÓN</div>
+        <div class="canvas-wrap tiny"><canvas id="histCanvas"></canvas></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card">
+        <div class="card-label">ESTADO DEL SISTEMA</div>
+        <div class="stats-grid">
+          <div class="stat"><div class="k">GENERACIÓN</div><div class="v c1" id="stGen">000</div></div>
+          <div class="stat"><div class="k">POBLACIÓN</div><div class="v" id="stPop">16</div></div>
+          <div class="stat"><div class="k">MEJOR RMSE</div><div class="v c4" id="stRmse">—</div></div>
+          <div class="stat"><div class="k">LOG MARGINAL LIK.</div><div class="v c2" id="stLml">—</div></div>
+          <div class="stat"><div class="k">RUIDO σₙ</div><div class="v c3" id="stNoise">—</div></div>
+          <div class="stat"><div class="k">NODOS DEL KERNEL</div><div class="v c5" id="stNodes">—</div></div>
+        </div>
+
+        <div class="expr-box">
+          <div class="expr-title">MEJOR EXPRESIÓN KERNEL</div>
+          <div class="expr" id="bestExpr">Inicializando...</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">CONTROLES</div>
+        <div class="ctrls">
+          <button class="btn-g btn" id="runBtn" onclick="toggleAuto()">▶ AUTO RUN</button>
+          <button class="btn" onclick="stepOnce()">⊳ PASO</button>
+          <button class="btn-r btn" onclick="resetAll()">⟳ RESET</button>
+        </div>
+        <div class="ctrls" style="margin-top:12px">
+          <div class="row"><label>Función</label>
+            <select id="fnSelect" onchange="changeFunction(this.value)">
+              <option value="mixed">Multimodal amortiguada</option>
+              <option value="periodic">Cuasi-periódica</option>
+              <option value="trend">Tendencia suave + ondulación</option>
+              <option value="spiky">Picos locales</option>
+            </select>
+          </div>
+          <div class="row"><label>Velocidad</label><input type="range" min="60" max="1200" step="20" value="260" oninput="setSpeed(this.value)"><span id="speedTxt">260 ms</span></div>
+          <div class="row"><label>Mutación</label><input type="range" min="0.05" max="0.8" step="0.05" value="0.35" oninput="setMut(this.value)"><span id="mutTxt">0.35</span></div>
+          <div class="row"><label>Prof. máx.</label><input type="range" min="2" max="5" step="1" value="3" oninput="setDepth(this.value)"><span id="depthTxt">3</span></div>
+        </div>
+        <div class="status" id="statusBox">Listo para evolucionar kernels válidos. <span class="blink">█</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">TOP KERNELS DE LA POBLACIÓN</div>
+        <div class="kernel-list" id="kernelList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Material elaborado por el profesor Sergio Gevatschnaider</div>
+</div>
+
+<script>
+/* ============================================================
+   UTILIDADES MATEMÁTICAS
+============================================================ */
+const TAU = Math.PI * 2;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rand=(a,b)=>a+Math.random()*(b-a);
+const randi=n=>Math.floor(Math.random()*n);
+function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(TAU*v);}
+function mean(arr){return arr.reduce((s,v)=>s+v,0)/Math.max(arr.length,1);}
+function rmse(a,b){let s=0;for(let i=0;i<a.length;i++)s+=(a[i]-b[i])**2;return Math.sqrt(s/Math.max(a.length,1));}
+function dot(a,b){let s=0;for(let i=0;i<a.length;i++)s+=a[i]*b[i];return s;}
+function clone(obj){return JSON.parse(JSON.stringify(obj));}
+function linspace(a,b,n){return Array.from({length:n},(_,i)=>a+(b-a)*i/(n-1));}
+function fmt(v,d=3){return Number.isFinite(v)?(+v).toFixed(d):'—';}
+function safeExp(v){return Math.exp(clamp(v,-40,40));}
+
+function cholesky(A){
+  const n=A.length;
+  const L=Array.from({length:n},()=>Array(n).fill(0));
+  for(let i=0;i<n;i++){
+    for(let j=0;j<=i;j++){
+      let s=A[i][j];
+      for(let k=0;k<j;k++) s-=L[i][k]*L[j][k];
+      if(i===j){
+        if(s<=1e-12) return null;
+        L[i][j]=Math.sqrt(s);
+      } else {
+        L[i][j]=s/L[j][j];
+      }
+    }
+  }
+  return L;
+}
+function forwardSolve(L,b){
+  const n=L.length, x=Array(n).fill(0);
+  for(let i=0;i<n;i++){
+    let s=b[i];
+    for(let j=0;j<i;j++) s-=L[i][j]*x[j];
+    x[i]=s/L[i][i];
+  }
+  return x;
+}
+function backSolve(L,b){
+  const n=L.length, x=Array(n).fill(0);
+  for(let i=n-1;i>=0;i--){
+    let s=b[i];
+    for(let j=i+1;j<n;j++) s-=L[j][i]*x[j];
+    x[i]=s/L[i][i];
+  }
+  return x;
+}
+function solveSPD(L,b){ return backSolve(L, forwardSolve(L,b)); }
+
+/* ============================================================
+   FUNCIONES VERDADERAS DEL ENTORNO SINTÉTICO
+============================================================ */
+function trueFunction(kind, x){
+  switch(kind){
+    case 'periodic':
+      return 0.85*Math.sin(2*Math.PI*2.2*x + 0.35) + 0.28*Math.cos(2*Math.PI*6.4*x) + 0.18*x;
+    case 'trend':
+      return 1.1*(x-0.35) + 0.55*Math.sin(2*Math.PI*1.5*x) - 0.35*(x-0.82)*(x-0.82);
+    case 'spiky':
+      return 1.15*Math.exp(-80*(x-0.22)*(x-0.22)) - 0.85*Math.exp(-120*(x-0.63)*(x-0.63)) + 0.35*Math.sin(10*x);
+    case 'mixed':
+    default:
+      return Math.sin(5.5*Math.PI*x)*Math.exp(-1.7*x) + 0.42*Math.sin(13*x+0.4) + 0.18*Math.cos(22*x) + 0.05*Math.sin(40*x);
+  }
+}
+
+/* ============================================================
+   PROGRAMACIÓN GENÉTICA PARA KERNELS VÁLIDOS
+   Solo se usan kernels PSD y combinaciones que preservan PSD.
+============================================================ */
+const BASES=['rbf','lin','per','rq','const'];
+const OPS=['sum','prod'];
+
+function sampleBase(){
+  const t=BASES[randi(BASES.length)];
+  switch(t){
+    case 'rbf': return {type:'rbf', sf:rand(0.4,1.8), ell:rand(0.05,0.45)};
+    case 'lin': return {type:'lin', sf:rand(0.25,1.2), c:rand(-0.4,0.8)};
+    case 'per': return {type:'per', sf:rand(0.3,1.4), ell:rand(0.05,0.35), p:rand(0.12,0.7)};
+    case 'rq': return {type:'rq', sf:rand(0.4,1.4), ell:rand(0.05,0.35), alpha:rand(0.25,2.5)};
+    case 'const': return {type:'const', sf:rand(0.08,1.0)};
+  }
+}
+function randomTree(maxDepth){
+  if(maxDepth<=0 || Math.random()<0.48) return sampleBase();
+  const op=OPS[randi(OPS.length)];
+  return {type:op, left:randomTree(maxDepth-1), right:randomTree(maxDepth-1)};
+}
+function kernelValue(node, x, z){
+  switch(node.type){
+    case 'rbf': {
+      const d=(x-z)/node.ell;
+      return node.sf*node.sf*Math.exp(-0.5*d*d);
+    }
+    case 'lin': {
+      return node.sf*node.sf*(x-node.c)*(z-node.c);
+    }
+    case 'per': {
+      const s=Math.sin(Math.PI*Math.abs(x-z)/node.p);
+      return node.sf*node.sf*Math.exp(-2*s*s/(node.ell*node.ell));
+    }
+    case 'rq': {
+      const d2=(x-z)*(x-z);
+      return node.sf*node.sf*Math.pow(1 + d2/(2*node.alpha*node.ell*node.ell), -node.alpha);
+    }
+    case 'const': {
+      return node.sf*node.sf;
+    }
+    case 'sum': return kernelValue(node.left,x,z) + kernelValue(node.right,x,z);
+    case 'prod': return kernelValue(node.left,x,z) * kernelValue(node.right,x,z);
+    default: return 0;
+  }
+}
+function treeDepth(node){
+  if(!node.left && !node.right) return 1;
+  return 1 + Math.max(treeDepth(node.left), treeDepth(node.right));
+}
+function nodeCount(node){
+  if(!node.left && !node.right) return 1;
+  return 1 + nodeCount(node.left) + nodeCount(node.right);
+}
+function listPaths(node, path=[], out=[]){
+  out.push(path);
+  if(node.left) listPaths(node.left, path.concat('left'), out);
+  if(node.right) listPaths(node.right, path.concat('right'), out);
+  return out;
+}
+function getNode(node,path){
+  let cur=node;
+  for(const p of path) cur=cur[p];
+  return cur;
+}
+function replacePath(node,path,newSub){
+  if(path.length===0) return clone(newSub);
+  const root=clone(node), head=path[0];
+  root[head]=replacePath(root[head], path.slice(1), newSub);
+  return root;
+}
+function pruneTree(node,maxDepth){
+  if(maxDepth<=1) return (!node.left && !node.right) ? clone(node) : sampleBase();
+  if(!node.left && !node.right) return clone(node);
+  return {type:node.type, left:pruneTree(node.left,maxDepth-1), right:pruneTree(node.right,maxDepth-1)};
+}
+function mutateParams(node, rate=0.22){
+  const n=clone(node);
+  function rec(u){
+    if(!u.left && !u.right){
+      if(u.sf!==undefined && Math.random()<rate) u.sf=clamp(u.sf*Math.exp(0.24*randn()),0.05,3.5);
+      if(u.ell!==undefined && Math.random()<rate) u.ell=clamp(u.ell*Math.exp(0.28*randn()),0.03,0.8);
+      if(u.p!==undefined && Math.random()<rate) u.p=clamp(u.p*Math.exp(0.25*randn()),0.05,1.0);
+      if(u.alpha!==undefined && Math.random()<rate) u.alpha=clamp(u.alpha*Math.exp(0.25*randn()),0.08,4.5);
+      if(u.c!==undefined && Math.random()<rate) u.c=clamp(u.c + 0.12*randn(),-1.0,1.2);
+      return;
+    }
+    if(Math.random()<rate*0.55) u.type = (u.type==='sum'?'prod':'sum');
+    rec(u.left); rec(u.right);
+  }
+  rec(n);
+  return n;
+}
+function subtreeMutation(tree, maxDepth){
+  const paths=listPaths(tree);
+  const p=paths[randi(paths.length)];
+  const d=clamp(maxDepth - Math.floor(p.length/2), 1, maxDepth);
+  return pruneTree(replacePath(tree,p,randomTree(d)), maxDepth);
+}
+function crossover(t1,t2,maxDepth){
+  const p1=listPaths(t1)[randi(listPaths(t1).length)];
+  const p2=listPaths(t2)[randi(listPaths(t2).length)];
+  const child=replacePath(t1,p1,getNode(t2,p2));
+  return pruneTree(child,maxDepth);
+}
+function expr(node){
+  switch(node.type){
+    case 'rbf': return `RBF(sf=${fmt(node.sf,2)}, ℓ=${fmt(node.ell,2)})`;
+    case 'lin': return `LIN(sf=${fmt(node.sf,2)}, c=${fmt(node.c,2)})`;
+    case 'per': return `PER(sf=${fmt(node.sf,2)}, ℓ=${fmt(node.ell,2)}, p=${fmt(node.p,2)})`;
+    case 'rq': return `RQ(sf=${fmt(node.sf,2)}, ℓ=${fmt(node.ell,2)}, α=${fmt(node.alpha,2)})`;
+    case 'const': return `CONST(sf=${fmt(node.sf,2)})`;
+    case 'sum': return `(${expr(node.left)} + ${expr(node.right)})`;
+    case 'prod': return `(${expr(node.left)} × ${expr(node.right)})`;
+    default: return '?';
+  }
+}
+
+/* ============================================================
+   PROCESO GAUSSIANO
+============================================================ */
+function kernelMatrix(tree, X1, X2){
+  const M=Array.from({length:X1.length},()=>Array(X2.length).fill(0));
+  for(let i=0;i<X1.length;i++) for(let j=0;j<X2.length;j++) M[i][j]=kernelValue(tree,X1[i],X2[j]);
+  return M;
+}
+function gpPredict(trainX, trainY, testX, tree, noise){
+  const n=trainX.length;
+  const K=kernelMatrix(tree, trainX, trainX);
+  for(let i=0;i<n;i++) K[i][i]+=noise*noise + 1e-7;
+  const L=cholesky(K);
+  if(!L) return null;
+  const alpha=solveSPD(L, trainY);
+  const mu=[], sd=[];
+  for(const x of testX){
+    const ks=trainX.map(xi=>kernelValue(tree, xi, x));
+    const m=dot(ks, alpha);
+    const v=forwardSolve(L, ks);
+    let s2=kernelValue(tree, x, x) - dot(v,v);
+    s2=Math.max(s2,1e-9);
+    mu.push(m); sd.push(Math.sqrt(s2));
+  }
+  let logdet=0; for(let i=0;i<L.length;i++) logdet += Math.log(L[i][i]);
+  const lml = -0.5*dot(trainY, alpha) - logdet - 0.5*n*Math.log(2*Math.PI);
+  return {mu, sd, lml};
+}
+
+/* ============================================================
+   ENTORNO DEL DEMO
+============================================================ */
+const State={
+  running:false,timer:null,speed:260,mutationRate:0.35,maxDepth:3,
+  popSize:16,gen:0,functionKind:'mixed',dataNoise:0.07,
+  trainX:[],trainY:[],trainTrue:[],gridX:linspace(0,1,180),gridTrue:[],
+  population:[],history:[],best:null,theme:'dark'
+};
+
+function makeDataset(){
+  const x=Array.from({length:14},()=>rand(0.02,0.98)).sort((a,b)=>a-b);
+  const yTrue=x.map(v=>trueFunction(State.functionKind,v));
+  const y=yTrue.map(v=>v + State.dataNoise*randn());
+  State.trainX=x; State.trainY=y; State.trainTrue=yTrue;
+  State.gridTrue=State.gridX.map(v=>trueFunction(State.functionKind,v));
+}
+function newIndividual(){
+  return {tree:randomTree(State.maxDepth), noise:rand(0.03,0.18), score:-Infinity, rmse:Infinity, lml:-Infinity, pred:null};
+}
+function evaluateIndividual(ind){
+  try{
+    const out=gpPredict(State.trainX, State.trainY, State.gridX, ind.tree, ind.noise);
+    if(!out || out.mu.some(v=>!Number.isFinite(v)) || !Number.isFinite(out.lml)){
+      ind.score=-1e9; ind.rmse=1e9; ind.lml=-1e9; ind.pred=null; return ind;
+    }
+    const e=rmse(out.mu, State.gridTrue);
+    const penalty=0.006*nodeCount(ind.tree);
+    ind.rmse=e;
+    ind.lml=out.lml;
+    ind.score=-(e + penalty);
+    ind.pred=out;
+    return ind;
+  }catch(err){
+    ind.score=-1e9; ind.rmse=1e9; ind.lml=-1e9; ind.pred=null; return ind;
+  }
+}
+function evaluatePopulation(){
+  State.population.forEach(evaluateIndividual);
+  State.population.sort((a,b)=>b.score-a.score);
+  State.best=clone(State.population[0]);
+  State.history.push(State.population[0].rmse);
+}
+function initPopulation(){
+  State.population=Array.from({length:State.popSize},()=>newIndividual());
+  evaluatePopulation();
+}
+function tournament(k=3){
+  let best=null;
+  for(let i=0;i<k;i++){
+    const cand=State.population[randi(State.population.length)];
+    if(!best || cand.score>best.score) best=cand;
+  }
+  return best;
+}
+function nextGeneration(){
+  const next=[];
+  const elite=2;
+  for(let i=0;i<elite;i++) next.push(clone(State.population[i]));
+  while(next.length<State.popSize){
+    const p1=tournament(), p2=tournament();
+    let tree=Math.random()<0.78 ? crossover(p1.tree, p2.tree, State.maxDepth) : clone(p1.tree);
+    if(Math.random()<State.mutationRate) tree=subtreeMutation(tree, State.maxDepth);
+    if(Math.random()<0.85) tree=mutateParams(tree, 0.18 + 0.35*State.mutationRate);
+    let noise=(p1.noise+p2.noise)/2;
+    if(Math.random()<State.mutationRate) noise=clamp(noise*Math.exp(0.22*randn()), 0.01, 0.35);
+    next.push({tree, noise, score:-Infinity, rmse:Infinity, lml:-Infinity, pred:null});
+  }
+  State.population=next;
+  State.gen+=1;
+  evaluatePopulation();
+}
+
+/* ============================================================
+   DIBUJO
+============================================================ */
+const mainCanvas=document.getElementById('mainCanvas');
+const heatCanvas=document.getElementById('heatCanvas');
+const histCanvas=document.getElementById('histCanvas');
+const mctx=mainCanvas.getContext('2d');
+const hctx=heatCanvas.getContext('2d');
+const tctx=histCanvas.getContext('2d');
+
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function palette(){return {bg:css('--bg2'), border:css('--border'), text:css('--text'), muted:css('--muted'), c1:css('--c1'), c2:css('--c2'), c3:css('--c3'), c4:css('--c4'), c5:css('--c5')}}
+function fitCanvas(c){ const dpr=window.devicePixelRatio||1; const rect=c.getBoundingClientRect(); c.width=rect.width*dpr; c.height=rect.height*dpr; const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); }
+function resizeAll(){ fitCanvas(mainCanvas); fitCanvas(heatCanvas); fitCanvas(histCanvas); drawAll(); }
+
+function drawPosterior(){
+  const ctx=mctx, W=mainCanvas.getBoundingClientRect().width, H=mainCanvas.getBoundingClientRect().height, cl=palette();
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=cl.bg; ctx.fillRect(0,0,W,H);
+  const PAD={l:50,r:16,t:18,b:30}; const pw=W-PAD.l-PAD.r, ph=H-PAD.t-PAD.b;
+  const best=State.best;
+  if(!best || !best.pred) return;
+  const yAll=[...State.gridTrue, ...best.pred.mu.map((m,i)=>m+2*best.pred.sd[i]), ...best.pred.mu.map((m,i)=>m-2*best.pred.sd[i]), ...State.trainY];
+  let yMin=Math.min(...yAll)-0.15, yMax=Math.max(...yAll)+0.15, yr=yMax-yMin;
+  const X=v=>PAD.l+v*pw, Y=v=>PAD.t+ph-(v-yMin)/yr*ph;
+
+  ctx.strokeStyle=cl.border; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=yMin+i*yr/4; const cy=Y(y);
+    ctx.beginPath(); ctx.moveTo(PAD.l,cy); ctx.lineTo(PAD.l+pw,cy); ctx.stroke();
+    ctx.fillStyle=cl.muted; ctx.font='10px Share Tech Mono'; ctx.textAlign='right'; ctx.fillText(y.toFixed(2), PAD.l-5, cy+3);
+  }
+  ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+ph); ctx.lineTo(PAD.l+pw,PAD.t+ph); ctx.stroke();
+  [0,.25,.5,.75,1].forEach(v=>{ctx.fillStyle=cl.muted; ctx.textAlign='center'; ctx.fillText(v.toFixed(2), X(v), PAD.t+ph+15);});
+
+  ctx.beginPath();
+  State.gridX.forEach((x,i)=>{const y=best.pred.mu[i]+2*best.pred.sd[i]; if(i===0)ctx.moveTo(X(x),Y(y)); else ctx.lineTo(X(x),Y(y));});
+  [...State.gridX].reverse().forEach((x,j)=>{const i=State.gridX.length-1-j; const y=best.pred.mu[i]-2*best.pred.sd[i]; ctx.lineTo(X(x),Y(y));});
+  ctx.closePath(); ctx.fillStyle='rgba(41,212,255,.14)'; ctx.fill();
+
+  ctx.beginPath();
+  State.gridX.forEach((x,i)=>{const y=State.gridTrue[i]; if(i===0)ctx.moveTo(X(x),Y(y)); else ctx.lineTo(X(x),Y(y));});
+  ctx.strokeStyle='rgba(255,255,255,.34)'; ctx.setLineDash([5,5]); ctx.lineWidth=1.5; ctx.stroke(); ctx.setLineDash([]);
+
+  ctx.beginPath();
+  State.gridX.forEach((x,i)=>{const y=best.pred.mu[i]; if(i===0)ctx.moveTo(X(x),Y(y)); else ctx.lineTo(X(x),Y(y));});
+  ctx.strokeStyle=cl.c1; ctx.lineWidth=2.4; ctx.shadowColor=cl.c1; ctx.shadowBlur=12; ctx.stroke(); ctx.shadowBlur=0;
+
+  State.trainX.forEach((x,i)=>{
+    ctx.beginPath(); ctx.arc(X(x),Y(State.trainY[i]),5,0,TAU);
+    ctx.fillStyle=cl.c3; ctx.shadowColor=cl.c3; ctx.shadowBlur=10; ctx.fill(); ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.lineWidth=1; ctx.stroke();
+  });
+}
+
+function valueToColor(v,vmin,vmax){
+  const t=(v-vmin)/(vmax-vmin+1e-9);
+  const u=clamp(t,0,1);
+  const r=Math.round(30 + 220*u);
+  const g=Math.round(50 + 130*(1-Math.abs(u-.5)*2));
+  const b=Math.round(240 - 180*u);
+  return `rgb(${r},${g},${b})`;
+}
+function drawHeatmap(){
+  const ctx=hctx, W=heatCanvas.getBoundingClientRect().width, H=heatCanvas.getBoundingClientRect().height, cl=palette();
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=cl.bg; ctx.fillRect(0,0,W,H);
+  const PAD={l:36,r:12,t:12,b:26}; const pw=W-PAD.l-PAD.r, ph=H-PAD.t-PAD.b;
+  const best=State.best; if(!best) return;
+  const xs=linspace(0,1,42); const K=kernelMatrix(best.tree,xs,xs);
+  const vals=K.flat(); const vmin=Math.min(...vals), vmax=Math.max(...vals);
+  const cw=pw/xs.length, ch=ph/xs.length;
+  for(let i=0;i<xs.length;i++) for(let j=0;j<xs.length;j++){
+    ctx.fillStyle=valueToColor(K[i][j],vmin,vmax);
+    ctx.fillRect(PAD.l+j*cw, PAD.t+i*ch, cw+0.7, ch+0.7);
+  }
+  ctx.strokeStyle=cl.border; ctx.strokeRect(PAD.l,PAD.t,pw,ph);
+  ctx.fillStyle=cl.muted; ctx.font='10px Share Tech Mono'; ctx.textAlign='center';
+  [0,.5,1].forEach(v=>ctx.fillText(v.toFixed(1), PAD.l+v*pw, PAD.t+ph+14));
+  ctx.save(); ctx.translate(12, PAD.t+ph/2); ctx.rotate(-Math.PI/2); ctx.fillText('x',0,0); ctx.restore();
+  ctx.fillText('x′', PAD.l+pw/2, H-6);
+  ctx.fillStyle=cl.text; ctx.textAlign='left'; ctx.fillText(`min=${fmt(vmin,2)}  max=${fmt(vmax,2)}`, PAD.l, 10);
+}
+
+function drawHistory(){
+  const ctx=tctx, W=histCanvas.getBoundingClientRect().width, H=histCanvas.getBoundingClientRect().height, cl=palette();
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=cl.bg; ctx.fillRect(0,0,W,H);
+  const PAD={l:46,r:14,t:16,b:22}; const pw=W-PAD.l-PAD.r, ph=H-PAD.t-PAD.b;
+  if(State.history.length<2){ ctx.fillStyle=cl.muted; ctx.font='11px Share Tech Mono'; ctx.textAlign='center'; ctx.fillText('Aún no hay historial suficiente', W/2,H/2); return; }
+  const vals=State.history; const ymin=Math.min(...vals)*0.96, ymax=Math.max(...vals)*1.04, yr=ymax-ymin;
+  const X=i=>PAD.l+i/(vals.length-1)*pw, Y=v=>PAD.t+ph-(v-ymin)/yr*ph;
+  ctx.strokeStyle=cl.border; ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+ph); ctx.lineTo(PAD.l+pw,PAD.t+ph); ctx.stroke();
+  ctx.fillStyle=cl.muted; ctx.font='10px Share Tech Mono'; ctx.textAlign='right'; ctx.fillText(ymax.toFixed(3), PAD.l-4, PAD.t+8); ctx.fillText(ymin.toFixed(3), PAD.l-4, PAD.t+ph);
+  ctx.beginPath(); ctx.moveTo(X(0),Y(vals[0])); vals.forEach((v,i)=>ctx.lineTo(X(i),Y(v))); ctx.lineTo(X(vals.length-1),Y(ymin)); ctx.lineTo(X(0),Y(ymin)); ctx.closePath(); ctx.fillStyle='rgba(255,213,74,.10)'; ctx.fill();
+  ctx.beginPath(); vals.forEach((v,i)=>{if(i===0)ctx.moveTo(X(i),Y(v)); else ctx.lineTo(X(i),Y(v));}); ctx.strokeStyle=cl.c4; ctx.lineWidth=2.2; ctx.shadowColor=cl.c4; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+  const last=vals.length-1; ctx.beginPath(); ctx.arc(X(last),Y(vals[last]),4,0,TAU); ctx.fillStyle=cl.c4; ctx.fill();
+}
+function drawAll(){ drawPosterior(); drawHeatmap(); drawHistory(); updateUI(); }
+
+/* ============================================================
+   UI
+============================================================ */
+function updateUI(){
+  document.getElementById('stGen').textContent=String(State.gen).padStart(3,'0');
+  document.getElementById('stPop').textContent=State.popSize;
+  document.getElementById('stRmse').textContent=State.best?fmt(State.best.rmse,4):'—';
+  document.getElementById('stLml').textContent=State.best?fmt(State.best.lml,3):'—';
+  document.getElementById('stNoise').textContent=State.best?fmt(State.best.noise,3):'—';
+  document.getElementById('stNodes').textContent=State.best?nodeCount(State.best.tree):'—';
+  document.getElementById('bestExpr').textContent=State.best?expr(State.best.tree):'—';
+  const list=document.getElementById('kernelList');
+  list.innerHTML='';
+  State.population.slice(0,5).forEach((ind,idx)=>{
+    const div=document.createElement('div'); div.className='kitem';
+    div.innerHTML=`<div class="head"><span>#${idx+1} · RMSE=${fmt(ind.rmse,4)}</span><span>LML=${fmt(ind.lml,2)}</span></div><div class="body">${expr(ind.tree)}</div>`;
+    list.appendChild(div);
+  });
+}
+function setStatus(msg){ document.getElementById('statusBox').innerHTML = msg + ' <span class="blink">█</span>'; }
+function setSpeed(v){ State.speed=+v; document.getElementById('speedTxt').textContent=`${v} ms`; }
+function setMut(v){ State.mutationRate=+v; document.getElementById('mutTxt').textContent=(+v).toFixed(2); setStatus(`Mutación ajustada a ${( +v ).toFixed(2)}.`); }
+function setDepth(v){ State.maxDepth=+v; document.getElementById('depthTxt').textContent=v; setStatus(`Profundidad máxima ajustada a ${v}. Pulsa reset para regenerar desde cero.`); }
+function changeFunction(v){ State.functionKind=v; resetAll(); }
+function openInfo(){ document.getElementById('overlay').classList.add('show'); }
+function closeInfo(){ document.getElementById('overlay').classList.remove('show'); }
+function toggleTheme(){
+  State.theme = State.theme==='dark' ? 'paper' : 'dark';
+  document.documentElement.setAttribute('data-theme', State.theme==='paper' ? 'paper' : '');
+  drawAll();
+}
+
+/* ============================================================
+   CICLO DE EVOLUCIÓN
+============================================================ */
+function initialize(){
+  makeDataset();
+  State.gen=0; State.history=[];
+  initPopulation();
+  setStatus('Población inicial creada. La programación genética ya propone kernels y el GP evalúa su poder predictivo.');
+  drawAll();
+}
+function tick(){
+  nextGeneration();
+  setStatus(`Generación ${State.gen}. Mejor RMSE ${fmt(State.best.rmse,4)} con kernel de ${nodeCount(State.best.tree)} nodos.`);
+  drawAll();
+}
+function startAuto(){
+  if(State.running) return;
+  State.running=true;
+  const b=document.getElementById('runBtn'); b.textContent='⏸ PAUSAR'; b.classList.add('on');
+  setStatus('Evolucionando estructuras de kernel válidas...');
+  loop();
+}
+function stopAuto(){
+  State.running=false; clearTimeout(State.timer);
+  const b=document.getElementById('runBtn'); b.textContent='▶ AUTO RUN'; b.classList.remove('on');
+  setStatus(`Pausado en generación ${State.gen}.`);
+}
+function loop(){ if(!State.running) return; State.timer=setTimeout(()=>{tick(); loop();}, State.speed); }
+function toggleAuto(){ State.running ? stopAuto() : startAuto(); }
+function stepOnce(){ if(!State.running){ tick(); } }
+function resetAll(){ stopAuto(); initialize(); }
+
+window.addEventListener('resize', resizeAll);
+resizeAll();
+initialize();
+</script>
+</body>
+</html>

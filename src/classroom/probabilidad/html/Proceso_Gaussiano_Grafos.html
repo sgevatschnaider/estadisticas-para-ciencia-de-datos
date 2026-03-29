@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Proceso Gaussiano sobre Grafos</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04060f; --bg2:#08101f; --bg3:#0d1630; --panel:#0c1326;
+  --border:#183055; --text:#d7e7ff; --dim:#6f89a8;
+  --accent1:#00e5ff; --accent2:#39ff14; --accent3:#ff2d6b; --accent4:#ffcc00; --accent5:#8a7dff;
+  --glow1:rgba(0,229,255,.20); --glow2:rgba(57,255,20,.18); --glow3:rgba(255,45,107,.18); --glow4:rgba(255,204,0,.18);
+  --mono:'Share Tech Mono', monospace; --disp:'Rajdhani', sans-serif;
+}
+[data-theme="paper"]{
+  --bg:#f3efe7; --bg2:#ebe5d8; --bg3:#e0d8ca; --panel:#f8f4eb;
+  --border:#b4a896; --text:#1c2333; --dim:#6e665f;
+  --accent1:#0a74b9; --accent2:#1c8a33; --accent3:#b3204d; --accent4:#b88700; --accent5:#5c54d3;
+  --glow1:rgba(10,116,185,.12); --glow2:rgba(28,138,51,.10); --glow3:rgba(179,32,77,.10); --glow4:rgba(184,135,0,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--mono);overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:
+  radial-gradient(circle at 12% 20%, rgba(0,229,255,.06), transparent 22%),
+  radial-gradient(circle at 85% 12%, rgba(57,255,20,.05), transparent 24%),
+  radial-gradient(circle at 70% 88%, rgba(255,45,107,.05), transparent 24%);}
+.grid-bg{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.18;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1340px;margin:0 auto;padding:18px}
+.header{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--accent1);margin-bottom:16px}
+.header h1{font-family:var(--disp);font-size:2rem;line-height:1;letter-spacing:3px;color:var(--accent1);text-shadow:0 0 24px var(--glow1)}
+.header p{margin-top:6px;color:var(--dim);font-size:.76rem;letter-spacing:1px}
+.header-right{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:.74rem;padding:8px 12px;border:1px solid var(--accent1);background:transparent;color:var(--accent1);cursor:pointer;transition:.2s ease;letter-spacing:1px}
+.btn:hover{background:var(--glow1);box-shadow:0 0 14px var(--glow1)}
+.btn.on{background:var(--accent1);color:var(--bg);box-shadow:0 0 18px var(--glow1)}
+.btn-g{border-color:var(--accent2);color:var(--accent2)}
+.btn-g:hover{background:var(--glow2);box-shadow:0 0 14px var(--glow2)}
+.btn-g.on{background:var(--accent2);color:var(--bg);box-shadow:0 0 18px var(--glow2)}
+.btn-r{border-color:var(--accent3);color:var(--accent3)}
+.btn-r:hover{background:var(--glow3);box-shadow:0 0 14px var(--glow3)}
+.btn-y{border-color:var(--accent4);color:var(--accent4)}
+.btn-y:hover{background:var(--glow4);box-shadow:0 0 14px var(--glow4)}
+.layout{display:grid;grid-template-columns:1.3fr .88fr;gap:14px}
+.left,.right{display:flex;flex-direction:column;gap:14px}
+.card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--border);position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,var(--accent1),transparent)}
+.card .label{position:absolute;left:12px;top:8px;font-size:.60rem;color:var(--dim);letter-spacing:2px;z-index:3}
+.canvas-wrap{height:430px}
+.canvas-wrap.small{height:240px}
+.canvas-wrap.mid{height:210px}
+canvas{display:block;width:100%;height:100%}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.scard{background:linear-gradient(180deg,var(--bg3),var(--bg2));border:1px solid var(--border);padding:12px;position:relative}
+.scard::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,var(--accent2),transparent)}
+.slabel{font-size:.58rem;letter-spacing:2px;color:var(--dim);margin-bottom:6px}
+.sval{font-family:var(--disp);font-size:1.45rem;font-weight:700;color:var(--accent2);text-shadow:0 0 10px var(--glow2)}
+.sval.c1{color:var(--accent1);text-shadow:0 0 10px var(--glow1)}
+.sval.c3{color:var(--accent3);text-shadow:0 0 10px var(--glow3)}
+.sval.c4{color:var(--accent4);text-shadow:0 0 10px var(--glow4)}
+.controls{padding:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.select,input[type=range]{accent-color:var(--accent1)}
+.select,.mini{background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.73rem;padding:8px 10px}
+.group{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.02);padding:7px 8px;border:1px solid var(--border)}
+.group label{font-size:.64rem;color:var(--dim);letter-spacing:1px}
+.range-out{min-width:48px;font-size:.68rem;color:var(--accent1);text-align:right}
+.status{padding:10px 14px;border-top:1px solid var(--border);font-size:.70rem;color:var(--dim);letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.legend{padding:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border-top:1px solid var(--border)}
+.leg-item{display:flex;align-items:center;gap:8px;font-size:.68rem;color:var(--text)}
+.leg-swatch{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.leg-line{width:18px;height:3px;border-radius:2px;flex-shrink:0}
+.info-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.84);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}
+.info-overlay.show{display:flex}
+.info-box{max-width:900px;max-height:88vh;overflow:auto;width:100%;background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--accent1);padding:24px;box-shadow:0 0 40px var(--glow1)}
+.info-box h2{font-family:var(--disp);font-size:1.45rem;letter-spacing:2px;color:var(--accent1);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.info-box h3{font-family:var(--disp);font-size:1.12rem;letter-spacing:1px;color:var(--accent4);margin:14px 0 8px}
+.info-box p{font-size:.88rem;line-height:1.72;color:var(--text);margin-bottom:10px}
+.info-box .tag{display:inline-block;margin:3px 6px 3px 0;padding:4px 8px;border:1px solid var(--accent5);font-size:.67rem;color:var(--accent5)}
+.close{float:right;color:var(--accent3);cursor:pointer;font-size:.75rem}
+.footer-note{margin-top:16px;padding-top:10px;border-top:1px solid var(--border);font-size:.84rem;color:var(--accent4);text-align:center;font-family:var(--disp);letter-spacing:1px}
+.small-note{padding:0 14px 14px;color:var(--dim);font-size:.68rem;line-height:1.6}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}}
+@media(max-width:760px){.stats-grid{grid-template-columns:repeat(2,1fr)}.legend{grid-template-columns:1fr}.header{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="info-overlay" id="overlay" onclick="if(event.target===this)closeInfo()">
+  <div class="info-box">
+    <span class="close" onclick="closeInfo()">✕ CERRAR</span>
+    <h2>PROCESO GAUSSIANO SOBRE GRAFOS</h2>
+    <p>Esta demo implementa un <strong>proceso gaussiano indexado por nodos de un grafo</strong>. En lugar de modelar una función sobre la recta o sobre un espacio euclídeo continuo, aquí modelamos una señal discreta f(v) sobre los vértices. El prior toma la forma f ~ N(0, K), donde la matriz de covarianza K se construye a partir de la topología del grafo.</p>
+    <h3>Qué representa cada pieza</h3>
+    <p>El grafo define la geometría discreta del problema. Dos nodos pueden considerarse cercanos porque están unidos por aristas, porque su distancia de camino más corto es pequeña, o porque comparten modos espectrales suaves de la Laplaciana. El kernel traduce esa cercanía estructural en covarianza probabilística.</p>
+    <p>En la demo podés cambiar entre tres familias de kernel. El <strong>heat kernel</strong> usa la Laplaciana y propaga suavidad como una difusión. El <strong>regularized Laplacian</strong> controla la suavidad penalizando variaciones bruscas entre vecinos. El <strong>graph-distance RBF</strong> usa distancias de grafo como base radial y luego se estabiliza mediante proyección espectral PSD para garantizar una covarianza válida.</p>
+    <h3>Qué hace el posterior</h3>
+    <p>Cuando observás algunos nodos, el proceso gaussiano actualiza su distribución. La <strong>media posterior</strong> entrega la mejor estimación de la señal en cada nodo, y la <strong>varianza posterior</strong> cuantifica incertidumbre. En los nodos no observados la incertidumbre cae cuando hay vecinos informativos o cuando el kernel induce fuerte suavidad.</p>
+    <h3>Por qué esto es útil</h3>
+    <p>Este marco sirve para <strong>regresión en redes</strong>, imputación de valores faltantes en nodos, interpolación de sensores sobre infraestructura, propagación de estados en sistemas complejos, recomendación con estructura relacional, biología de redes, neurociencia, series sobre redes de transporte y análisis espacial discreto. Además, esta versión incluye topologías más expresivas como <strong>star, wheel, balanced tree, lollipop y bow-tie</strong>, que ayudan a visualizar hubs, ciclos, jerarquías y cuellos de botella.</p>
+    <h3>Animación topológica</h3>
+    <p>Cuando observás un nodo, la interfaz muestra una <strong>onda visual topológica</strong> que recorre el grafo en orden BFS. Es una ayuda pedagógica para ver cómo una observación afecta la red a través de la conectividad. No representa exactamente la covarianza posterior del kernel, sino la vecindad estructural del grafo.</p>
+    <h3>Cómo leer la interfaz</h3>
+    <p>El panel principal muestra el grafo. Los colores representan media posterior, verdad subyacente o incertidumbre, según el modo elegido. Los nodos con anillo pulsante rojo son observados. El segundo panel muestra la matriz kernel K con barra de escala. El tercero dibuja, por índice de nodo, la señal verdadera, la media posterior y la banda de incertidumbre animada. El botón <strong>OBSERVAR +INCERTO</strong> agrega automáticamente el nodo con mayor varianza posterior.</p>
+    <div style="margin-top:10px">
+      <span class="tag">GP SOBRE GRAFOS</span><span class="tag">LAPLACIANA</span>
+      <span class="tag">KERNEL ESPECTRAL</span><span class="tag">INCERTIDUMBRE</span>
+      <span class="tag">APRENDIZAJE ACTIVO</span><span class="tag">SEÑALES EN NODOS</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="header">
+    <div>
+      <h1>PROCESO GAUSSIANO ∥ GRAFOS</h1>
+      <p>GEOMETRÍA PROBABILÍSTICA SOBRE ESTRUCTURAS DISCRETAS · KERNELS DE LAPLACIANA · SEÑALES EN NODOS</p>
+    </div>
+    <div class="header-right">
+      <button class="btn" onclick="toggleTheme()">◑ TEMA</button>
+      <button class="btn" onclick="openInfo()">? HELP</button>
+    </div>
+  </header>
+
+  <section class="stats-grid">
+    <div class="scard"><div class="slabel">NODOS OBSERVADOS</div><div class="sval c1" id="statObs">0</div></div>
+    <div class="scard"><div class="slabel">RMSE DEMO</div><div class="sval" id="statRmse">—</div></div>
+    <div class="scard"><div class="slabel">INCERTIDUMBRE MEDIA</div><div class="sval c4" id="statVar">—</div></div>
+    <div class="scard"><div class="slabel">LOG MARGINAL LIK.</div><div class="sval c3" id="statLml">—</div></div>
+    <div class="scard"><div class="slabel">SIGUIENTE NODO</div><div class="sval c1" id="statNext">—</div></div>
+    <div class="scard"><div class="slabel">TOPOLOGÍA</div><div class="sval c4" id="statTopo">—</div></div>
+  </section>
+
+  <div class="layout" style="margin-top:14px">
+    <div class="left">
+      <div class="card">
+        <div class="label">GRAFO · SEÑAL LATENTE · OBSERVACIONES · POSTERIOR GP</div>
+        <div class="canvas-wrap"><canvas id="graphCanvas"></canvas></div>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-swatch" style="background:var(--accent3)"></div>Nodo observado (anillo pulsante)</div>
+          <div class="leg-item"><div class="leg-line" style="background:var(--accent1)"></div>Media posterior</div>
+          <div class="leg-item"><div class="leg-line" style="background:rgba(0,229,255,.18);height:10px"></div>Banda ±2σ animada</div>
+          <div class="leg-item"><div class="leg-swatch" style="background:var(--accent4)"></div>Nodo sugerido (max incertidumbre)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="label">SEÑAL POR ÍNDICE DE NODO · VERDAD · MEDIA POSTERIOR · INCERTIDUMBRE</div>
+        <div class="canvas-wrap small"><canvas id="seriesCanvas"></canvas></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card">
+        <div class="label">MATRIZ KERNEL K(vi, vj) · BARRA DE ESCALA</div>
+        <div class="canvas-wrap mid"><canvas id="heatCanvas"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="label">CONTROLES DEL MODELO</div>
+        <div class="controls">
+          <div class="group">
+            <label>TOPOLOGÍA</label>
+            <select class="select" id="topologySelect">
+              <option value="path">Path</option>
+              <option value="ring">Cycle / Ring</option>
+              <option value="grid">Grid</option>
+              <option value="star">Star</option>
+              <option value="wheel">Wheel</option>
+              <option value="tree">Balanced tree</option>
+              <option value="lollipop">Lollipop</option>
+              <option value="bowtie">Bow-tie</option>
+              <option value="barbell">Barbell</option>
+              <option value="smallworld">Small-world</option>
+            </select>
+          </div>
+          <div class="group">
+            <label>KERNEL</label>
+            <select class="select" id="kernelSelect">
+              <option value="heat">Heat kernel</option>
+              <option value="regularized">Regularized Laplacian</option>
+              <option value="graphrbf">Graph-distance RBF</option>
+            </select>
+          </div>
+          <div class="group">
+            <label>COLOR</label>
+            <select class="select" id="viewSelect">
+              <option value="posterior">Media posterior</option>
+              <option value="truth">Señal verdadera</option>
+              <option value="uncertainty">Incertidumbre</option>
+            </select>
+          </div>
+          <div class="group">
+            <label>τ / ℓ</label>
+            <input type="range" id="tauRange" min="0.2" max="4.0" step="0.1" value="1.3">
+            <div class="range-out" id="tauOut">1.3</div>
+          </div>
+          <div class="group">
+            <label>σ ruido</label>
+            <input type="range" id="noiseRange" min="0.01" max="0.35" step="0.01" value="0.08">
+            <div class="range-out" id="noiseOut">0.08</div>
+          </div>
+          <div class="group">
+            <label>OBS. INICIALES</label>
+            <input type="range" id="obsRange" min="2" max="12" step="1" value="4">
+            <div class="range-out" id="obsOut">4</div>
+          </div>
+          <button class="btn btn-g" id="autoBtn" onclick="toggleAuto()">▶ AUTO</button>
+          <button class="btn btn-y" onclick="observeMostUncertain()">⊕ OBSERVAR +INCERTO</button>
+          <button class="btn" onclick="resetObservations()">⟳ NUEVAS OBS.</button>
+          <button class="btn btn-r" onclick="resetAll()">⟲ NUEVO GRAFO</button>
+        </div>
+        <div class="status" id="statusBar">Listo. Hacé clic en un nodo para observarlo, o usá los botones.</div>
+        <div class="small-note"></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-note">Material elaborado por el profesor Sergio Gevatschnaider</div>
+</div>
+
+<script>
+/* =========================================================
+   MATH UTILITIES
+   ========================================================= */
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rand=(a,b)=>a+Math.random()*(b-a);
+function randn(){
+  let u=0,v=0;
+  while(u===0)u=Math.random();
+  while(v===0)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
+function identity(n){return Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?1:0));}
+function zeros(n,m){return Array.from({length:n},()=>Array(m).fill(0));}
+function transpose(A){return A[0].map((_,j)=>A.map(r=>r[j]));}
+function matMul(A,B){
+  const n=A.length,m=B[0].length,p=B.length,C=zeros(n,m);
+  for(let i=0;i<n;i++) for(let k=0;k<p;k++){const aik=A[i][k];if(aik===0)continue;for(let j=0;j<m;j++)C[i][j]+=aik*B[k][j];}
+  return C;
+}
+function matVec(A,x){return A.map(r=>dot(r,x));}
+function cloneMatrix(A){return A.map(r=>r.slice());}
+function addJitter(A,j){const B=cloneMatrix(A);for(let i=0;i<B.length;i++)B[i][i]+=j;return B;}
+function symmetrize(A){
+  const n=A.length,B=zeros(n,n);
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++)B[i][j]=0.5*(A[i][j]+A[j][i]);
+  return B;
+}
+function cholesky(A){
+  const n=A.length,L=zeros(n,n);
+  for(let i=0;i<n;i++){
+    for(let j=0;j<=i;j++){
+      let s=A[i][j];
+      for(let k=0;k<j;k++)s-=L[i][k]*L[j][k];
+      L[i][j]=(i===j)?Math.sqrt(Math.max(s,1e-10)):s/L[j][j];
+    }
+  }
+  return L;
+}
+function forwardSolve(L,b){
+  const n=L.length,x=new Array(n).fill(0);
+  for(let i=0;i<n;i++){let s=b[i];for(let j=0;j<i;j++)s-=L[i][j]*x[j];x[i]=s/L[i][i];}
+  return x;
+}
+function backwardSolve(L,b){
+  const n=L.length,x=new Array(n).fill(0);
+  for(let i=n-1;i>=0;i--){let s=b[i];for(let j=i+1;j<n;j++)s-=L[j][i]*x[j];x[i]=s/L[i][i];}
+  return x;
+}
+function solveSPD(A,b){const L=cholesky(A);return backwardSolve(L,forwardSolve(L,b));}
+function logDetSPD(A){const L=cholesky(A);let s=0;for(let i=0;i<L.length;i++)s+=Math.log(L[i][i]);return 2*s;}
+function jacobiEigenSym(A,maxIter=100,tol=1e-10){
+  const n=A.length;let V=identity(n),D=cloneMatrix(A);
+  for(let iter=0;iter<maxIter;iter++){
+    let p=0,q=1,max=0;
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const val=Math.abs(D[i][j]);if(val>max){max=val;p=i;q=j;}}
+    if(max<tol)break;
+    const app=D[p][p],aqq=D[q][q],apq=D[p][q];
+    const phi=0.5*Math.atan2(2*apq,aqq-app),c=Math.cos(phi),s=Math.sin(phi);
+    for(let i=0;i<n;i++){const dip=D[i][p],diq=D[i][q];D[i][p]=c*dip-s*diq;D[i][q]=s*dip+c*diq;}
+    for(let j=0;j<n;j++){const dpj=D[p][j],dqj=D[q][j];D[p][j]=c*dpj-s*dqj;D[q][j]=s*dpj+c*dqj;}
+    D[p][p]=c*c*app-2*s*c*apq+s*s*aqq;D[q][q]=s*s*app+2*s*c*apq+c*c*aqq;D[p][q]=D[q][p]=0;
+    for(let i=0;i<n;i++){const vip=V[i][p],viq=V[i][q];V[i][p]=c*vip-s*viq;V[i][q]=s*vip+c*viq;}
+  }
+  const values=new Array(n).fill(0).map((_,i)=>D[i][i]);
+  const idx=[...Array(n).keys()].sort((a,b)=>values[a]-values[b]);
+  return{values:idx.map(i=>values[i]),vectors:V.map(row=>idx.map(j=>row[j]))};
+}
+function projectToPSD(A,eps=1e-8){
+  const S=symmetrize(A);
+  const eig=jacobiEigenSym(S,140,1e-11);
+  const vals=eig.values.map(v=>Math.max(v,eps));
+  return kernelFromEigen(vals,eig.vectors,(_,k)=>vals[k]);
+}
+function bfsDistances(adj,start){
+  const n=adj.length,d=new Array(n).fill(Infinity),q=[start];
+  d[start]=0;
+  for(let head=0;head<q.length;head++){const v=q[head];for(const u of adj[v])if(d[u]===Infinity){d[u]=d[v]+1;q.push(u);}}
+  return d;
+}
+function allPairsShortest(adj){return adj.map((_,i)=>bfsDistances(adj,i));}
+function kernelFromEigen(evals,evecs,mapFn){
+  const n=evals.length,K=zeros(n,n);
+  for(let k=0;k<n;k++){
+    const g=mapFn(evals[k],k);
+    for(let i=0;i<n;i++){
+      const uik=evecs[i][k];
+      for(let j=0;j<n;j++)K[i][j]+=g*uik*evecs[j][k];
+    }
+  }
+  return K;
+}
+function sampleGP(K){
+  const n=K.length,L=cholesky(addJitter(K,1e-8)),z=new Array(n).fill(0).map(()=>randn()),f=new Array(n).fill(0);
+  for(let i=0;i<n;i++){let s=0;for(let j=0;j<=i;j++)s+=L[i][j]*z[j];f[i]=s;}
+  return f;
+}
+function mean(arr){return arr.reduce((a,b)=>a+b,0)/Math.max(arr.length,1);}
+function rmse(a,b){let s=0;for(let i=0;i<a.length;i++)s+=(a[i]-b[i])**2;return Math.sqrt(s/a.length);}
+function nice(v){return Number.isFinite(v)?v.toFixed(3):'—';}
+
+/* =========================================================
+   STATE
+   ========================================================= */
+const S={
+  topology:'path', kernelType:'heat', tau:1.3, noise:0.08, initObs:4,
+  view:'posterior', graph:null, K:null, truth:[], obsIdx:[], obsY:[],
+  postMean:[], postVar:[], lml:null, auto:false, timer:null
+};
+
+/* =========================================================
+   ANIMATION STATE
+   ========================================================= */
+let animTime=0;
+let rafId=null;
+let gpWaves=[];
+let ripples=[];
+
+function startAnimLoop(){
+  if(rafId) return;
+  function loop(ts){
+    animTime=ts;
+    drawGraph();
+    drawSeries();
+    rafId=requestAnimationFrame(loop);
+  }
+  rafId=requestAnimationFrame(loop);
+}
+
+function triggerGPWave(nodeIdx){
+  if(!S.graph) return;
+  const dist=bfsDistances(S.graph.adj,nodeIdx);
+  const validDists=dist.filter(d=>d<Infinity);
+  const maxDist=Math.max(...validDists,1);
+  for(let i=0;i<S.graph.n;i++){
+    const d=dist[i]===Infinity?maxDist:dist[i];
+    gpWaves.push({nodeIdx:i,startTime:animTime+d*110,duration:750,dist:d,maxDist:maxDist});
+  }
+  ripples.push({nodeIdx,startTime:animTime,duration:1400});
+  ripples.push({nodeIdx,startTime:animTime+200,duration:1100});
+}
+
+/* =========================================================
+   COLOR SYSTEM
+   ========================================================= */
+function hexToRgb(hex){
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  const v=parseInt(hex,16);
+  return{r:(v>>16)&255,g:(v>>8)&255,b:v&255};
+}
+function rgbToHex(r,g,b){
+  return '#'+[r,g,b].map(x=>Math.round(clamp(x,0,255)).toString(16).padStart(2,'0')).join('');
+}
+function lerpColor(hex1,hex2,t){
+  const a=hexToRgb(hex1),b=hexToRgb(hex2);
+  return rgbToHex(a.r+(b.r-a.r)*t,a.g+(b.g-a.g)*t,a.b+(b.b-a.b)*t);
+}
+function multiStopColor(t,stops){
+  t=clamp(t,0,1);
+  const n=stops.length-1;
+  const i=Math.min(Math.floor(t*n),n-1);
+  return lerpColor(stops[i],stops[i+1],t*n-i);
+}
+const CM_POSTERIOR=['#0d0221','#1a2af5','#00b4d8','#06d6a0','#ffd60a'];
+const CM_UNCERTAINTY=['#0f0221','#6a0572','#e040fb','#ff6b35','#ffe100'];
+const CM_TRUTH=['#0d0221','#1a2af5','#00b4d8','#06d6a0','#ffd60a'];
+
+function gradientColor(value,min,max,mode){
+  const t=clamp((value-min)/Math.max(max-min,1e-9),0,1);
+  const stops=mode==='uncertainty'?CM_UNCERTAINTY:mode==='truth'?CM_TRUTH:CM_POSTERIOR;
+  return multiStopColor(t,stops);
+}
+function getNodeValues(){
+  return S.view==='truth'?S.truth:(S.view==='uncertainty'?S.postVar.map(Math.sqrt):S.postMean);
+}
+
+/* =========================================================
+   GRAPH BUILDERS
+   ========================================================= */
+function buildGraph(type){
+  function addEdge(adj,a,b){
+    if(a===b)return;
+    if(!adj[a].includes(b))adj[a].push(b);
+    if(!adj[b].includes(a))adj[b].push(a);
+  }
+
+  if(type==='path'){
+    const n=22,adj=Array.from({length:n},()=>[]);
+    for(let i=0;i<n-1;i++)addEdge(adj,i,i+1);
+    const pos=Array.from({length:n},(_,i)=>({x:0.08+0.84*(i/(n-1)),y:0.52+0.08*Math.sin(i*.5)}));
+    return{adj,pos,name:'Path',n};
+  }
+
+  if(type==='ring'){
+    const n=24,adj=Array.from({length:n},()=>[]);
+    for(let i=0;i<n;i++)addEdge(adj,i,(i+1)%n);
+    const pos=Array.from({length:n},(_,i)=>({x:.5+.36*Math.cos(2*Math.PI*i/n),y:.5+.36*Math.sin(2*Math.PI*i/n)}));
+    return{adj,pos,name:'Cycle / Ring',n};
+  }
+
+  if(type==='grid'){
+    const r=5,c=5,n=r*c,adj=Array.from({length:n},()=>[]);
+    const idx=(i,j)=>i*c+j;
+    for(let i=0;i<r;i++)for(let j=0;j<c;j++){
+      const v=idx(i,j);
+      if(i+1<r)addEdge(adj,v,idx(i+1,j));
+      if(j+1<c)addEdge(adj,v,idx(i,j+1));
+    }
+    const pos=Array.from({length:n},(_,v)=>({x:.12+.76*((v%c)/(c-1)),y:.14+.72*(Math.floor(v/c)/(r-1))}));
+    return{adj,pos,name:'Grid 5×5',n};
+  }
+
+  if(type==='star'){
+    const leaves=16,n=leaves+1,adj=Array.from({length:n},()=>[]);
+    for(let i=1;i<n;i++)addEdge(adj,0,i);
+    const pos=[{x:.5,y:.5}];
+    for(let i=0;i<leaves;i++){
+      const ang=2*Math.PI*i/leaves-Math.PI/2;
+      pos.push({x:.5+.34*Math.cos(ang),y:.5+.34*Math.sin(ang)});
+    }
+    return{adj,pos,name:'Star',n};
+  }
+
+  if(type==='wheel'){
+    const rim=18,n=rim+1,adj=Array.from({length:n},()=>[]);
+    for(let i=1;i<=rim;i++){
+      addEdge(adj,0,i);
+      addEdge(adj,i,i===rim?1:i+1);
+    }
+    const pos=[{x:.5,y:.5}];
+    for(let i=0;i<rim;i++){
+      const ang=2*Math.PI*i/rim-Math.PI/2;
+      pos.push({x:.5+.35*Math.cos(ang),y:.5+.35*Math.sin(ang)});
+    }
+    return{adj,pos,name:'Wheel',n};
+  }
+
+  if(type==='tree'){
+    const levels=5,n=2**levels-1,adj=Array.from({length:n},()=>[]),pos=[];
+    for(let i=0;i<n;i++){
+      const left=2*i+1,right=2*i+2;
+      if(left<n)addEdge(adj,i,left);
+      if(right<n)addEdge(adj,i,right);
+    }
+    for(let depth=0;depth<levels;depth++){
+      const nodesAtDepth=2**depth;
+      const start=2**depth-1;
+      for(let k=0;k<nodesAtDepth;k++){
+        const x=.12+.76*((k+0.5)/nodesAtDepth);
+        const y=.12+.70*(depth/(levels-1));
+        pos[start+k]={x,y};
+      }
+    }
+    return{adj,pos,name:'Balanced tree',n};
+  }
+
+  if(type==='lollipop'){
+    const clique=7,pathLen=9,n=clique+pathLen,adj=Array.from({length:n},()=>[]);
+    for(let i=0;i<clique;i++)for(let j=i+1;j<clique;j++)addEdge(adj,i,j);
+    addEdge(adj,clique-1,clique);
+    for(let i=clique;i<n-1;i++)addEdge(adj,i,i+1);
+    const pos=[];
+    for(let i=0;i<clique;i++){
+      const ang=2*Math.PI*i/clique-Math.PI/2;
+      pos.push({x:.28+.16*Math.cos(ang),y:.5+.20*Math.sin(ang)});
+    }
+    for(let i=0;i<pathLen;i++)pos.push({x:.44+.40*(i/Math.max(pathLen-1,1)),y:.5});
+    return{adj,pos,name:'Lollipop',n};
+  }
+
+  if(type==='bowtie'){
+    const left=5,right=5,n=left+right+1,adj=Array.from({length:n},()=>[]),hub=left;
+    for(let i=0;i<left;i++)for(let j=i+1;j<left;j++)addEdge(adj,i,j);
+    for(let i=0;i<right;i++)for(let j=i+1;j<right;j++)addEdge(adj,hub+1+i,hub+1+j);
+    addEdge(adj,0,hub);
+    addEdge(adj,hub,hub+1);
+    const pos=[];
+    for(let i=0;i<left;i++){
+      const ang=2*Math.PI*i/left-Math.PI/2;
+      pos[i]={x:.25+.12*Math.cos(ang),y:.5+.17*Math.sin(ang)};
+    }
+    pos[hub]={x:.5,y:.5};
+    for(let i=0;i<right;i++){
+      const ang=2*Math.PI*i/right-Math.PI/2;
+      pos[hub+1+i]={x:.75+.12*Math.cos(ang),y:.5+.17*Math.sin(ang)};
+    }
+    return{adj,pos,name:'Bow-tie',n};
+  }
+
+  if(type==='barbell'){
+    const left=6,right=6,bridge=6,n=left+right+bridge,adj=Array.from({length:n},()=>[]);
+    for(let i=0;i<left;i++)for(let j=i+1;j<left;j++)addEdge(adj,i,j);
+    for(let i=0;i<right;i++)for(let j=i+1;j<right;j++)addEdge(adj,left+bridge+i,left+bridge+j);
+    addEdge(adj,left-1,left);
+    for(let i=left;i<left+bridge-1;i++)addEdge(adj,i,i+1);
+    addEdge(adj,left+bridge-1,left+bridge);
+    const pos=[];
+    for(let i=0;i<left;i++){
+      const ang=2*Math.PI*i/left-Math.PI/2;
+      pos.push({x:.22+.12*Math.cos(ang),y:.5+.18*Math.sin(ang)});
+    }
+    for(let i=0;i<bridge;i++)pos.push({x:.36+.28*(i/Math.max(bridge-1,1)),y:.5});
+    for(let i=0;i<right;i++){
+      const ang=2*Math.PI*i/right-Math.PI/2;
+      pos.push({x:.78+.12*Math.cos(ang),y:.5+.18*Math.sin(ang)});
+    }
+    return{adj,pos,name:'Barbell',n};
+  }
+
+  if(type==='smallworld'){
+    const n=24,k=2,p=0.18,adj=Array.from({length:n},()=>[]);
+    for(let i=0;i<n;i++)for(let d=1;d<=k;d++)addEdge(adj,i,(i+d)%n);
+    for(let i=0;i<n;i++)for(let d=1;d<=k;d++){
+      const j=(i+d)%n;
+      if(i<j&&Math.random()<p){
+        adj[i]=adj[i].filter(x=>x!==j);adj[j]=adj[j].filter(x=>x!==i);
+        let newJ=Math.floor(Math.random()*n);
+        while(newJ===i||adj[i].includes(newJ))newJ=Math.floor(Math.random()*n);
+        addEdge(adj,i,newJ);
+      }
+    }
+    const pos=Array.from({length:n},(_,i)=>({x:.5+.38*Math.cos(2*Math.PI*i/n),y:.5+.38*Math.sin(2*Math.PI*i/n)}));
+    return{adj,pos,name:'Small-world',n};
+  }
+
+  return buildGraph('path');
+}
+
+/* =========================================================
+   KERNEL BUILDERS
+   ========================================================= */
+function laplacian(adj){
+  const n=adj.length,L=zeros(n,n);
+  for(let i=0;i<n;i++){L[i][i]=adj[i].length;for(const j of adj[i])L[i][j]=-1;}
+  return L;
+}
+function buildKernel(graph){
+  const n=graph.n,adj=graph.adj,t=S.tau;
+  if(S.kernelType==='graphrbf'){
+    const D=allPairsShortest(adj),K=zeros(n,n);
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+      const dij=D[i][j];
+      K[i][j]=Math.exp(-(dij*dij)/(2*t*t));
+    }
+    const Kpsd=projectToPSD(K,1e-8);
+    return addJitter(Kpsd,1e-6);
+  }
+  const L=laplacian(adj);
+  const{values,vectors}=jacobiEigenSym(L,120,1e-10);
+  if(S.kernelType==='heat') return addJitter(kernelFromEigen(values,vectors,lam=>Math.exp(-t*lam)),1e-6);
+  if(S.kernelType==='regularized') return addJitter(kernelFromEigen(values,vectors,lam=>1/(1+t*lam)),1e-6);
+  return addJitter(identity(n),1e-6);
+}
+
+/* =========================================================
+   GP MODEL
+   ========================================================= */
+function selectRandomObs(n,k){
+  const idx=[...Array(n).keys()];
+  for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  return idx.slice(0,Math.min(k,n));
+}
+function buildSubmatrix(K,rows,cols){return rows.map(i=>cols.map(j=>K[i][j]));}
+function posterior(){
+  const n=S.graph.n;
+  if(S.obsIdx.length===0){
+    S.postMean=new Array(n).fill(0);
+    S.postVar=Array.from({length:n},(_,i)=>Math.max(S.K[i][i],1e-8));
+    S.lml=null;return;
+  }
+  const o=S.obsIdx,y=S.obsY;
+  const Koo=buildSubmatrix(S.K,o,o);
+  for(let i=0;i<Koo.length;i++)Koo[i][i]+=S.noise*S.noise;
+  const alpha=solveSPD(Koo,y);
+  const KallO=buildSubmatrix(S.K,[...Array(n).keys()],o);
+  S.postMean=KallO.map(row=>dot(row,alpha));
+  S.postVar=new Array(n).fill(0);
+  for(let i=0;i<n;i++){
+    const k_i_o=KallO[i];
+    const v=solveSPD(Koo,k_i_o);
+    S.postVar[i]=Math.max(S.K[i][i]-dot(k_i_o,v),1e-8);
+  }
+  const ldet=logDetSPD(Koo);
+  S.lml=-0.5*dot(y,alpha)-0.5*ldet-0.5*y.length*Math.log(2*Math.PI);
+}
+function makeTruth(){
+  S.truth=sampleGP(S.K);
+  const scale=Math.max(...S.truth.map(Math.abs),1e-6);
+  S.truth=S.truth.map(v=>v/scale);
+}
+function resetObservations(){
+  const n=S.graph.n;
+  S.obsIdx=selectRandomObs(n,S.initObs).sort((a,b)=>a-b);
+  S.obsY=S.obsIdx.map(i=>S.truth[i]+S.noise*randn());
+  posterior();updateStats();drawHeat();
+  setStatus('Nuevas observaciones iniciales generadas.');
+}
+function rebuildModel(newTruth=true){
+  S.graph=buildGraph(S.topology);
+  S.K=buildKernel(S.graph);
+  if(newTruth)makeTruth();
+  resetObservations();
+}
+function observeNode(i){
+  if(S.obsIdx.includes(i))return;
+  S.obsIdx.push(i);S.obsIdx.sort((a,b)=>a-b);
+  const idx=S.obsIdx.indexOf(i);
+  S.obsY.splice(idx,0,S.truth[i]+S.noise*randn());
+  posterior();updateStats();drawHeat();
+  triggerGPWave(i);
+  setStatus('Se observó el nodo '+i+'.');
+}
+function mostUncertainNode(){
+  let best=-1,bv=-Infinity;
+  for(let i=0;i<S.postVar.length;i++){if(S.obsIdx.includes(i))continue;if(S.postVar[i]>bv){bv=S.postVar[i];best=i;}}
+  return best;
+}
+function observeMostUncertain(){
+  const i=mostUncertainNode();
+  if(i===-1){stopAuto();setStatus('Todos los nodos ya fueron observados.');return;}
+  observeNode(i);
+  setStatus('Aprendizaje activo: se agregó el nodo más incierto ('+i+').');
+}
+function resetAll(){stopAuto();gpWaves=[];ripples=[];rebuildModel(true);setStatus('Nuevo grafo y nueva señal latente generados.');}
+function updateParamsFromUI(){
+  S.topology=document.getElementById('topologySelect').value;
+  S.kernelType=document.getElementById('kernelSelect').value;
+  S.view=document.getElementById('viewSelect').value;
+  S.tau=parseFloat(document.getElementById('tauRange').value);
+  S.noise=parseFloat(document.getElementById('noiseRange').value);
+  S.initObs=parseInt(document.getElementById('obsRange').value,10);
+  document.getElementById('tauOut').textContent=S.tau.toFixed(1);
+  document.getElementById('noiseOut').textContent=S.noise.toFixed(2);
+  document.getElementById('obsOut').textContent=S.initObs;
+}
+function updateStats(){
+  document.getElementById('statObs').textContent=S.obsIdx.length;
+  document.getElementById('statRmse').textContent=nice(rmse(S.truth,S.postMean));
+  document.getElementById('statVar').textContent=nice(mean(S.postVar.map(Math.sqrt)));
+  document.getElementById('statLml').textContent=S.lml===null?'—':nice(S.lml);
+  const nxt=mostUncertainNode();
+  document.getElementById('statNext').textContent=nxt===-1?'—':String(nxt);
+  document.getElementById('statTopo').textContent=S.graph?S.graph.name:'—';
+}
+function setStatus(msg){document.getElementById('statusBar').textContent=msg;}
+
+/* =========================================================
+   DRAW: GRAPH
+   ========================================================= */
+function drawGraph(){
+  const c=document.getElementById('graphCanvas');
+  const ctx=c.getContext('2d');
+  const rect=c.getBoundingClientRect();
+  if(c.width!==rect.width||c.height!==rect.height){c.width=rect.width;c.height=rect.height;}
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  if(!S.graph)return;
+
+  const pos=S.graph.pos.map(p=>({x:p.x*W,y:p.y*H}));
+  const values=getNodeValues();
+  const mn=Math.min(...values),mx=Math.max(...values);
+  const mode=S.view==='uncertainty'?'uncertainty':(S.view==='truth'?'truth':'default');
+  const colors=values.map(v=>gradientColor(v,mn,mx,mode));
+
+  const nodeGlow=new Float32Array(S.graph.n);
+  const activeWaves=gpWaves.filter(w=>animTime>=w.startTime&&animTime<w.startTime+w.duration);
+  activeWaves.forEach(w=>{
+    const age=(animTime-w.startTime)/w.duration;
+    const intensity=Math.sin(age*Math.PI)*(1-w.dist/(w.maxDist+1)*0.55);
+    if(intensity>nodeGlow[w.nodeIdx])nodeGlow[w.nodeIdx]=intensity;
+  });
+  gpWaves=gpWaves.filter(w=>animTime<w.startTime+w.duration);
+
+  ctx.save();
+  for(let i=0;i<S.graph.n;i++){
+    for(const j of S.graph.adj[i]) if(j>i){
+      const grad=ctx.createLinearGradient(pos[i].x,pos[i].y,pos[j].x,pos[j].y);
+      const ci=hexToRgb(colors[i]),cj=hexToRgb(colors[j]);
+      grad.addColorStop(0,`rgba(${ci.r},${ci.g},${ci.b},0.12)`);
+      grad.addColorStop(1,`rgba(${cj.r},${cj.g},${cj.b},0.12)`);
+      ctx.beginPath();ctx.moveTo(pos[i].x,pos[i].y);ctx.lineTo(pos[j].x,pos[j].y);
+      ctx.strokeStyle=grad;ctx.lineWidth=7;ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  for(let i=0;i<S.graph.n;i++){
+    for(const j of S.graph.adj[i]) if(j>i){
+      const grad=ctx.createLinearGradient(pos[i].x,pos[i].y,pos[j].x,pos[j].y);
+      grad.addColorStop(0,colors[i]);
+      grad.addColorStop(1,colors[j]);
+      const boost=Math.max(nodeGlow[i],nodeGlow[j]);
+      ctx.beginPath();ctx.moveTo(pos[i].x,pos[i].y);ctx.lineTo(pos[j].x,pos[j].y);
+      ctx.strokeStyle=grad;
+      ctx.lineWidth=1.8+boost*2.5;
+      ctx.globalAlpha=0.45+boost*0.45;
+      ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+  }
+
+  const suggested=mostUncertainNode();
+  const nodeR=Math.max(11,Math.min(17,Math.min(W,H)/38));
+
+  const nowRipples=ripples.filter(r=>animTime<r.startTime+r.duration);
+  nowRipples.forEach(rip=>{
+    if(animTime<rip.startTime)return;
+    const age=(animTime-rip.startTime)/rip.duration;
+    const p=pos[rip.nodeIdx];
+    const rRadius=nodeR+(Math.min(W,H)*0.22)*age;
+    const rgb=hexToRgb(colors[rip.nodeIdx]);
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,rRadius,0,Math.PI*2);
+    ctx.strokeStyle=`rgb(${rgb.r},${rgb.g},${rgb.b})`;
+    ctx.lineWidth=2.5*(1-age);
+    ctx.globalAlpha=(1-age)*0.65;
+    ctx.stroke();
+    ctx.globalAlpha=1;
+  });
+  ripples=ripples.filter(r=>animTime<r.startTime+r.duration);
+
+  for(let i=0;i<S.graph.n;i++){
+    const p=pos[i];
+    const col=colors[i];
+    const rgb=hexToRgb(col);
+    const isObs=S.obsIdx.includes(i);
+    const isSugg=i===suggested;
+    const wave=nodeGlow[i];
+    const pulse=0.5+0.5*Math.sin(animTime/360);
+
+    if(wave>0.04){
+      ctx.beginPath();ctx.arc(p.x,p.y,nodeR+10,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${rgb.r},${rgb.g},${rgb.b},${wave*0.28})`;
+      ctx.fill();
+    }
+
+    if(isObs){
+      const pr=nodeR+5+4*pulse;
+      ctx.beginPath();ctx.arc(p.x,p.y,pr,0,Math.PI*2);
+      ctx.strokeStyle='#ff2d6b';
+      ctx.lineWidth=2.5;
+      ctx.shadowColor='rgba(255,45,107,0.8)';
+      ctx.shadowBlur=18+10*pulse;
+      ctx.globalAlpha=0.45+0.55*pulse;
+      ctx.stroke();
+      ctx.shadowBlur=0;ctx.globalAlpha=1;
+    }
+
+    if(isSugg){
+      const blink=0.55+0.45*Math.sin(animTime/180);
+      ctx.beginPath();ctx.arc(p.x,p.y,nodeR+8,0,Math.PI*2);
+      ctx.strokeStyle='#ffcc00';
+      ctx.lineWidth=2;
+      ctx.setLineDash([5,4]);
+      ctx.shadowColor='rgba(255,204,0,0.7)';
+      ctx.shadowBlur=14;
+      ctx.globalAlpha=blink;
+      ctx.stroke();
+      ctx.setLineDash([]);ctx.shadowBlur=0;ctx.globalAlpha=1;
+    }
+
+    ctx.beginPath();ctx.arc(p.x,p.y,nodeR+3,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${rgb.r},${rgb.g},${rgb.b},0.22)`;
+    ctx.shadowColor=col;
+    ctx.shadowBlur=14+wave*22;
+    ctx.fill();
+    ctx.shadowBlur=0;
+
+    const lighter=rgbToHex(Math.min(rgb.r+70,255),Math.min(rgb.g+70,255),Math.min(rgb.b+70,255));
+    const darker=rgbToHex(Math.max(rgb.r-30,0),Math.max(rgb.g-30,0),Math.max(rgb.b-30,0));
+    const grad=ctx.createRadialGradient(p.x-nodeR*0.28,p.y-nodeR*0.28,0,p.x,p.y,nodeR);
+    grad.addColorStop(0,lighter);
+    grad.addColorStop(0.6,col);
+    grad.addColorStop(1,darker);
+    ctx.beginPath();ctx.arc(p.x,p.y,nodeR,0,Math.PI*2);
+    ctx.fillStyle=grad;
+    ctx.fill();
+
+    ctx.lineWidth=isObs?2.5:1.5;
+    ctx.strokeStyle=isObs?'#ff2d6b':'rgba(255,255,255,0.45)';
+    ctx.shadowColor=isObs?'rgba(255,45,107,0.5)':'transparent';
+    ctx.shadowBlur=isObs?10:0;
+    ctx.stroke();
+    ctx.shadowBlur=0;
+
+    const brightness=(rgb.r*299+rgb.g*587+rgb.b*114)/1000;
+    ctx.font=`bold ${Math.round(nodeR*0.78)}px Share Tech Mono`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle=brightness>110?'rgba(0,0,0,0.85)':'rgba(255,255,255,0.95)';
+    ctx.fillText(String(i),p.x,p.y);
+  }
+}
+
+/* =========================================================
+   DRAW: HEATMAP
+   ========================================================= */
+function drawHeat(){
+  const c=document.getElementById('heatCanvas');
+  const ctx=c.getContext('2d');
+  const rect=c.getBoundingClientRect();
+  c.width=rect.width;c.height=rect.height;
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const K=S.K,n=K.length;
+  const scaleW=16;
+  const pad={l:40,r:24+scaleW,t:24,b:30};
+  const cw=(W-pad.l-pad.r)/n,ch=(H-pad.t-pad.b)/n;
+  let mn=Infinity,mx=-Infinity;
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){mn=Math.min(mn,K[i][j]);mx=Math.max(mx,K[i][j]);}
+
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    ctx.fillStyle=gradientColor(K[i][j],mn,mx,'default');
+    ctx.fillRect(pad.l+j*cw,pad.t+i*ch,cw+0.5,ch+0.5);
+  }
+
+  S.obsIdx.forEach(oi=>{
+    ctx.fillStyle='rgba(255,45,107,0.10)';
+    ctx.fillRect(pad.l+oi*cw,pad.t,cw,n*ch);
+    ctx.fillRect(pad.l,pad.t+oi*ch,n*cw,ch);
+  });
+
+  for(let i=0;i<n;i++){
+    ctx.strokeStyle='rgba(255,255,255,0.55)';
+    ctx.lineWidth=0.8;
+    ctx.strokeRect(pad.l+i*cw+0.5,pad.t+i*ch+0.5,cw-1,ch-1);
+  }
+
+  ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=1;
+  ctx.strokeRect(pad.l,pad.t,n*cw,n*ch);
+
+  const sbX=W-scaleW-4,sbH=n*ch;
+  for(let py=0;py<sbH;py++){
+    const t=1-py/sbH;
+    ctx.fillStyle=gradientColor(mn+t*(mx-mn),mn,mx,'default');
+    ctx.fillRect(sbX,pad.t+py,scaleW,1);
+  }
+  ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=0.8;
+  ctx.strokeRect(sbX,pad.t,scaleW,sbH);
+
+  ctx.font='8px Share Tech Mono';
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--dim').trim();
+  ctx.textAlign='left';
+  ctx.fillText(mx.toFixed(2),sbX+scaleW+3,pad.t+7);
+  ctx.fillText(((mn+mx)/2).toFixed(2),sbX+scaleW+3,pad.t+sbH/2+3);
+  ctx.fillText(mn.toFixed(2),sbX+scaleW+3,pad.t+sbH);
+
+  ctx.textAlign='center';
+  const dimColor=getComputedStyle(document.documentElement).getPropertyValue('--dim').trim();
+  ctx.fillStyle=dimColor;
+  for(let i=0;i<n;i+=Math.max(1,Math.floor(n/8))){
+    ctx.fillText(i,pad.l+(i+.5)*cw,H-8);
+    ctx.save();ctx.translate(14,pad.t+(i+.5)*ch);ctx.rotate(-Math.PI/2);ctx.fillText(i,0,0);ctx.restore();
+  }
+}
+
+/* =========================================================
+   DRAW: SERIES
+   ========================================================= */
+function catmullRomPath(ctx,pts){
+  if(!pts||pts.length<2)return;
+  ctx.moveTo(pts[0].x,pts[0].y);
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[Math.max(i-1,0)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(i+2,pts.length-1)];
+    const cp1x=p1.x+(p2.x-p0.x)/6,cp1y=p1.y+(p2.y-p0.y)/6;
+    const cp2x=p2.x-(p3.x-p1.x)/6,cp2y=p2.y-(p3.y-p1.y)/6;
+    ctx.bezierCurveTo(cp1x,cp1y,cp2x,cp2y,p2.x,p2.y);
+  }
+}
+
+function drawSeries(){
+  const c=document.getElementById('seriesCanvas');
+  const ctx=c.getContext('2d');
+  const rect=c.getBoundingClientRect();
+  if(c.width!==rect.width||c.height!==rect.height){c.width=rect.width;c.height=rect.height;}
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  if(!S.graph||!S.postMean.length)return;
+
+  const n=S.graph.n;
+  const pad={l:48,r:20,t:22,b:32};
+  const pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+
+  const breathe=1+0.022*Math.sin(animTime/1100);
+  const bandUp=S.postMean.map((m,i)=>m+2*breathe*Math.sqrt(S.postVar[i]));
+  const bandDn=S.postMean.map((m,i)=>m-2*breathe*Math.sqrt(S.postVar[i]));
+  const ys=[...S.truth,...S.postMean,...bandUp,...bandDn];
+  const mn=Math.min(...ys)-0.12,mx=Math.max(...ys)+0.12;
+
+  const tx=i=>pad.l+(i/Math.max(n-1,1))*pw;
+  const ty=y=>pad.t+ph-((y-mn)/(mx-mn))*ph;
+
+  ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
+  for(let g=0;g<=4;g++){
+    const gx=pad.l+(g/4)*pw;
+    ctx.beginPath();ctx.moveTo(gx,pad.t);ctx.lineTo(gx,pad.t+ph);ctx.stroke();
+  }
+  for(let g=0;g<=4;g++){
+    const gy=pad.t+(g/4)*ph;
+    ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(pad.l+pw,gy);ctx.stroke();
+  }
+
+  const zy=ty(0);
+  if(zy>=pad.t&&zy<=pad.t+ph){
+    ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;
+    ctx.setLineDash([8,5]);
+    ctx.beginPath();ctx.moveTo(pad.l,zy);ctx.lineTo(pad.l+pw,zy);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  const scanPhase=((animTime/3200)%1);
+  const scanX=pad.l+scanPhase*pw;
+  const scanGrad=ctx.createLinearGradient(scanX-35,0,scanX+35,0);
+  scanGrad.addColorStop(0,'transparent');
+  scanGrad.addColorStop(0.5,'rgba(0,229,255,0.18)');
+  scanGrad.addColorStop(1,'transparent');
+  ctx.fillStyle=scanGrad;
+  ctx.fillRect(scanX-35,pad.t,70,ph);
+
+  S.obsIdx.forEach(i=>{
+    ctx.strokeStyle='rgba(255,45,107,0.16)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(tx(i),pad.t);ctx.lineTo(tx(i),pad.t+ph);ctx.stroke();
+  });
+
+  const upperPts=Array.from({length:n},(_,i)=>({x:tx(i),y:ty(bandUp[i])}));
+  const lowerPtsFwd=Array.from({length:n},(_,i)=>({x:tx(i),y:ty(bandDn[i])}));
+
+  ctx.beginPath();
+  ctx.moveTo(upperPts[0].x,upperPts[0].y);
+  for(let i=1;i<upperPts.length;i++)ctx.lineTo(upperPts[i].x,upperPts[i].y);
+  for(let i=lowerPtsFwd.length-1;i>=0;i--)ctx.lineTo(lowerPtsFwd[i].x,lowerPtsFwd[i].y);
+  ctx.closePath();
+  const bandGrad=ctx.createLinearGradient(0,pad.t,0,pad.t+ph);
+  bandGrad.addColorStop(0,'rgba(0,229,255,0.18)');
+  bandGrad.addColorStop(0.5,'rgba(0,180,216,0.08)');
+  bandGrad.addColorStop(1,'rgba(0,229,255,0.18)');
+  ctx.fillStyle=bandGrad;ctx.fill();
+
+  ctx.beginPath();catmullRomPath(ctx,upperPts);
+  ctx.strokeStyle='rgba(0,229,255,0.28)';ctx.lineWidth=1;ctx.stroke();
+  ctx.beginPath();catmullRomPath(ctx,lowerPtsFwd);
+  ctx.strokeStyle='rgba(0,229,255,0.28)';ctx.lineWidth=1;ctx.stroke();
+
+  const truthPts=Array.from({length:n},(_,i)=>({x:tx(i),y:ty(S.truth[i])}));
+  ctx.beginPath();catmullRomPath(ctx,truthPts);
+  ctx.strokeStyle='rgba(255,255,255,0.38)';
+  ctx.setLineDash([6,5]);ctx.lineWidth=1.8;ctx.stroke();ctx.setLineDash([]);
+
+  const meanPts=Array.from({length:n},(_,i)=>({x:tx(i),y:ty(S.postMean[i])}));
+  ctx.beginPath();catmullRomPath(ctx,meanPts);
+  ctx.strokeStyle='rgba(0,229,255,0.25)';
+  ctx.shadowColor='#00e5ff';ctx.shadowBlur=18;
+  ctx.lineWidth=7;ctx.globalAlpha=0.5;ctx.stroke();
+  ctx.globalAlpha=1;ctx.shadowBlur=0;
+
+  ctx.beginPath();catmullRomPath(ctx,meanPts);
+  ctx.strokeStyle='#00e5ff';
+  ctx.shadowColor='rgba(0,229,255,0.6)';ctx.shadowBlur=8;
+  ctx.lineWidth=2.4;ctx.stroke();ctx.shadowBlur=0;
+
+  for(let idx=0;idx<S.obsIdx.length;idx++){
+    const i=S.obsIdx[idx],yv=S.obsY[idx];
+    const px=tx(i),py=ty(yv),s=5.5;
+    ctx.beginPath();
+    ctx.moveTo(px,py-s);ctx.lineTo(px+s,py);ctx.lineTo(px,py+s);ctx.lineTo(px-s,py);ctx.closePath();
+    ctx.fillStyle='#ff2d6b';
+    ctx.shadowColor='rgba(255,45,107,0.7)';ctx.shadowBlur=12;
+    ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.85)';ctx.lineWidth=1;ctx.stroke();
+    ctx.shadowBlur=0;
+  }
+
+  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+  ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+ph);ctx.lineTo(pad.l+pw,pad.t+ph);ctx.stroke();
+
+  ctx.font='9px Share Tech Mono';
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--dim').trim();
+  ctx.textAlign='right';
+  ctx.fillText(mx.toFixed(1),pad.l-5,pad.t+9);
+  ctx.fillText(mn.toFixed(1),pad.l-5,pad.t+ph);
+  ctx.textAlign='center';
+  for(let i=0;i<n;i+=Math.max(1,Math.floor(n/8)))ctx.fillText(i,tx(i),H-8);
+}
+
+/* =========================================================
+   AUTO LOOP
+   ========================================================= */
+function toggleAuto(){
+  if(S.auto){stopAuto();return;}
+  S.auto=true;
+  document.getElementById('autoBtn').classList.add('on');
+  document.getElementById('autoBtn').textContent='⏸ AUTO';
+  setStatus('Modo automático: se irá observando el nodo más incierto.');
+  const loop=()=>{
+    if(!S.auto)return;
+    const i=mostUncertainNode();
+    if(i===-1){stopAuto();setStatus('No quedan nodos sin observar.');return;}
+    observeMostUncertain();
+    S.timer=setTimeout(loop,800);
+  };
+  S.timer=setTimeout(loop,800);
+}
+function stopAuto(){
+  S.auto=false;clearTimeout(S.timer);
+  document.getElementById('autoBtn').classList.remove('on');
+  document.getElementById('autoBtn').textContent='▶ AUTO';
+}
+
+function openInfo(){document.getElementById('overlay').classList.add('show');}
+function closeInfo(){document.getElementById('overlay').classList.remove('show');}
+
+let theme='dark';
+function toggleTheme(){
+  theme=theme==='dark'?'paper':'dark';
+  document.documentElement.setAttribute('data-theme',theme==='paper'?'paper':'');
+  drawHeat();
+}
+
+/* =========================================================
+   EVENT HANDLERS
+   ========================================================= */
+document.getElementById('topologySelect').addEventListener('change',()=>{
+  updateParamsFromUI();gpWaves=[];ripples=[];rebuildModel(true);
+  setStatus('Topología cambiada: '+S.graph.name+'.');
+});
+document.getElementById('kernelSelect').addEventListener('change',()=>{
+  updateParamsFromUI();gpWaves=[];ripples=[];S.K=buildKernel(S.graph);makeTruth();resetObservations();
+  setStatus('Kernel actualizado y señal latente regenerada.');
+});
+document.getElementById('viewSelect').addEventListener('change',()=>{updateParamsFromUI();});
+document.getElementById('tauRange').addEventListener('input',()=>{
+  updateParamsFromUI();gpWaves=[];ripples=[];S.K=buildKernel(S.graph);makeTruth();resetObservations();
+  setStatus('Parámetro de escala actualizado.');
+});
+document.getElementById('noiseRange').addEventListener('input',()=>{
+  updateParamsFromUI();gpWaves=[];ripples=[];resetObservations();setStatus('Nivel de ruido actualizado.');
+});
+document.getElementById('obsRange').addEventListener('input',()=>{
+  updateParamsFromUI();gpWaves=[];ripples=[];resetObservations();setStatus('Cantidad de observaciones iniciales actualizada.');
+});
+
+document.getElementById('graphCanvas').addEventListener('click',(ev)=>{
+  const c=ev.target,rect=c.getBoundingClientRect();
+  const x=(ev.clientX-rect.left)*(c.width/rect.width);
+  const y=(ev.clientY-rect.top)*(c.height/rect.height);
+  const pos=S.graph.pos.map(p=>({x:p.x*c.width,y:p.y*c.height}));
+  let best=-1,bd=Infinity;
+  for(let i=0;i<pos.length;i++){
+    const d=(pos[i].x-x)**2+(pos[i].y-y)**2;
+    if(d<bd){bd=d;best=i;}
+  }
+  if(Math.sqrt(bd)<22)observeNode(best);
+});
+
+window.addEventListener('resize',()=>{drawHeat();});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function init(){
+  updateParamsFromUI();
+  rebuildModel(true);
+  updateStats();
+  drawHeat();
+  startAnimLoop();
+}
+init();
+</script>
+</body>
+</html>
