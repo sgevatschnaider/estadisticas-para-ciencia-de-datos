@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kernel Visualizer GP</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+
+:root {
+  --bg: #04080f;
+  --panel: #080f1e;
+  --accent: #00e5ff;
+  --accent2: #ff3366;
+  --dim: #1a2a40;
+  --text: #9ab8d8;
+  --text-bright: #ddeeff;
+  --text-dim: #3a5570;
+  --border: rgba(0,229,255,0.13);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  min-height: 100vh;
+  transition: background 0.4s, color 0.4s;
+}
+
+.scanlines {
+  position: fixed; inset: 0; pointer-events: none; z-index: 999;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.025) 0px, rgba(0,0,0,0.025) 1px, transparent 1px, transparent 3px);
+}
+
+.app { max-width: 900px; margin: 0 auto; padding: 14px 16px; display: flex; flex-direction: column; min-height: 100vh;}
+
+.title-bar { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
+.title { font-family:'Orbitron',monospace; font-size:19px; font-weight:900; color:var(--accent); letter-spacing:3px; text-shadow:0 0 24px rgba(0,229,255,0.45); }
+.subtitle { font-size:9px; color:var(--text-dim); letter-spacing:2px; margin-top:3px; }
+
+.themes { display:flex; gap:7px; align-items:center; }
+.theme-label { font-size:9px; color:var(--text-dim); letter-spacing:1px; margin-right:2px; }
+.theme-btn {
+  width:20px; height:20px; border-radius:50%; border:2px solid transparent;
+  cursor:pointer; transition:transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.theme-btn:hover { transform:scale(1.25); }
+.theme-btn.active { border-color:var(--text-bright); box-shadow:0 0 10px currentColor; }
+
+.kernel-tabs { display:flex; gap:5px; margin-bottom:12px; flex-wrap:wrap; }
+.kernel-tab {
+  padding:5px 13px; border:1px solid var(--border); border-radius:4px;
+  cursor:pointer; background:var(--panel); color:var(--text-dim);
+  font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700;
+  letter-spacing:1px; transition:all 0.18s;
+}
+.kernel-tab:hover { color:var(--text); border-color:var(--accent); }
+.kernel-tab.active {
+  background:var(--accent); color:var(--bg); border-color:var(--accent);
+  box-shadow:0 0 14px rgba(0,229,255,0.35);
+}
+
+.canvases { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.canvas-box {
+  background:var(--panel); border:1px solid var(--border); border-radius:8px;
+  padding:10px 12px;
+  transition: background 0.4s, border-color 0.4s;
+}
+.canvas-tag { font-size:8px; color:var(--text-dim); letter-spacing:2.5px; text-transform:uppercase; margin-bottom:4px; }
+.canvas-title { font-family:'Orbitron',monospace; font-size:12px; color:var(--accent); margin-bottom:8px; letter-spacing:1px; }
+canvas { display:block; width:100%; border-radius:4px; }
+#heatmapCanvas, #samplesCanvas { height:256px; }
+
+.colorbar-row { display:flex; align-items:center; gap:7px; margin-top:7px; }
+.colorbar-lbl { font-size:9px; color:var(--text-dim); min-width:28px; }
+#colorbarCanvas { flex:1; height:6px; border-radius:3px; }
+
+.controls { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.panel-box {
+  background:var(--panel); border:1px solid var(--border); border-radius:8px;
+  padding:12px 14px;
+  transition: background 0.4s;
+}
+.panel-title { font-size:8px; color:var(--text-dim); letter-spacing:2.5px; text-transform:uppercase; margin-bottom:10px; }
+
+.param-row { display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+.param-lbl { font-size:12px; color:var(--text-bright); min-width:28px; text-align:right; }
+.param-slider {
+  flex:1; -webkit-appearance:none; height:3px; border-radius:2px;
+  background:var(--dim); outline:none; cursor:pointer; transition: background 0.3s;
+}
+.param-slider::-webkit-slider-thumb {
+  -webkit-appearance:none; width:13px; height:13px; border-radius:50%;
+  background:var(--accent); box-shadow:0 0 8px var(--accent); cursor:pointer;
+  transition: background 0.3s;
+}
+.param-val { font-size:10px; color:var(--accent); min-width:34px; text-align:right; }
+
+.formula-box { margin-bottom:10px; }
+.kernel-long-name { font-size:9px; color:var(--text-dim); letter-spacing:1.5px; margin-bottom:5px; }
+.formula-text {
+  font-size:11px; color:var(--text-bright); line-height:1.7;
+  padding:8px 10px; background:var(--dim); border-radius:5px;
+  border-left:2px solid var(--accent); margin-bottom:8px;
+}
+.desc-text { font-size:10px; color:var(--text-dim); line-height:1.65; }
+
+.actions { display:flex; gap:10px; margin-bottom: 20px;}
+.btn {
+  flex:1; padding:10px 12px; border-radius:6px; cursor:pointer;
+  font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700;
+  letter-spacing:1.5px; text-transform:uppercase; transition:all 0.2s;
+}
+.btn-primary { background:var(--accent); color:var(--bg); border:1px solid var(--accent); }
+.btn-primary:hover { box-shadow:0 0 22px rgba(0,229,255,0.45); transform:translateY(-1px); }
+.btn-secondary { background:transparent; color:var(--accent); border:1px solid var(--border); }
+.btn-secondary:hover { background:rgba(0,229,255,0.07); border-color:var(--accent); }
+.btn-secondary.running {
+  background:var(--accent2); color:#fff; border-color:var(--accent2);
+  animation:pulse-btn 1.2s ease-in-out infinite;
+}
+
+.live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent2); margin-right:5px; animation:blink 0.8s step-end infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+@keyframes pulse-btn {
+  0%,100%{box-shadow:0 0 14px rgba(255,51,102,0.4)}
+  50%{box-shadow:0 0 28px rgba(255,51,102,0.7)}
+}
+
+.sample-legend { display:flex; gap:10px; margin-top:7px; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:4px; font-size:9px; color:var(--text-dim); }
+.legend-dot { width:10px; height:3px; border-radius:2px; }
+
+.stats-bar { display:flex; gap:14px; margin-top:7px; }
+.stat { font-size:9px; color:var(--text-dim); }
+.stat span { color:var(--accent); }
+
+.footer {
+  margin-top: auto;
+  text-align: center;
+  padding-bottom: 20px;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="app">
+
+  <div class="title-bar">
+    <div>
+      <div class="title">KERNEL VISUALIZER</div>
+      <div class="subtitle">K(x,x') · GAUSSIAN PROCESS EXPLORER · SECTION 3</div>
+    </div>
+    <div class="themes">
+      <div class="theme-label">TEMA</div>
+      <div id="themeContainer"></div>
+    </div>
+  </div>
+
+  <div class="kernel-tabs" id="kernelTabs"></div>
+
+  <div class="canvases">
+    <div class="canvas-box">
+      <div class="canvas-tag">COVARIANZA</div>
+      <div class="canvas-title">K(x, x')</div>
+      <canvas id="heatmapCanvas" width="400" height="320"></canvas>
+      <div class="colorbar-row">
+        <span class="colorbar-lbl" style="text-align:left" id="cbMin">0.00</span>
+        <canvas id="colorbarCanvas" width="200" height="6"></canvas>
+        <span class="colorbar-lbl" style="text-align:right" id="cbMax">1.00</span>
+      </div>
+      <div class="stats-bar" id="statsBar"></div>
+    </div>
+    <div class="canvas-box">
+      <div class="canvas-tag">REALIZACIONES GP</div>
+      <div class="canvas-title">f ~ N(0, K)</div>
+      <canvas id="samplesCanvas" width="400" height="320"></canvas>
+      <div class="sample-legend" id="sampleLegend"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="panel-box">
+      <div class="panel-title">PARÁMETROS DEL KERNEL</div>
+      <div id="paramsContainer"></div>
+    </div>
+    <div class="panel-box">
+      <div class="panel-title">DEFINICIÓN</div>
+      <div class="formula-box">
+        <div class="kernel-long-name" id="kernelLongName"></div>
+        <div class="formula-text" id="formulaText"></div>
+        <div class="desc-text" id="descText"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="newSamplesBtn">↻ NUEVAS MUESTRAS</button>
+    <button class="btn btn-secondary" id="autoSimBtn">⟳ AUTO-SIMULACIÓN</button>
+  </div>
+  
+  <div class="footer">
+    Material elaborado por el profesor Sergio Gevatschnaider
+  </div>
+
+</div>
+
+<script>
+const THEMES = [
+  { id:'CYBER',  dot:'#00e5ff', bg:'#04080f', panel:'#08111e', accent:'#00e5ff', accent2:'#ff3366', dim:'#0d1f35', text:'#9ab8d8', textBright:'#ddeeff', textDim:'#3a5570', border:'rgba(0,229,255,0.13)',
+    cmap:[[4,8,15],[0,60,80],[0,140,160],[0,229,255]] },
+  { id:'PLASMA', dot:'#d946ef', bg:'#0d0218', panel:'#150828', accent:'#d946ef', accent2:'#facc15', dim:'#2a1045', text:'#c4a8d8', textBright:'#f0e0ff', textDim:'#604878', border:'rgba(217,70,239,0.13)',
+    cmap:[[13,2,24],[80,10,100],[160,20,180],[217,70,239]] },
+  { id:'MATRIX', dot:'#22c55e', bg:'#010d04', panel:'#021508', accent:'#22c55e', accent2:'#f97316', dim:'#052a10', text:'#6fac80', textBright:'#c8ffd8', textDim:'#1e4a28', border:'rgba(34,197,94,0.13)',
+    cmap:[[1,13,4],[5,60,20],[10,130,45],[34,197,94]] },
+  { id:'SOLAR',  dot:'#f59e0b', bg:'#0a0400', panel:'#130800', accent:'#f59e0b', accent2:'#f43f5e', dim:'#2a1000', text:'#c8a060', textBright:'#ffe8b0', textDim:'#604020', border:'rgba(245,158,11,0.13)',
+    cmap:[[10,4,0],[80,30,0],[160,80,0],[245,158,11]] },
+  { id:'ARCTIC', dot:'#3b82f6', bg:'#eef2ff', panel:'#e0e8ff', accent:'#3b82f6', accent2:'#ec4899', dim:'#c0cef8', text:'#1e3070', textBright:'#0d1840', textDim:'#7080b0', border:'rgba(59,130,246,0.15)',
+    cmap:[[238,242,255],[160,180,240],[80,120,220],[59,130,246]] },
+];
+
+let curTheme = 0;
+
+function applyTheme(idx) {
+  curTheme = idx;
+  const t = THEMES[idx];
+  const r = document.documentElement.style;
+  r.setProperty('--bg', t.bg);
+  r.setProperty('--panel', t.panel);
+  r.setProperty('--accent', t.accent);
+  r.setProperty('--accent2', t.accent2);
+  r.setProperty('--dim', t.dim);
+  r.setProperty('--text', t.text);
+  r.setProperty('--text-bright', t.textBright);
+  r.setProperty('--text-dim', t.textDim);
+  r.setProperty('--border', t.border);
+}
+
+const KERNELS = [
+  {
+    id: 'RBF',
+    long: 'Radial Basis Function (Squared Exponential)',
+    formula: 'K(x,x\u2019) = \u03c3\u00b2 \u00b7 exp( \u2212|x\u2212x\u2019|\u00b2 / 2\u2113\u00b2 )',
+    desc: 'Genera funciones infinitamente diferenciables y suaves. \u2113 (longitud de escala) controla qu\u00e9 tan r\u00e1pido decae la correlaci\u00f3n: \u2113 peque\u00f1o \u2192 oscilaciones r\u00e1pidas; \u2113 grande \u2192 curvas muy suaves.',
+    params: [
+      { key:'sigma', sym:'\u03c3', min:0.1, max:2.0, step:0.05, def:1.0 },
+      { key:'ell',   sym:'\u2113', min:0.05, max:1.5, step:0.05, def:0.5 },
+    ],
+    fn: (x1,x2,p) => p.sigma**2 * Math.exp(-((x1-x2)**2)/(2*p.ell**2)),
+    autoKey:'ell', autoRange:[0.08,1.4],
+  },
+  {
+    id: 'PERI\u00d3DICO',
+    long: 'Periodic Kernel',
+    formula: 'K(x,x\u2019) = \u03c3\u00b2 \u00b7 exp(\u22122sin\u00b2(\u03c0|x\u2212x\u2019|/p) / \u2113\u00b2)',
+    desc: 'Induce periodicidad estricta en las muestras del GP. p fija el per\u00edodo, \u2113 la suavidad dentro de cada ciclo. El heatmap muestra bandas diagonales repetidas caracter\u00edsticas.',
+    params: [
+      { key:'sigma', sym:'\u03c3', min:0.1, max:2.0, step:0.05, def:1.0 },
+      { key:'ell',   sym:'\u2113', min:0.1, max:2.0, step:0.1, def:1.0 },
+      { key:'p',     sym:'p',     min:0.2, max:2.0, step:0.1, def:1.0 },
+    ],
+    fn: (x1,x2,p) => p.sigma**2 * Math.exp(-2*Math.sin(Math.PI*Math.abs(x1-x2)/p.p)**2/p.ell**2),
+    autoKey:'p', autoRange:[0.3,1.9],
+  },
+  {
+    id: 'LINEAL',
+    long: 'Linear Kernel',
+    formula: 'K(x,x\u2019) = \u03c3_b\u00b2 + \u03c3_v\u00b2 \u00b7 x \u00b7 x\u2019',
+    desc: 'Modela funciones af\u00edn (l\u00edneas rectas con ordenada al origen y pendiente aleatorias). La covarianza crece con el producto x\u00b7x\u2019, no con la distancia. Las muestras son funciones lineales.',
+    params: [
+      { key:'sigma_b', sym:'\u03c3\u2087', min:0.0, max:2.0, step:0.05, def:0.5 },
+      { key:'sigma_v', sym:'\u03c3\u1d65', min:0.0, max:2.0, step:0.05, def:1.0 },
+    ],
+    fn: (x1,x2,p) => p.sigma_b**2 + p.sigma_v**2 * x1 * x2,
+    autoKey:'sigma_v', autoRange:[0.1,2.0],
+  },
+  {
+    id: 'MAT\u00c9RN',
+    long: 'Mat\u00e9rn 3/2',
+    formula: 'K(x,x\u2019) = \u03c3\u00b2(1+\u221a3r/\u2113) exp(\u2212\u221a3r/\u2113)',
+    desc: 'Genera funciones exactamente una vez diferenciables (menos suaves que RBF). r=|x\u2212x\u2019|. Buen balance entre regularidad local e irregularidad: perfecto para datos reales con rugosidad moderada.',
+    params: [
+      { key:'sigma', sym:'\u03c3', min:0.1, max:2.0, step:0.05, def:1.0 },
+      { key:'ell',   sym:'\u2113', min:0.05, max:1.5, step:0.05, def:0.5 },
+    ],
+    fn: (x1,x2,p) => {
+      const r = Math.abs(x1-x2);
+      const v = Math.sqrt(3)*r/p.ell;
+      return p.sigma**2 * (1+v) * Math.exp(-v);
+    },
+    autoKey:'ell', autoRange:[0.08,1.4],
+  },
+  {
+    id: 'POLIN.',
+    long: 'Polynomial Kernel',
+    formula: 'K(x,x\u2019) = (x\u00b7x\u2019 + c)^d',
+    desc: 'El grado d determina la complejidad polin\u00f3mica. c a\u00f1ade un sesgo global. d=1 equivale al lineal con offset. Las muestras son polinomios aleatorios de grado d con coeficientes gaussianos.',
+    params: [
+      { key:'c', sym:'c', min:0.0, max:3.0, step:0.1, def:1.0 },
+      { key:'d', sym:'d', min:1,   max:5,   step:1,   def:2 },
+    ],
+    fn: (x1,x2,p) => Math.pow(x1*x2 + p.c, Math.round(p.d)),
+    autoKey:'c', autoRange:[0.2,2.8],
+  },
+];
+
+let curKernel = 0;
+let params = {};
+let cachedSamples = null;
+let autoSim = false;
+let rafId = null;
+let autoDir = 1;
+let autoVal = 0;
+const N_HEAT = 56;
+const N_SAMPLE = 90;
+const NUM_SAMPLES = 5;
+const SAMPLE_COLORS = ['#00e5ff','#ff6b6b','#ffd93d','#6bcb77','#ff922b'];
+
+function initParams() {
+  params = {};
+  KERNELS[curKernel].params.forEach(p => { params[p.key] = p.def; });
+}
+
+function kernelMatrix(xs) {
+  const n = xs.length, K = [], k = KERNELS[curKernel];
+  for (let i=0;i<n;i++) { K[i]=new Float64Array(n); for (let j=0;j<n;j++) { K[i][j]=k.fn(xs[i],xs[j],params); } K[i][i]+=1e-6; }
+  return K;
+}
+
+function cholesky(A) {
+  const n = A.length;
+  const L = Array.from({length:n},()=>new Float64Array(n));
+  for (let i=0;i<n;i++) {
+    for (let j=0;j<=i;j++) {
+      let s=0; for (let k2=0;k2<j;k2++) s+=L[i][k2]*L[j][k2];
+      L[i][j] = i===j ? Math.sqrt(Math.max(A[i][i]-s,1e-12)) : (A[i][j]-s)/(L[j][j]||1e-12);
+    }
+  }
+  return L;
+}
+
+function randn() {
+  let u=0,v=0;
+  while(!u) u=Math.random(); while(!v) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function sampleGP(L, n) {
+  return Array.from({length:NUM_SAMPLES}, ()=>{
+    const z=Array.from({length:n},randn), f=new Float64Array(n);
+    for(let i=0;i<n;i++) for(let j=0;j<=i;j++) f[i]+=L[i][j]*z[j];
+    return f;
+  });
+}
+
+function cmapColor(t, cmap) {
+  const s=cmap, n=s.length-1;
+  const i=Math.min(Math.floor(t*n),n-1), f=t*n-i;
+  return [
+    Math.round(s[i][0]+(s[i+1][0]-s[i][0])*f),
+    Math.round(s[i][1]+(s[i+1][1]-s[i][1])*f),
+    Math.round(s[i][2]+(s[i+1][2]-s[i][2])*f),
+  ];
+}
+
+function drawHeatmap() {
+  const cv=document.getElementById('heatmapCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  const t=THEMES[curTheme];
+  const xs=Array.from({length:N_HEAT},(_,i)=>-2+4*i/(N_HEAT-1));
+  const K=kernelMatrix(xs);
+  let kmin=Infinity, kmax=-Infinity;
+  for(let i=0;i<N_HEAT;i++) for(let j=0;j<N_HEAT;j++) { if(K[i][j]<kmin)kmin=K[i][j]; if(K[i][j]>kmax)kmax=K[i][j]; }
+  const range=kmax-kmin||1;
+  const img=ctx.createImageData(W,H);
+  for(let py=0;py<H;py++) {
+    const i=Math.min(Math.floor(py/H*N_HEAT),N_HEAT-1);
+    for(let px=0;px<W;px++) {
+      const j=Math.min(Math.floor(px/W*N_HEAT),N_HEAT-1);
+      const tv=(K[i][j]-kmin)/range;
+      const [r,g,b]=cmapColor(tv,t.cmap);
+      const idx=(py*W+px)*4;
+      img.data[idx]=r; img.data[idx+1]=g; img.data[idx+2]=b; img.data[idx+3]=255;
+    }
+  }
+  ctx.putImageData(img,0,0);
+  ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(W,H); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font='10px JetBrains Mono,monospace'; ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.textAlign='left';
+  ctx.fillText("x'→",W-32,H-5);
+  ctx.save(); ctx.translate(10,H/2); ctx.rotate(-Math.PI/2); ctx.fillText('x→',0,0); ctx.restore();
+  ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
+  ['-2','0','2'].forEach((l,i)=>{ const x=W*i/2; ctx.fillText(l,Math.max(8,Math.min(W-8,x)),H-3); });
+  const cbCv=document.getElementById('colorbarCanvas');
+  const cbCtx=cbCv.getContext('2d');
+  const cbW=cbCv.width, cbH=cbCv.height;
+  const cbImg=cbCtx.createImageData(cbW,cbH);
+  for(let px=0;px<cbW;px++){
+    const tv2=px/(cbW-1);
+    const [r,g,b]=cmapColor(tv2,t.cmap);
+    for(let py2=0;py2<cbH;py2++){const idx=(py2*cbW+px)*4;cbImg.data[idx]=r;cbImg.data[idx+1]=g;cbImg.data[idx+2]=b;cbImg.data[idx+3]=255;}
+  }
+  cbCtx.putImageData(cbImg,0,0);
+  document.getElementById('cbMin').textContent=kmin.toFixed(2);
+  document.getElementById('cbMax').textContent=kmax.toFixed(2);
+  const diag=xs.map((_,i)=>K[i][i]);
+  const varMean=diag.reduce((a,b)=>a+b,0)/diag.length;
+  document.getElementById('statsBar').innerHTML=`
+    <span class="stat">var media: <span>${varMean.toFixed(3)}</span></span>
+    <span class="stat">K max: <span>${kmax.toFixed(3)}</span></span>
+    <span class="stat">simétrica: <span>SÍ</span></span>`;
+}
+
+function drawSamples() {
+  const cv=document.getElementById('samplesCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  const t=THEMES[curTheme];
+  ctx.fillStyle=t.panel; ctx.fillRect(0,0,W,H);
+  if(!cachedSamples) return;
+  const {xs,samples}=cachedSamples;
+  const n=xs.length;
+  let ymin=Infinity,ymax=-Infinity;
+  for(const s of samples) for(const v of s){if(v<ymin)ymin=v;if(v>ymax)ymax=v;}
+  const pad=Math.max(0.4,(ymax-ymin)*0.12); ymin-=pad; ymax+=pad;
+  const yr=ymax-ymin||1;
+  ctx.strokeStyle='rgba(128,128,128,0.07)'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){ const y=H*i/4; ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+  const y0=H*(1-(0-ymin)/yr);
+  ctx.strokeStyle='rgba(255,255,255,0.13)'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
+  ctx.beginPath();ctx.moveTo(0,y0);ctx.lineTo(W,y0);ctx.stroke();
+  ctx.setLineDash([]);
+  const stdArr=xs.map((_,i)=>{
+    const vs=samples.map(s=>s[i]);
+    const mean=vs.reduce((a,b)=>a+b)/vs.length;
+    const std=Math.sqrt(vs.reduce((a,b)=>a+(b-mean)**2,0)/vs.length);
+    return {mean,std};
+  });
+  ctx.beginPath();
+  xs.forEach((_,i)=>{
+    const px=W*i/(n-1);
+    const py=H*(1-((stdArr[i].mean+stdArr[i].std)-ymin)/yr);
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  });
+  xs.slice().reverse().forEach((_,i2)=>{
+    const i=n-1-i2;
+    const px=W*i/(n-1);
+    const py=H*(1-((stdArr[i].mean-stdArr[i].std)-ymin)/yr);
+    ctx.lineTo(px,py);
+  });
+  ctx.closePath();
+  const ar=parseInt(t.accent.slice(1,3),16), ag=parseInt(t.accent.slice(3,5),16), ab=parseInt(t.accent.slice(5,7),16);
+  ctx.fillStyle=`rgba(${ar},${ag},${ab},0.07)`; ctx.fill();
+  for(let s=0;s<NUM_SAMPLES;s++){
+    ctx.strokeStyle=SAMPLE_COLORS[s]; ctx.lineWidth=1.6; ctx.globalAlpha=0.82;
+    ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const px=W*i/(n-1);
+      const py=H*(1-(samples[s][i]-ymin)/yr);
+      i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+  ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
+  ctx.fillText('x →',W/2,H-3);
+  ctx.textAlign='left'; ctx.fillText('-2',4,H-3); ctx.textAlign='right'; ctx.fillText('2',W-4,H-3);
+  document.getElementById('sampleLegend').innerHTML=SAMPLE_COLORS.map((c,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${c}"></div>f<sub>${i+1}</sub></div>`).join('');
+}
+
+function recompute(newSamples=true) {
+  if(newSamples) {
+    const xs=Array.from({length:N_SAMPLE},(_,i)=>-2+4*i/(N_SAMPLE-1));
+    const K=kernelMatrix(xs);
+    const L=cholesky(K);
+    cachedSamples={xs,samples:sampleGP(L,N_SAMPLE)};
+  }
+  drawHeatmap();
+  drawSamples();
+}
+
+function buildThemes() {
+  const c=document.getElementById('themeContainer');
+  c.style.display='flex'; c.style.gap='7px';
+  c.innerHTML=THEMES.map((t,i)=>`
+    <div class="theme-btn${i===curTheme?' active':''}" data-ti="${i}"
+      style="background:${t.dot};box-shadow:0 0 8px ${t.dot}44" title="${t.id}"></div>
+  `).join('');
+  c.querySelectorAll('.theme-btn').forEach(b=>b.onclick=()=>{
+    curTheme=+b.dataset.ti; applyTheme(curTheme);
+    buildThemes(); recompute(false);
+  });
+}
+
+function buildKernelTabs() {
+  const c=document.getElementById('kernelTabs');
+  c.innerHTML=KERNELS.map((k,i)=>`
+    <button class="kernel-tab${i===curKernel?' active':''}" data-ki="${i}">${k.id}</button>
+  `).join('');
+  c.querySelectorAll('.kernel-tab').forEach(b=>b.onclick=()=>{
+    stopAuto();
+    curKernel=+b.dataset.ki;
+    initParams();
+    buildKernelTabs(); buildParams(); buildInfo();
+    recompute(true);
+  });
+}
+
+function buildParams() {
+  const c=document.getElementById('paramsContainer');
+  const k=KERNELS[curKernel];
+  c.innerHTML=k.params.map(p=>`
+    <div class="param-row">
+      <span class="param-lbl">${p.sym}</span>
+      <input class="param-slider" type="range" id="sl-${p.key}"
+        min="${p.min}" max="${p.max}" step="${p.step}" value="${params[p.key]}">
+      <span class="param-val" id="pv-${p.key}">${(+params[p.key]).toFixed(2)}</span>
+    </div>
+  `).join('');
+  k.params.forEach(p=>{
+    document.getElementById(`sl-${p.key}`).oninput=function(){
+      params[p.key]=parseFloat(this.value);
+      document.getElementById(`pv-${p.key}`).textContent=parseFloat(this.value).toFixed(2);
+      recompute(false);
+    };
+  });
+}
+
+function buildInfo() {
+  const k=KERNELS[curKernel];
+  document.getElementById('kernelLongName').textContent=k.long;
+  document.getElementById('formulaText').textContent=k.formula;
+  document.getElementById('descText').textContent=k.desc;
+}
+
+function startAuto() {
+  autoSim=true;
+  const k=KERNELS[curKernel];
+  autoVal=params[k.autoKey];
+  autoDir=1;
+  const btn=document.getElementById('autoSimBtn');
+  btn.classList.add('running');
+  btn.innerHTML='<span class="live-dot"></span>DETENER';
+  let frame=0;
+  function tick() {
+    if(!autoSim) return;
+    const k2=KERNELS[curKernel];
+    const [lo,hi]=k2.autoRange;
+    autoVal+=autoDir*(hi-lo)*0.008;
+    if(autoVal>=hi){autoVal=hi;autoDir=-1;}
+    if(autoVal<=lo){autoVal=lo;autoDir=1;}
+    params[k2.autoKey]=autoVal;
+    const sl=document.getElementById(`sl-${k2.autoKey}`);
+    const pv=document.getElementById(`pv-${k2.autoKey}`);
+    if(sl){sl.value=autoVal;} if(pv){pv.textContent=autoVal.toFixed(2);}
+    const doNew=frame%55===0;
+    recompute(doNew);
+    frame++;
+    rafId=requestAnimationFrame(tick);
+  }
+  rafId=requestAnimationFrame(tick);
+}
+
+function stopAuto() {
+  autoSim=false;
+  if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+  const btn=document.getElementById('autoSimBtn');
+  if(btn){btn.classList.remove('running');btn.textContent='\u27f3 AUTO-SIMULACI\u00d3N';}
+}
+
+applyTheme(0);
+buildThemes();
+buildKernelTabs();
+initParams();
+buildParams();
+buildInfo();
+recompute(true);
+
+document.getElementById('newSamplesBtn').onclick=()=>{stopAuto();recompute(true);};
+document.getElementById('autoSimBtn').onclick=()=>{ autoSim?stopAuto():startAuto(); };
+</script>
+</body>
+</html>
