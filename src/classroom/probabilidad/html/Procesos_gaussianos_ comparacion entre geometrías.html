@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procesos Gaussianos — De Elipses a Nubes de Funciones</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050a14;--bg2:#0b1a30;--bg3:#0f2244;
+  --text:#e8f4fd;--text2:#7aa6c8;
+  --a1:#00d4ff;--a2:#ff9f00;--a3:#b36eff;
+  --border:rgba(0,212,255,.18);
+  --card:rgba(8,18,36,.85);
+  --glow:rgba(0,212,255,.28);
+  --s1:#00d4ff;--s2:#ff6b6b;--s3:#7cff6b;--s4:#ffcc00;--s5:#ff6bff;
+}
+[data-theme=lab]{
+  --bg:#f4f7fb;--bg2:#ffffff;--bg3:#e8eef7;
+  --text:#18304a;--text2:#4a6a8a;
+  --a1:#005fcc;--a2:#d95e00;--a3:#6600cc;
+  --border:rgba(0,95,204,.22);--card:rgba(255,255,255,.92);--glow:rgba(0,95,204,.18);
+  --s1:#0055bb;--s2:#cc2200;--s3:#009900;--s4:#cc9900;--s5:#990099;
+}
+[data-theme=matrix]{
+  --bg:#000300;--bg2:#001400;--bg3:#002800;
+  --text:#00ff41;--text2:#00aa2b;
+  --a1:#00ff41;--a2:#ffff00;--a3:#00ffff;
+  --border:rgba(0,255,65,.22);--card:rgba(0,14,0,.9);--glow:rgba(0,255,65,.28);
+  --s1:#00ff41;--s2:#ffff00;--s3:#00ffff;--s4:#ff9f00;--s5:#ff6bff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Crimson Pro',Georgia,serif;font-size:18px;line-height:1.75;
+  transition:background .45s,color .45s;overflow-x:hidden;
+}
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  padding:14px 48px;
+  background:rgba(5,10,20,.88);
+  backdrop-filter:blur(22px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  transition:background .45s;
+}
+[data-theme=lab] nav{background:rgba(244,247,251,.92);}
+[data-theme=matrix] nav{background:rgba(0,3,0,.92);}
+.nav-logo{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:3.5px;text-transform:uppercase;color:var(--a1);
+}
+.nav-right{display:flex;gap:10px;align-items:center}
+.btn{
+  padding:7px 18px;border:1px solid var(--border);
+  background:transparent;color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:1.2px;cursor:pointer;
+  transition:all .28s;border-radius:2px;
+}
+.btn:hover{background:var(--a1);color:var(--bg);border-color:var(--a1);box-shadow:0 0 18px var(--glow)}
+.btn-play{background:var(--a1);color:var(--bg);border-color:var(--a1);font-weight:500}
+.btn-play.on{background:var(--a2);border-color:var(--a2);animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 8px var(--glow)}50%{box-shadow:0 0 28px var(--glow)}}
+.theme-dot{
+  width:22px;height:22px;border-radius:50%;
+  border:2px solid var(--border);cursor:pointer;
+  transition:transform .25s,border-color .25s;
+}
+.theme-dot:hover{transform:scale(1.25);border-color:var(--a1)}
+#td1{background:#0b1a30}
+#td2{background:#f4f7fb;border-color:#aac}
+#td3{background:#001400;border-color:#00ff41}
+/* ── PROGRESS BAR ── */
+#prog{
+  position:fixed;bottom:0;left:0;height:3px;width:0;
+  background:var(--a1);z-index:300;
+  transition:width .12s linear;
+  box-shadow:0 0 10px var(--glow);
+}
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:flex-end;padding:0 80px 90px;position:relative;overflow:hidden;
+}
+#hcanvas{position:absolute;inset:0;width:100%;height:100%}
+.hero-in{position:relative;z-index:2;max-width:780px}
+.hl{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:4px;text-transform:uppercase;color:var(--a1);
+  margin-bottom:20px;
+  animation:fadeUp .8s .2s both;
+}
+.ht{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(40px,5.5vw,76px);font-weight:700;line-height:1.08;
+  margin-bottom:28px;animation:fadeUp .8s .45s both;
+}
+.ht em{font-style:italic;color:var(--a1)}
+.hs{
+  font-size:19px;color:var(--text2);max-width:560px;
+  animation:fadeUp .8s .65s both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+/* ── SECTIONS ── */
+.sec{padding:88px 80px;max-width:1380px;margin:0 auto}
+.sl{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:4px;text-transform:uppercase;color:var(--a1);margin-bottom:10px;
+}
+.st{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(26px,3.5vw,44px);font-weight:700;margin-bottom:20px;
+}
+.sb{font-size:17px;color:var(--text2);max-width:640px;margin-bottom:44px}
+.divider{width:100%;height:1px;background:var(--border)}
+/* ── GRID ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px}
+/* ── CARDS ── */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:3px;padding:22px;
+  backdrop-filter:blur(14px);transition:border-color .3s,box-shadow .3s;
+}
+.card:hover{border-color:var(--a1);box-shadow:0 0 28px var(--glow)}
+.ct{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--a1);margin-bottom:14px;
+}
+.card canvas{width:100%;display:block}
+/* ── MATH ── */
+.math{
+  background:var(--bg2);border-left:3px solid var(--a1);
+  padding:18px 26px;margin:22px 0;border-radius:0 3px 3px 0;
+  font-family:'JetBrains Mono',monospace;font-size:13.5px;
+  color:var(--a1);overflow-x:auto;line-height:2;
+}
+.math span.dim{color:var(--text2)}
+/* ── CONTROLS ── */
+.ctrl-row{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
+.cg{display:flex;flex-direction:column;gap:6px;min-width:130px}
+.cl{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:1px;color:var(--text2)
+}
+.cv{color:var(--a1);margin-left:6px}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:2px;
+  background:var(--border);outline:none;border-radius:1px;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:13px;height:13px;
+  background:var(--a1);border-radius:50%;cursor:pointer;
+  box-shadow:0 0 8px var(--glow);
+}
+/* ── TABS ── */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:22px}
+.tab{
+  padding:9px 22px;font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  cursor:pointer;border-bottom:2px solid transparent;
+  color:var(--text2);transition:all .25s;
+}
+.tab.on{color:var(--a1);border-bottom-color:var(--a1)}
+/* ── INFO LIST ── */
+ul.il{list-style:none}
+ul.il li{
+  padding:10px 0;border-bottom:1px solid var(--border);
+  display:flex;gap:14px;color:var(--text2);font-size:16px;
+}
+ul.il li::before{content:'→';color:var(--a1);font-family:monospace;flex-shrink:0}
+ul.il li b{color:var(--text)}
+/* ── POSTERIOR LAYOUT ── */
+.post-layout{display:grid;grid-template-columns:1fr 260px;gap:22px}
+.obs-panel{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:3px;padding:18px;
+}
+.obs-item{
+  display:flex;align-items:center;gap:10px;padding:7px 0;
+  border-bottom:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);
+}
+.obs-dot{width:9px;height:9px;border-radius:50%;background:var(--a2);flex-shrink:0}
+/* ── EIGEN LAYOUT ── */
+.eigen-layout{display:grid;grid-template-columns:2fr 1fr;gap:22px}
+/* ── KERNEL BADGE ── */
+.kbadge{
+  display:inline-block;padding:2px 10px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:2px;font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--a1);margin:3px;
+}
+/* ── SCROLL ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--a1)}
+/* ── RESPONSIVE ── */
+@media(max-width:760px){
+  .hero{padding:0 22px 70px}
+  .sec{padding:60px 22px}
+  .g2,.g3,.post-layout,.eigen-layout{grid-template-columns:1fr}
+  nav{padding:11px 18px}
+}
+/* ── COVARIANCE MATRIX CELL ── */
+.km-grid{
+  display:grid;gap:3px;margin-top:10px;
+}
+.km-cell{
+  border-radius:2px;height:20px;
+  transition:background .4s;
+}
+.note{
+  font-size:14px;color:var(--text2);
+  font-family:'JetBrains Mono',monospace;margin-top:8px;
+}
+
+.footer-credit{
+  max-width:1380px;margin:0 auto;padding:40px 80px 70px;
+  border-top:1px solid var(--border);
+  color:var(--text2);font-size:17px;text-align:center;
+}
+.footer-credit strong{color:var(--a1);font-weight:600}
+.topic-box{
+  background:var(--bg2);border:1px solid var(--border);border-radius:3px;
+  padding:16px 18px;margin-top:14px;
+}
+.topic-box p{margin-bottom:0;color:var(--text2)}
+.topic-box b{color:var(--text)}
+.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.qa{background:var(--card);border:1px solid var(--border);border-radius:3px;padding:0 18px;margin-bottom:12px}
+.qa summary{
+  list-style:none;cursor:pointer;padding:16px 0;
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;
+  text-transform:uppercase;color:var(--a1);
+}
+.qa summary::-webkit-details-marker{display:none}
+.qa p{padding:0 0 18px;color:var(--text2)}
+</style>
+</head>
+<body data-theme="dark">
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">GP · Geometría Probabilística</span>
+  <div class="nav-right">
+    <button class="btn btn-play" id="btnPlay" onclick="togglePlay()">▶ AUTO</button>
+    <div class="theme-dot" id="td1" onclick="setTheme('dark')" title="Oscuro"></div>
+    <div class="theme-dot" id="td2" onclick="setTheme('lab')" title="Laboratorio"></div>
+    <div class="theme-dot" id="td3" onclick="setTheme('matrix')" title="Matrix"></div>
+  </div>
+</nav>
+<div id="prog"></div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <canvas id="hcanvas"></canvas>
+  <div class="hero-in">
+    <div class="hl">Procesos Gaussianos · Visualización Interactiva</div>
+    <h1 class="ht">De <em>Elipses</em><br>a Nubes de<br><em>Funciones</em></h1>
+    <p class="hs">La normal multivariante define elipsoides en ℝⁿ. Un proceso gaussiano lleva esa geometría al espacio infinito-dimensional de funciones. Explorá la continuidad entre ambos mundos.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ SECCIÓN 1: NORMAL MULTIVARIANTE ═══ -->
+<section class="sec" id="s1">
+  <div class="sl">01 — Normal Multivariante</div>
+  <h2 class="st">La Geometría Elipsoidal</h2>
+  <p class="sb">En una gaussiana multivariante, la covarianza Σ define <em>orientación</em>, <em>escala</em> y <em>elongación</em>. Los conjuntos de nivel de la densidad son elipsoides cuyos ejes principales son los autovectores de Σ.</p>
+
+  <div class="math">
+    p(x) ∝ exp<span class="dim">( −½ (x−μ)ᵀ Σ⁻¹ (x−μ) )</span><br>
+    <span class="dim">Conjunto de nivel: </span>(x−μ)ᵀ Σ⁻¹ (x−μ) = c
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Contornos de Densidad — 𝒩(0, Σ)</div>
+      <canvas id="c_ellipse" height="300"></canvas>
+      <div class="ctrl-row" style="margin-top:16px">
+        <div class="cg">
+          <span class="cl">Correlación ρ <span class="cv" id="vRho">0.00</span></span>
+          <input type="range" id="sRho" min="-0.95" max="0.95" step="0.01" value="0" oninput="updateEllipse()">
+        </div>
+        <div class="cg">
+          <span class="cl">σ₁ <span class="cv" id="vS1">1.0</span></span>
+          <input type="range" id="sS1" min="0.3" max="2.5" step="0.05" value="1.0" oninput="updateEllipse()">
+        </div>
+        <div class="cg">
+          <span class="cl">σ₂ <span class="cv" id="vS2">1.0</span></span>
+          <input type="range" id="sS2" min="0.3" max="2.5" step="0.05" value="1.0" oninput="updateEllipse()">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Descomposición Espectral de Σ</div>
+      <canvas id="c_eigen2d" height="300"></canvas>
+      <ul class="il" style="margin-top:14px">
+        <li><b>Autovectores</b>: direcciones principales del elipsoide</li>
+        <li><b>Autovalores λ</b>: para un nivel fijo, los semiejes son proporcionales a √λ</li>
+        <li>Covarianza cero → <b>ejes alineados</b>; si además σ₁ = σ₂, el contorno es un círculo</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ SECCIÓN 2: PROCESO GAUSSIANO ═══ -->
+<section class="sec" id="s2">
+  <div class="sl">02 — Proceso Gaussiano</div>
+  <h2 class="st">Una Distribución sobre Funciones</h2>
+  <p class="sb">De manera intuitiva, un GP puede verse como una distribución sobre <em>funciones completas</em>: cada realización es una curva. Formalmente, lo que se exige es que toda colección finita de evaluaciones de la función tenga distribución gaussiana multivariante. En ese sentido, la "geometría elipsoidal" de la normal multivariante se traslada al espacio de funciones.</p>
+
+  <div class="math">
+    f ∼ 𝒢𝒫(m, k)<br>
+    <span class="dim">Para todo conjunto finito x₁,...,xₙ:</span><br>
+    (f(x₁),...,f(xₙ)) ∼ 𝒩(μ, K)<br>
+    <span class="dim">μᵢ = m(xᵢ), &nbsp; Kᵢⱼ = k(xᵢ, xⱼ)</span>
+  </div>
+
+  <div class="card" style="margin-bottom:22px">
+    <div class="ct">Muestras del Prior GP — Seleccioná un Kernel</div>
+    <div class="tabs">
+      <div class="tab on" onclick="setKernelTab(0,this)">RBF / Squared Exp.</div>
+      <div class="tab" onclick="setKernelTab(1,this)">Exponencial (Matérn ½)</div>
+      <div class="tab" onclick="setKernelTab(2,this)">Periódico</div>
+      <div class="tab" onclick="setKernelTab(3,this)">Lineal</div>
+    </div>
+    <canvas id="c_gp_prior" height="320"></canvas>
+    <div class="ctrl-row" style="margin-top:16px">
+      <div class="cg">
+        <span class="cl">Long. correlación ℓ <span class="cv" id="vL">0.50</span></span>
+        <input type="range" id="sL" min="0.05" max="2.0" step="0.05" value="0.5" oninput="reSamplePrior()">
+      </div>
+      <div class="cg">
+        <span class="cl">Amplitud σ <span class="cv" id="vSig">1.0</span></span>
+        <input type="range" id="sSig" min="0.2" max="2.5" step="0.1" value="1.0" oninput="reSamplePrior()">
+      </div>
+      <div class="cg" id="pgctrl">
+        <span class="cl">Período p <span class="cv" id="vP">1.0</span></span>
+        <input type="range" id="sP" min="0.3" max="3.0" step="0.1" value="1.0" oninput="reSamplePrior()">
+      </div>
+      <button class="btn" onclick="reSamplePrior()" style="align-self:flex-end">↻ Nuevas Muestras</button>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Matriz de Covarianza K — Heatmap</div>
+      <canvas id="c_kmat" height="240"></canvas>
+      <p class="note">Kᵢⱼ = k(xᵢ, xⱼ) para 20 puntos equiespaciados</p>
+    </div>
+    <div class="card">
+      <div class="ct">Kernel k(0, x) — Función de Covarianza</div>
+      <canvas id="c_kfn" height="240"></canvas>
+      <p class="note">Forma del kernel centrado en x=0</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ SECCIÓN 3: PROYECCIONES FINITAS ═══ -->
+<section class="sec" id="s3">
+  <div class="sl">03 — La Conexión Fundamental</div>
+  <h2 class="st">Toda Proyección Finita es Gaussiana</h2>
+  <p class="sb">Si evaluás un GP en <em>n</em> puntos arbitrarios, el vector (f(x₁),...,f(xₙ)) tiene distribución normal multivariante. Esa consistencia en todas las colecciones finitas es la propiedad fundamental que conecta a los GP con la normal multivariante.</p>
+
+  <div class="card" style="margin-bottom:22px">
+    <div class="ct">GP → Normal Multivariante vía Proyección Finita</div>
+    <div class="ctrl-row">
+      <div class="cg">
+        <span class="cl">Puntos de evaluación n <span class="cv" id="vN">6</span></span>
+        <input type="range" id="sN" min="2" max="12" step="1" value="6" oninput="updateProjection()">
+      </div>
+    </div>
+    <div class="g2" style="gap:18px">
+      <div>
+        <canvas id="c_proj_gp" height="240"></canvas>
+        <p class="note" style="text-align:center">Proceso Gaussiano (continuo)</p>
+      </div>
+      <div>
+        <canvas id="c_proj_ellipse" height="240"></canvas>
+        <p class="note" style="text-align:center">Marginal 2D de la normal multivariante inducida</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="card">
+      <div class="ct">n = 2</div>
+      <canvas id="c_proj2" height="180"></canvas>
+    </div>
+    <div class="card">
+      <div class="ct">n = 3 (proyección 2D)</div>
+      <canvas id="c_proj3" height="180"></canvas>
+    </div>
+    <div class="card">
+      <div class="ct">n = 5 (primeras 2 coord.)</div>
+      <canvas id="c_proj5" height="180"></canvas>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ SECCIÓN 4: DESCOMPOSICIÓN ESPECTRAL ═══ -->
+<section class="sec" id="s4">
+  <div class="sl">04 — Geometría Espectral</div>
+  <h2 class="st">Autofunciones y Modos de Deformación</h2>
+  <p class="sb">El kernel k puede entenderse como el análogo funcional de una matriz de covarianza. En condiciones adecuadas, sus autofunciones φⱼ(x) juegan el papel de direcciones principales en espacio de funciones, y sus autovalores λⱼ determinan cuánta variación aporta cada modo.</p>
+
+  <div class="math">
+    f(x) = m(x) + Σⱼ √λⱼ · Zⱼ · φⱼ(x)<br>
+    <span class="dim">&nbsp;&nbsp;&nbsp;Zⱼ ∼ 𝒩(0,1) independientes — expansión de Karhunen–Loève (bajo hipótesis apropiadas)</span>
+  </div>
+
+  <div class="eigen-layout">
+    <div class="card">
+      <div class="ct">Primeros 6 Modos — φⱼ(x) escaladas por √λⱼ</div>
+      <canvas id="c_eigen_modes" height="320"></canvas>
+      <div class="ctrl-row" style="margin-top:14px">
+        <div class="cg">
+          <span class="cl">Modos activos <span class="cv" id="vModes">4</span></span>
+          <input type="range" id="sModes" min="1" max="6" step="1" value="4" oninput="updateEigenModes()">
+        </div>
+        <div class="cg">
+          <span class="cl">Reconstrucción animada</span>
+          <button class="btn" onclick="animateEigen()">▶ Animar</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Espectro de Autovalores λⱼ</div>
+      <canvas id="c_spectrum" height="320"></canvas>
+      <ul class="il" style="margin-top:10px;font-size:15px">
+        <li><b>RBF</b>: decaimiento rápido → funciones suaves</li>
+        <li><b>Exponencial</b>: decaimiento lento → más rugoso</li>
+        <li><b>λⱼ ≈ 0</b>: esos modos no contribuyen</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ SECCIÓN 5: REGRESIÓN GAUSSIANA ═══ -->
+<section class="sec" id="s5">
+  <div class="sl">05 — Regresión Gaussiana</div>
+  <h2 class="st">Prior → Posterior: Condicionando la Nube</h2>
+  <p class="sb">Observar datos equivale a condicionar la distribución previa y quedarse con las curvas más compatibles con las observaciones. La incertidumbre posterior se reduce cerca de los datos; en el caso sin ruido puede anularse en los puntos observados, mientras que con ruido normalmente no cae exactamente a cero.</p>
+
+  <div class="math">
+    <span class="dim">Para media previa nula:</span>&nbsp; μ∗ = K∗o (Koo + σₙ² I)⁻¹ y<br>
+    <span class="dim">Covarianza posterior:</span>&nbsp; Σ∗ = K∗∗ − K∗o (Koo + σₙ² I)⁻¹ Kₒ∗
+  </div>
+
+  <div class="post-layout">
+    <div>
+      <div class="card" style="margin-bottom:22px;padding:14px 18px">
+        <div class="ct">Haz clic en el gráfico para agregar observaciones</div>
+        <canvas id="c_posterior" height="360" style="cursor:crosshair"></canvas>
+        <div class="ctrl-row" style="margin-top:14px">
+          <div class="cg">
+            <span class="cl">Ruido σₙ <span class="cv" id="vNoise">0.10</span></span>
+            <input type="range" id="sNoise" min="0.01" max="1.0" step="0.01" value="0.1" oninput="drawPosterior()">
+          </div>
+          <div class="cg">
+            <span class="cl">ℓ (kernel) <span class="cv" id="vPostL">0.50</span></span>
+            <input type="range" id="sPostL" min="0.05" max="2.0" step="0.05" value="0.5" oninput="drawPosterior()">
+          </div>
+          <button class="btn" onclick="clearObs()">✕ Limpiar</button>
+          <button class="btn" onclick="addExampleObs()">+ Ejemplo</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="obs-panel">
+        <div class="ct">Observaciones</div>
+        <div id="obs-list"></div>
+        <p class="note" style="margin-top:12px">Hacé clic en el gráfico para agregar puntos. La posterior se actualiza en tiempo real.</p>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="ct">Incertidumbre Marginal</div>
+        <canvas id="c_uncertainty" height="160"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ SECCIÓN 6: RESUMEN ═══ -->
+<section class="sec" id="s6">
+  <div class="sl">06 — Síntesis</div>
+  <h2 class="st">La Analogía Completa</h2>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Normal Multivariante — ℝⁿ</div>
+      <ul class="il">
+        <li>Objeto aleatorio: <b>vector x ∈ ℝⁿ</b></li>
+        <li>Tendencia central: <b>media μ ∈ ℝⁿ</b></li>
+        <li>Geometría de dispersión: <b>matriz de covarianza Σ</b></li>
+        <li>Autovectores: <b>direcciones principales</b></li>
+        <li>Contornos de densidad: <b>elipses en ℝ² (caso bidimensional)</b></li>
+        <li>Condicionamiento: <b>sección del elipsoide</b></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="ct">Proceso Gaussiano — Espacio de Funciones</div>
+      <ul class="il">
+        <li>Objeto aleatorio: <b>función f: X → ℝ</b></li>
+        <li>Tendencia central: <b>función media m(x)</b></li>
+        <li>Geometría de dispersión: <b>kernel de covarianza k(x,x')</b></li>
+        <li>Autofunciones: <b>modos de deformación φⱼ(x)</b></li>
+        <li>Análogo geométrico: <b>estructura elipsoidal en espacio de funciones</b></li>
+        <li>Condicionamiento: <b>posterior sobre funciones / regresión gaussiana</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:22px;border-color:var(--a1);box-shadow:0 0 28px var(--glow)">
+    <div class="ct">El Resultado Central</div>
+    <p style="font-family:'Playfair Display',serif;font-size:19px;font-style:italic;line-height:1.7;color:var(--text)">
+      "Un proceso gaussiano puede entenderse como la extensión funcional de la normal multivariante: la matriz de covarianza se reemplaza por un kernel y su estructura probabilística queda completamente caracterizada por las distribuciones gaussianas de todas sus proyecciones finitas."
+    </p>
+  </div>
+</section>
+
+
+<div class="divider"></div>
+
+<!-- ═══ SECCIÓN 7: KERNELS Y REGULARIDAD ═══ -->
+<section class="sec" id="s7">
+  <div class="sl">07 — Kernels y Regularidad</div>
+  <h2 class="st">Cómo el Kernel Moldea la Forma de las Funciones</h2>
+  <p class="sb">En un proceso gaussiano, el kernel no es un detalle técnico secundario: es la pieza que codifica la noción de similitud entre puntos del dominio y, con ello, determina la suavidad, la periodicidad, la tendencia lineal y la escala de variación de las funciones posibles. Elegir un kernel equivale a formular una hipótesis estructural sobre el fenómeno que se quiere modelar.</p>
+
+  <div class="math">
+    k(x,x') = \operatorname{Cov}(f(x),f(x'))<br>
+    <span class="dim">Si x y x' son “parecidos” según el kernel, entonces f(x) y f(x') tenderán a tomar valores parecidos.</span>
+  </div>
+
+  <div class="g3">
+    <div class="card">
+      <div class="ct">RBF / Squared Exponential</div>
+      <p>Supone una regularidad muy alta. Las funciones muestreadas son extremadamente suaves y poseen derivadas de todos los órdenes. Es apropiado cuando se cree que el fenómeno cambia de manera continua y sin quiebres abruptos.</p>
+      <div class="tag-row">
+        <span class="kbadge">Suavidad máxima</span>
+        <span class="kbadge">Estacionario</span>
+        <span class="kbadge">Localidad controlada por ℓ</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Exponencial / Matérn 1/2</div>
+      <p>Genera trayectorias más rugosas. La correlación cae más rápido ante pequeñas separaciones y el modelo admite cambios menos suaves. Es una opción útil cuando el sistema observado presenta irregularidad local o transiciones marcadas.</p>
+      <div class="tag-row">
+        <span class="kbadge">Mayor rugosidad</span>
+        <span class="kbadge">Estacionario</span>
+        <span class="kbadge">Menor suavidad muestral</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Periódico</div>
+      <p>Introduce una estructura repetitiva. Dos puntos quedan altamente correlacionados si su separación coincide con múltiplos del período. Es natural para fenómenos estacionales, oscilatorios o cíclicos.</p>
+      <div class="tag-row">
+        <span class="kbadge">Periodicidad explícita</span>
+        <span class="kbadge">Ciclos y estacionalidad</span>
+        <span class="kbadge">Período p</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2" style="margin-top:22px">
+    <div class="card">
+      <div class="ct">Lectura Conceptual</div>
+      <ul class="il">
+        <li><b>Amplitud σ</b>: controla la escala vertical típica de las funciones.</li>
+        <li><b>Longitud de correlación ℓ</b>: determina qué tan rápido se pierde la dependencia al separar puntos del dominio.</li>
+        <li><b>Período p</b>: fija la distancia de repetición en kernels periódicos.</li>
+        <li><b>Composición de kernels</b>: sumar o multiplicar kernels permite modelar estructuras combinadas, como tendencia + estacionalidad + ruido suave.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="ct">Idea Central</div>
+      <p>En términos geométricos, la matriz de covarianza finita inducida por el kernel define qué configuraciones de valores son probables y cuáles quedan penalizadas. Por eso, cambiar el kernel modifica no solo la apariencia de las curvas, sino la forma misma del “elipsoide probabilístico” en cada proyección finita.</p>
+      <div class="topic-box">
+        <p><b>Conclusión:</b> elegir kernel es elegir una familia de comportamientos funcionales plausibles antes de observar los datos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ SECCIÓN 8: APLICACIONES ═══ -->
+<section class="sec" id="s8">
+  <div class="sl">08 — Aplicaciones</div>
+  <h2 class="st">Dónde Resultan Útiles los Procesos Gaussianos</h2>
+  <p class="sb">Los procesos gaussianos son especialmente valiosos cuando no solo interesa predecir, sino también cuantificar la incertidumbre de manera rigurosa. Esa combinación los vuelve atractivos en contextos donde los datos son escasos, costosos o estratégicos.</p>
+
+  <div class="g3">
+    <div class="card">
+      <div class="ct">Regresión no paramétrica</div>
+      <p>Permiten aproximar relaciones funcionales complejas sin imponer una forma paramétrica rígida. En lugar de postular una ecuación cerrada de baja dimensión, se trabaja con una distribución sobre funciones compatibles con los datos.</p>
+    </div>
+    <div class="card">
+      <div class="ct">Interpolación y reconstrucción</div>
+      <p>Son útiles para reconstruir valores faltantes, suavizar series o estimar campos continuos a partir de mediciones discretas. El resultado no es solo una curva estimada, sino también una banda de credibilidad punto a punto.</p>
+    </div>
+    <div class="card">
+      <div class="ct">Optimización bayesiana</div>
+      <p>En problemas donde evaluar una función objetivo es caro, un GP actúa como modelo sustituto. A partir de él se decide dónde conviene muestrear luego, equilibrando exploración de zonas inciertas y explotación de regiones prometedoras.</p>
+    </div>
+  </div>
+
+  <div class="math">
+    \text{Adquisición} = \text{criterio que usa media posterior e incertidumbre para elegir el próximo punto de evaluación}
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Ejemplos Típicos</div>
+      <ul class="il">
+        <li><b>Ingeniería</b>: calibración de simulaciones costosas y diseño de experimentos.</li>
+        <li><b>Robótica</b>: modelado de superficies, navegación y control con incertidumbre.</li>
+        <li><b>Ciencias ambientales</b>: interpolación espacial y reconstrucción de campos geográficos.</li>
+        <li><b>Finanzas y negocios</b>: modelado flexible de relaciones no lineales con pocos datos y necesidad de intervalos de confianza.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="ct">Por Qué Son Potentes</div>
+      <p>Su fortaleza no reside únicamente en producir una predicción media, sino en discriminar regiones donde el modelo “sabe” y regiones donde todavía “no sabe”. Esa capacidad de separar información de ignorancia es crucial para la toma de decisiones secuenciales.</p>
+      <div class="topic-box">
+        <p><b>Lectura operativa:</b> un GP no solo estima una función; organiza estratégicamente dónde conviene aprender más.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ SECCIÓN 9: LIMITACIONES Y CONSIDERACIONES ═══ -->
+<section class="sec" id="s9">
+  <div class="sl">09 — Consideraciones Prácticas</div>
+  <h2 class="st">Límites, Costos y Criterios de Uso</h2>
+  <p class="sb">Aunque son conceptualmente elegantes y muy expresivos, los procesos gaussianos no son una herramienta universal. Su uso efectivo exige tener presentes tanto sus supuestos como sus costos computacionales.</p>
+
+  <div class="g3">
+    <div class="card">
+      <div class="ct">Escalabilidad</div>
+      <p>La inversión o factorización de la matriz de covarianza sobre n observaciones suele costar del orden de <em>O(n³)</em> en tiempo y <em>O(n²)</em> en memoria. Por ello, los GP clásicos funcionan mejor en conjuntos de datos pequeños o medianos.</p>
+    </div>
+    <div class="card">
+      <div class="ct">Elección del kernel</div>
+      <p>Si el kernel no refleja razonablemente la estructura del problema, el modelo puede extrapolar mal o expresar una incertidumbre engañosa. La elección del kernel es parte del modelado, no una decisión automática trivial.</p>
+    </div>
+    <div class="card">
+      <div class="ct">Supuestos</div>
+      <p>La formulación estándar suele apoyarse en hipótesis como gaussianidad de las variables finitas, ruido aditivo relativamente simple y estructuras de dependencia que puedan representarse con un kernel adecuado.</p>
+    </div>
+  </div>
+
+  <div class="g2" style="margin-top:22px">
+    <div class="card">
+      <div class="ct">Extensiones Relevantes</div>
+      <ul class="il">
+        <li><b>GP dispersos</b>: introducen puntos inductores para reducir el costo computacional.</li>
+        <li><b>GP sobre grafos o manifolds</b>: adaptan el kernel a estructuras no euclidianas.</li>
+        <li><b>Modelos multioutput</b>: permiten estudiar varias funciones correlacionadas.</li>
+        <li><b>Kernels compuestos</b>: combinan componentes para capturar múltiples escalas o patrones estructurales.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="ct">Preguntas de Estudio</div>
+      <details class="qa" open>
+        <summary>¿Por qué un GP se considera no paramétrico?</summary>
+        <p>Porque no restringe la función desconocida a una familia finita de parámetros de forma fija. En su lugar, trabaja con una distribución sobre funciones enteras, cuya complejidad efectiva puede crecer con la información observada.</p>
+      </details>
+      <details class="qa">
+        <summary>¿Qué papel juega la matriz de covarianza finita?</summary>
+        <p>Es la representación concreta del GP cuando se observa el proceso en un conjunto finito de puntos. Toda inferencia computable en GP pasa, de una u otra forma, por esa matriz de covarianza inducida por el kernel.</p>
+      </details>
+      <details class="qa">
+        <summary>¿Cuándo conviene especialmente usar un GP?</summary>
+        <p>Cuando el volumen de datos no es enorme, la cuantificación de incertidumbre es importante y existe interés en un modelo flexible que pueda incorporar conocimiento estructural a través del kernel.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+<footer class="footer-credit">
+  <strong>Material elaborado por el profesor Sergio Gevatschnaider</strong>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════
+// UTILITIES & MATH
+// ══════════════════════════════════════════════════════
+function randn(){
+  let u=0,v=0;
+  while(!u)u=Math.random();
+  while(!v)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function cholesky(A){
+  const n=A.length,L=Array.from({length:n},()=>new Float64Array(n));
+  for(let i=0;i<n;i++){
+    for(let j=0;j<=i;j++){
+      let s=0;for(let k=0;k<j;k++)s+=L[i][k]*L[j][k];
+      if(i===j){const v=A[i][i]-s;L[i][j]=v>1e-12?Math.sqrt(v):1e-7;}
+      else L[i][j]=L[j][j]>1e-12?(A[i][j]-s)/L[j][j]:0;
+    }
+  }
+  return L;
+}
+
+function fwdSolve(L,b){
+  const n=L.length,x=new Float64Array(n);
+  for(let i=0;i<n;i++){
+    let s=b[i];for(let j=0;j<i;j++)s-=L[i][j]*x[j];
+    x[i]=L[i][i]>1e-12?s/L[i][i]:0;
+  }
+  return x;
+}
+function bkSolve(L,b){
+  const n=L.length,x=new Float64Array(n);
+  for(let i=n-1;i>=0;i--){
+    let s=b[i];for(let j=i+1;j<n;j++)s-=L[j][i]*x[j];
+    x[i]=L[i][i]>1e-12?s/L[i][i]:0;
+  }
+  return x;
+}
+function choSolve(L,b){return bkSolve(L,fwdSolve(L,b));}
+
+// ── KERNELS ──
+const KERNELS={
+  rbf:(x1,x2,l,s)=>{const d=x1-x2;return s*s*Math.exp(-d*d/(2*l*l));},
+  exp:(x1,x2,l,s)=>s*s*Math.exp(-Math.abs(x1-x2)/l),
+  per:(x1,x2,l,s,p)=>{const si=Math.sin(Math.PI*Math.abs(x1-x2)/p);return s*s*Math.exp(-2*si*si/(l*l));},
+  lin:(x1,x2,l,s)=>s*s*(1+x1*x2),
+};
+
+let currentKernel=0;
+const knames=['rbf','exp','per','lin'];
+
+function getKernelFn(){
+  const l=+document.getElementById('sL').value;
+  const sig=+document.getElementById('sSig').value;
+  const p=+document.getElementById('sP').value;
+  const k=knames[currentKernel];
+  return (x1,x2)=>KERNELS[k](x1,x2,l,sig,p)+(x1===x2?1e-6:0);
+}
+
+function buildK(xs,kfn){
+  const n=xs.length,K=[];
+  for(let i=0;i<n;i++){K.push([]);for(let j=0;j<n;j++)K[i].push(kfn(xs[i],xs[j]));}
+  return K;
+}
+
+function sampleGP(xs,kfn){
+  const K=buildK(xs,kfn);
+  const L=cholesky(K);
+  const n=xs.length,z=Array.from({length:n},randn),f=new Float64Array(n);
+  for(let i=0;i<n;i++)for(let j=0;j<=i;j++)f[i]+=L[i][j]*z[j];
+  return f;
+}
+
+function gpPosterior(xo,yo,xt,kfn,noise){
+  const no=xo.length,nt=xt.length;
+  const Koo=buildK(xo,kfn);
+  for(let i=0;i<no;i++)Koo[i][i]+=noise*noise+1e-6;
+  const Loo=cholesky(Koo);
+  const alpha=choSolve(Loo,yo);
+  const mu=new Float64Array(nt);
+  const v2=new Float64Array(nt);
+  for(let i=0;i<nt;i++){
+    const kso=xo.map(x=>kfn(xt[i],x));
+    for(let j=0;j<no;j++)mu[i]+=kso[j]*alpha[j];
+    const v=fwdSolve(Loo,kso);
+    let d=0;for(let j=0;j<no;j++)d+=v[j]*v[j];
+    v2[i]=Math.max(0,kfn(xt[i],xt[i])-d);
+  }
+  return{mu,v2};
+}
+
+// ══════════════════════════════════════════════════════
+// THEME & COLORS
+// ══════════════════════════════════════════════════════
+function getCSSVar(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function getColors(){
+  return{
+    bg:getCSSVar('--bg'),bg2:getCSSVar('--bg2'),text:getCSSVar('--text'),
+    text2:getCSSVar('--text2'),a1:getCSSVar('--a1'),a2:getCSSVar('--a2'),a3:getCSSVar('--a3'),
+    border:getCSSVar('--border'),
+    s:[getCSSVar('--s1'),getCSSVar('--s2'),getCSSVar('--s3'),getCSSVar('--s4'),getCSSVar('--s5')],
+  };
+}
+
+function setTheme(t){
+  document.body.setAttribute('data-theme',t);
+  setTimeout(redrawAll,80);
+}
+
+// ══════════════════════════════════════════════════════
+// CANVAS HELPERS
+// ══════════════════════════════════════════════════════
+function setupCanvas(id){
+  const cv=document.getElementById(id);
+  const dpr=window.devicePixelRatio||1;
+  const rect=cv.getBoundingClientRect();
+  cv.width=Math.round(rect.width*dpr);
+  cv.height=Math.round(cv.height*dpr||280*dpr);
+  const ctx=cv.getContext('2d');
+  ctx.scale(dpr,dpr);
+  return{cv,ctx,W:rect.width||cv.clientWidth,H:cv.height/dpr};
+}
+
+function clearCanvas(ctx,W,H,bg){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=bg;
+  ctx.fillRect(0,0,W,H);
+}
+
+function drawGrid(ctx,W,H,c){
+  ctx.strokeStyle=c;ctx.lineWidth=.5;
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+}
+
+function drawAxes(ctx,cx,cy,W,H,c){
+  ctx.strokeStyle=c;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+}
+
+// ══════════════════════════════════════════════════════
+// HERO CANVAS
+// ══════════════════════════════════════════════════════
+let heroAnim=null,heroSamples=[],heroT=0;
+function initHero(){
+  const cv=document.getElementById('hcanvas');
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  const xs=Array.from({length:120},(_,i)=>-3+6*i/119);
+  const kfn=(x1,x2)=>Math.exp(-((x1-x2)**2)/(2*.4*.4));
+  heroSamples=Array.from({length:7},()=>sampleGP(xs,kfn));
+  let t=0;
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    const dark=document.body.getAttribute('data-theme')==='dark'||!document.body.hasAttribute('data-theme');
+    const isMatrix=document.body.getAttribute('data-theme')==='matrix';
+    t+=.003;
+    const cols=isMatrix?['#00ff41','#00cc33','#00aa2b','#008822','#006611','#33ff66','#00ff88']:
+                dark?['#00d4ff','#00aacc','#0088aa','#006688','#004466','#33ddff','#66eeff']:
+                     ['#0055bb','#0044aa','#003388','#002266','#001144','#3377cc','#5599dd'];
+    heroSamples.forEach((s,si)=>{
+      const phase=si*Math.PI*2/7;
+      ctx.beginPath();
+      s.forEach((y,i)=>{
+        const px=i/119*W,py=H*.5-y*60*Math.sin(t+phase*.3)*Math.max(.5,1);
+        i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+      });
+      ctx.strokeStyle=cols[si];
+      ctx.globalAlpha=.18+.08*Math.sin(t+phase);
+      ctx.lineWidth=1.5;ctx.stroke();
+    });
+    ctx.globalAlpha=1;
+    heroAnim=requestAnimationFrame(frame);
+  }
+  if(heroAnim)cancelAnimationFrame(heroAnim);
+  frame();
+}
+window.addEventListener('resize',()=>{
+  const cv=document.getElementById('hcanvas');
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  initHero();
+});
+
+// ══════════════════════════════════════════════════════
+// ELLIPSE VISUALIZATION
+// ══════════════════════════════════════════════════════
+let ellipseAnim=null,ellipseAngle=0;
+function updateEllipse(){
+  const rho=+document.getElementById('sRho').value;
+  const s1=+document.getElementById('sS1').value;
+  const s2=+document.getElementById('sS2').value;
+  document.getElementById('vRho').textContent=rho.toFixed(2);
+  document.getElementById('vS1').textContent=s1.toFixed(1);
+  document.getElementById('vS2').textContent=s2.toFixed(1);
+  drawEllipse(rho,s1,s2);
+  drawEigenDecomp(rho,s1,s2);
+}
+
+function drawEllipse(rho,s1,s2){
+  const{ctx,W,H}=setupCanvas('c_ellipse');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+  drawGrid(ctx,W,H,c.border);
+  const cx=W/2,cy=H/2,sc=Math.min(W,H)*.18;
+
+  // Draw density heatmap
+  const Sigma=[[s1*s1,rho*s1*s2],[rho*s1*s2,s2*s2]];
+  const det=Sigma[0][0]*Sigma[1][1]-Sigma[0][1]*Sigma[1][0];
+  const inv=[[Sigma[1][1]/det,-Sigma[0][1]/det],[-Sigma[1][0]/det,Sigma[0][0]/det]];
+  const id=ctx.createImageData(Math.round(W),Math.round(H));
+  const isMatrix=document.body.getAttribute('data-theme')==='matrix';
+  const isLab=document.body.getAttribute('data-theme')==='lab';
+  for(let px=0;px<Math.round(W);px++){
+    for(let py=0;py<Math.round(H);py++){
+      const x=(px-cx)/sc,y=(py-cy)/sc;
+      const md=inv[0][0]*x*x+2*inv[0][1]*x*y+inv[1][1]*y*y;
+      const density=Math.exp(-.5*md);
+      const idx=(py*Math.round(W)+px)*4;
+      if(isMatrix){
+        id.data[idx]=0;id.data[idx+1]=Math.round(255*density*.7);id.data[idx+2]=Math.round(40*density);
+      } else if(isLab){
+        id.data[idx]=Math.round(0+150*density);id.data[idx+1]=Math.round(100+155*density*.3);id.data[idx+2]=Math.round(200*density);
+      } else {
+        id.data[idx]=Math.round(0);id.data[idx+1]=Math.round(100*density);id.data[idx+2]=Math.round(200*density);
+      }
+      id.data[idx+3]=Math.round(180*density);
+    }
+  }
+  ctx.putImageData(id,0,0);
+
+  // Draw ellipse contours
+  const levels=[1,2,3];
+  levels.forEach((lv,li)=>{
+    ctx.beginPath();
+    for(let t=0;t<=2*Math.PI;t+=.02){
+      const px=cx+lv*sc*(s1*Math.cos(t)*Math.cos(Math.asin(rho))-s1*rho*Math.sin(t));
+      // Use parametric form: x = L*[cos,sin]
+    }
+    // Use eigen decomposition for correct ellipse drawing
+    const a=s1*s1,b=rho*s1*s2,d=s2*s2;
+    const tr=a+d,de2=Math.sqrt(Math.max(0,(a-d)**2+4*b*b));
+    const l1=(tr+de2)/2,l2=(tr-de2)/2;
+    const ang=Math.abs(b)<1e-9?0:Math.atan2(l1-a,b);
+    ctx.beginPath();
+    for(let t=0;t<=2*Math.PI+.01;t+=.02){
+      const ex=lv*Math.sqrt(l1)*Math.cos(t),ey=lv*Math.sqrt(Math.max(0,l2))*Math.sin(t);
+      const px=cx+sc*(ex*Math.cos(ang)-ey*Math.sin(ang));
+      const py=cy+sc*(ex*Math.sin(ang)+ey*Math.cos(ang));
+      t<.02?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    }
+    ctx.strokeStyle=c.a1;
+    ctx.globalAlpha=1-.25*li;
+    ctx.lineWidth=2-li*.4;
+    ctx.stroke();
+    ctx.globalAlpha=1;
+  });
+  drawAxes(ctx,cx,cy,W,H,c.text2+'44');
+
+  // Labels
+  ctx.fillStyle=c.text2;ctx.font=`11px 'JetBrains Mono'`;
+  ctx.fillText('x₁',W-24,cy-8);ctx.fillText('x₂',cx+8,14);
+}
+
+function drawEigenDecomp(rho,s1,s2){
+  const{ctx,W,H}=setupCanvas('c_eigen2d');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+  drawGrid(ctx,W,H,c.border);
+  const cx=W/2,cy=H/2,sc=Math.min(W,H)*.15;
+
+  // Covariance matrix eigendecomposition
+  const a=s1*s1,b=rho*s1*s2,d=s2*s2;
+  const tr=a+d,de2=Math.sqrt(Math.max(0,(a-d)**2+4*b*b));
+  const l1=(tr+de2)/2,l2=(tr-de2)/2;
+  const ang=Math.abs(b)<1e-9?0:Math.atan2(l1-a,b);
+
+  // Draw ellipse
+  ctx.beginPath();
+  for(let t=0;t<=2*Math.PI+.01;t+=.02){
+    const ex=2*Math.sqrt(l1)*Math.cos(t),ey=2*Math.sqrt(Math.max(0,l2))*Math.sin(t);
+    const px=cx+sc*(ex*Math.cos(ang)-ey*Math.sin(ang));
+    const py=cy+sc*(ex*Math.sin(ang)+ey*Math.cos(ang));
+    t<.02?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.strokeStyle=c.a1;ctx.lineWidth=2;ctx.globalAlpha=.7;ctx.stroke();ctx.globalAlpha=1;
+
+  // Eigenvectors
+  const drawEv=(len,col,ang2)=>{
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+sc*len*Math.cos(ang2),cy+sc*len*Math.sin(ang2));
+    ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.stroke();
+    // Arrowhead
+    const ex=cx+sc*len*Math.cos(ang2),ey=cy+sc*len*Math.sin(ang2);
+    ctx.beginPath();
+    ctx.moveTo(ex,ey);
+    ctx.lineTo(ex-8*Math.cos(ang2-.3),ey-8*Math.sin(ang2-.3));
+    ctx.lineTo(ex-8*Math.cos(ang2+.3),ey-8*Math.sin(ang2+.3));
+    ctx.closePath();ctx.fillStyle=col;ctx.fill();
+  };
+  drawEv(2*Math.sqrt(l1),c.a2,ang);
+  drawEv(2*Math.sqrt(Math.max(0,l2)),c.a3,ang+Math.PI/2);
+
+  // Labels
+  ctx.font=`12px 'JetBrains Mono'`;
+  ctx.fillStyle=c.a2;
+  ctx.fillText(`λ₁ = ${l1.toFixed(2)}`,10,18);
+  ctx.fillStyle=c.a3;
+  ctx.fillText(`λ₂ = ${l2.toFixed(2)}`,10,34);
+  ctx.fillStyle=c.text2;
+  ctx.fillText(`ρ = ${rho.toFixed(2)}`,W-70,18);
+  drawAxes(ctx,cx,cy,W,H,c.text2+'44');
+}
+
+// ══════════════════════════════════════════════════════
+// GP PRIOR SAMPLES
+// ══════════════════════════════════════════════════════
+let priorSamples=[];
+const NXS=120;
+const XS=Array.from({length:NXS},(_,i)=>-3+6*i/(NXS-1));
+
+function reSamplePrior(){
+  const l=+document.getElementById('sL').value;
+  const sig=+document.getElementById('sSig').value;
+  const p=+document.getElementById('sP').value;
+  document.getElementById('vL').textContent=l.toFixed(2);
+  document.getElementById('vSig').textContent=sig.toFixed(1);
+  document.getElementById('vP').textContent=p.toFixed(1);
+  document.getElementById('pgctrl').style.opacity=currentKernel===2?'1':'0.35';
+
+  const kfn=getKernelFn();
+  priorSamples=Array.from({length:6},()=>sampleGP(XS,kfn));
+  drawGPPrior();
+  drawKernelMatrix();
+  drawKernelFn();
+}
+
+function drawGPPrior(){
+  const{ctx,W,H}=setupCanvas('c_gp_prior');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+  drawGrid(ctx,W,H,c.border);
+
+  const kfn=getKernelFn();
+  // Compute ±2σ band (marginal std)
+  const stds=XS.map(x=>Math.sqrt(kfn(x,x)));
+  const sig=+document.getElementById('sSig').value;
+
+  // Draw band
+  const mapX=x=>(x+3)/6*W;
+  const mapY=y=>H*.5-y*(H*.38)/Math.max(sig*2.5,.5);
+
+  ctx.beginPath();
+  XS.forEach((x,i)=>{
+    const px=mapX(x),py=mapY(2*stds[i]);
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  });
+  for(let i=XS.length-1;i>=0;i--){
+    ctx.lineTo(mapX(XS[i]),mapY(-2*stds[i]));
+  }
+  ctx.closePath();
+  ctx.fillStyle=c.a1;ctx.globalAlpha=.1;ctx.fill();ctx.globalAlpha=1;
+
+  // Band border
+  [1,-1].forEach(sign=>{
+    ctx.beginPath();
+    XS.forEach((x,i)=>{
+      const px=mapX(x),py=mapY(sign*2*stds[i]);
+      i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    });
+    ctx.strokeStyle=c.a1;ctx.lineWidth=1;ctx.globalAlpha=.4;ctx.stroke();ctx.globalAlpha=1;
+  });
+
+  // Samples
+  priorSamples.forEach((s,si)=>{
+    ctx.beginPath();
+    s.forEach((y,i)=>{
+      const px=mapX(XS[i]),py=mapY(y);
+      i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    });
+    ctx.strokeStyle=c.s[si%5];
+    ctx.lineWidth=1.8;ctx.globalAlpha=.85;ctx.stroke();ctx.globalAlpha=1;
+  });
+
+  // Mean
+  ctx.beginPath();XS.forEach((x,i)=>{ctx.moveTo(mapX(x),mapY(0));ctx.lineTo(mapX(x),mapY(0));});
+  ctx.beginPath();ctx.moveTo(mapX(XS[0]),mapY(0));ctx.lineTo(mapX(XS[NXS-1]),mapY(0));
+  ctx.strokeStyle=c.text;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);
+
+  drawAxes(ctx,mapX(0),H*.5,W,H,c.text2+'55');
+  // Labels
+  ctx.fillStyle=c.a1;ctx.font=`11px 'JetBrains Mono'`;
+  ctx.fillText('m(x) ± 2√k(x,x)',8,18);
+  ctx.fillStyle=c.text2;
+  ctx.fillText('x'+(NXS-1),W-24,H*.5+16);
+  ctx.fillText('f(x)',8,H*.5-4);
+}
+
+function drawKernelMatrix(){
+  const{ctx,W,H}=setupCanvas('c_kmat');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+
+  const n=20;
+  const xs=Array.from({length:n},(_,i)=>-2+4*i/(n-1));
+  const kfn=getKernelFn();
+  const K=buildK(xs,kfn);
+  const cell=Math.min(W,H)/n;
+  const sig=+document.getElementById('sSig').value;
+  const isMatrix=document.body.getAttribute('data-theme')==='matrix';
+  const isLab=document.body.getAttribute('data-theme')==='lab';
+
+  K.forEach((row,i)=>row.forEach((v,j)=>{
+    const t=Math.max(0,Math.min(1,v/(sig*sig)));
+    let r,g,b;
+    if(isMatrix){r=0;g=Math.round(200*t);b=Math.round(50*t);}
+    else if(isLab){r=Math.round(20+180*t);g=Math.round(80+60*t);b=Math.round(200-150*t);}
+    else {r=0;g=Math.round(100*t);b=Math.round(220*t);}
+    ctx.fillStyle=`rgb(${r},${g},${b})`;
+    ctx.fillRect(j*cell,i*cell,cell-1,cell-1);
+  }));
+
+  ctx.fillStyle=c.text2;ctx.font=`10px 'JetBrains Mono'`;
+  ctx.fillText('i →',W-36,H-6);ctx.fillText('↓ j',4,14);
+}
+
+function drawKernelFn(){
+  const{ctx,W,H}=setupCanvas('c_kfn');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+  drawGrid(ctx,W,H,c.border);
+
+  const xs=Array.from({length:100},(_,i)=>-3+6*i/99);
+  const kfn=getKernelFn();
+  const ys=xs.map(x=>kfn(0,x));
+  const maxY=Math.max(...ys)*1.1;
+  const mapX=x=>(x+3)/6*W;
+  const mapY=y=>H-20-y/maxY*(H-40);
+
+  ctx.beginPath();
+  xs.forEach((x,i)=>{
+    const px=mapX(x),py=mapY(ys[i]);
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  });
+  ctx.strokeStyle=c.a1;ctx.lineWidth=2.5;ctx.stroke();
+
+  // Fill
+  ctx.beginPath();ctx.moveTo(mapX(xs[0]),H-20);
+  xs.forEach((x,i)=>ctx.lineTo(mapX(x),mapY(ys[i])));
+  ctx.lineTo(mapX(xs[xs.length-1]),H-20);ctx.closePath();
+  ctx.fillStyle=c.a1;ctx.globalAlpha=.12;ctx.fill();ctx.globalAlpha=1;
+
+  drawAxes(ctx,W*.5,H-20,W,H,c.text2+'55');
+  ctx.fillStyle=c.text2;ctx.font=`10px 'JetBrains Mono'`;
+  ctx.fillText('k(0, x)',8,16);
+  ctx.fillText('x',W-18,H-22);
+}
+
+function setKernelTab(idx,el){
+  currentKernel=idx;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  reSamplePrior();
+}
+
+// ══════════════════════════════════════════════════════
+// PROJECTION VISUALIZATION
+// ══════════════════════════════════════════════════════
+function updateProjection(){
+  const n=+document.getElementById('sN').value;
+  document.getElementById('vN').textContent=n;
+  drawProjectionGP(n);
+  drawProjectionEllipse(n);
+  drawSmallProjections();
+}
+
+function drawProjectionGP(n){
+  const{ctx,W,H}=setupCanvas('c_proj_gp');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+  drawGrid(ctx,W,H,c.border);
+
+  const kfn=(x1,x2)=>Math.exp(-((x1-x2)**2)/(2*.5*.5))+(x1===x2?1e-6:0);
+  const xs_eval=Array.from({length:n},(_,i)=>-2.5+5*i/(n-1));
+  const samples=Array.from({length:4},()=>sampleGP(XS,kfn));
+  const samples_eval=samples.map(s=>xs_eval.map(x=>{
+    const idx=Math.round((x+3)/6*(NXS-1));
+    return s[Math.max(0,Math.min(NXS-1,idx))];
+  }));
+
+  const mapX=x=>(x+3)/6*W;
+  const mapY=y=>H*.5-y*H*.2;
+
+  // Draw samples
+  samples.forEach((s,si)=>{
+    ctx.beginPath();
+    s.forEach((y,i)=>{const px=mapX(XS[i]),py=mapY(y);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);});
+    ctx.strokeStyle=c.s[si];ctx.lineWidth=1.5;ctx.globalAlpha=.5;ctx.stroke();ctx.globalAlpha=1;
+  });
+
+  // Draw eval points
+  samples_eval.forEach((se,si)=>{
+    xs_eval.forEach((x,i)=>{
+      ctx.beginPath();
+      ctx.arc(mapX(x),mapY(se[i]),4,0,2*Math.PI);
+      ctx.fillStyle=c.s[si];ctx.fill();
+    });
+  });
+
+  // Vertical lines at eval points
+  xs_eval.forEach(x=>{
+    ctx.beginPath();ctx.moveTo(mapX(x),0);ctx.lineTo(mapX(x),H);
+    ctx.strokeStyle=c.a1;ctx.lineWidth=.8;ctx.globalAlpha=.3;ctx.stroke();ctx.globalAlpha=1;
+  });
+
+  drawAxes(ctx,W*.5,H*.5,W,H,c.text2+'55');
+  ctx.fillStyle=c.a1;ctx.font=`11px 'JetBrains Mono'`;
+  ctx.fillText(`Evaluado en ${n} puntos`,8,18);
+}
+
+function drawProjectionEllipse(n){
+  const{ctx,W,H}=setupCanvas('c_proj_ellipse');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+  drawGrid(ctx,W,H,c.border);
+
+  // Show 2D marginal of the n-dimensional Gaussian
+  const kfn=(x1,x2)=>Math.exp(-((x1-x2)**2)/(2*.5*.5));
+  const xs_eval=Array.from({length:n},(_,i)=>-2.5+5*i/(n-1));
+
+  // Take first 2 dimensions
+  const x0=xs_eval[0],x1n=xs_eval[Math.min(1,n-1)];
+  const s11=kfn(x0,x0)+1e-6,s12=kfn(x0,x1n),s22=kfn(x1n,x1n)+1e-6;
+  const rho=s12/Math.sqrt(s11*s22);
+
+  const cx=W/2,cy=H/2,sc=Math.min(W,H)*.28;
+
+  // Draw density
+  const det=s11*s22-s12*s12;
+  if(Math.abs(det)<1e-9) return;
+  const inv=[[s22/det,-s12/det],[-s12/det,s11/det]];
+  const id=ctx.createImageData(Math.round(W),Math.round(H));
+  for(let px=0;px<Math.round(W);px++){
+    for(let py=0;py<Math.round(H);py++){
+      const x=(px-cx)/sc,y=(py-cy)/sc;
+      const md=inv[0][0]*x*x+2*inv[0][1]*x*y+inv[1][1]*y*y;
+      const density=Math.exp(-.5*md);
+      const idx=(py*Math.round(W)+px)*4;
+      id.data[idx]=0;id.data[idx+1]=Math.round(80*density);id.data[idx+2]=Math.round(180*density);
+      id.data[idx+3]=Math.round(160*density);
+    }
+  }
+  ctx.putImageData(id,0,0);
+
+  // Draw ellipses
+  [1,2].forEach(lv=>{
+    const a=s11,b=s12,d=s22;
+    const tr=a+d,de2=Math.sqrt(Math.max(0,(a-d)**2+4*b*b));
+    const l1=(tr+de2)/2,l2_=Math.max(0,(tr-de2)/2);
+    const ang=Math.abs(b)<1e-9?0:Math.atan2(l1-a,b);
+    ctx.beginPath();
+    for(let t=0;t<=2*Math.PI+.01;t+=.02){
+      const ex=lv*Math.sqrt(l1)*Math.cos(t),ey=lv*Math.sqrt(l2_)*Math.sin(t);
+      const px=cx+sc*(ex*Math.cos(ang)-ey*Math.sin(ang));
+      const py=cy+sc*(ex*Math.sin(ang)+ey*Math.cos(ang));
+      t<.02?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    }
+    ctx.strokeStyle=c.a1;ctx.lineWidth=2-lv*.5;ctx.globalAlpha=1-.3*(lv-1);ctx.stroke();ctx.globalAlpha=1;
+  });
+
+  // Scatter samples
+  const samples2d=Array.from({length:80},()=>{
+    const z1=randn(),z2=randn();
+    const x=Math.sqrt(s11)*z1;
+    const y=rho*Math.sqrt(s22)*z1+Math.sqrt(1-rho*rho)*Math.sqrt(s22)*z2;
+    return[x,y];
+  });
+  samples2d.forEach(([x,y])=>{
+    ctx.beginPath();ctx.arc(cx+x*sc,cy+y*sc,2,0,2*Math.PI);
+    ctx.fillStyle=c.s[0];ctx.globalAlpha=.4;ctx.fill();ctx.globalAlpha=1;
+  });
+
+  drawAxes(ctx,cx,cy,W,H,c.text2+'55');
+  ctx.fillStyle=c.a1;ctx.font=`11px 'JetBrains Mono'`;
+  ctx.fillText(`f(x₁) vs f(x₂)  ρ=${rho.toFixed(2)}`,8,18);
+  ctx.fillStyle=c.text2;
+  ctx.fillText('f(x₁)',W-40,cy-6);ctx.fillText('f(x₂)',cx+6,14);
+}
+
+function drawSmallProjections(){
+  [[2,'c_proj2'],[3,'c_proj3'],[5,'c_proj5']].forEach(([n,id])=>{
+    const{ctx,W,H}=setupCanvas(id);
+    const c=getColors();
+    clearCanvas(ctx,W,H,c.bg2);
+
+    const kfn=(x1,x2)=>Math.exp(-((x1-x2)**2)/(2*.5*.5));
+    const xs_eval=Array.from({length:n},(_,i)=>-2+4*i/(n-1));
+    const K=buildK(xs_eval,kfn);
+
+    // Draw scatter of 2D marginal
+    const s11=K[0][0]+1e-6,s12=K[0][Math.min(1,n-1)],s22=K[Math.min(1,n-1)][Math.min(1,n-1)]+1e-6;
+    const rho=s12/Math.sqrt(s11*s22);
+    const cx=W/2,cy=H/2,sc=Math.min(W,H)*.22;
+
+    // Light scatter
+    Array.from({length:60},()=>{
+      const z1=randn(),z2=randn();
+      const x=Math.sqrt(s11)*z1;
+      const y=rho*Math.sqrt(s22)*z1+Math.sqrt(Math.max(0,1-rho*rho))*Math.sqrt(s22)*z2;
+      ctx.beginPath();ctx.arc(cx+x*sc,cy+y*sc,2.5,0,2*Math.PI);
+      ctx.fillStyle=c.a1;ctx.globalAlpha=.3;ctx.fill();ctx.globalAlpha=1;
+    });
+
+    // Draw ellipse
+    const a=s11,b=s12,d=s22;
+    const tr=a+d,de2=Math.sqrt(Math.max(0,(a-d)**2+4*b*b));
+    const l1=(tr+de2)/2,l2_=Math.max(0,(tr-de2)/2);
+    const ang=Math.abs(b)<1e-9?0:Math.atan2(l1-a,b);
+    [1.5,2.5].forEach(lv=>{
+      ctx.beginPath();
+      for(let t=0;t<=2*Math.PI+.01;t+=.03){
+        const ex=lv*Math.sqrt(l1)*Math.cos(t),ey=lv*Math.sqrt(l2_)*Math.sin(t);
+        const px=cx+sc*(ex*Math.cos(ang)-ey*Math.sin(ang));
+        const py=cy+sc*(ex*Math.sin(ang)+ey*Math.cos(ang));
+        t<.03?ctx.moveTo(px,py):ctx.lineTo(px,py);
+      }
+      ctx.strokeStyle=c.a2;ctx.lineWidth=1.5;ctx.globalAlpha=.8;ctx.stroke();ctx.globalAlpha=1;
+    });
+    drawAxes(ctx,cx,cy,W,H,c.text2+'44');
+    ctx.fillStyle=c.a1;ctx.font=`10px 'JetBrains Mono'`;
+    ctx.fillText(`𝒩(0,K) n=${n}`,6,14);
+    ctx.fillStyle=c.text2;ctx.fillText(`ρ≈${rho.toFixed(2)}`,6,H-8);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// EIGENFUNCTION DECOMPOSITION
+// ══════════════════════════════════════════════════════
+let eigenAnimId=null,eigenT=0;
+
+function computeEigenfunctions(n=80,nModes=6){
+  const xs=Array.from({length:n},(_,i)=>-Math.PI+2*Math.PI*i/(n-1));
+  const l=+document.getElementById('sL').value;
+  const kfn=(x1,x2)=>Math.exp(-((x1-x2)**2)/(2*l*l));
+  const K=buildK(xs,kfn);
+  // Power iteration for top eigenvectors (simplified)
+  const dx=xs[1]-xs[0];
+  // Use DFT-like basis as approximation for periodic case, or cosine basis
+  const modes=[];
+  for(let m=0;m<nModes;m++){
+    const phi=xs.map(x=>Math.cos((m+1)*x/2));
+    // normalize
+    const norm=Math.sqrt(phi.reduce((s,v)=>s+v*v,0)*dx);
+    const phiN=phi.map(v=>v/norm);
+    // eigenvalue approx: λ_m = ∫∫ k(x,x') φ(x) φ(x') dx dx'
+    let lambda=0;
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++)lambda+=K[i][j]*phiN[i]*phiN[j]*dx*dx;
+    modes.push({phi:phiN,lambda:Math.max(0,lambda),xs});
+  }
+  return modes;
+}
+
+function updateEigenModes(){
+  const nModes=+document.getElementById('sModes').value;
+  document.getElementById('vModes').textContent=nModes;
+  drawEigenModes(nModes);
+  drawSpectrum();
+}
+
+function drawEigenModes(nModes=4){
+  const{ctx,W,H}=setupCanvas('c_eigen_modes');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+
+  const modes=computeEigenfunctions(80,6);
+  const rowH=H/6;
+  const cols=[c.s[0],c.s[1],c.s[2],c.s[3],c.s[4],c.a3];
+
+  modes.forEach((m,mi)=>{
+    const cy=(mi+.5)*rowH;
+    const active=mi<nModes;
+    const maxV=Math.max(...m.phi.map(Math.abs))*Math.sqrt(m.lambda);
+    if(maxV<1e-9) return;
+    const scale=rowH*.35/maxV;
+
+    // Background
+    ctx.fillStyle=active?cols[mi]+'18':'#ffffff08';
+    ctx.fillRect(0,mi*rowH,W,rowH-2);
+
+    // Mode curve
+    ctx.beginPath();
+    m.phi.forEach((v,i)=>{
+      const px=i/79*W;
+      const py=cy-v*Math.sqrt(m.lambda)*scale;
+      i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    });
+    ctx.strokeStyle=active?cols[mi]:c.border;
+    ctx.lineWidth=active?2:1;
+    ctx.globalAlpha=active?1:.3;
+    ctx.stroke();ctx.globalAlpha=1;
+
+    // Label
+    ctx.fillStyle=active?cols[mi]:c.text2;
+    ctx.font=`10px 'JetBrains Mono'`;
+    ctx.fillText(`φ${mi+1}  λ${mi+1}=${m.lambda.toFixed(3)}`,6,cy-rowH*.3);
+  });
+
+  // Show reconstruction
+  ctx.fillStyle=c.text2;ctx.font=`10px 'JetBrains Mono'`;
+  ctx.fillText(`${nModes} modo${nModes!==1?'s':''} activo${nModes!==1?'s':''}`,W-110,14);
+}
+
+function drawSpectrum(){
+  const{ctx,W,H}=setupCanvas('c_spectrum');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+  drawGrid(ctx,W,H,c.border);
+
+  const modes=computeEigenfunctions(80,6);
+  const maxL=Math.max(...modes.map(m=>m.lambda));
+  const barW=(W-60)/6;
+  const nModes=+document.getElementById('sModes').value;
+
+  modes.forEach((m,i)=>{
+    const t=m.lambda/maxL;
+    const h=t*(H-50);
+    const x=30+i*barW+barW*.1;
+    const y=H-25-h;
+    const active=i<nModes;
+    ctx.fillStyle=active?c.s[i%5]:c.border;
+    ctx.globalAlpha=active?1:.4;
+    ctx.fillRect(x,y,barW*.8,h);
+    ctx.globalAlpha=1;
+
+    ctx.fillStyle=c.text2;ctx.font=`10px 'JetBrains Mono'`;
+    ctx.fillText(`λ${i+1}`,x+barW*.15,H-8);
+    ctx.fillStyle=active?c.s[i%5]:c.text2;
+    ctx.fillText(m.lambda.toFixed(2),x,y-4);
+  });
+
+  ctx.strokeStyle=c.border;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(25,H-24);ctx.lineTo(W,H-24);ctx.stroke();
+  ctx.fillStyle=c.text2;ctx.font=`10px 'JetBrains Mono'`;
+  ctx.fillText('Autovalores λⱼ',8,16);
+}
+
+function animateEigen(){
+  if(eigenAnimId){cancelAnimationFrame(eigenAnimId);eigenAnimId=null;return;}
+  let t=0;
+  const modes=computeEigenfunctions(80,6);
+  const nModes=+document.getElementById('sModes').value;
+  const{ctx,W,H}=setupCanvas('c_eigen_modes');
+  const c=getColors();
+
+  function frame(){
+    t+=.025;
+    clearCanvas(ctx,W,H,c.bg2);
+    const rowH=H/6;
+    const cols=[c.s[0],c.s[1],c.s[2],c.s[3],c.s[4],c.a3];
+
+    modes.forEach((m,mi)=>{
+      const cy=(mi+.5)*rowH;
+      const active=mi<nModes;
+      const maxV=Math.max(...m.phi.map(Math.abs))*Math.sqrt(m.lambda);
+      if(maxV<1e-9) return;
+      const scale=rowH*.35/maxV;
+      const zj=Math.sin(t*(mi+1)*.7+mi*1.3);
+
+      ctx.fillStyle=active?cols[mi]+'18':'#ffffff08';
+      ctx.fillRect(0,mi*rowH,W,rowH-2);
+
+      ctx.beginPath();
+      m.phi.forEach((v,i)=>{
+        const px=i/79*W;
+        const py=cy-(active?zj:1)*v*Math.sqrt(m.lambda)*scale;
+        i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+      });
+      ctx.strokeStyle=active?cols[mi]:c.border;
+      ctx.lineWidth=active?2:1;ctx.globalAlpha=active?1:.3;ctx.stroke();ctx.globalAlpha=1;
+
+      ctx.fillStyle=active?cols[mi]:c.text2;
+      ctx.font=`10px 'JetBrains Mono'`;
+      ctx.fillText(`φ${mi+1}  Z${mi+1}=${zj.toFixed(2)}`,6,cy-rowH*.3);
+    });
+    eigenAnimId=requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// ══════════════════════════════════════════════════════
+// GP POSTERIOR (REGRESSION)
+// ══════════════════════════════════════════════════════
+let observations=[];
+const XT_POST=Array.from({length:120},(_,i)=>-3+6*i/119);
+
+document.getElementById('c_posterior').addEventListener('click',function(e){
+  const rect=this.getBoundingClientRect();
+  const W=rect.width,H=rect.height;
+  const cx=(e.clientX-rect.left)/W*6-3;
+  const cy=-((e.clientY-rect.top)/H-.5)*4;
+  observations.push([cx,cy]);
+  drawPosterior();
+  updateObsList();
+});
+
+function clearObs(){observations=[];drawPosterior();updateObsList();}
+
+function addExampleObs(){
+  observations=[[-2,.5],[-1,-.8],[0,1.2],[1,.3],[2,-.5]];
+  drawPosterior();updateObsList();
+}
+
+function updateObsList(){
+  const el=document.getElementById('obs-list');
+  el.innerHTML=observations.map(([x,y],i)=>
+    `<div class="obs-item"><div class="obs-dot"></div>
+     x=${x.toFixed(2)}, y=${y.toFixed(2)}</div>`
+  ).join('');
+}
+
+function drawPosterior(){
+  const noise=+document.getElementById('sNoise').value;
+  const l=+document.getElementById('sPostL').value;
+  document.getElementById('vNoise').textContent=noise.toFixed(2);
+  document.getElementById('vPostL').textContent=l.toFixed(2);
+
+  const{ctx,W,H}=setupCanvas('c_posterior');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+  drawGrid(ctx,W,H,c.border);
+
+  const kfn=(x1,x2)=>Math.exp(-((x1-x2)**2)/(2*l*l))+(x1===x2?1e-6:0);
+  const mapX=x=>(x+3)/6*W;
+  const mapY=y=>H*.5-y*H*.22;
+
+  if(observations.length===0){
+    // Draw prior
+    const stds=XT_POST.map(x=>Math.sqrt(kfn(x,x)));
+    drawBand(ctx,XT_POST,stds,mapX,mapY,c.a1,.12);
+    const ps=Array.from({length:4},()=>sampleGP(XT_POST,kfn));
+    ps.forEach((s,i)=>{
+      ctx.beginPath();
+      s.forEach((y,j)=>{const px=mapX(XT_POST[j]),py=mapY(y);j===0?ctx.moveTo(px,py):ctx.lineTo(px,py);});
+      ctx.strokeStyle=c.s[i];ctx.lineWidth=1.5;ctx.globalAlpha=.6;ctx.stroke();ctx.globalAlpha=1;
+    });
+    ctx.fillStyle=c.a1;ctx.font=`11px 'JetBrains Mono'`;
+    ctx.fillText('PRIOR — Hacé clic para agregar observaciones',8,18);
+  } else {
+    const xo=observations.map(o=>o[0]),yo=observations.map(o=>o[1]);
+    const{mu,v2}=gpPosterior(xo,yo,XT_POST,kfn,noise);
+    const stds=v2.map(v=>Math.sqrt(v));
+
+    // Band
+    drawBand(ctx,XT_POST,stds,mapX,mapY,c.a1,.15);
+
+    // Mean
+    ctx.beginPath();
+    XT_POST.forEach((x,i)=>{const px=mapX(x),py=mapY(mu[i]);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);});
+    ctx.strokeStyle=c.a1;ctx.lineWidth=2.5;ctx.stroke();
+
+    // Posterior samples
+    const Koo=buildK(xo,kfn);
+    for(let i=0;i<xo.length;i++)Koo[i][i]+=noise*noise+1e-6;
+
+    // Observations
+    observations.forEach(([x,y])=>{
+      ctx.beginPath();ctx.arc(mapX(x),mapY(y),6,0,2*Math.PI);
+      ctx.fillStyle=c.a2;ctx.fill();
+      ctx.strokeStyle=c.bg;ctx.lineWidth=1.5;ctx.stroke();
+    });
+    ctx.fillStyle=c.a1;ctx.font=`11px 'JetBrains Mono'`;
+    ctx.fillText(`POSTERIOR — n=${observations.length} observaciones`,8,18);
+
+    // Update uncertainty chart
+    drawUncertainty(XT_POST,stds);
+  }
+
+  drawAxes(ctx,W*.5,H*.5,W,H,c.text2+'55');
+}
+
+function drawBand(ctx,xs,stds,mapX,mapY,col,alpha){
+  ctx.beginPath();
+  xs.forEach((x,i)=>{const px=mapX(x),py=mapY(2*stds[i]);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);});
+  for(let i=xs.length-1;i>=0;i--)ctx.lineTo(mapX(xs[i]),mapY(-2*stds[i]));
+  ctx.closePath();ctx.fillStyle=col;ctx.globalAlpha=alpha;ctx.fill();ctx.globalAlpha=1;
+}
+
+function drawUncertainty(xs,stds){
+  const{ctx,W,H}=setupCanvas('c_uncertainty');
+  const c=getColors();
+  clearCanvas(ctx,W,H,c.bg2);
+
+  const maxS=Math.max(...stds,0.01);
+  ctx.beginPath();
+  xs.forEach((x,i)=>{
+    const px=i/119*W;
+    const py=H-stds[i]/maxS*(H-16)-8;
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  });
+  ctx.strokeStyle=c.a3;ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,H-8);
+  xs.forEach((x,i)=>ctx.lineTo(i/119*W,H-stds[i]/maxS*(H-16)-8));
+  ctx.lineTo(W,H-8);ctx.closePath();
+  ctx.fillStyle=c.a3;ctx.globalAlpha=.18;ctx.fill();ctx.globalAlpha=1;
+
+  ctx.fillStyle=c.text2;ctx.font=`10px 'JetBrains Mono'`;
+  ctx.fillText('σ(x) posterior',6,14);
+}
+
+// ══════════════════════════════════════════════════════
+// AUTO-PLAY
+// ══════════════════════════════════════════════════════
+let playing=false,autoTimer=null,autoStep=0,autoProgress=0;
+const AUTO_DURATION=4000;
+
+const autoScenes=[
+  ()=>{reSamplePrior();},
+  ()=>{
+    document.getElementById('sRho').value=0.7;
+    document.getElementById('sS1').value=1.5;
+    document.getElementById('sS2').value=0.8;
+    updateEllipse();
+  },
+  ()=>{
+    setKernelTab(1,document.querySelectorAll('.tab')[1]);
+    document.getElementById('sL').value=0.3;
+    reSamplePrior();
+  },
+  ()=>{
+    setKernelTab(2,document.querySelectorAll('.tab')[2]);
+    document.getElementById('sP').value=1.5;
+    reSamplePrior();
+  },
+  ()=>{
+    setKernelTab(0,document.querySelectorAll('.tab')[0]);
+    document.getElementById('sL').value=1.0;
+    reSamplePrior();
+    updateEigenModes();
+  },
+  ()=>{
+    clearObs();addExampleObs();
+    document.getElementById('sPostL').value=0.6;
+    drawPosterior();
+  },
+  ()=>{
+    document.getElementById('sRho').value=-0.6;
+    document.getElementById('sS1').value=2;
+    document.getElementById('sS2').value=0.5;
+    updateEllipse();
+  },
+];
+
+function togglePlay(){
+  playing=!playing;
+  const btn=document.getElementById('btnPlay');
+  btn.textContent=playing?'■ STOP':'▶ AUTO';
+  btn.classList.toggle('on',playing);
+  if(playing) runAuto();
+  else{if(autoTimer)clearTimeout(autoTimer);document.getElementById('prog').style.width='0';}
+}
+
+function runAuto(){
+  if(!playing) return;
+  autoScenes[autoStep%autoScenes.length]();
+  autoStep++;
+
+  let start=null;
+  function tick(ts){
+    if(!playing) return;
+    if(!start) start=ts;
+    const pct=Math.min(1,(ts-start)/AUTO_DURATION);
+    document.getElementById('prog').style.width=(pct*100)+'%';
+    if(pct<1) requestAnimationFrame(tick);
+    else{document.getElementById('prog').style.width='0';runAuto();}
+  }
+  requestAnimationFrame(tick);
+}
+
+// ══════════════════════════════════════════════════════
+// REDRAW ALL
+// ══════════════════════════════════════════════════════
+function redrawAll(){
+  updateEllipse();
+  reSamplePrior();
+  updateProjection();
+  updateEigenModes();
+  drawSpectrum();
+  drawPosterior();
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+window.addEventListener('load',()=>{
+  initHero();
+
+  // Wait for layout
+  setTimeout(()=>{
+    redrawAll();
+  },120);
+});
+
+window.addEventListener('resize',()=>{
+  setTimeout(redrawAll,80);
+});
+</script>
+</body>
+</html>
