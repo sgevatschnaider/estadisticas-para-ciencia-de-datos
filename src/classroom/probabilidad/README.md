@@ -156,10 +156,21 @@ Esta sección reúne un **notebook base en Google Colab** y una serie de **mater
 
 El recorrido está organizado en una secuencia pedagógica: primero se sientan las bases de la regresión y la transición de *prior* a *posterior*; luego se explora visualmente el papel del kernel como generador de estructura geométrica; después se analiza la selección bayesiana de hiperparámetros mediante la verosimilitud marginal; a continuación, se aplican estos conceptos a la optimización bayesiana y a la emulación de funciones costosas; y finalmente, se expande el marco teórico conectando los procesos gaussianos con estructuras complejas como algoritmos evolutivos, dinámicas sobre grafos, autómatas celulares y programación genética.
 
+## 📝 Procesos Gaussianos: Inferencia, geometría probabilística y optimización
+
+Esta sección reúne un **notebook base en Google Colab** y una serie de **materiales HTML interactivos** orientados a estudiar, de manera articulada, cómo se relacionan la **inferencia bayesiana**, las **funciones de covarianza (kernels)**, la **cuantificación de la incertidumbre** y el uso de **modelos probabilísticos sustitutos**.  
+
+El recorrido está organizado en una secuencia pedagógica: primero se sientan las bases de la regresión y la transición de *prior* a *posterior*; luego se explora visualmente el papel del kernel como generador de estructura geométrica; después se analiza la selección bayesiana de hiperparámetros mediante la verosimilitud marginal; a continuación, se aplican estos conceptos a la optimización bayesiana y a la emulación de funciones costosas; y finalmente, se expande el marco teórico conectando los procesos gaussianos con estructuras complejas como algoritmos evolutivos, dinámicas sobre grafos, autómatas celulares y programación genética.
+
+| ## 📝 Procesos Gaussianos: Inferencia, geometría probabilística y optimización
+
+Esta sección reúne un **notebook base en Google Colab** y una serie de **materiales HTML interactivos** orientados a estudiar, de manera articulada, cómo se relacionan la **inferencia bayesiana**, las **funciones de covarianza (kernels)**, la **cuantificación de la incertidumbre** y el uso de **modelos probabilísticos sustitutos**.  
+
+El recorrido está organizado en una secuencia pedagógica: primero se sientan las bases de la regresión y la transición de *prior* a *posterior*; luego se explora visualmente el papel del kernel como generador de estructura geométrica; después se analiza la selección bayesiana de hiperparámetros mediante la verosimilitud marginal; a continuación, se aplican estos conceptos a la optimización bayesiana y a la emulación de funciones costosas; y finalmente, se expande el marco teórico conectando los procesos gaussianos con estructuras complejas como algoritmos evolutivos, dinámicas sobre grafos, autómatas celulares y programación genética.
+
 | 📄 Recurso | 📥 Acceso |
 |---|---|
 | **Notebook: Procesos estocásticos y optimización bayesiana** <br><br> **Resumen general:** Este material interactivo explora la relación entre los procesos gaussianos y la optimización bayesiana, mostrando cómo la inferencia probabilística y la cuantificación de la incertidumbre permiten tomar decisiones secuenciales eficientes en escenarios donde evaluar la función objetivo es muy costoso. <br><br> <details><summary><strong>Resumen del Colab:</strong> <em>(haz clic para expandir/colapsar)</em></summary><p>El notebook desarrolla una secuencia de 10 puntos clave. Comienza con los fundamentos de los procesos estocásticos bajo el enfoque bayesiano, analizando el rol fundamental de los kernels (RBF, Matérn) y la inferencia posterior. Luego, introduce la metodología de la optimización bayesiana, explicando cómo el modelo sustituto probabilístico y las funciones de adquisición (Expected Improvement, Probability of Improvement, UCB) gestionan el balance matemático entre exploración y explotación. Finalmente, aborda comparaciones rigurosas con otros algoritmos (deterministas y evolutivos), sus ventajas en eficiencia muestral, extensiones metodológicas y aplicaciones aplicadas en machine learning y diseño experimental.</p></details> | [![Google Colab](https://img.shields.io/badge/Colab-Abrir%20Notebook-orange?style=for-the-badge&logo=google-colab)](https://colab.research.google.com/drive/1DKc5cpFmsZyh0euzDjmynyt-ottqDRJ0?usp=sharing) |
-
 
 | 📄 Recurso | 📥 Acceso |
 |---|---|
