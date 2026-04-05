@@ -131,8 +131,7 @@ El recorrido está organizado en una secuencia pedagógica: primero se presenta 
 
 ## 📝 Procesos Gaussianos: Inferencia, geometría probabilística y optimización
 
-Esta sección reúne un **notebook base en Google Colab** y una serie de **materiales HTML interactivos** orientados a estudiar, de manera articulada, cómo se relacionan la **inferencia bayesiana**, las **funciones de covarianza (kernels)**, la **cuantificación de la incertidumbre** y el uso de **modelos probabilísticos sustitutos**.  
-
+Esta sección reúne un **notebook base en Google Colab** y una serie de **materiales HTML interactivos** orientados a estudiar, de manera articulada, cómo se relacionan la **inferencia bayesiana**, las **funciones de covarianza (kernels)**, la **cuantificación de la incertidumbre** y el uso de **modelos probabilísticos sustitutos**. 
 El recorrido está organizado en una secuencia pedagógica: primero se sientan las bases de la regresión y la transición de *prior* a *posterior*; luego se explora visualmente el papel del kernel como generador de estructura geométrica; después se analiza la selección bayesiana de hiperparámetros mediante la verosimilitud marginal; a continuación, se aplican estos conceptos a la optimización bayesiana y a la emulación de funciones costosas; y finalmente, se expande el marco teórico conectando los procesos gaussianos con estructuras complejas como algoritmos evolutivos, dinámicas sobre grafos, autómatas celulares y programación genética.
 
 | 📄 Recurso | 📥 Acceso |
@@ -160,29 +159,6 @@ El recorrido está organizado en una secuencia pedagógica: primero se sientan l
 | **Optimización Bayesiana y Diseño Secuencial**<br><sub>*Explicación paso a paso del uso de modelos sustitutos (surrogate models) y funciones de adquisición para encontrar mínimos globales.*</sub> | **paretos**<br><sub>*Bayesian Optimization (Bayes Opt)*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=M-NTkxfd7-8) |
 | **El Dilema de Exploración vs. Explotación**<br><sub>*Construcción de modelos para funciones desconocidas y la lógica estratégica detrás de funciones de adquisición como LCB o EI.*</sub> | **DataMListic**<br><sub>*Bayesian Optimization*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=Kq6_kzlwSUQ) |
 
-## 📝 Procesos Gaussianos: Inferencia, geometría probabilística y optimización
-
-Esta sección reúne un **notebook base en Google Colab** y una serie de **materiales HTML interactivos** orientados a estudiar, de manera articulada, cómo se relacionan la **inferencia bayesiana**, las **funciones de covarianza (kernels)**, la **cuantificación de la incertidumbre** y el uso de **modelos probabilísticos sustitutos**.  
-
-El recorrido está organizado en una secuencia pedagógica: primero se sientan las bases de la regresión y la transición de *prior* a *posterior*; luego se explora visualmente el papel del kernel como generador de estructura geométrica; después se analiza la selección bayesiana de hiperparámetros mediante la verosimilitud marginal; a continuación, se aplican estos conceptos a la optimización bayesiana y a la emulación de funciones costosas; y finalmente, se expande el marco teórico conectando los procesos gaussianos con estructuras complejas como algoritmos evolutivos, dinámicas sobre grafos, autómatas celulares y programación genética.
-
-## 📝 Procesos Gaussianos: Inferencia, geometría probabilística y optimización
-
-Esta sección reúne un **notebook base en Google Colab** y una serie de **materiales HTML interactivos** orientados a estudiar, de manera articulada, cómo se relacionan la **inferencia bayesiana**, las **funciones de covarianza (kernels)**, la **cuantificación de la incertidumbre** y el uso de **modelos probabilísticos sustitutos**.  
-
-El recorrido está organizado en una secuencia pedagógica: primero se sientan las bases de la regresión y la transición de *prior* a *posterior*; luego se explora visualmente el papel del kernel como generador de estructura geométrica; después se analiza la selección bayesiana de hiperparámetros mediante la verosimilitud marginal; a continuación, se aplican estos conceptos a la optimización bayesiana y a la emulación de funciones costosas; y finalmente, se expande el marco teórico conectando los procesos gaussianos con estructuras complejas como algoritmos evolutivos, dinámicas sobre grafos, autómatas celulares y programación genética.
-
-| ## 📝 Procesos Gaussianos: Inferencia, geometría probabilística y optimización
-
-Esta sección reúne un **notebook base en Google Colab** y una serie de **materiales HTML interactivos** orientados a estudiar, de manera articulada, cómo se relacionan la **inferencia bayesiana**, las **funciones de covarianza (kernels)**, la **cuantificación de la incertidumbre** y el uso de **modelos probabilísticos sustitutos**.  
-
-El recorrido está organizado en una secuencia pedagógica: primero se sientan las bases de la regresión y la transición de *prior* a *posterior*; luego se explora visualmente el papel del kernel como generador de estructura geométrica; después se analiza la selección bayesiana de hiperparámetros mediante la verosimilitud marginal; a continuación, se aplican estos conceptos a la optimización bayesiana y a la emulación de funciones costosas; y finalmente, se expande el marco teórico conectando los procesos gaussianos con estructuras complejas como algoritmos evolutivos, dinámicas sobre grafos, autómatas celulares y programación genética.
-
-## 📝 Procesos Gaussianos: Inferencia, geometría probabilística y optimización
-
-Esta sección reúne un **notebook base en Google Colab** y una serie de **materiales HTML interactivos** orientados a estudiar, de manera articulada, cómo se relacionan la **inferencia bayesiana**, las **funciones de covarianza (kernels)**, la **cuantificación de la incertidumbre** y el uso de **modelos probabilísticos sustitutos**.  
-
-El recorrido está organizado en una secuencia pedagógica: primero se sientan las bases de la regresión y la transición de *prior* a *posterior*; luego se explora visualmente el papel del kernel como generador de estructura geométrica; después se analiza la selección bayesiana de hiperparámetros mediante la verosimilitud marginal; a continuación, se aplican estos conceptos a la optimización bayesiana y a la emulación de funciones costosas; y finalmente, se expande el marco teórico conectando los procesos gaussianos con estructuras complejas como algoritmos evolutivos, dinámicas sobre grafos, autómatas celulares y programación genética.
 
 | 📄 Recurso | 📥 Acceso |
 |---|---|
