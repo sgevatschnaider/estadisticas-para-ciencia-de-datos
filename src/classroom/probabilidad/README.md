@@ -150,6 +150,11 @@ El recorrido está organizado en una secuencia pedagógica: primero se sientan l
 | **Optimización Bayesiana y Diseño Secuencial**<br><sub>*Explicación paso a paso del uso de modelos sustitutos (surrogate models) y funciones de adquisición para encontrar mínimos globales.*</sub> | **paretos**<br><sub>*Bayesian Optimization (Bayes Opt)*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=M-NTkxfd7-8) |
 | **El Dilema de Exploración vs. Explotación**<br><sub>*Construcción de modelos para funciones desconocidas y la lógica estratégica detrás de funciones de adquisición como LCB o EI.*</sub> | **DataMListic**<br><sub>*Bayesian Optimization*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=Kq6_kzlwSUQ) |
 
+
+| 📄 Recurso | 📥 Acceso |
+|---|---|
+| **Notebook: Procesos Estocásticos Gaussianos y Brownianos – De la Teoría Clásica a la IA Generativa** <br><br> <details><summary><strong>Resumen general:</strong> <em>(haz clic para expandir/colapsar)</em></summary><p>Este material interactivo funciona como el eje conceptual que conecta la probabilidad rigurosa con la Inteligencia Artificial moderna. Ofrece un recorrido profundo desde los fundamentos de los procesos estocásticos (Lévy, Markov y Martingalas) hasta su aplicación en el estado del arte. Explora la naturaleza fractal del movimiento browniano, el cálculo de Itô y la geometría de alta dimensión mediante el transporte óptimo y la distancia de Wasserstein. El recorrido culmina con una explicación técnica de los modelos de difusión generativos, detallando cómo el proceso de inyección de ruido gaussiano y su reversión matemática mediante la <em>score function</em> constituyen el núcleo de las arquitecturas contemporáneas para generación de contenido y simulaciones científicas.</p></details> | [![Google Colab](https://img.shields.io/badge/Colab-Abrir%20Notebook-orange?style=for-the-badge&logo=google-colab)](https://colab.research.google.com/drive/19IY4zqBi-qzm0cn1zXIQGfI9ywc7UzKX#scrollTo=89P_lF0kFckG) |
+
 ## 📐 Fundamentos Teóricos (The Canon)
 
 ### 1. Vector de Medias y Matriz de Covarianza
