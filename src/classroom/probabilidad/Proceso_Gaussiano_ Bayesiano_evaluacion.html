@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optimización Bayesiana — Comparación Rigurosa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --text-xs:clamp(.75rem,.7rem + .25vw,.875rem);
+  --text-sm:clamp(.875rem,.8rem + .35vw,1rem);
+  --text-base:clamp(1rem,.95rem + .25vw,1.125rem);
+  --text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);
+  --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+  --text-2xl:clamp(1.9rem,1.4rem + 2vw,3rem);
+  --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.25rem;
+  --s6:1.5rem;--s8:2rem;--s10:2.5rem;--s12:3rem;
+  --r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;--r-xl:1rem;--r-2xl:1.25rem;--r-full:9999px;
+  --ease:180ms cubic-bezier(.16,1,.3,1);
+}
+[data-theme="dark"] {
+  --bg:#0b0d16;
+  --surf:#111423;
+  --surf2:#171b2e;
+  --surf3:#1d2238;
+  --border:rgba(132,145,196,.22);
+  --divider:rgba(132,145,196,.16);
+  --text:#e8ebff;
+  --muted:#98a0c8;
+  --faint:#50587d;
+  --c-grid:#22d3ee;
+  --c-rand:#f472b6;
+  --c-bayes:#fbbf24;
+  --c-accent:#7c6fff;
+  --c-good:#34d399;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.32);
+  --shadow-md:0 8px 24px rgba(0,0,0,.32);
+  --shadow-lg:0 18px 50px rgba(0,0,0,.42);
+}
+[data-theme="light"] {
+  --bg:#f4f6ff;
+  --surf:#ffffff;
+  --surf2:#f7f8ff;
+  --surf3:#eef1ff;
+  --border:rgba(87,102,168,.22);
+  --divider:rgba(87,102,168,.15);
+  --text:#1a2040;
+  --muted:#58618d;
+  --faint:#a3add2;
+  --c-grid:#0891b2;
+  --c-rand:#db2777;
+  --c-bayes:#d97706;
+  --c-accent:#5b4fe0;
+  --c-good:#059669;
+  --shadow-sm:0 1px 3px rgba(64,73,132,.08);
+  --shadow-md:0 8px 24px rgba(64,73,132,.12);
+  --shadow-lg:0 18px 50px rgba(64,73,132,.18);
+}
+
+[data-theme="aurora"] {
+  --bg:#07131b;
+  --surf:#0d1d27;
+  --surf2:#102834;
+  --surf3:#153544;
+  --border:rgba(96,198,204,.20);
+  --divider:rgba(96,198,204,.14);
+  --text:#e9fdff;
+  --muted:#96d7dc;
+  --faint:#467980;
+  --c-grid:#5eead4;
+  --c-rand:#c084fc;
+  --c-bayes:#fde047;
+  --c-accent:#38bdf8;
+  --c-good:#34d399;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.32);
+  --shadow-md:0 8px 24px rgba(0,0,0,.36);
+  --shadow-lg:0 18px 50px rgba(0,0,0,.44);
+}
+[data-theme="sunset"] {
+  --bg:#1a0f14;
+  --surf:#23141d;
+  --surf2:#2c1823;
+  --surf3:#381e2b;
+  --border:rgba(255,163,102,.20);
+  --divider:rgba(255,163,102,.14);
+  --text:#fff1ea;
+  --muted:#f4b59b;
+  --faint:#9f6b5d;
+  --c-grid:#fb7185;
+  --c-rand:#f9a8d4;
+  --c-bayes:#fbbf24;
+  --c-accent:#f97316;
+  --c-good:#fb7185;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.32);
+  --shadow-md:0 8px 24px rgba(0,0,0,.36);
+  --shadow-lg:0 18px 50px rgba(0,0,0,.44);
+}
+[data-theme="emerald"] {
+  --bg:#08150f;
+  --surf:#102118;
+  --surf2:#152b1f;
+  --surf3:#1a3326;
+  --border:rgba(110,231,183,.20);
+  --divider:rgba(110,231,183,.13);
+  --text:#ecfff5;
+  --muted:#9fddbc;
+  --faint:#547b66;
+  --c-grid:#22d3ee;
+  --c-rand:#86efac;
+  --c-bayes:#facc15;
+  --c-accent:#10b981;
+  --c-good:#34d399;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.32);
+  --shadow-md:0 8px 24px rgba(0,0,0,.36);
+  --shadow-lg:0 18px 50px rgba(0,0,0,.44);
+}
+[data-theme="mono"] {
+  --bg:#111111;
+  --surf:#181818;
+  --surf2:#1e1e1e;
+  --surf3:#262626;
+  --border:rgba(210,210,210,.16);
+  --divider:rgba(210,210,210,.10);
+  --text:#f3f3f3;
+  --muted:#bbbbbb;
+  --faint:#6f6f6f;
+  --c-grid:#9ca3af;
+  --c-rand:#d4d4d8;
+  --c-bayes:#fafafa;
+  --c-accent:#e5e7eb;
+  --c-good:#a3a3a3;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.34);
+  --shadow-md:0 8px 24px rgba(0,0,0,.38);
+  --shadow-lg:0 18px 50px rgba(0,0,0,.46);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);
+  font-size:var(--text-base);
+  background:radial-gradient(circle at top, color-mix(in oklch,var(--c-accent) 8%, var(--bg)), var(--bg) 38%);
+  color:var(--text);
+  min-height:100dvh;
+  line-height:1.6;
+  padding:var(--s6) var(--s4) var(--s12)
+}
+button,input,select{font:inherit}
+button{cursor:pointer;background:none;border:none;color:inherit}
+canvas{display:block}
+.page{max-width:1280px;margin-inline:auto}
+header{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s4);margin-bottom:var(--s8);flex-wrap:wrap
+}
+.hero{display:flex;gap:var(--s4);align-items:flex-start}
+.hero-badge{
+  width:52px;height:52px;border-radius:18px;display:grid;place-items:center;
+  background:linear-gradient(135deg, color-mix(in oklch,var(--c-accent) 22%,transparent), color-mix(in oklch,var(--c-bayes) 24%,transparent));
+  border:1px solid color-mix(in oklch,var(--c-accent) 45%, transparent);
+  box-shadow:var(--shadow-md)
+}
+.hero-title{font-size:var(--text-2xl);font-weight:800;letter-spacing:-1px;line-height:1.05;margin-bottom:var(--s2)}
+.hero-sub{font-size:var(--text-sm);color:var(--muted);max-width:760px}
+.header-actions{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+.theme-select{
+  min-width:176px;height:40px;padding:0 14px;border-radius:var(--r-full);
+  border:1px solid var(--border);background:var(--surf);color:var(--text);
+  box-shadow:var(--shadow-sm)
+}
+.btn-theme,.btn-ghost{
+  min-width:40px;height:40px;padding:0 var(--s4);border-radius:var(--r-full);
+  border:1px solid var(--border);background:var(--surf);display:grid;place-items:center;
+  transition:all var(--ease);box-shadow:var(--shadow-sm)
+}
+.btn-ghost{display:inline-flex;gap:var(--s2);align-items:center;color:var(--muted);font-size:var(--text-xs)}
+.btn-theme:hover,.btn-ghost:hover{border-color:var(--muted);color:var(--text);transform:translateY(-1px)}
+.panel{
+  background:linear-gradient(180deg, color-mix(in oklch,var(--surf) 88%, transparent), var(--surf));
+  border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-md)
+}
+.top-panel{padding:var(--s5);margin-bottom:var(--s6)}
+.controls-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr auto;gap:var(--s4);align-items:end}
+.field label{display:block;font-size:var(--text-xs);font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:var(--s2)}
+.field .sub{display:block;font-size:11px;color:var(--muted);margin-top:6px}
+.input,select{
+  width:100%;padding:12px 14px;border-radius:var(--r-lg);border:1px solid var(--border);background:var(--surf2);color:var(--text)
+}
+.actions{display:flex;gap:var(--s2);align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.btn-run,.btn-reset,.btn-bench{
+  padding:11px 16px;border-radius:var(--r-full);font-weight:700;border:1px solid var(--border);transition:all var(--ease)
+}
+.btn-run{
+  color:var(--c-accent);border-color:color-mix(in oklch,var(--c-accent) 65%, transparent);
+  background:color-mix(in oklch,var(--c-accent) 14%, var(--surf))
+}
+.btn-run.running,.btn-run:hover{background:var(--c-accent);color:#fff;border-color:var(--c-accent)}
+.btn-reset{background:var(--surf);color:var(--muted)}
+.btn-reset:hover{color:var(--text);border-color:var(--muted)}
+.btn-bench{
+  color:var(--c-good);border-color:color-mix(in oklch,var(--c-good) 65%, transparent);
+  background:color-mix(in oklch,var(--c-good) 12%, var(--surf))
+}
+.btn-bench:hover{background:var(--c-good);color:#fff;border-color:var(--c-good)}
+.sc-row{display:flex;flex-wrap:wrap;gap:var(--s2);margin:var(--s5) 0 var(--s4)}
+.sc-btn{
+  padding:10px 14px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--surf);
+  color:var(--muted);font-size:var(--text-xs);font-weight:600;transition:all var(--ease)
+}
+.sc-btn:hover{border-color:var(--muted);color:var(--text);transform:translateY(-1px)}
+.sc-btn.active{
+  border-color:var(--c-accent);color:var(--c-accent);background:color-mix(in oklch,var(--c-accent) 10%, var(--surf));
+  box-shadow:0 0 0 1px color-mix(in oklch,var(--c-accent) 25%, transparent)
+}
+.note{
+  display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s4);border-radius:var(--r-xl);
+  border:1px solid color-mix(in oklch,var(--c-accent) 28%, transparent);
+  background:color-mix(in oklch,var(--c-accent) 8%, var(--surf));font-size:var(--text-xs);color:var(--muted)
+}
+.note strong{color:var(--text)}
+.status{
+  margin:var(--s5) 0 0;font-size:var(--text-xs);font-family:var(--font-mono);color:var(--muted);min-height:1.4em
+}
+.status strong{color:var(--text)}
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s4);margin-bottom:var(--s5)}
+.sc-card{padding:var(--s5);position:relative;overflow:hidden}
+.sc-card::after{
+  content:"";position:absolute;inset:auto -30px -30px auto;width:110px;height:110px;border-radius:50%;opacity:.08;
+  background:radial-gradient(circle, currentColor 0%, transparent 70%)
+}
+.sc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--s3);gap:var(--s2)}
+.sc-name{display:flex;align-items:center;gap:var(--s2);font-size:var(--text-xs);font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.sc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.badge{font-size:10px;padding:4px 9px;border-radius:var(--r-full);font-weight:800;letter-spacing:.5px;font-family:var(--font-mono);border:1px solid var(--border);background:var(--surf2);color:var(--muted)}
+.sc-score{font-size:var(--text-xl);font-family:var(--font-mono);font-weight:800;margin-bottom:2px}
+.sc-info{font-size:var(--text-xs);color:var(--muted);font-family:var(--font-mono);margin-bottom:var(--s3)}
+.prog-bg{height:5px;background:var(--surf3);border-radius:999px;overflow:hidden}
+.prog-fill{height:5px;border-radius:999px;transition:width .25s ease}
+.canvas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s4);margin-bottom:var(--s5)}
+.cv-wrap{overflow:hidden}
+.cv-label{padding:var(--s3) var(--s4);font-size:var(--text-xs);font-weight:800;letter-spacing:1px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--divider)}
+.cv-wrap canvas{width:100%;display:block;background:var(--surf2)}
+.cv-done{font-size:10px;font-family:var(--font-mono);color:var(--muted)}
+.conv-wrap,.bench-wrap,.insight{padding:var(--s5);margin-bottom:var(--s5)}
+.conv-header,.bench-head{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s3);flex-wrap:wrap;margin-bottom:var(--s4)}
+.conv-title,.bench-title{font-size:var(--text-sm);font-weight:800}
+.conv-sub,.bench-sub{font-size:var(--text-xs);color:var(--muted)}
+.conv-legend{display:flex;gap:var(--s4);font-size:var(--text-xs);flex-wrap:wrap}
+.legend-item{display:flex;gap:var(--s2);align-items:center}
+.legend-dot{width:12px;height:4px;border-radius:999px}
+.conv-canvas-wrap canvas{width:100%;display:block;border-radius:var(--r-md);background:var(--surf2)}
+.bench-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s4)}
+.bench-card{padding:var(--s4);border-radius:var(--r-xl);border:1px solid var(--divider);background:var(--surf2)}
+.bench-name{display:flex;align-items:center;gap:var(--s2);font-size:var(--text-xs);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:var(--s2)}
+.bench-main{font-family:var(--font-mono);font-size:var(--text-lg);font-weight:800;margin-bottom:6px}
+.bench-small{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);line-height:1.7}
+.insight-title{font-size:var(--text-sm);font-weight:800;color:var(--c-accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:var(--s4)}
+.insight-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s4)}
+.insight-col{padding:var(--s4);background:var(--surf2);border-radius:var(--r-xl);border:1px solid var(--divider)}
+.insight-col-title{font-size:var(--text-xs);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:var(--s2)}
+.insight-col p{font-size:var(--text-xs);color:var(--muted);line-height:1.75}
+footer{margin-top:var(--s8);font-size:var(--text-xs);color:var(--muted);text-align:center}
+@media(max-width:1100px){
+  .controls-grid{grid-template-columns:1fr 1fr 1fr;align-items:stretch}
+  .actions{justify-content:flex-start}
+  .canvas-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+  .score-grid,.bench-grid,.insight-cols,.canvas-grid{grid-template-columns:1fr}
+  .controls-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="hero">
+      <div class="hero-badge" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="6.4" stroke="var(--c-accent)"></circle>
+          <path d="M16.2 16.2 21 21" stroke="var(--c-bayes)" stroke-linecap="round"></path>
+          <circle cx="16.6" cy="7.2" r="2.1" fill="var(--c-bayes)" stroke="none"></circle>
+        </svg>
+      </div>
+      <div>
+        <div class="hero-title">Optimización Bayesiana vs Grid y Random</div>
+        <div class="hero-sub">Comparación interactiva entre Grid Search, Random Search y Optimización Bayesiana en distintos escenarios.</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-ghost" id="btn-export">Copiar semilla actual</button>
+      <select id="theme-select" class="theme-select" aria-label="Tema visual">
+        <option value="dark">Tema oscuro</option>
+        <option value="light">Tema claro</option>
+        <option value="aurora">Tema aurora</option>
+        <option value="sunset">Tema sunset</option>
+        <option value="emerald">Tema emerald</option>
+        <option value="mono">Tema mono</option>
+      </select>
+      <button class="btn-theme" data-theme-toggle aria-label="Cambiar tema">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="panel top-panel">
+    <div class="controls-grid">
+      <div class="field">
+        <label for="acq-sel">Adquisición Bayesiana</label>
+        <select id="acq-sel" class="input">
+          <option value="ucb">UCB (media + exploración)</option>
+          <option value="ei">Expected Improvement (EI)</option>
+          <option value="pi">Probability of Improvement (PI)</option>
+        </select>
+        <span class="sub">UCB suele ser estable para demos; EI es buena opción general.</span>
+      </div>
+      <div class="field">
+        <label for="seed-input">Semilla</label>
+        <input id="seed-input" class="input" type="number" min="1" step="1" value="12345">
+        <span class="sub">Misma semilla = misma corrida para Random y Bayes.</span>
+      </div>
+      <div class="field">
+        <label for="speed-sl">Velocidad animación</label>
+        <input id="speed-sl" class="input" type="range" min="1" max="14" value="6">
+        <span class="sub" id="speed-val">×6</span>
+      </div>
+      <div class="field">
+        <label for="bench-trials">Benchmark semillas</label>
+        <input id="bench-trials" class="input" type="number" min="5" max="100" step="5" value="25">
+        <span class="sub">Promedia corridas para una comparación menos sensible al azar.</span>
+      </div>
+      <div class="actions">
+        <button class="btn-run" id="btn-run">▶ Iniciar</button>
+        <button class="btn-reset" id="btn-reset">↺ Reset</button>
+        <button class="btn-bench" id="btn-bench">⟲ Benchmark</button>
+      </div>
+    </div>
+
+    <div class="sc-row" id="sc-row"></div>
+
+    <div class="note">
+      <span>ℹ</span>
+      <div id="disclaimer-text"></div>
+    </div>
+
+    <div class="status" id="status">Presioná <strong>Iniciar</strong> para comenzar. La curva principal muestra el mejor valor verdadero encontrado; en escenarios con ruido, el modelo bayesiano observa valores ruidosos pero se evalúa por el mejor valor real visitado.</div>
+  </section>
+
+  <section class="score-grid">
+    <article class="panel sc-card" id="card-grid" style="color:var(--c-grid)">
+      <div class="sc-top">
+        <span class="sc-name"><span class="sc-dot" style="background:var(--c-grid)"></span>Grid Search</span>
+        <span class="badge" id="badge-grid">READY</span>
+      </div>
+      <div class="sc-score" id="score-grid">0.000</div>
+      <div class="sc-info" id="info-grid">best_obs=0.000 · 0 / 0 eval.</div>
+      <div class="prog-bg"><div class="prog-fill" id="prog-grid" style="background:var(--c-grid);width:0%"></div></div>
+    </article>
+    <article class="panel sc-card" id="card-rand" style="color:var(--c-rand)">
+      <div class="sc-top">
+        <span class="sc-name"><span class="sc-dot" style="background:var(--c-rand)"></span>Random Search</span>
+        <span class="badge" id="badge-rand">READY</span>
+      </div>
+      <div class="sc-score" id="score-rand">0.000</div>
+      <div class="sc-info" id="info-rand">best_obs=0.000 · 0 / 0 eval.</div>
+      <div class="prog-bg"><div class="prog-fill" id="prog-rand" style="background:var(--c-rand);width:0%"></div></div>
+    </article>
+    <article class="panel sc-card" id="card-bayes" style="color:var(--c-bayes)">
+      <div class="sc-top">
+        <span class="sc-name"><span class="sc-dot" style="background:var(--c-bayes)"></span>Bayesian Optimization</span>
+        <span class="badge" id="badge-bayes">READY</span>
+      </div>
+      <div class="sc-score" id="score-bayes">0.000</div>
+      <div class="sc-info" id="info-bayes">best_obs=0.000 · 0 / 0 eval.</div>
+      <div class="prog-bg"><div class="prog-fill" id="prog-bayes" style="background:var(--c-bayes);width:0%"></div></div>
+    </article>
+  </section>
+
+  <section class="canvas-grid">
+    <article class="panel cv-wrap">
+      <div class="cv-label" style="color:var(--c-grid)">Grid Search — espacio 2D <span class="cv-done" id="done-grid"></span></div>
+      <canvas id="cv-grid" width="300" height="230"></canvas>
+    </article>
+    <article class="panel cv-wrap">
+      <div class="cv-label" style="color:var(--c-rand)">Random Search — espacio 2D <span class="cv-done" id="done-rand"></span></div>
+      <canvas id="cv-rand" width="300" height="230"></canvas>
+    </article>
+    <article class="panel cv-wrap">
+      <div class="cv-label" style="color:var(--c-bayes)">Bayesian Optimization — puntos <span class="cv-done" id="done-bayes"></span></div>
+      <canvas id="cv-bayes" width="300" height="230"></canvas>
+    </article>
+    <article class="panel cv-wrap">
+      <div class="cv-label" style="color:var(--c-bayes)">Mapa de adquisición de BO <span class="cv-done" id="done-acq"></span></div>
+      <canvas id="cv-acq" width="300" height="230"></canvas>
+    </article>
+  </section>
+
+  <section class="panel conv-wrap">
+    <div class="conv-header">
+      <div>
+        <div class="conv-title">Curva de convergencia</div>
+        <div class="conv-sub">Mejor valor verdadero encontrado por evaluación. En benchmark se dibuja la curva media.</div>
+      </div>
+      <div class="conv-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-grid)"></div><span style="color:var(--c-grid)">Grid</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-rand)"></div><span style="color:var(--c-rand)">Random</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-bayes)"></div><span style="color:var(--c-bayes)">BO</span></div>
+      </div>
+    </div>
+    <div class="conv-canvas-wrap"><canvas id="cv-conv" width="1160" height="240"></canvas></div>
+  </section>
+
+  <section class="panel bench-wrap">
+    <div class="bench-head">
+      <div>
+        <div class="bench-title">Resumen benchmark</div>
+        <div class="bench-sub">Correr varias semillas reduce la influencia de una sola trayectoria favorable o desafortunada.</div>
+      </div>
+      <div class="bench-sub" id="bench-note">Todavía no se ejecutó ningún benchmark.</div>
+    </div>
+    <div class="bench-grid">
+      <div class="bench-card">
+        <div class="bench-name" style="color:var(--c-grid)"><span class="sc-dot" style="background:var(--c-grid)"></span>Grid Search</div>
+        <div class="bench-main" id="bench-grid-main">—</div>
+        <div class="bench-small" id="bench-grid-small">Sin datos.</div>
+      </div>
+      <div class="bench-card">
+        <div class="bench-name" style="color:var(--c-rand)"><span class="sc-dot" style="background:var(--c-rand)"></span>Random Search</div>
+        <div class="bench-main" id="bench-rand-main">—</div>
+        <div class="bench-small" id="bench-rand-small">Sin datos.</div>
+      </div>
+      <div class="bench-card">
+        <div class="bench-name" style="color:var(--c-bayes)"><span class="sc-dot" style="background:var(--c-bayes)"></span>Bayesian Optimization</div>
+        <div class="bench-main" id="bench-bayes-main">—</div>
+        <div class="bench-small" id="bench-bayes-small">Sin datos.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel insight">
+    <div class="insight-title" id="ins-title">Escenario seleccionado</div>
+    <div class="insight-cols">
+      <div class="insight-col">
+        <div class="insight-col-title" style="color:var(--c-grid)">Grid Search</div>
+        <p id="ins-grid"></p>
+      </div>
+      <div class="insight-col">
+        <div class="insight-col-title" style="color:var(--c-rand)">Random Search</div>
+        <p id="ins-rand"></p>
+      </div>
+      <div class="insight-col">
+        <div class="insight-col-title" style="color:var(--c-bayes)">Bayesian Optimization</div>
+        <p id="ins-bayes"></p>
+      </div>
+    </div>
+  </section>
+
+  <footer><strong>Material elaborado por el profesor Sergio Gevatschnaider</strong></footer>
+</div>
+
+<script>
+/* ============================== UTILIDADES ============================== */
+const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
+const mean  = arr => arr.length ? arr.reduce((s,x)=>s+x,0)/arr.length : 0;
+const std   = arr => {
+  if (!arr.length) return 0;
+  const m = mean(arr);
+  return Math.sqrt(mean(arr.map(x => (x-m)*(x-m))));
+};
+const median = arr => {
+  if (!arr.length) return 0;
+  const s = [...arr].sort((a,b)=>a-b), n = s.length;
+  return n % 2 ? s[(n-1)/2] : (s[n/2-1]+s[n/2])/2;
+};
+function fmt(x, d=3){ return Number.isFinite(x) ? x.toFixed(d) : '—'; }
+function argMax(obj){ return Object.entries(obj).sort((a,b)=>b[1]-a[1])[0][0]; }
+
+function mulberry32(seed){
+  let t = seed >>> 0;
+  return function(){
+    t += 0x6D2B79F5;
+    let r = Math.imul(t ^ t >>> 15, 1 | t);
+    r ^= r + Math.imul(r ^ r >>> 7, 61 | r);
+    return ((r ^ r >>> 14) >>> 0) / 4294967296;
+  }
+}
+function randn(rng){
+  let u = 0, v = 0;
+  while (u === 0) u = rng();
+  while (v === 0) v = rng();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function gaussian2D(x,y,cx,cy,amp,sx,sy=sx,theta=0){
+  const ct = Math.cos(theta), st = Math.sin(theta);
+  const dx = x - cx, dy = y - cy;
+  const xr =  ct*dx + st*dy;
+  const yr = -st*dx + ct*dy;
+  return amp * Math.exp(-0.5 * ((xr*xr)/(sx*sx) + (yr*yr)/(sy*sy)));
+}
+function smoothStep(t){ return t*t*(3-2*t); }
+
+/* ============================== ESCENARIOS ============================== */
+const SCENARIOS = [
+  {
+    id:'budget', label:'Budget bajo (25 eval.)', maxEvals:25, gridN:5, noiseStd:0,
+    gp:{ell:0.16, noise:0.02, kappa:2.2, xi:0.01},
+    func:(x,y)=> clamp(
+      gaussian2D(x,y,.30,.67,1.00,.12,.10) +
+      gaussian2D(x,y,.76,.24,.78,.10,.11)
+    ),
+    disc:'<strong>Comparación con presupuesto muy limitado.</strong> Grid cubre de forma uniforme 25 puntos exactos; Random explora sin memoria; BO puede concentrar evaluaciones donde el surrogate del GP predice alto valor o alta incertidumbre.',
+    ins:{
+      grid:'Con solo 25 evaluaciones, la cobertura uniforme evita sesgos, pero la resolución espacial es baja y no reacciona a lo observado.',
+      rand:'La exploración es genuinamente continua y a veces supera a Grid en presupuestos bajos, pero no aprovecha información previa.',
+      bayes:'Aquí BO suele mostrar su ventaja clásica: cada nueva evaluación actualiza el GP y la adquisición reasigna presupuesto hacia regiones prometedoras.'
+    }
+  },
+  {
+    id:'multi', label:'Multimodal (4 picos)', maxEvals:49, gridN:7, noiseStd:0,
+    gp:{ell:0.13, noise:0.02, kappa:2.4, xi:0.01},
+    func:(x,y)=> clamp(
+      gaussian2D(x,y,.17,.18,1.00,.08,.08) +
+      gaussian2D(x,y,.76,.68,.92,.09,.09) +
+      gaussian2D(x,y,.48,.16,.74,.07,.07) +
+      gaussian2D(x,y,.16,.80,.68,.08,.08)
+    ),
+    disc:'<strong>Función multimodal.</strong> El riesgo aquí es la trampa en óptimos locales. Grid garantiza cobertura global, Random dispersa bien, y BO puede ganar mucho o quedar atrapado según la adquisición y los puntos iniciales.',
+    ins:{
+      grid:'La gran ventaja de Grid es que no se obsesiona con un solo pico. Si la grilla es suficientemente fina, ve todos los modos.',
+      rand:'Random tiene buena cobertura esperada y puede tocar varios picos, pero la calidad final fluctúa bastante entre semillas.',
+      bayes:'BO puede dominar si sus primeras observaciones captan un modo fuerte, pero también puede explotar demasiado pronto una zona subóptima.'
+    }
+  },
+  {
+    id:'narrow', label:'Óptimo muy estrecho', maxEvals:30, gridN:5, noiseStd:0,
+    gp:{ell:0.10, noise:0.015, kappa:2.8, xi:0.01},
+    func:(x,y)=> clamp(
+      gaussian2D(x,y,.51,.53,1.00,.035,.035) +
+      gaussian2D(x,y,.20,.20,.44,.14,.14)
+    ),
+    disc:'<strong>Pico global extremadamente estrecho.</strong> Es el tipo de escenario donde una malla gruesa puede pasar completamente de largo. La ventaja de BO depende de que los puntos iniciales permitan descubrir una vecindad prometedora.',
+    ins:{
+      grid:'Con paso grueso, Grid puede no caer nunca cerca del pico global y quedarse con un máximo local ancho pero mediocre.',
+      rand:'Random tiene una chance continua de caer muy cerca del pico, aunque también puede desperdiciar muchas evaluaciones lejos del objetivo.',
+      bayes:'Si el warm-up toca la zona correcta, BO se refina rápido; si no, puede modelar bien regiones irrelevantes.'
+    }
+  },
+  {
+    id:'ridge', label:'Cresta diagonal', maxEvals:36, gridN:6, noiseStd:0,
+    gp:{ell:0.18, noise:0.02, kappa:2.0, xi:0.01},
+    func:(x,y)=> clamp(
+      gaussian2D(x,y,.52,.48,.92,.30,.05,Math.PI/4) +
+      0.10 * gaussian2D(x,y,.82,.18,1.0,.09,.09)
+    ),
+    disc:'<strong>Estructura anisotrópica tipo cresta.</strong> No hay un punto aislado dominante sino una región alargada de alto valor. Esto pone a prueba si el surrogate puede capturar geometrías no esféricas.',
+    ins:{
+      grid:'Grid ve bien la estructura global, aunque desperdicia presupuesto en regiones obviamente malas una vez identificada la cresta.',
+      rand:'Random muestrea la cresta si tiene suerte, pero no la reconstruye sistemáticamente.',
+      bayes:'BO suele comportarse muy bien aquí, porque el GP propaga información a lo largo de la cresta y la adquisición explora sus extremos.'
+    }
+  },
+  {
+    id:'noisy', label:'Evaluación ruidosa', maxEvals:40, gridN:6, noiseStd:0.05,
+    gp:{ell:0.16, noise:0.06, kappa:2.5, xi:0.02},
+    func:(x,y)=> clamp(
+      gaussian2D(x,y,.30,.68,0.95,.11,.10) +
+      gaussian2D(x,y,.73,.26,0.86,.12,.12)
+    ),
+    disc:'<strong>Ruido observacional.</strong> Cada evaluación devuelve valor real más ruido. El benchmark usa como criterio de calidad el mejor valor verdadero visitado, no el mejor valor observado, para evitar premiar una observación ruidosa accidental.',
+    ins:{
+      grid:'La cobertura sistemática ayuda a no sobrerreaccionar al ruido, pero no corrige la falta de adaptación.',
+      rand:'Random es especialmente sensible a observaciones ruidosas extremas si se interpreta ingenuamente el máximo observado.',
+      bayes:'BO puede manejar mejor el ruido si el GP incorpora un término de noise adecuado. Sin eso, sobreexplota falsos máximos.'
+    }
+  },
+  {
+    id:'boundary', label:'Óptimo en borde', maxEvals:36, gridN:6, noiseStd:0,
+    gp:{ell:0.14, noise:0.02, kappa:2.4, xi:0.01},
+    func:(x,y)=> clamp(
+      gaussian2D(x,y,.93,.12,1.0,.07,.07) +
+      gaussian2D(x,y,.42,.64,.38,.16,.11)
+    ),
+    disc:'<strong>Óptimo cerca del borde del dominio.</strong> Muchos esquemas intuitivos tienden a explorar el centro del espacio. Este caso obliga a una exploración que no penalice las fronteras.',
+    ins:{
+      grid:'Grid no discrimina interior vs borde, lo cual aquí puede ser una ventaja clara.',
+      rand:'Random toca el borde sin sesgo, aunque no concentra búsqueda una vez encuentra una buena zona.',
+      bayes:'BO puede tardar un poco más si el prior induce preferencia por el centro, pero una buena adquisición suele corregir ese sesgo.'
+    }
+  },
+  {
+    id:'deceptive', label:'Meseta + pico oculto', maxEvals:45, gridN:7, noiseStd:0,
+    gp:{ell:0.12, noise:0.02, kappa:2.9, xi:0.015},
+    func:(x,y)=> {
+      const plateau = 0.58 * smoothStep(clamp(1 - ((x-.32)**2 + (y-.68)**2) / 0.18, 0, 1));
+      const spike = gaussian2D(x,y,.79,.23,1.00,.045,.045);
+      return clamp(plateau + spike);
+    },
+    disc:'<strong>Función engañosa.</strong> Hay una meseta relativamente buena y un pico global pequeño, intenso y alejado. Es un test clásico de exploración versus explotación.',
+    ins:{
+      grid:'Grid tiende a descubrir tanto la meseta como la región del pico si la resolución alcanza.',
+      rand:'Random puede golpear el pico por puro azar, pero con mucha varianza entre corridas.',
+      bayes:'BO puede quedarse explotando la meseta si la adquisición explora poco, o encontrar el pico si la incertidumbre pesa lo suficiente.'
+    }
+  }
+];
+
+/* ============================== GP REAL ============================== */
+function rbf(x1,y1,x2,y2, ell=0.15, sigmaF=1){
+  const d2 = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
+  return sigmaF * sigmaF * Math.exp(-0.5 * d2 / (ell*ell));
+}
+function cholesky(A){
+  const n = A.length;
+  const L = Array.from({length:n}, ()=>Array(n).fill(0));
+  for(let i=0;i<n;i++){
+    for(let j=0;j<=i;j++){
+      let sum = A[i][j];
+      for(let k=0;k<j;k++) sum -= L[i][k]*L[j][k];
+      if(i===j){
+        if(sum <= 1e-12) return null;
+        L[i][j] = Math.sqrt(sum);
+      } else {
+        L[i][j] = sum / L[j][j];
+      }
+    }
+  }
+  return L;
+}
+function solveLower(L, b){
+  const n = L.length, x = Array(n).fill(0);
+  for(let i=0;i<n;i++){
+    let sum = b[i];
+    for(let j=0;j<i;j++) sum -= L[i][j]*x[j];
+    x[i] = sum / L[i][i];
+  }
+  return x;
+}
+function solveUpperFromLower(L, b){
+  const n = L.length, x = Array(n).fill(0);
+  for(let i=n-1;i>=0;i--){
+    let sum = b[i];
+    for(let j=i+1;j<n;j++) sum -= L[j][i]*x[j];
+    x[i] = sum / L[i][i];
+  }
+  return x;
+}
+function gpFit(obs, gpCfg){
+  if(!obs.length) return null;
+  const n = obs.length;
+  const ell = gpCfg.ell ?? 0.15;
+  const noise = gpCfg.noise ?? 0.02;
+  const yMean = mean(obs.map(o => o.obs));
+  const yc = obs.map(o => o.obs - yMean);
+  let jitter = 1e-9;
+  let L = null, K = null;
+  for(let attempt=0; attempt<6; attempt++){
+    K = Array.from({length:n}, (_,i)=>Array.from({length:n}, (_,j)=>{
+      const base = rbf(obs[i].x, obs[i].y, obs[j].x, obs[j].y, ell, 1);
+      return base + (i===j ? noise*noise + jitter : 0);
+    }));
+    L = cholesky(K);
+    if(L) break;
+    jitter *= 10;
+  }
+  if(!L) return null;
+  const alpha = solveUpperFromLower(L, solveLower(L, yc));
+  return {obs, ell, noise, yMean, L, alpha};
+}
+function gpPosterior(x, y, model){
+  if(!model || !model.obs.length) return {mu:0.5, sigma:1};
+  const kStar = model.obs.map(o => rbf(x,y,o.x,o.y,model.ell,1));
+  const mu = model.yMean + kStar.reduce((s,k,i)=>s + k*model.alpha[i], 0);
+  const v = solveLower(model.L, kStar);
+  let sigma2 = rbf(x,y,x,y,model.ell,1) - v.reduce((s,vi)=>s + vi*vi, 0);
+  sigma2 = Math.max(1e-10, sigma2);
+  return {mu, sigma:Math.sqrt(sigma2)};
+}
+function erf(x){
+  const sign = x < 0 ? -1 : 1;
+  x = Math.abs(x);
+  const a1=0.254829592, a2=-0.284496736, a3=1.421413741, a4=-1.453152027, a5=1.061405429, p=0.3275911;
+  const t = 1/(1+p*x);
+  const y = 1 - (((((a5*t+a4)*t+a3)*t+a2)*t+a1)*t)*Math.exp(-x*x);
+  return sign*y;
+}
+const normalPDF = z => Math.exp(-0.5*z*z)/Math.sqrt(2*Math.PI);
+const normalCDF = z => 0.5 * (1 + erf(z/Math.SQRT2));
+function acquisition(x, y, model, bestObs, acqName, gpCfg){
+  const {mu, sigma} = gpPosterior(x, y, model);
+  const kappa = gpCfg.kappa ?? 2.2;
+  const xi = gpCfg.xi ?? 0.01;
+  if(acqName === 'ucb') return mu + kappa * sigma;
+  if(sigma < 1e-12) return -Infinity;
+  const z = (mu - bestObs - xi) / sigma;
+  if(acqName === 'pi') return normalCDF(z);
+  return (mu - bestObs - xi) * normalCDF(z) + sigma * normalPDF(z);
+}
+function chooseNextBOPoint(obs, rng, sc, acqName){
+  const gpCfg = sc.gp || {};
+  if(obs.length < 5){
+    return {x:0.05 + 0.90*rng(), y:0.05 + 0.90*rng(), model:gpFit(obs, gpCfg)};
+  }
+  const model = gpFit(obs, gpCfg);
+  const bestObs = Math.max(...obs.map(o => o.obs));
+  let best = -Infinity, bx = rng(), by = rng();
+
+  const candidates = [];
+  for(let i=0;i<180;i++) candidates.push({x:rng(), y:rng()});
+  for(let i=0;i<11;i++){
+    for(let j=0;j<11;j++) candidates.push({x:(i+0.5)/11, y:(j+0.5)/11});
+  }
+  const elite = [...obs].sort((a,b)=>b.obs-a.obs).slice(0, Math.min(4, obs.length));
+  elite.forEach(o => {
+    for(let k=0;k<18;k++){
+      candidates.push({
+        x: clamp(o.x + 0.18*randn(rng), 0.01, 0.99),
+        y: clamp(o.y + 0.18*randn(rng), 0.01, 0.99)
+      });
+    }
+  });
+
+  for(const c of candidates){
+    const acq = acquisition(c.x, c.y, model, bestObs, acqName, gpCfg);
+    if(acq > best){ best = acq; bx = c.x; by = c.y; }
+  }
+  return {x:bx, y:by, model};
+}
+
+/* ============================== ESTADO ============================== */
+let curSc = 0;
+let running = false;
+let animId = null;
+let speed = 6;
+let benchMode = false;
+let currentSeed = 12345;
+let S = {};
+const heatmapCache = new Map();
+
+function buildGridSeq(n){
+  const seq = [];
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++) seq.push({x:(i+0.5)/n, y:(j+0.5)/n});
+  return seq;
+}
+function evaluatePoint(sc, x, y, rng){
+  const trueVal = clamp(sc.func(x,y));
+  const obs = clamp(trueVal + (sc.noiseStd || 0) * randn(rng), 0, 1);
+  return {trueVal, obs};
+}
+function blankMethodState(gridSeq=null){
+  return {evals:0, bestTrue:0, bestObs:0, curve:[], pts:[], seq:gridSeq, seqIdx:0, obs:[], model:null};
+}
+function initSim(){
+  benchMode = false;
+  const sc = SCENARIOS[curSc];
+  currentSeed = Math.max(1, Number(document.getElementById('seed-input').value) || 12345);
+  document.getElementById('seed-input').value = currentSeed;
+  S = {
+    sc,
+    maxEvals: sc.maxEvals,
+    acqName: document.getElementById('acq-sel').value,
+    rngGrid: mulberry32(currentSeed + 101),
+    rngRand: mulberry32(currentSeed + 202),
+    rngBayes: mulberry32(currentSeed + 303),
+    grid: blankMethodState(buildGridSeq(sc.gridN)),
+    rand: blankMethodState(),
+    bayes: blankMethodState(),
+    bench: null
+  };
+  ['grid','rand','bayes'].forEach(m => {
+    const cv = document.getElementById('cv-'+m);
+    const ctx = cv.getContext('2d');
+    ctx.drawImage(getObjectiveHeatmap(sc, cv.width, cv.height), 0, 0);
+  });
+  renderAcquisitionPanel();
+  clearConvCanvas();
+  resetBenchmarkBoxes();
+  updateUI(true);
+}
+
+/* ============================== OBJETIVO Y MAPAS ============================== */
+function getObjectiveHeatmap(sc, W, H){
+  const key = `${sc.id}_${W}_${H}`;
+  if(heatmapCache.has(key)) return heatmapCache.get(key);
+  const off = document.createElement('canvas');
+  off.width = W; off.height = H;
+  const ctx = off.getContext('2d');
+  const img = ctx.createImageData(W, H);
+  for(let py=0; py<H; py++){
+    for(let px=0; px<W; px++){
+      const v = clamp(sc.func(px/W, py/H));
+      const i = (py*W+px)*4;
+      img.data[i]   = Math.round(58 + 160*v);
+      img.data[i+1] = Math.round(8 + 175*v);
+      img.data[i+2] = Math.round(90 - 45*v);
+      img.data[i+3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  heatmapCache.set(key, off);
+  return off;
+}
+
+function getAcqHeatmap(model, sc, acqName, bestObs, W, H){
+  const off = document.createElement('canvas');
+  off.width = W; off.height = H;
+  const ctx = off.getContext('2d');
+  const img = ctx.createImageData(W, H);
+  let vals = [];
+  const step = 2;
+  for(let py=0; py<H; py+=step){
+    for(let px=0; px<W; px+=step){
+      vals.push(acquisition(px/W, py/H, model, bestObs, acqName, sc.gp));
+    }
+  }
+  const minV = Math.min(...vals), maxV = Math.max(...vals);
+  let idx = 0;
+  for(let py=0; py<H; py+=step){
+    for(let px=0; px<W; px+=step){
+      const norm = (vals[idx++] - minV) / ((maxV - minV) || 1);
+      const r = Math.round(35 + 220*norm);
+      const g = Math.round(20 + 180*norm);
+      const b = Math.round(55 + 25*(1-norm));
+      for(let dy=0; dy<step; dy++){
+        for(let dx=0; dx<step; dx++){
+          const xx = px + dx, yy = py + dy;
+          if(xx >= W || yy >= H) continue;
+          const i = (yy*W+xx)*4;
+          img.data[i] = r;
+          img.data[i+1] = g;
+          img.data[i+2] = b;
+          img.data[i+3] = 255;
+        }
+      }
+    }
+  }
+  ctx.putImageData(img,0,0);
+  return off;
+}
+
+/* ============================== PASOS ============================== */
+function doStep(){
+  const sc = S.sc;
+  const max = S.maxEvals;
+  const g = S.grid;
+  if(g.evals < max && g.seqIdx < g.seq.length){
+    const p = g.seq[g.seqIdx++];
+    const ev = evaluatePoint(sc, p.x, p.y, S.rngGrid);
+    g.pts.push({x:p.x, y:p.y, ...ev});
+    g.evals++;
+    g.bestTrue = Math.max(g.bestTrue, ev.trueVal);
+    g.bestObs  = Math.max(g.bestObs, ev.obs);
+    g.curve.push(g.bestTrue);
+  }
+
+  const r = S.rand;
+  if(r.evals < max){
+    const x = S.rngRand(), y = S.rngRand();
+    const ev = evaluatePoint(sc, x, y, S.rngRand);
+    r.pts.push({x,y,...ev});
+    r.evals++;
+    r.bestTrue = Math.max(r.bestTrue, ev.trueVal);
+    r.bestObs  = Math.max(r.bestObs, ev.obs);
+    r.curve.push(r.bestTrue);
+  }
+
+  const b = S.bayes;
+  if(b.evals < max){
+    const next = chooseNextBOPoint(b.obs, S.rngBayes, sc, S.acqName);
+    const ev = evaluatePoint(sc, next.x, next.y, S.rngBayes);
+    b.pts.push({x:next.x, y:next.y, ...ev});
+    b.obs.push({x:next.x, y:next.y, obs:ev.obs});
+    b.model = gpFit(b.obs, sc.gp || {});
+    b.evals++;
+    b.bestTrue = Math.max(b.bestTrue, ev.trueVal);
+    b.bestObs  = Math.max(b.bestObs, ev.obs);
+    b.curve.push(b.bestTrue);
+  }
+}
+
+/* ============================== RENDER ============================== */
+function renderSpaceCanvas(method, color){
+  const cv = document.getElementById('cv-'+method);
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  const d = S[method];
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(getObjectiveHeatmap(S.sc, W, H), 0, 0);
+
+  if(method === 'grid'){
+    ctx.strokeStyle = 'rgba(255,255,255,.12)';
+    ctx.lineWidth = .8;
+    const N = S.sc.gridN;
+    for(let i=1;i<N;i++){
+      ctx.beginPath(); ctx.moveTo(i/N*W,0); ctx.lineTo(i/N*W,H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,i/N*H); ctx.lineTo(W,i/N*H); ctx.stroke();
+    }
+  }
+
+  d.pts.forEach((p,i)=>{
+    const isLast = i === d.pts.length - 1;
+    const isBest = Math.abs(p.trueVal - d.bestTrue) < 1e-12;
+    const rad = isBest ? 6 : (isLast ? 5 : 3.4);
+    ctx.beginPath();
+    ctx.arc(p.x*W, p.y*H, rad, 0, Math.PI*2);
+    if(isBest){
+      ctx.shadowBlur = 16; ctx.shadowColor = color; ctx.fillStyle = '#fff';
+    } else {
+      ctx.shadowBlur = isLast ? 8 : 0; ctx.shadowColor = color; ctx.fillStyle = color + (isLast ? 'ee' : '88');
+    }
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    if(isBest){
+      ctx.beginPath(); ctx.arc(p.x*W, p.y*H, 10, 0, Math.PI*2);
+      ctx.strokeStyle = color+'99'; ctx.lineWidth = 1.4; ctx.stroke();
+    }
+  });
+}
+
+function renderAcquisitionPanel(){
+  const cv = document.getElementById('cv-acq');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  const b = S.bayes || {obs:[], pts:[]};
+  if(!b.obs.length){
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--surf2').trim();
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+    ctx.font = '13px Inter';
+    ctx.fillText('Sin observaciones todavía.', 16, 34);
+    ctx.fillText('El mapa aparecerá cuando BO empiece a ajustar el GP.', 16, 56);
+    document.getElementById('done-acq').textContent = '';
+    return;
+  }
+
+  const model = b.model || gpFit(b.obs, S.sc.gp || {});
+  const bestObs = Math.max(...b.obs.map(o => o.obs));
+  ctx.drawImage(getAcqHeatmap(model, S.sc, S.acqName, bestObs, W, H), 0, 0);
+
+  b.pts.forEach((p, idx)=>{
+    ctx.beginPath();
+    ctx.arc(p.x*W, p.y*H, idx === b.pts.length-1 ? 4.8 : 3.2, 0, Math.PI*2);
+    ctx.fillStyle = idx === b.pts.length-1 ? '#fff' : 'rgba(255,255,255,.75)';
+    ctx.fill();
+  });
+
+  if(b.pts.length){
+    const last = b.pts[b.pts.length-1];
+    ctx.beginPath();
+    ctx.arc(last.x*W, last.y*H, 9, 0, Math.PI*2);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+  }
+  document.getElementById('done-acq').textContent = S.acqName.toUpperCase();
+}
+
+function clearConvCanvas(){
+  const cv = document.getElementById('cv-conv');
+  const ctx = cv.getContext('2d');
+  drawConvGrid(ctx, cv.width, cv.height);
+}
+function drawConvGrid(ctx, W, H){
+  const surf2 = getComputedStyle(document.documentElement).getPropertyValue('--surf2').trim();
+  ctx.fillStyle = surf2; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = 'rgba(255,255,255,.08)';
+  ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){
+    const y = H - i/4*H;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.font = '11px JetBrains Mono';
+    ctx.fillText((i/4).toFixed(2), 8, Math.max(12, y-5));
+  }
+}
+function renderCurve(curves, label){
+  const cv = document.getElementById('cv-conv');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height, pad = 28;
+  drawConvGrid(ctx, W, H);
+  const colors = {grid:'#22d3ee', rand:'#f472b6', bayes:'#fbbf24'};
+  const maxX = Math.max(2, S.maxEvals);
+  ['grid','rand','bayes'].forEach(m => {
+    const curve = curves[m] || [];
+    if(curve.length < 2) return;
+    ctx.beginPath();
+    curve.forEach((v,i)=>{
+      const x = pad + (i/(maxX-1))*(W-2*pad);
+      const y = H - pad - v*(H-2*pad);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle = colors[m];
+    ctx.lineWidth = 2.6;
+    ctx.shadowBlur = 8; ctx.shadowColor = colors[m];
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  });
+  ctx.fillStyle = 'rgba(255,255,255,.72)';
+  ctx.font = '12px Inter';
+  ctx.fillText(label, pad, 18);
+}
+
+function updateUI(renderAll=true){
+  const M = ['grid','rand','bayes'];
+  const max = S.maxEvals;
+  const bests = {grid:S.grid.bestTrue, rand:S.rand.bestTrue, bayes:S.bayes.bestTrue};
+  const maxBest = Math.max(...Object.values(bests));
+  const doneAll = M.every(m => S[m].evals >= max || (m==='grid' && S[m].seqIdx >= S[m].seq.length));
+
+  M.forEach(m => {
+    const d = S[m];
+    const done = m==='grid' ? (d.seqIdx >= d.seq.length) : (d.evals >= max);
+    document.getElementById('score-'+m).textContent = fmt(d.bestTrue);
+    document.getElementById('info-'+m).textContent = `best_obs=${fmt(d.bestObs)} · ${d.evals} / ${max} eval.`;
+    const pct = m==='grid' ? 100 * d.seqIdx / d.seq.length : 100 * d.evals / max;
+    document.getElementById('prog-'+m).style.width = `${Math.min(100,pct)}%`;
+    document.getElementById('done-'+m).textContent = done ? '✓ DONE' : '';
+
+    const badge = document.getElementById('badge-'+m);
+    badge.style.background = '';
+    badge.style.color = '';
+    const winnerTol = 1e-9;
+    if(doneAll){
+      if(Math.abs(d.bestTrue - maxBest) <= winnerTol){
+        badge.textContent = 'GANADOR';
+        badge.style.background = m==='grid' ? '#22d3ee' : (m==='rand' ? '#f472b6' : '#fbbf24');
+        badge.style.color = '#0b0d16';
+      } else {
+        badge.textContent = 'DONE';
+      }
+    } else {
+      badge.textContent = done ? 'DONE' : 'RUN';
+    }
+
+    document.getElementById('card-'+m).style.boxShadow = doneAll && Math.abs(d.bestTrue - maxBest) <= winnerTol
+      ? `0 0 0 1px ${m==='grid' ? '#22d3ee' : m==='rand' ? '#f472b6' : '#fbbf24'}, var(--shadow-lg)`
+      : 'var(--shadow-md)';
+
+    if(renderAll) renderSpaceCanvas(m, m==='grid' ? '#22d3ee' : m==='rand' ? '#f472b6' : '#fbbf24');
+  });
+
+  if(renderAll) renderAcquisitionPanel();
+  renderCurve({grid:S.grid.curve, rand:S.rand.curve, bayes:S.bayes.curve}, 'Corrida actual');
+
+  if(doneAll){
+    const winners = Object.entries(bests).filter(([,v]) => Math.abs(v-maxBest)<=1e-9).map(([k])=>k);
+    const label = winners.length === 1
+      ? `${nameMap[winners[0]]} ganó la corrida`
+      : `Empate entre ${winners.map(w => nameMap[w]).join(' y ')}`;
+    document.getElementById('status').innerHTML = `${label} con mejor valor verdadero <strong>${fmt(maxBest)}</strong>. Para una comparación menos sensible al azar, usá el botón <strong>Benchmark</strong>.`;
+    stopRun(true);
+  } else {
+    const total = M.reduce((s,m)=>s+S[m].evals,0);
+    document.getElementById('status').innerHTML = `Semilla <strong>${currentSeed}</strong> · adquisición <strong>${S.acqName.toUpperCase()}</strong> · evaluaciones totales <strong>${total}</strong> · mejor valor actual <strong>${fmt(maxBest)}</strong>.`;
+  }
+}
+
+/* ============================== BUCLE ============================== */
+let lastTs = 0, accMs = 0;
+function loop(ts){
+  if(!running) return;
+  if(!lastTs) lastTs = ts;
+  const dt = ts - lastTs; lastTs = ts; accMs += dt;
+  const msPerStep = Math.max(18, 360/speed);
+  let stepped = false;
+  while(accMs >= msPerStep){
+    doStep();
+    accMs -= msPerStep;
+    stepped = true;
+  }
+  if(stepped) updateUI(true);
+  animId = requestAnimationFrame(loop);
+}
+function startRun(){
+  if(benchMode) return;
+  running = true; lastTs = 0; accMs = 0;
+  const btn = document.getElementById('btn-run');
+  btn.textContent = '⏸ Pausar'; btn.classList.add('running');
+  animId = requestAnimationFrame(loop);
+}
+function stopRun(done=false){
+  running = false;
+  cancelAnimationFrame(animId);
+  const btn = document.getElementById('btn-run');
+  btn.classList.remove('running');
+  btn.textContent = done ? '✓ Listo' : '▶ Reanudar';
+}
+function toggleRun(){
+  if(running) stopRun(false); else startRun();
+}
+function doReset(){
+  stopRun(false);
+  initSim();
+  document.getElementById('btn-run').textContent = '▶ Iniciar';
+  document.getElementById('status').innerHTML = 'Presioná <strong>Iniciar</strong> para comenzar. La curva principal muestra el mejor valor verdadero encontrado; en escenarios con ruido, el modelo bayesiano observa valores ruidosos pero se evalúa por el mejor valor real visitado.';
+}
+
+/* ============================== BENCHMARK ============================== */
+const nameMap = {grid:'Grid Search', rand:'Random Search', bayes:'Bayesian Optimization'};
+function runOneSimulation(seed, sc, acqName){
+  const rngGrid = mulberry32(seed + 101);
+  const rngRand = mulberry32(seed + 202);
+  const rngBayes = mulberry32(seed + 303);
+  const res = {
+    maxEvals: sc.maxEvals,
+    grid: blankMethodState(buildGridSeq(sc.gridN)),
+    rand: blankMethodState(),
+    bayes: blankMethodState()
+  };
+  for(let t=0; t<sc.maxEvals; t++){
+    const g = res.grid;
+    if(g.evals < sc.maxEvals && g.seqIdx < g.seq.length){
+      const p = g.seq[g.seqIdx++];
+      const ev = evaluatePoint(sc, p.x, p.y, rngGrid);
+      g.evals++; g.bestTrue = Math.max(g.bestTrue, ev.trueVal); g.bestObs = Math.max(g.bestObs, ev.obs); g.curve.push(g.bestTrue);
+    }
+    const r = res.rand;
+    if(r.evals < sc.maxEvals){
+      const x = rngRand(), y = rngRand();
+      const ev = evaluatePoint(sc, x, y, rngRand);
+      r.evals++; r.bestTrue = Math.max(r.bestTrue, ev.trueVal); r.bestObs = Math.max(r.bestObs, ev.obs); r.curve.push(r.bestTrue);
+    }
+    const b = res.bayes;
+    if(b.evals < sc.maxEvals){
+      const next = chooseNextBOPoint(b.obs, rngBayes, sc, acqName);
+      const ev = evaluatePoint(sc, next.x, next.y, rngBayes);
+      b.obs.push({x:next.x, y:next.y, obs:ev.obs});
+      b.evals++; b.bestTrue = Math.max(b.bestTrue, ev.trueVal); b.bestObs = Math.max(b.bestObs, ev.obs); b.curve.push(b.bestTrue);
+    }
+  }
+  return res;
+}
+
+function meanCurves(curvesArr, T){
+  const out = Array(T).fill(0);
+  curvesArr.forEach(c => {
+    for(let i=0;i<T;i++) out[i] += c[i] || c[c.length-1] || 0;
+  });
+  return out.map(v => v / curvesArr.length);
+}
+function resetBenchmarkBoxes(){
+  document.getElementById('bench-note').textContent = 'Todavía no se ejecutó ningún benchmark.';
+  ['grid','rand','bayes'].forEach(m => {
+    document.getElementById(`bench-${m}-main`).textContent = '—';
+    document.getElementById(`bench-${m}-small`).textContent = 'Sin datos.';
+  });
+}
+function updateBenchBoxes(stats, trials, ties){
+  const labels = {grid:'Grid Search', rand:'Random Search', bayes:'Bayesian Optimization'};
+  document.getElementById('bench-note').textContent = `${trials} semillas corridas · empates detectados: ${ties}.`;
+  ['grid','rand','bayes'].forEach(m => {
+    const s = stats[m];
+    document.getElementById(`bench-${m}-main`).textContent = `μ final = ${fmt(s.mean)}`;
+    document.getElementById(`bench-${m}-small`).innerHTML =
+      `mediana=${fmt(s.median)} · σ=${fmt(s.sd)}<br>wins=${s.wins} / ${trials}<br>mejor caso=${fmt(s.best)} · peor caso=${fmt(s.worst)}`;
+  });
+}
+function runBenchmark(){
+  stopRun(false);
+  benchMode = true;
+  const sc = SCENARIOS[curSc];
+  const acqName = document.getElementById('acq-sel').value;
+  const baseSeed = Math.max(1, Number(document.getElementById('seed-input').value) || 12345);
+  const trials = clamp(Number(document.getElementById('bench-trials').value) || 25, 5, 100);
+
+  const finals = {grid:[], rand:[], bayes:[]};
+  const curves = {grid:[], rand:[], bayes:[]};
+  const wins = {grid:0, rand:0, bayes:0};
+  let ties = 0;
+
+  for(let t=0; t<trials; t++){
+    const seed = baseSeed + t*17;
+    const run = runOneSimulation(seed, sc, acqName);
+    ['grid','rand','bayes'].forEach(m => {
+      finals[m].push(run[m].bestTrue);
+      curves[m].push(run[m].curve);
+    });
+    const scoreMap = {grid:run.grid.bestTrue, rand:run.rand.bestTrue, bayes:run.bayes.bestTrue};
+    const maxV = Math.max(...Object.values(scoreMap));
+    const tied = Object.entries(scoreMap).filter(([,v]) => Math.abs(v-maxV) <= 1e-9).map(([k])=>k);
+    if(tied.length > 1) ties++;
+    tied.forEach(k => wins[k]++);
+  }
+
+  const avgCurves = {
+    grid: meanCurves(curves.grid, sc.maxEvals),
+    rand: meanCurves(curves.rand, sc.maxEvals),
+    bayes: meanCurves(curves.bayes, sc.maxEvals)
+  };
+  renderCurve(avgCurves, `Benchmark medio · ${trials} semillas`);
+
+  const stats = {};
+  ['grid','rand','bayes'].forEach(m => {
+    stats[m] = {
+      mean: mean(finals[m]),
+      median: median(finals[m]),
+      sd: std(finals[m]),
+      best: Math.max(...finals[m]),
+      worst: Math.min(...finals[m]),
+      wins: wins[m]
+    };
+  });
+  updateBenchBoxes(stats, trials, ties);
+  const bestMethod = argMax({grid:stats.grid.mean, rand:stats.rand.mean, bayes:stats.bayes.mean});
+  document.getElementById('status').innerHTML = `Benchmark completo sobre <strong>${trials}</strong> semillas. Mejor media final: <strong>${nameMap[bestMethod]}</strong> con <strong>${fmt(stats[bestMethod].mean)}</strong>.`;
+}
+
+/* ============================== INTERFAZ ============================== */
+function setScenario(idx){
+  curSc = idx;
+  document.querySelectorAll('.sc-btn').forEach((b,i)=>b.classList.toggle('active', i===idx));
+  const sc = SCENARIOS[idx];
+  document.getElementById('disclaimer-text').innerHTML = sc.disc;
+  document.getElementById('ins-title').textContent = sc.label;
+  document.getElementById('ins-grid').textContent = sc.ins.grid;
+  document.getElementById('ins-rand').textContent = sc.ins.rand;
+  document.getElementById('ins-bayes').textContent = sc.ins.bayes;
+  doReset();
+}
+
+(function themeToggle(){
+  const btn = document.querySelector('[data-theme-toggle]');
+  const select = document.getElementById('theme-select');
+  const root = document.documentElement;
+  const themes = ['dark','light','aurora','sunset','emerald','mono'];
+  let current = 'dark';
+
+  function iconFor(theme){
+    const darkish = ['dark','aurora','sunset','emerald','mono'].includes(theme);
+    return darkish
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+  }
+
+  function setTheme(theme){
+    current = themes.includes(theme) ? theme : 'dark';
+    root.setAttribute('data-theme', current);
+    if (select) select.value = current;
+    btn.innerHTML = iconFor(current);
+    if (S.sc) updateUI(true);
+  }
+
+  btn.addEventListener('click', ()=>{
+    const idx = themes.indexOf(current);
+    setTheme(themes[(idx + 1) % themes.length]);
+  });
+
+  if (select) {
+    select.addEventListener('change', (e)=>setTheme(e.target.value));
+  }
+
+  setTheme('dark');
+})();
+
+function buildScenarioButtons(){
+  const row = document.getElementById('sc-row');
+  row.innerHTML = '';
+  SCENARIOS.forEach((sc,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'sc-btn' + (i===0 ? ' active' : '');
+    btn.textContent = sc.label;
+    btn.onclick = ()=>setScenario(i);
+    row.appendChild(btn);
+  });
+}
+
+/* ============================== EVENTOS ============================== */
+document.getElementById('btn-run').addEventListener('click', toggleRun);
+document.getElementById('btn-reset').addEventListener('click', doReset);
+document.getElementById('btn-bench').addEventListener('click', runBenchmark);
+document.getElementById('speed-sl').addEventListener('input', e => {
+  speed = Number(e.target.value);
+  document.getElementById('speed-val').textContent = `×${speed}`;
+});
+document.getElementById('acq-sel').addEventListener('change', doReset);
+document.getElementById('seed-input').addEventListener('change', doReset);
+document.getElementById('btn-export').addEventListener('click', async ()=>{
+  const txt = String(document.getElementById('seed-input').value || currentSeed);
+  try {
+    await navigator.clipboard.writeText(txt);
+    document.getElementById('status').innerHTML = `Semilla <strong>${txt}</strong> copiada al portapapeles.`;
+  } catch {
+    document.getElementById('status').innerHTML = `No se pudo copiar automáticamente. Semilla actual: <strong>${txt}</strong>.`;
+  }
+});
+
+/* ============================== BOOT ============================== */
+buildScenarioButtons();
+setScenario(0);
+</script>
+</body>
+</html>
