@@ -159,6 +159,15 @@ El recorrido está organizado en una secuencia pedagógica: primero se sientan l
 | **Optimización Bayesiana y Diseño Secuencial**<br><sub>*Explicación paso a paso del uso de modelos sustitutos (surrogate models) y funciones de adquisición para encontrar mínimos globales.*</sub> | **paretos**<br><sub>*Bayesian Optimization (Bayes Opt)*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=M-NTkxfd7-8) |
 | **El Dilema de Exploración vs. Explotación**<br><sub>*Construcción de modelos para funciones desconocidas y la lógica estratégica detrás de funciones de adquisición como LCB o EI.*</sub> | **DataMListic**<br><sub>*Bayesian Optimization*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=Kq6_kzlwSUQ) |
 
+📝 Inferencia Bayesiana: aprendizaje secuencial, incertidumbre y decisión óptima
+
+Esta sección reúne un notebook base en Google Colab y una serie de materiales HTML interactivos orientados a estudiar, de manera integrada, cómo la inferencia bayesiana permite actualizar conocimiento, cuantificar incertidumbre y tomar decisiones óptimas bajo información parcial.
+
+El recorrido se estructura como una secuencia conceptual progresiva: en primer lugar, se presentan los fundamentos de la actualización bayesiana, mostrando cómo la combinación entre prior, verosimilitud y datos observados da lugar a la distribución posterior; posteriormente, se analiza el rol de los modelos probabilísticos como representaciones de creencias sobre funciones desconocidas, incorporando explícitamente la incertidumbre en la predicción; luego, se introduce la lógica de aprendizaje secuencial, donde cada nueva observación modifica el estado del conocimiento y redefine el espacio de decisión.
+
+A continuación, estos principios se aplican a la optimización bayesiana, donde la incertidumbre deja de ser solo una medida descriptiva y pasa a ser un componente activo en la toma de decisiones, a través de funciones de adquisición que equilibran exploración y explotación. Finalmente, el marco se amplía hacia contextos más complejos, donde la inferencia bayesiana se integra con simulación, búsqueda adaptativa y modelos sustitutos, permitiendo abordar problemas donde la evaluación directa es costosa, incompleta o ruidosa.
+
+En conjunto, los materiales permiten comprender a la inferencia bayesiana no solo como un método estadístico, sino como un paradigma general de aprendizaje y decisión en sistemas complejos.
 
 | 📄 Recurso | 📥 Acceso |
 |---|---|
