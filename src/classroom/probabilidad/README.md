@@ -1,3 +1,19 @@
+<p align="center">
+  <a href="https://github.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/blob/33d808b9c5770d90cf926cb5d35e3ced649d4eee/src/classroom/probabilidad/images/Gif_%20bayes%20y%20gauss.gif">
+    <img src="https://raw.githubusercontent.com/sgevatschnaider/estadisticas-para-ciencia-de-datos/33d808b9c5770d90cf926cb5d35e3ced649d4eee/src/classroom/probabilidad/images/Gif_%20bayes%20y%20gauss.gif" 
+         alt="Visualización de inferencia bayesiana y Procesos Gaussianos: reconstrucción probabilística de una superficie continua a partir de puntos observados" 
+         width="100%">
+  </a>
+  <br>
+  <sub style="font-size: 14px;">
+    🔵 <b>Bayes</b>: hipótesis a priori, evidencia y actualización posterior &nbsp;|&nbsp;
+    🟠 <b>Proceso Gaussiano</b>: distribución sobre funciones &nbsp;|&nbsp;
+    🟢 <b>Incertidumbre</b>: reconstrucción probabilística desde observaciones parciales
+  </sub>
+</p>
+
+---
+
 # MÓDULO I: Probabilidad Multivariante y Geometría de Datos
 
 <p align="center">
