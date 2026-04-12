@@ -1,0 +1,2522 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratorio Interactivo de Random Walks</title>
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=jetbrains-mono@400,500&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root, [data-theme="light"] {
+  --color-bg: #f7f6f2;
+  --color-surface: #f9f8f5;
+  --color-surface-2: #fbfbf9;
+  --color-border: #d4d1ca;
+  --color-text: #28251d;
+  --color-text-muted: #7a7974;
+  --color-text-faint: #bab9b4;
+  --color-primary: #01696f;
+  --color-primary-hover: #0c4e54;
+  --font-body: 'General Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --text-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.8rem);
+  --text-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
+  --text-base: clamp(0.875rem, 0.85rem + 0.15vw, 0.95rem);
+  --text-lg: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+
+  /* Simulation colors */
+  --c-origin: #2ecc71;
+  --c-path: #3498db;
+  --c-path2: #e67e22;
+  --c-negative: #e74c3c;
+  --c-barrier: #f39c12;
+  --c-theory: #9b59b6;
+  --c-visited: #1abc9c;
+  --c-grid: rgba(40,37,29,0.08);
+  --c-axis: rgba(40,37,29,0.25);
+  --c-canvas-bg: #ffffff;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --transition: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] {
+  --color-bg: #131216;
+  --color-surface: #1a191f;
+  --color-surface-2: #201f26;
+  --color-border: #2e2d35;
+  --color-text: #cdccca;
+  --color-text-muted: #797876;
+  --color-text-faint: #5a5957;
+  --color-primary: #4f98a3;
+  --color-primary-hover: #227f8b;
+  --c-origin: #2ecc71;
+  --c-path: #5dade2;
+  --c-path2: #f0a040;
+  --c-negative: #e74c3c;
+  --c-barrier: #f1c40f;
+  --c-theory: #bb8fce;
+  --c-visited: #48c9b0;
+  --c-grid: rgba(205,204,202,0.06);
+  --c-axis: rgba(205,204,202,0.2);
+  --c-canvas-bg: #16151b;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* THEME: Ocean */
+[data-theme="ocean"] {
+  --color-bg: #0a1628;
+  --color-surface: #0f1f36;
+  --color-surface-2: #142844;
+  --color-border: #1e3a5f;
+  --color-text: #c8dae8;
+  --color-text-muted: #6a8caa;
+  --color-text-faint: #3d5f80;
+  --color-primary: #00b4d8;
+  --color-primary-hover: #0096b7;
+  --c-origin: #00e676;
+  --c-path: #00b4d8;
+  --c-path2: #ff8a65;
+  --c-negative: #ff5252;
+  --c-barrier: #ffd740;
+  --c-theory: #ce93d8;
+  --c-visited: #26c6da;
+  --c-grid: rgba(200,218,232,0.06);
+  --c-axis: rgba(200,218,232,0.18);
+  --c-canvas-bg: #0c1a2e;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* THEME: Forest */
+[data-theme="forest"] {
+  --color-bg: #0f1a10;
+  --color-surface: #162314;
+  --color-surface-2: #1c2e1a;
+  --color-border: #2a4227;
+  --color-text: #c5d8b8;
+  --color-text-muted: #7a9a6c;
+  --color-text-faint: #4a6640;
+  --color-primary: #66bb6a;
+  --color-primary-hover: #43a047;
+  --c-origin: #a5d6a7;
+  --c-path: #4fc3f7;
+  --c-path2: #ffb74d;
+  --c-negative: #ef5350;
+  --c-barrier: #fff176;
+  --c-theory: #ce93d8;
+  --c-visited: #66bb6a;
+  --c-grid: rgba(197,216,184,0.06);
+  --c-axis: rgba(197,216,184,0.18);
+  --c-canvas-bg: #111e12;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* THEME: Sunset */
+[data-theme="sunset"] {
+  --color-bg: #1a0f14;
+  --color-surface: #261520;
+  --color-surface-2: #30192a;
+  --color-border: #4a2740;
+  --color-text: #e8c8d8;
+  --color-text-muted: #a0708a;
+  --color-text-faint: #6b4460;
+  --color-primary: #f06292;
+  --color-primary-hover: #e91e63;
+  --c-origin: #69f0ae;
+  --c-path: #f06292;
+  --c-path2: #ffab40;
+  --c-negative: #ff5252;
+  --c-barrier: #ffd740;
+  --c-theory: #b388ff;
+  --c-visited: #ff80ab;
+  --c-grid: rgba(232,200,216,0.06);
+  --c-axis: rgba(232,200,216,0.18);
+  --c-canvas-bg: #1c1018;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* THEME: Neon */
+[data-theme="neon"] {
+  --color-bg: #0a0a0f;
+  --color-surface: #0f0f18;
+  --color-surface-2: #141420;
+  --color-border: #1f1f35;
+  --color-text: #e0e0f0;
+  --color-text-muted: #7878a0;
+  --color-text-faint: #4a4a6a;
+  --color-primary: #00e5ff;
+  --color-primary-hover: #00b8d4;
+  --c-origin: #76ff03;
+  --c-path: #00e5ff;
+  --c-path2: #ff9100;
+  --c-negative: #ff1744;
+  --c-barrier: #ffea00;
+  --c-theory: #e040fb;
+  --c-visited: #1de9b6;
+  --c-grid: rgba(224,224,240,0.05);
+  --c-axis: rgba(224,224,240,0.15);
+  --c-canvas-bg: #0b0b12;
+  --shadow-sm: 0 1px 6px rgba(0,229,255,0.08);
+  --shadow-md: 0 4px 16px rgba(0,229,255,0.12);
+}
+
+/* THEME: Amber */
+[data-theme="amber"] {
+  --color-bg: #1a1408;
+  --color-surface: #241d0e;
+  --color-surface-2: #2e2614;
+  --color-border: #4a3c20;
+  --color-text: #e8dcc0;
+  --color-text-muted: #a09070;
+  --color-text-faint: #6a5c40;
+  --color-primary: #ffb300;
+  --color-primary-hover: #ff8f00;
+  --c-origin: #69f0ae;
+  --c-path: #ffca28;
+  --c-path2: #4fc3f7;
+  --c-negative: #ff5252;
+  --c-barrier: #ff6e40;
+  --c-theory: #b388ff;
+  --c-visited: #ffd54f;
+  --c-grid: rgba(232,220,192,0.06);
+  --c-axis: rgba(232,220,192,0.18);
+  --c-canvas-bg: #1c1609;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* THEME: Lavender */
+[data-theme="lavender"] {
+  --color-bg: #f0ecf8;
+  --color-surface: #f6f3fb;
+  --color-surface-2: #faf8fd;
+  --color-border: #d4cce6;
+  --color-text: #2d2340;
+  --color-text-muted: #7a6e96;
+  --color-text-faint: #b0a6c8;
+  --color-primary: #7c4dff;
+  --color-primary-hover: #651fff;
+  --c-origin: #00c853;
+  --c-path: #7c4dff;
+  --c-path2: #ff6d00;
+  --c-negative: #d50000;
+  --c-barrier: #ffab00;
+  --c-theory: #aa00ff;
+  --c-visited: #6200ea;
+  --c-grid: rgba(45,35,64,0.07);
+  --c-axis: rgba(45,35,64,0.2);
+  --c-canvas-bg: #f8f5fc;
+  --shadow-sm: 0 1px 3px rgba(100,50,180,0.06);
+  --shadow-md: 0 4px 12px rgba(100,50,180,0.1);
+}
+
+/* THEME: Nord */
+[data-theme="nord"] {
+  --color-bg: #2e3440;
+  --color-surface: #3b4252;
+  --color-surface-2: #434c5e;
+  --color-border: #4c566a;
+  --color-text: #eceff4;
+  --color-text-muted: #a0aab8;
+  --color-text-faint: #6a7384;
+  --color-primary: #88c0d0;
+  --color-primary-hover: #81a1c1;
+  --c-origin: #a3be8c;
+  --c-path: #88c0d0;
+  --c-path2: #ebcb8b;
+  --c-negative: #bf616a;
+  --c-barrier: #ebcb8b;
+  --c-theory: #b48ead;
+  --c-visited: #a3be8c;
+  --c-grid: rgba(236,239,244,0.06);
+  --c-axis: rgba(236,239,244,0.18);
+  --c-canvas-bg: #2e3440;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.25);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+/* THEME: Rosé Pine */
+[data-theme="rose"] {
+  --color-bg: #191724;
+  --color-surface: #1f1d2e;
+  --color-surface-2: #26233a;
+  --color-border: #393552;
+  --color-text: #e0def4;
+  --color-text-muted: #908caa;
+  --color-text-faint: #6e6a86;
+  --color-primary: #eb6f92;
+  --color-primary-hover: #d4567b;
+  --c-origin: #9ccfd8;
+  --c-path: #eb6f92;
+  --c-path2: #f6c177;
+  --c-negative: #eb6f92;
+  --c-barrier: #f6c177;
+  --c-theory: #c4a7e7;
+  --c-visited: #9ccfd8;
+  --c-grid: rgba(224,222,244,0.05);
+  --c-axis: rgba(224,222,244,0.15);
+  --c-canvas-bg: #1a1826;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* ===== BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  min-height: 100dvh;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+input[type="range"] { cursor: pointer; }
+
+/* ===== LAYOUT ===== */
+.app {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+.site-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.site-subtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  display: none;
+}
+@media (min-width: 768px) {
+  .site-subtitle { display: inline; }
+}
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+.theme-toggle:hover { background: var(--color-surface-2); }
+
+.author-credit {
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Theme picker panel */
+.theme-picker-wrap {
+  position: relative;
+}
+.theme-picker-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background var(--transition);
+  flex-shrink: 0;
+  position: relative;
+}
+.theme-picker-btn:hover { background: var(--color-surface-2); }
+.theme-picker-btn .swatch-preview {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: conic-gradient(var(--color-primary) 0% 33%, var(--c-path) 33% 66%, var(--c-path2) 66% 100%);
+}
+.theme-panel {
+  display: none;
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 100;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-md);
+  min-width: 260px;
+}
+.theme-panel.open { display: block; }
+.theme-panel-title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.theme-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+.theme-swatch:hover {
+  background: var(--color-surface-2);
+}
+.theme-swatch.active {
+  border-color: var(--color-primary);
+  background: var(--color-surface-2);
+}
+.theme-swatch .swatch-colors {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(128,128,128,0.2);
+  flex-shrink: 0;
+}
+.theme-swatch .swatch-name {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* Tab navigation */
+.tab-bar {
+  display: flex;
+  gap: 2px;
+  padding: 0 12px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 10px 14px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition);
+  position: relative;
+}
+.tab-btn:hover { color: var(--color-text); }
+.tab-btn.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+.tab-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  margin-right: 6px;
+}
+.tab-btn.active .tab-num {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Main content */
+.main-content {
+  overflow: hidden;
+  position: relative;
+}
+
+/* Module panels */
+.module-panel { display: none; overflow: hidden; height: 100%; }
+.module-panel.active { display: flex; }
+.module-panel > div { display: flex; flex: 1; overflow: hidden; }
+@media (max-width: 1099px) {
+  .module-panel > div { flex-direction: column; }
+}
+
+/* Canvas area */
+.canvas-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  overflow-y: auto;
+  min-width: 0;
+}
+.canvas-wrapper {
+  position: relative;
+  background: var(--c-canvas-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.canvas-wrapper canvas {
+  display: block;
+  width: 100%;
+}
+
+/* Context box */
+.context-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+.context-box strong {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.context-box .katex { font-size: 0.9em; }
+
+/* Sidebar */
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 16px;
+  gap: 16px;
+}
+@media (max-width: 1099px) {
+  .sidebar {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    max-height: 300px;
+    flex-shrink: 0;
+  }
+}
+
+/* Controls */
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.control-group-title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.control-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  min-width: 60px;
+  flex-shrink: 0;
+}
+.control-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  min-width: 40px;
+  text-align: right;
+  flex-shrink: 0;
+}
+input[type="range"] {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--color-border);
+  border-radius: 2px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  transition: transform var(--transition);
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Buttons */
+.btn-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 14px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-secondary {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+.btn-secondary:hover { background: var(--color-border); }
+.btn-sm {
+  padding: 5px 10px;
+  font-size: var(--text-xs);
+}
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-icon:hover { background: var(--color-surface-2); }
+.btn-icon svg { width: 16px; height: 16px; }
+
+/* Metrics */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.metric-card {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+.metric-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Select */
+select {
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: 6px 10px;
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Comparison bar chart (for graphs module) */
+.bar-chart-container {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  height: 80px;
+  padding: 4px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.bar-pair {
+  display: flex;
+  gap: 1px;
+  width: 100%;
+  align-items: flex-end;
+  flex: 1;
+}
+.bar-empirical, .bar-theoretical {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  min-height: 1px;
+  transition: height 0.3s ease;
+}
+.bar-empirical { background: var(--c-path); }
+.bar-theoretical { background: var(--c-theory); opacity: 0.7; }
+.bar-label {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--color-text-muted);
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Dual canvas layout */
+.dual-canvas {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 700px) {
+  .dual-canvas { grid-template-columns: 1fr 1fr; }
+}
+
+/* Auto-play indicator */
+.auto-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.auto-indicator .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: pulse 1.2s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* Histogram canvas */
+.histogram-wrapper {
+  background: var(--c-canvas-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <svg class="logo-icon" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="var(--color-primary)"/>
+        <path d="M6 22 L10 18 L14 20 L18 12 L22 16 L26 10" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="6" cy="22" r="2" fill="#fff"/>
+        <circle cx="26" cy="10" r="2" fill="#fff"/>
+      </svg>
+      <div>
+        <div class="site-title">Laboratorio de Random Walks</div>
+        <div class="site-subtitle">Exploración interactiva de caminatas aleatorias, puentes, grafos y escalamiento browniano</div>
+        <div class="author-credit">Material elaborado por el profesor Sergio Gevatschnaider</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="theme-picker-wrap">
+        <button class="theme-picker-btn" id="themePickerBtn" aria-label="Elegir tema">
+          <div class="swatch-preview"></div>
+        </button>
+        <div class="theme-panel" id="themePanel">
+          <div class="theme-panel-title">Tema visual</div>
+          <div class="theme-grid" id="themeGrid"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TAB BAR -->
+  <nav class="tab-bar" id="tabBar">
+    <button class="tab-btn active" data-tab="walk1d"><span class="tab-num">1</span>Caminata 1D</button>
+    <button class="tab-btn" data-tab="bias"><span class="tab-num">2</span>Sesgo y Ruina</button>
+    <button class="tab-btn" data-tab="bridge"><span class="tab-num">3</span>Puentes</button>
+    <button class="tab-btn" data-tab="walk2d"><span class="tab-num">4</span>Caminata ℤ²</button>
+    <button class="tab-btn" data-tab="graph"><span class="tab-num">5</span>Grafos</button>
+    <button class="tab-btn" data-tab="brownian"><span class="tab-num">6</span>Browniano</button>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content" id="mainContent">
+    <!-- Modules will be injected by JS -->
+  </div>
+</div>
+
+<script>
+// ============================================================
+// RANDOM WALK LABORATORY — Core Engine
+// ============================================================
+
+// Theme system
+const THEMES = [
+  { id: 'dark',     name: 'Midnight',  bg: '#131216', primary: '#4f98a3', accent: '#f0a040' },
+  { id: 'light',    name: 'Claro',     bg: '#f7f6f2', primary: '#01696f', accent: '#e67e22' },
+  { id: 'ocean',    name: 'Océano',    bg: '#0a1628', primary: '#00b4d8', accent: '#ff8a65' },
+  { id: 'forest',   name: 'Bosque',    bg: '#0f1a10', primary: '#66bb6a', accent: '#ffb74d' },
+  { id: 'sunset',   name: 'Ocaso',     bg: '#1a0f14', primary: '#f06292', accent: '#ffab40' },
+  { id: 'neon',     name: 'Neón',      bg: '#0a0a0f', primary: '#00e5ff', accent: '#ff9100' },
+  { id: 'amber',    name: 'Ámbar',     bg: '#1a1408', primary: '#ffb300', accent: '#4fc3f7' },
+  { id: 'lavender', name: 'Lavanda',   bg: '#f0ecf8', primary: '#7c4dff', accent: '#ff6d00' },
+  { id: 'nord',     name: 'Nord',      bg: '#2e3440', primary: '#88c0d0', accent: '#ebcb8b' },
+  { id: 'rose',     name: 'Rosé',      bg: '#191724', primary: '#eb6f92', accent: '#f6c177' },
+];
+
+(function(){
+  const root = document.documentElement;
+  const btn = document.getElementById('themePickerBtn');
+  const panel = document.getElementById('themePanel');
+  const grid = document.getElementById('themeGrid');
+  let currentTheme = 'dark';
+
+  // Build swatches
+  THEMES.forEach(t => {
+    const el = document.createElement('button');
+    el.className = 'theme-swatch' + (t.id === currentTheme ? ' active' : '');
+    el.dataset.theme = t.id;
+    el.innerHTML = `
+      <div class="swatch-colors" style="background: conic-gradient(${t.bg} 0% 40%, ${t.primary} 40% 70%, ${t.accent} 70% 100%)"></div>
+      <span class="swatch-name">${t.name}</span>
+    `;
+    el.addEventListener('click', () => setTheme(t.id));
+    grid.appendChild(el);
+  });
+
+  function setTheme(id) {
+    currentTheme = id;
+    root.setAttribute('data-theme', id);
+    grid.querySelectorAll('.theme-swatch').forEach(s => {
+      s.classList.toggle('active', s.dataset.theme === id);
+    });
+    // Redraw all canvases
+    setTimeout(() => {
+      Object.values(modules).forEach(m => { if (m.redraw) m.redraw(); });
+    }, 50);
+  }
+
+  // Toggle panel
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    panel.classList.toggle('open');
+  });
+
+  // Close panel on outside click
+  document.addEventListener('click', (e) => {
+    if (!panel.contains(e.target) && e.target !== btn) {
+      panel.classList.remove('open');
+    }
+  });
+
+  root.setAttribute('data-theme', currentTheme);
+})();
+
+function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+// KaTeX render helper
+function tex(expr){
+  const span=document.createElement('span');
+  try{katex.render(expr,span,{throwOnError:false,displayMode:false});}catch(e){span.textContent=expr;}
+  return span.outerHTML;
+}
+
+// ============================================================
+// TAB SYSTEM
+// ============================================================
+const modules = {};
+let activeModule = null;
+
+function switchTab(tabId){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tabId));
+  document.querySelectorAll('.module-panel').forEach(p=>p.classList.toggle('active',p.id==='mod-'+tabId));
+  if(activeModule && modules[activeModule] && modules[activeModule].stop) modules[activeModule].stop();
+  activeModule=tabId;
+  if(modules[tabId] && modules[tabId].init) modules[tabId].init();
+  if(modules[tabId] && modules[tabId].redraw) setTimeout(()=>modules[tabId].redraw(),50);
+}
+
+document.getElementById('tabBar').addEventListener('click',e=>{
+  const btn=e.target.closest('.tab-btn');
+  if(btn) switchTab(btn.dataset.tab);
+});
+
+// ============================================================
+// UTILITY FUNCTIONS
+// ============================================================
+function randSign(p=0.5){return Math.random()<p?1:-1;}
+function clampVal(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+
+function setupCanvas(canvas){
+  const rect=canvas.parentElement.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const w=rect.width;
+  const h=canvas.getAttribute('data-height')?parseInt(canvas.getAttribute('data-height')):Math.min(400,Math.max(250,w*0.5));
+  canvas.width=w*dpr;
+  canvas.height=h*dpr;
+  canvas.style.width=w+'px';
+  canvas.style.height=h+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  return {ctx,w,h,dpr};
+}
+
+// ============================================================
+// MODULE 1: CAMINATA 1D
+// ============================================================
+(function(){
+  const id='walk1d';
+  const panel=document.createElement('div');
+  panel.className='module-panel active';
+  panel.id='mod-'+id;
+  panel.innerHTML=`
+    <div style="display:flex;flex:1;overflow:hidden;">
+      <div class="canvas-area">
+        <div class="context-box">
+          <strong>Qué estás viendo:</strong> Caminata aleatoria simétrica en una dimensión. En cada paso, el caminante sube (+1) o baja (−1) con probabilidad ½. Observa la trayectoria ${tex('S_n')} y las estadísticas en tiempo real.
+        </div>
+        <div class="canvas-wrapper"><canvas id="c1d-traj" data-height="320"></canvas></div>
+        <div class="canvas-wrapper"><canvas id="c1d-line" data-height="80"></canvas></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-path)"></div>Trayectoria</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-origin)"></div>Origen</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-negative)"></div>Mínimo/Máximo</div>
+        </div>
+      </div>
+      <div class="sidebar" id="sb-walk1d">
+        <div class="control-group">
+          <div class="control-group-title">Controles</div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="w1-play">▶ Iniciar</button>
+            <button class="btn btn-secondary btn-sm" id="w1-pause">⏸ Pausar</button>
+            <button class="btn btn-secondary btn-sm" id="w1-step">→ Paso</button>
+            <button class="btn btn-secondary btn-sm" id="w1-reset">↺ Reiniciar</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Parámetros</div>
+          <div class="control-row">
+            <span class="control-label">Pasos</span>
+            <input type="range" id="w1-steps" min="50" max="2000" value="500" step="50">
+            <span class="control-value" id="w1-steps-val">500</span>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Velocidad</span>
+            <input type="range" id="w1-speed" min="1" max="50" value="10">
+            <span class="control-value" id="w1-speed-val">10</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Métricas</div>
+          <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-label">Paso actual</div><div class="metric-value" id="w1-m-step">0</div></div>
+            <div class="metric-card"><div class="metric-label">Posición ${tex('S_n')}</div><div class="metric-value" id="w1-m-pos">0</div></div>
+            <div class="metric-card"><div class="metric-label">Máximo</div><div class="metric-value" id="w1-m-max">0</div></div>
+            <div class="metric-card"><div class="metric-label">Mínimo</div><div class="metric-value" id="w1-m-min">0</div></div>
+            <div class="metric-card"><div class="metric-label">Visitas al 0</div><div class="metric-value" id="w1-m-zeros">1</div></div>
+            <div class="metric-card"><div class="metric-label">${tex('|S_n|')}</div><div class="metric-value" id="w1-m-abs">0</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('mainContent').appendChild(panel);
+
+  let path=[0], playing=false, timer=null, maxSteps=500, speed=10, currentStep=0;
+
+  function reset(){
+    stop();
+    path=[0]; currentStep=0;
+    updateMetrics();
+    redraw();
+  }
+  function stop(){playing=false;if(timer)cancelAnimationFrame(timer);timer=null;}
+  function step(){
+    if(currentStep>=maxSteps)return false;
+    const last=path[path.length-1];
+    path.push(last+randSign());
+    currentStep++;
+    updateMetrics();
+    return true;
+  }
+  function play(){
+    if(playing)return;
+    playing=true;
+    let acc=0;
+    function tick(){
+      if(!playing)return;
+      for(let i=0;i<speed;i++){if(!step()){playing=false;break;}}
+      redraw();
+      if(playing)timer=requestAnimationFrame(tick);
+    }
+    timer=requestAnimationFrame(tick);
+  }
+  function updateMetrics(){
+    const n=currentStep;
+    const pos=path[path.length-1];
+    let mx=-Infinity,mn=Infinity,zeros=0;
+    for(let i=0;i<path.length;i++){
+      if(path[i]>mx)mx=path[i];
+      if(path[i]<mn)mn=path[i];
+      if(path[i]===0)zeros++;
+    }
+    document.getElementById('w1-m-step').textContent=n;
+    document.getElementById('w1-m-pos').textContent=pos;
+    document.getElementById('w1-m-max').textContent=mx;
+    document.getElementById('w1-m-min').textContent=mn;
+    document.getElementById('w1-m-zeros').textContent=zeros;
+    document.getElementById('w1-m-abs').textContent=Math.abs(pos);
+  }
+  function redraw(){
+    drawTrajectory();
+    drawNumberLine();
+  }
+  function drawTrajectory(){
+    const canvas=document.getElementById('c1d-traj');
+    const{ctx,w,h}=setupCanvas(canvas);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle=getCSS('--c-canvas-bg');
+    ctx.fillRect(0,0,w,h);
+    if(path.length<2){drawAxes1D(ctx,w,h,0,maxSteps,-10,10);return;}
+    let mn=0,mx=0;
+    for(const v of path){if(v<mn)mn=v;if(v>mx)mx=v;}
+    const pad=Math.max(5,Math.ceil((mx-mn)*0.15));
+    const yMin=mn-pad, yMax=mx+pad;
+    const xMax=Math.max(path.length-1,50);
+    drawAxes1D(ctx,w,h,0,xMax,yMin,yMax);
+    // Draw path
+    const marginL=50,marginR=20,marginT=20,marginB=35;
+    const pw=w-marginL-marginR, ph=h-marginT-marginB;
+    function tx(i){return marginL+i/xMax*pw;}
+    function ty(v){return marginT+(yMax-v)/(yMax-yMin)*ph;}
+    // Zero line
+    ctx.strokeStyle=getCSS('--c-axis');
+    ctx.lineWidth=1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(marginL,ty(0));ctx.lineTo(w-marginR,ty(0));ctx.stroke();
+    ctx.setLineDash([]);
+    // Path
+    ctx.strokeStyle=getCSS('--c-path');
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    for(let i=0;i<path.length;i++){
+      if(i===0)ctx.moveTo(tx(i),ty(path[i]));
+      else ctx.lineTo(tx(i),ty(path[i]));
+    }
+    ctx.stroke();
+    // Current position dot
+    const lastI=path.length-1;
+    ctx.fillStyle=getCSS('--c-path');
+    ctx.beginPath();ctx.arc(tx(lastI),ty(path[lastI]),4,0,Math.PI*2);ctx.fill();
+    // Origin dot
+    ctx.fillStyle=getCSS('--c-origin');
+    ctx.beginPath();ctx.arc(tx(0),ty(0),4,0,Math.PI*2);ctx.fill();
+  }
+  function drawAxes1D(ctx,w,h,xMin,xMax,yMin,yMax){
+    const marginL=50,marginR=20,marginT=20,marginB=35;
+    const pw=w-marginL-marginR,ph=h-marginT-marginB;
+    ctx.strokeStyle=getCSS('--c-axis');
+    ctx.lineWidth=1;
+    ctx.font='11px "General Sans", sans-serif';
+    ctx.fillStyle=getCSS('--color-text-muted');
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    // Y axis ticks
+    const yRange=yMax-yMin;
+    const yStep=Math.max(1,Math.ceil(yRange/8));
+    for(let v=Math.ceil(yMin/yStep)*yStep;v<=yMax;v+=yStep){
+      const y=marginT+(yMax-v)/(yMax-yMin)*ph;
+      ctx.fillText(v,marginL-8,y);
+      ctx.strokeStyle=getCSS('--c-grid');
+      ctx.beginPath();ctx.moveTo(marginL,y);ctx.lineTo(w-marginR,y);ctx.stroke();
+    }
+    // X axis ticks
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    const xRange=xMax-xMin;
+    const xStep=Math.max(1,Math.ceil(xRange/8));
+    for(let v=0;v<=xMax;v+=xStep){
+      const x=marginL+v/xMax*pw;
+      ctx.fillText(v,x,h-marginB+6);
+    }
+    // Axis labels
+    ctx.fillStyle=getCSS('--color-text-muted');
+    ctx.textAlign='center';
+    ctx.fillText('n',w/2,h-6);
+    ctx.save();
+    ctx.translate(12,h/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.fillText('Sₙ',0,0);
+    ctx.restore();
+  }
+  function drawNumberLine(){
+    const canvas=document.getElementById('c1d-line');
+    const{ctx,w,h}=setupCanvas(canvas);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle=getCSS('--c-canvas-bg');
+    ctx.fillRect(0,0,w,h);
+    const pos=path[path.length-1];
+    const range=Math.max(20,Math.abs(pos)+10);
+    const marginL=20,marginR=20;
+    const pw=w-marginL-marginR;
+    const cy=h/2;
+    // Line
+    ctx.strokeStyle=getCSS('--c-axis');
+    ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(marginL,cy);ctx.lineTo(w-marginR,cy);ctx.stroke();
+    // Ticks
+    ctx.font='10px "General Sans", sans-serif';
+    ctx.fillStyle=getCSS('--color-text-muted');
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    const step=Math.max(1,Math.ceil(range/15));
+    for(let v=-range;v<=range;v+=step){
+      const x=marginL+(v+range)/(2*range)*pw;
+      ctx.beginPath();ctx.moveTo(x,cy-4);ctx.lineTo(x,cy+4);ctx.stroke();
+      if(v%step===0)ctx.fillText(v,x,cy+8);
+    }
+    // Origin marker
+    const ox=marginL+(0+range)/(2*range)*pw;
+    ctx.fillStyle=getCSS('--c-origin');
+    ctx.beginPath();ctx.arc(ox,cy,5,0,Math.PI*2);ctx.fill();
+    // Current position
+    const px=marginL+(pos+range)/(2*range)*pw;
+    ctx.fillStyle=getCSS('--c-path');
+    ctx.beginPath();ctx.arc(px,cy,7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.font='bold 9px "General Sans", sans-serif';
+    ctx.textBaseline='middle';
+    ctx.fillText(pos,px,cy);
+  }
+
+  // Event listeners
+  document.getElementById('w1-play').onclick=play;
+  document.getElementById('w1-pause').onclick=stop;
+  document.getElementById('w1-step').onclick=()=>{stop();step();redraw();};
+  document.getElementById('w1-reset').onclick=reset;
+  document.getElementById('w1-steps').oninput=function(){maxSteps=+this.value;document.getElementById('w1-steps-val').textContent=this.value;};
+  document.getElementById('w1-speed').oninput=function(){speed=+this.value;document.getElementById('w1-speed-val').textContent=this.value;};
+
+  modules[id]={init:()=>{if(path.length<=1)reset();},stop,redraw};
+})();
+
+// ============================================================
+// MODULE 2: SESGO Y RUINA DEL JUGADOR
+// ============================================================
+(function(){
+  const id='bias';
+  const panel=document.createElement('div');
+  panel.className='module-panel';
+  panel.id='mod-'+id;
+  panel.innerHTML=`
+    <div style="display:flex;flex:1;overflow:hidden;">
+      <div class="canvas-area">
+        <div class="context-box">
+          <strong>Qué estás viendo:</strong> Comparación entre caminata simétrica (${tex('p=0.5')}) y sesgada. La línea punteada muestra la media teórica ${tex('E(S_n)=n(2p-1)')}. Activa las barreras para simular la ruina del jugador.
+        </div>
+        <div class="canvas-wrapper"><canvas id="c2-traj" data-height="360"></canvas></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-path)"></div>Simétrica (p=0.5)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-path2)"></div>Sesgada</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-theory)"></div>Media teórica</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-barrier)"></div>Barreras</div>
+        </div>
+      </div>
+      <div class="sidebar">
+        <div class="control-group">
+          <div class="control-group-title">Controles</div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="w2-play">▶ Iniciar</button>
+            <button class="btn btn-secondary btn-sm" id="w2-pause">⏸ Pausar</button>
+            <button class="btn btn-secondary btn-sm" id="w2-step">→ Paso</button>
+            <button class="btn btn-secondary btn-sm" id="w2-reset">↺ Reiniciar</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Parámetros</div>
+          <div class="control-row">
+            <span class="control-label">${tex('p')}</span>
+            <input type="range" id="w2-p" min="0.05" max="0.95" value="0.6" step="0.05">
+            <span class="control-value" id="w2-p-val">0.60</span>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Pasos</span>
+            <input type="range" id="w2-steps" min="50" max="2000" value="500" step="50">
+            <span class="control-value" id="w2-steps-val">500</span>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Velocidad</span>
+            <input type="range" id="w2-speed" min="1" max="50" value="10">
+            <span class="control-value" id="w2-speed-val">10</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Ruina del Jugador</div>
+          <div class="control-row">
+            <label style="font-size:var(--text-sm);display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="checkbox" id="w2-barriers"> Activar barreras
+            </label>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Capital (j)</span>
+            <input type="range" id="w2-j" min="1" max="49" value="10">
+            <span class="control-value" id="w2-j-val">10</span>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Tope (N)</span>
+            <input type="range" id="w2-N" min="10" max="100" value="50" step="5">
+            <span class="control-value" id="w2-N-val">50</span>
+          </div>
+          <div class="btn-row" style="margin-top:4px;">
+            <button class="btn btn-secondary btn-sm" id="w2-multi">▶ 1000 simulaciones</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Métricas</div>
+          <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-label">Paso</div><div class="metric-value" id="w2-m-step">0</div></div>
+            <div class="metric-card"><div class="metric-label">Posición</div><div class="metric-value" id="w2-m-pos">0</div></div>
+            <div class="metric-card"><div class="metric-label">Estado</div><div class="metric-value" id="w2-m-state">—</div></div>
+            <div class="metric-card"><div class="metric-label">P(éxito) emp.</div><div class="metric-value" id="w2-m-emp">—</div></div>
+            <div class="metric-card"><div class="metric-label">P(éxito) teór.</div><div class="metric-value" id="w2-m-theo">—</div></div>
+            <div class="metric-card"><div class="metric-label">Sims</div><div class="metric-value" id="w2-m-sims">0</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('mainContent').appendChild(panel);
+
+  let pathSym=[0],pathBias=[0],playing=false,timer=null,maxSteps=500,speed=10,p=0.6;
+  let barriers=false,j=10,N=50,currentStep=0,simCount=0,successCount=0,finished=false;
+
+  function reset(){
+    stop();
+    if(barriers){pathSym=[j];pathBias=[j];}else{pathSym=[0];pathBias=[0];}
+    currentStep=0;finished=false;
+    document.getElementById('w2-m-state').textContent='—';
+    updateMetrics();redraw();
+  }
+  function stop(){playing=false;if(timer)cancelAnimationFrame(timer);timer=null;}
+  function step(){
+    if(finished||currentStep>=maxSteps)return false;
+    pathSym.push(pathSym[pathSym.length-1]+randSign(0.5));
+    pathBias.push(pathBias[pathBias.length-1]+randSign(p));
+    currentStep++;
+    if(barriers){
+      const pos=pathBias[pathBias.length-1];
+      if(pos<=0){finished=true;document.getElementById('w2-m-state').textContent='Ruina';}
+      if(pos>=N){finished=true;document.getElementById('w2-m-state').textContent='Éxito';}
+    }
+    updateMetrics();
+    return !finished;
+  }
+  function play(){
+    if(playing)return;playing=true;
+    function tick(){
+      if(!playing)return;
+      for(let i=0;i<speed;i++){if(!step()){playing=false;break;}}
+      redraw();
+      if(playing)timer=requestAnimationFrame(tick);
+    }
+    timer=requestAnimationFrame(tick);
+  }
+  function multiSim(){
+    simCount=0;successCount=0;
+    const runs=1000;
+    for(let r=0;r<runs;r++){
+      let pos=j;
+      let done=false;
+      for(let s=0;s<10000&&!done;s++){
+        pos+=randSign(p);
+        if(pos<=0){done=true;}
+        if(pos>=N){successCount++;done=true;}
+      }
+      simCount++;
+    }
+    document.getElementById('w2-m-sims').textContent=simCount;
+    document.getElementById('w2-m-emp').textContent=(successCount/simCount).toFixed(4);
+    // Theoretical
+    const q=(1-p);
+    let theo;
+    if(Math.abs(p-0.5)<0.001){theo=j/N;}
+    else{const r=q/p;theo=(1-Math.pow(r,j))/(1-Math.pow(r,N));}
+    document.getElementById('w2-m-theo').textContent=theo.toFixed(4);
+  }
+  function updateMetrics(){
+    document.getElementById('w2-m-step').textContent=currentStep;
+    document.getElementById('w2-m-pos').textContent=pathBias[pathBias.length-1];
+  }
+  function redraw(){
+    const canvas=document.getElementById('c2-traj');
+    const{ctx,w,h}=setupCanvas(canvas);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle=getCSS('--c-canvas-bg');ctx.fillRect(0,0,w,h);
+    const marginL=50,marginR=20,marginT=20,marginB=35;
+    const pw=w-marginL-marginR,ph=h-marginT-marginB;
+    // Compute bounds
+    let allVals=[...pathSym,...pathBias];
+    let mn=Math.min(...allVals),mx=Math.max(...allVals);
+    if(barriers){mn=Math.min(mn,0);mx=Math.max(mx,N);}
+    const pad=Math.max(3,Math.ceil((mx-mn)*0.1));
+    const yMin=mn-pad,yMax=mx+pad;
+    const xMax=Math.max(pathBias.length-1,50);
+    function tx(i){return marginL+i/xMax*pw;}
+    function ty(v){return marginT+(yMax-v)/(yMax-yMin)*ph;}
+    // Grid
+    ctx.font='11px "General Sans", sans-serif';
+    ctx.fillStyle=getCSS('--color-text-muted');
+    ctx.strokeStyle=getCSS('--c-grid');ctx.lineWidth=1;
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    const yRange=yMax-yMin;const yStep=Math.max(1,Math.ceil(yRange/8));
+    for(let v=Math.ceil(yMin/yStep)*yStep;v<=yMax;v+=yStep){
+      const y=ty(v);ctx.fillText(v,marginL-8,y);
+      ctx.beginPath();ctx.moveTo(marginL,y);ctx.lineTo(w-marginR,y);ctx.stroke();
+    }
+    ctx.textAlign='center';ctx.textBaseline='top';
+    const xRange=xMax;const xStep=Math.max(1,Math.ceil(xRange/8));
+    for(let v=0;v<=xMax;v+=xStep){
+      const x=tx(v);ctx.fillText(v,x,h-marginB+6);
+    }
+    // Barriers
+    if(barriers){
+      ctx.strokeStyle=getCSS('--c-barrier');ctx.lineWidth=2;ctx.setLineDash([6,4]);
+      ctx.beginPath();ctx.moveTo(marginL,ty(0));ctx.lineTo(w-marginR,ty(0));ctx.stroke();
+      ctx.beginPath();ctx.moveTo(marginL,ty(N));ctx.lineTo(w-marginR,ty(N));ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // Zero line if no barriers
+    if(!barriers){
+      ctx.strokeStyle=getCSS('--c-axis');ctx.lineWidth=1;ctx.setLineDash([4,4]);
+      ctx.beginPath();ctx.moveTo(marginL,ty(0));ctx.lineTo(w-marginR,ty(0));ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // Theoretical mean for biased
+    if(!barriers && pathBias.length>1){
+      const start=pathBias[0];
+      ctx.strokeStyle=getCSS('--c-theory');ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+      ctx.beginPath();
+      ctx.moveTo(tx(0),ty(start));
+      ctx.lineTo(tx(xMax),ty(start+xMax*(2*p-1)));
+      ctx.stroke();ctx.setLineDash([]);
+    }
+    // Symmetric path
+    ctx.strokeStyle=getCSS('--c-path');ctx.lineWidth=1.2;ctx.globalAlpha=0.5;
+    ctx.beginPath();
+    for(let i=0;i<pathSym.length;i++){i===0?ctx.moveTo(tx(i),ty(pathSym[i])):ctx.lineTo(tx(i),ty(pathSym[i]));}
+    ctx.stroke();ctx.globalAlpha=1;
+    // Biased path
+    ctx.strokeStyle=getCSS('--c-path2');ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let i=0;i<pathBias.length;i++){i===0?ctx.moveTo(tx(i),ty(pathBias[i])):ctx.lineTo(tx(i),ty(pathBias[i]));}
+    ctx.stroke();
+    // Current dots
+    const li=pathBias.length-1;
+    ctx.fillStyle=getCSS('--c-path2');ctx.beginPath();ctx.arc(tx(li),ty(pathBias[li]),4,0,Math.PI*2);ctx.fill();
+  }
+
+  document.getElementById('w2-play').onclick=play;
+  document.getElementById('w2-pause').onclick=stop;
+  document.getElementById('w2-step').onclick=()=>{stop();step();redraw();};
+  document.getElementById('w2-reset').onclick=reset;
+  document.getElementById('w2-multi').onclick=multiSim;
+  document.getElementById('w2-p').oninput=function(){p=+this.value;document.getElementById('w2-p-val').textContent=p.toFixed(2);};
+  document.getElementById('w2-steps').oninput=function(){maxSteps=+this.value;document.getElementById('w2-steps-val').textContent=this.value;};
+  document.getElementById('w2-speed').oninput=function(){speed=+this.value;document.getElementById('w2-speed-val').textContent=this.value;};
+  document.getElementById('w2-barriers').onchange=function(){barriers=this.checked;reset();};
+  document.getElementById('w2-j').oninput=function(){j=+this.value;document.getElementById('w2-j-val').textContent=this.value;if(barriers)reset();};
+  document.getElementById('w2-N').oninput=function(){N=+this.value;document.getElementById('w2-N-val').textContent=this.value;if(barriers)reset();};
+
+  modules[id]={init:()=>{if(pathBias.length<=1)reset();},stop,redraw};
+})();
+
+// ============================================================
+// MODULE 3: PUENTES ALEATORIOS
+// ============================================================
+(function(){
+  const id='bridge';
+  const panel=document.createElement('div');
+  panel.className='module-panel';
+  panel.id='mod-'+id;
+  panel.innerHTML=`
+    <div style="display:flex;flex:1;overflow:hidden;">
+      <div class="canvas-area">
+        <div class="context-box">
+          <strong>Qué estás viendo:</strong> Puentes aleatorios: caminatas condicionadas a terminar en 0 en tiempo ${tex('2n')}. Compará la geometría de un puente con una caminata libre de la misma longitud. Cada color es una trayectoria puente diferente.
+        </div>
+        <div class="dual-canvas">
+          <div>
+            <div style="font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);margin-bottom:4px;">PUENTE ALEATORIO</div>
+            <div class="canvas-wrapper"><canvas id="c3-bridge" data-height="280"></canvas></div>
+          </div>
+          <div>
+            <div style="font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);margin-bottom:4px;">CAMINATA LIBRE</div>
+            <div class="canvas-wrapper"><canvas id="c3-free" data-height="280"></canvas></div>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar">
+        <div class="control-group">
+          <div class="control-group-title">Controles</div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="w3-gen">▶ Generar Puente</button>
+            <button class="btn btn-secondary btn-sm" id="w3-multi">+10 Puentes</button>
+            <button class="btn btn-secondary btn-sm" id="w3-reset">↺ Limpiar</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Parámetros</div>
+          <div class="control-row">
+            <span class="control-label">${tex('2n')}</span>
+            <input type="range" id="w3-len" min="20" max="500" value="200" step="10">
+            <span class="control-value" id="w3-len-val">200</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Métricas (último puente)</div>
+          <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-label">Máximo</div><div class="metric-value" id="w3-m-max">—</div></div>
+            <div class="metric-card"><div class="metric-label">Mínimo</div><div class="metric-value" id="w3-m-min">—</div></div>
+            <div class="metric-card"><div class="metric-label">Ceros interiores</div><div class="metric-value" id="w3-m-zeros">—</div></div>
+            <div class="metric-card"><div class="metric-label">Tiempo arriba</div><div class="metric-value" id="w3-m-above">—</div></div>
+            <div class="metric-card"><div class="metric-label">${tex('\\max|S_k|')}</div><div class="metric-value" id="w3-m-absmax">—</div></div>
+            <div class="metric-card"><div class="metric-label">Puentes gen.</div><div class="metric-value" id="w3-m-count">0</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('mainContent').appendChild(panel);
+
+  let bridges=[],freePaths=[],len=200;
+  const bridgeColors=['#3498db','#e67e22','#2ecc71','#e74c3c','#9b59b6','#1abc9c','#f1c40f','#e84393','#00b894','#6c5ce7'];
+
+  function generateBridge(){
+    // Generate using rejection method for simplicity (accept walks ending at 0)
+    const n=len;
+    let path;
+    let attempts=0;
+    // For efficiency, use the discrete bridge construction: S_k - (k/n)*S_n
+    const raw=[];
+    let sum=0;
+    for(let i=0;i<n;i++){sum+=randSign();raw.push(sum);}
+    // Adjust to make it a bridge: linear interpolation correction
+    const final=raw[n-1];
+    path=[0];
+    for(let i=0;i<n;i++){
+      const corrected=raw[i]-((i+1)/n)*final;
+      path.push(Math.round(corrected));
+    }
+    // Ensure ends at 0
+    path[n]=0;
+    bridges.push(path);
+    updateBridgeMetrics(path);
+    // Also generate a free path for comparison
+    const freePath=[0];
+    let s=0;
+    for(let i=0;i<n;i++){s+=randSign();freePath.push(s);}
+    freePaths.push(freePath);
+    redraw();
+  }
+  function updateBridgeMetrics(path){
+    let mx=-Infinity,mn=Infinity,zeros=0,above=0,absMax=0;
+    for(let i=0;i<path.length;i++){
+      if(path[i]>mx)mx=path[i];
+      if(path[i]<mn)mn=path[i];
+      if(i>0&&i<path.length-1&&path[i]===0)zeros++;
+      if(path[i]>0)above++;
+      if(Math.abs(path[i])>absMax)absMax=Math.abs(path[i]);
+    }
+    document.getElementById('w3-m-max').textContent=mx;
+    document.getElementById('w3-m-min').textContent=mn;
+    document.getElementById('w3-m-zeros').textContent=zeros;
+    document.getElementById('w3-m-above').textContent=((above/path.length)*100).toFixed(1)+'%';
+    document.getElementById('w3-m-absmax').textContent=absMax;
+    document.getElementById('w3-m-count').textContent=bridges.length;
+  }
+  function reset(){bridges=[];freePaths=[];redraw();
+    ['w3-m-max','w3-m-min','w3-m-zeros','w3-m-above','w3-m-absmax'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('w3-m-count').textContent='0';
+  }
+  function drawPaths(canvasId,paths,showZeroLine){
+    const canvas=document.getElementById(canvasId);
+    const{ctx,w,h}=setupCanvas(canvas);
+    ctx.clearRect(0,0,w,h);ctx.fillStyle=getCSS('--c-canvas-bg');ctx.fillRect(0,0,w,h);
+    if(!paths.length)return;
+    const marginL=40,marginR=15,marginT=15,marginB=30;
+    const pw=w-marginL-marginR,ph=h-marginT-marginB;
+    let allMin=0,allMax=0;
+    paths.forEach(p=>p.forEach(v=>{if(v<allMin)allMin=v;if(v>allMax)allMax=v;}));
+    const pad=Math.max(3,(allMax-allMin)*0.1);
+    const yMin=allMin-pad,yMax=allMax+pad;
+    const xMax=paths[0].length-1;
+    function tx(i){return marginL+i/xMax*pw;}
+    function ty(v){return marginT+(yMax-v)/(yMax-yMin)*ph;}
+    // Zero line
+    ctx.strokeStyle=getCSS('--c-axis');ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(marginL,ty(0));ctx.lineTo(w-marginR,ty(0));ctx.stroke();ctx.setLineDash([]);
+    // Axes
+    ctx.font='10px "General Sans", sans-serif';
+    ctx.fillStyle=getCSS('--color-text-muted');
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    const yRange=yMax-yMin;const yStep=Math.max(1,Math.ceil(yRange/6));
+    for(let v=Math.ceil(yMin/yStep)*yStep;v<=yMax;v+=yStep){
+      ctx.fillText(v,marginL-6,ty(v));
+    }
+    ctx.textAlign='center';ctx.textBaseline='top';
+    const xStep=Math.max(1,Math.ceil(xMax/6));
+    for(let v=0;v<=xMax;v+=xStep){ctx.fillText(v,tx(v),h-marginB+4);}
+    // Paths
+    paths.forEach((path,idx)=>{
+      ctx.strokeStyle=bridgeColors[idx%bridgeColors.length];
+      ctx.lineWidth=paths.length>5?0.8:1.5;
+      ctx.globalAlpha=paths.length>5?0.4:0.7;
+      ctx.beginPath();
+      path.forEach((v,i)=>{i===0?ctx.moveTo(tx(i),ty(v)):ctx.lineTo(tx(i),ty(v));});
+      ctx.stroke();
+    });
+    ctx.globalAlpha=1;
+    // Highlight last path
+    if(paths.length>0){
+      const last=paths[paths.length-1];
+      ctx.strokeStyle=bridgeColors[(paths.length-1)%bridgeColors.length];
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      last.forEach((v,i)=>{i===0?ctx.moveTo(tx(i),ty(v)):ctx.lineTo(tx(i),ty(v));});
+      ctx.stroke();
+    }
+    // Origin dots
+    ctx.fillStyle=getCSS('--c-origin');
+    ctx.beginPath();ctx.arc(tx(0),ty(0),4,0,Math.PI*2);ctx.fill();
+    if(showZeroLine&&paths.length>0){
+      ctx.beginPath();ctx.arc(tx(xMax),ty(0),4,0,Math.PI*2);ctx.fill();
+    }
+  }
+  function redraw(){
+    drawPaths('c3-bridge',bridges,true);
+    drawPaths('c3-free',freePaths,false);
+  }
+
+  document.getElementById('w3-gen').onclick=generateBridge;
+  document.getElementById('w3-multi').onclick=()=>{for(let i=0;i<10;i++)generateBridge();};
+  document.getElementById('w3-reset').onclick=reset;
+  document.getElementById('w3-len').oninput=function(){len=+this.value;document.getElementById('w3-len-val').textContent=this.value;};
+
+  modules[id]={init:()=>{},stop:()=>{},redraw};
+})();
+
+// ============================================================
+// MODULE 4: CAMINATA EN Z²
+// ============================================================
+(function(){
+  const id='walk2d';
+  const panel=document.createElement('div');
+  panel.className='module-panel';
+  panel.id='mod-'+id;
+  panel.innerHTML=`
+    <div style="display:flex;flex:1;overflow:hidden;">
+      <div class="canvas-area">
+        <div class="context-box">
+          <strong>Qué estás viendo:</strong> Random walk en ${tex('\\mathbb{Z}^2')}: en cada paso, el caminante se mueve arriba, abajo, izquierda o derecha con igual probabilidad. Los sitios más visitados se muestran con mayor intensidad. Observa la exploración espacial y los retornos al origen.
+        </div>
+        <div class="canvas-wrapper"><canvas id="c4-grid" data-height="450"></canvas></div>
+      </div>
+      <div class="sidebar">
+        <div class="control-group">
+          <div class="control-group-title">Controles</div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="w4-play">▶ Iniciar</button>
+            <button class="btn btn-secondary btn-sm" id="w4-pause">⏸ Pausar</button>
+            <button class="btn btn-secondary btn-sm" id="w4-step">→ Paso</button>
+            <button class="btn btn-secondary btn-sm" id="w4-reset">↺ Reiniciar</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Parámetros</div>
+          <div class="control-row">
+            <span class="control-label">Pasos</span>
+            <input type="range" id="w4-steps" min="100" max="10000" value="2000" step="100">
+            <span class="control-value" id="w4-steps-val">2000</span>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Velocidad</span>
+            <input type="range" id="w4-speed" min="1" max="100" value="20">
+            <span class="control-value" id="w4-speed-val">20</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Métricas</div>
+          <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-label">Paso</div><div class="metric-value" id="w4-m-step">0</div></div>
+            <div class="metric-card"><div class="metric-label">Posición</div><div class="metric-value" id="w4-m-pos">(0,0)</div></div>
+            <div class="metric-card"><div class="metric-label">Dist. origen</div><div class="metric-value" id="w4-m-dist">0</div></div>
+            <div class="metric-card"><div class="metric-label">Visitas (0,0)</div><div class="metric-value" id="w4-m-origin">1</div></div>
+            <div class="metric-card"><div class="metric-label">${tex('R_n')} sitios</div><div class="metric-value" id="w4-m-sites">1</div></div>
+            <div class="metric-card"><div class="metric-label">Máx visitas</div><div class="metric-value" id="w4-m-maxv">1</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('mainContent').appendChild(panel);
+
+  let pos={x:0,y:0},path=[{x:0,y:0}],visits={},playing=false,timer=null,maxSteps=2000,speed=20,currentStep=0;
+  const dirs=[{x:0,y:1},{x:0,y:-1},{x:1,y:0},{x:-1,y:0}];
+
+  function key(x,y){return x+','+y;}
+  function reset(){
+    stop();
+    pos={x:0,y:0};path=[{x:0,y:0}];visits={};
+    visits[key(0,0)]=1;
+    currentStep=0;
+    updateMetrics();redraw();
+  }
+  function stop(){playing=false;if(timer)cancelAnimationFrame(timer);timer=null;}
+  function step(){
+    if(currentStep>=maxSteps)return false;
+    const d=dirs[Math.floor(Math.random()*4)];
+    pos={x:pos.x+d.x,y:pos.y+d.y};
+    path.push({...pos});
+    const k=key(pos.x,pos.y);
+    visits[k]=(visits[k]||0)+1;
+    currentStep++;
+    return true;
+  }
+  function play(){
+    if(playing)return;playing=true;
+    function tick(){
+      if(!playing)return;
+      for(let i=0;i<speed;i++){if(!step()){playing=false;break;}}
+      updateMetrics();redraw();
+      if(playing)timer=requestAnimationFrame(tick);
+    }
+    timer=requestAnimationFrame(tick);
+  }
+  function updateMetrics(){
+    document.getElementById('w4-m-step').textContent=currentStep;
+    document.getElementById('w4-m-pos').textContent=`(${pos.x},${pos.y})`;
+    document.getElementById('w4-m-dist').textContent=Math.sqrt(pos.x*pos.x+pos.y*pos.y).toFixed(1);
+    document.getElementById('w4-m-origin').textContent=visits[key(0,0)]||0;
+    document.getElementById('w4-m-sites').textContent=Object.keys(visits).length;
+    let maxV=0;for(const v of Object.values(visits))if(v>maxV)maxV=v;
+    document.getElementById('w4-m-maxv').textContent=maxV;
+  }
+  function redraw(){
+    const canvas=document.getElementById('c4-grid');
+    const{ctx,w,h}=setupCanvas(canvas);
+    ctx.clearRect(0,0,w,h);ctx.fillStyle=getCSS('--c-canvas-bg');ctx.fillRect(0,0,w,h);
+    if(path.length<1)return;
+    // Find bounds
+    let minX=0,maxX=0,minY=0,maxY=0;
+    path.forEach(p=>{if(p.x<minX)minX=p.x;if(p.x>maxX)maxX=p.x;if(p.y<minY)minY=p.y;if(p.y>maxY)maxY=p.y;});
+    const pad=5;
+    minX-=pad;maxX+=pad;minY-=pad;maxY+=pad;
+    const rangeX=maxX-minX,rangeY=maxY-minY;
+    const margin=20;
+    const pw=w-2*margin,ph=h-2*margin;
+    const scale=Math.min(pw/rangeX,ph/rangeY);
+    const offX=margin+(pw-rangeX*scale)/2;
+    const offY=margin+(ph-rangeY*scale)/2;
+    function tx(x){return offX+(x-minX)*scale;}
+    function ty(y){return offY+(maxY-y)*scale;}
+    // Draw visited sites with intensity
+    let maxV=1;for(const v of Object.values(visits))if(v>maxV)maxV=v;
+    const pathCol=getCSS('--c-visited');
+    for(const[k,v]of Object.entries(visits)){
+      const[sx,sy]=k.split(',').map(Number);
+      const alpha=0.15+0.85*(v/maxV);
+      ctx.globalAlpha=alpha;
+      ctx.fillStyle=pathCol;
+      const sz=Math.max(2,scale*0.6);
+      ctx.fillRect(tx(sx)-sz/2,ty(sy)-sz/2,sz,sz);
+    }
+    ctx.globalAlpha=1;
+    // Draw path (thin line)
+    if(path.length>1&&scale>1.5){
+      ctx.strokeStyle=getCSS('--c-path');ctx.lineWidth=0.5;ctx.globalAlpha=0.3;
+      ctx.beginPath();
+      path.forEach((p,i)=>{i===0?ctx.moveTo(tx(p.x),ty(p.y)):ctx.lineTo(tx(p.x),ty(p.y));});
+      ctx.stroke();ctx.globalAlpha=1;
+    }
+    // Origin
+    ctx.fillStyle=getCSS('--c-origin');
+    ctx.beginPath();ctx.arc(tx(0),ty(0),5,0,Math.PI*2);ctx.fill();
+    // Current position
+    ctx.fillStyle=getCSS('--c-path');
+    ctx.beginPath();ctx.arc(tx(pos.x),ty(pos.y),5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=getCSS('--c-canvas-bg');ctx.lineWidth=1.5;ctx.stroke();
+  }
+
+  document.getElementById('w4-play').onclick=play;
+  document.getElementById('w4-pause').onclick=stop;
+  document.getElementById('w4-step').onclick=()=>{stop();step();updateMetrics();redraw();};
+  document.getElementById('w4-reset').onclick=reset;
+  document.getElementById('w4-steps').oninput=function(){maxSteps=+this.value;document.getElementById('w4-steps-val').textContent=this.value;};
+  document.getElementById('w4-speed').oninput=function(){speed=+this.value;document.getElementById('w4-speed-val').textContent=this.value;};
+
+  modules[id]={init:()=>{if(path.length<=1)reset();},stop,redraw};
+})();
+
+// ============================================================
+// MODULE 5: RANDOM WALK EN GRAFOS
+// ============================================================
+(function(){
+  const id='graph';
+  const panel=document.createElement('div');
+  panel.className='module-panel';
+  panel.id='mod-'+id;
+  panel.innerHTML=`
+    <div style="display:flex;flex:1;overflow:hidden;">
+      <div class="canvas-area">
+        <div class="context-box">
+          <strong>Qué estás viendo:</strong> Random walk en un grafo finito. El caminante salta entre vértices vecinos con probabilidad uniforme. El tamaño de los nodos refleja la frecuencia de visita. Debajo, la comparación entre frecuencia empírica y la distribución estacionaria ${tex('\\pi(v)=d_v / \\sum d_u')}.
+        </div>
+        <div class="canvas-wrapper"><canvas id="c5-graph" data-height="340"></canvas></div>
+        <div id="c5-barchart" class="bar-chart-container" style="height:100px;"></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-path)"></div>Empírica</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-theory)"></div>Estacionaria teórica</div>
+        </div>
+      </div>
+      <div class="sidebar">
+        <div class="control-group">
+          <div class="control-group-title">Controles</div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="w5-play">▶ Iniciar</button>
+            <button class="btn btn-secondary btn-sm" id="w5-pause">⏸ Pausar</button>
+            <button class="btn btn-secondary btn-sm" id="w5-step">→ Paso</button>
+            <button class="btn btn-secondary btn-sm" id="w5-reset">↺ Reiniciar</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Grafo</div>
+          <select id="w5-graph-select">
+            <option value="cycle">Ciclo (6 nodos)</option>
+            <option value="star">Estrella (7 nodos)</option>
+            <option value="complete">Completo K₅</option>
+            <option value="path">Cadena (8 nodos)</option>
+            <option value="petersen">Petersen</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Velocidad</span>
+            <input type="range" id="w5-speed" min="1" max="50" value="5">
+            <span class="control-value" id="w5-speed-val">5</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Métricas</div>
+          <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-label">Paso</div><div class="metric-value" id="w5-m-step">0</div></div>
+            <div class="metric-card"><div class="metric-label">Nodo actual</div><div class="metric-value" id="w5-m-node">0</div></div>
+            <div class="metric-card"><div class="metric-label">Error L¹</div><div class="metric-value" id="w5-m-error">—</div></div>
+            <div class="metric-card"><div class="metric-label">Nodos visitados</div><div class="metric-value" id="w5-m-visited">1</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('mainContent').appendChild(panel);
+
+  // Graph definitions
+  const graphDefs={
+    cycle:{n:6,edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]],
+      pos:()=>{const r=[];for(let i=0;i<6;i++){const a=-Math.PI/2+i*Math.PI*2/6;r.push({x:0.5+0.38*Math.cos(a),y:0.5+0.38*Math.sin(a)});}return r;}},
+    star:{n:7,edges:[[0,1],[0,2],[0,3],[0,4],[0,5],[0,6]],
+      pos:()=>{const r=[{x:0.5,y:0.5}];for(let i=0;i<6;i++){const a=-Math.PI/2+i*Math.PI*2/6;r.push({x:0.5+0.38*Math.cos(a),y:0.5+0.38*Math.sin(a)});}return r;}},
+    complete:{n:5,edges:[[0,1],[0,2],[0,3],[0,4],[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]],
+      pos:()=>{const r=[];for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5;r.push({x:0.5+0.35*Math.cos(a),y:0.5+0.35*Math.sin(a)});}return r;}},
+    path:{n:8,edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]],
+      pos:()=>{const r=[];for(let i=0;i<8;i++)r.push({x:0.08+i*0.84/7,y:0.5});return r;}},
+    petersen:{n:10,edges:[[0,1],[1,2],[2,3],[3,4],[4,0],[5,7],[7,9],[9,6],[6,8],[8,5],[0,5],[1,6],[2,7],[3,8],[4,9]],
+      pos:()=>{const r=[];for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5;r.push({x:0.5+0.38*Math.cos(a),y:0.5+0.38*Math.sin(a)});}for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5;r.push({x:0.5+0.18*Math.cos(a),y:0.5+0.18*Math.sin(a)});}return r;}}
+  };
+
+  let graphType='cycle',adj=[],nodePos=[],nNodes=0,currentNode=0,visitCount=[],totalSteps=0;
+  let playing=false,timer=null,speed=5;
+
+  function buildGraph(){
+    const def=graphDefs[graphType];
+    nNodes=def.n;
+    nodePos=def.pos();
+    adj=Array.from({length:nNodes},()=>[]);
+    def.edges.forEach(([a,b])=>{adj[a].push(b);adj[b].push(a);});
+    currentNode=0;
+    visitCount=new Array(nNodes).fill(0);
+    visitCount[0]=1;
+    totalSteps=0;
+    updateMetrics();redrawBarChart();redraw();
+  }
+  function reset(){stop();buildGraph();}
+  function stop(){playing=false;if(timer)cancelAnimationFrame(timer);timer=null;}
+  function step(){
+    const neighbors=adj[currentNode];
+    currentNode=neighbors[Math.floor(Math.random()*neighbors.length)];
+    visitCount[currentNode]++;
+    totalSteps++;
+    return true;
+  }
+  function play(){
+    if(playing)return;playing=true;
+    function tick(){
+      if(!playing)return;
+      for(let i=0;i<speed;i++)step();
+      updateMetrics();redraw();redrawBarChart();
+      if(playing)timer=requestAnimationFrame(tick);
+    }
+    timer=requestAnimationFrame(tick);
+  }
+  function updateMetrics(){
+    document.getElementById('w5-m-step').textContent=totalSteps;
+    document.getElementById('w5-m-node').textContent=currentNode;
+    const visited=visitCount.filter(v=>v>0).length;
+    document.getElementById('w5-m-visited').textContent=visited;
+    // L1 error
+    if(totalSteps>0){
+      const totalDeg=adj.reduce((s,a)=>s+a.length,0);
+      let err=0;
+      for(let i=0;i<nNodes;i++){
+        const emp=visitCount[i]/totalSteps;
+        const theo=adj[i].length/totalDeg;
+        err+=Math.abs(emp-theo);
+      }
+      document.getElementById('w5-m-error').textContent=err.toFixed(4);
+    }
+  }
+  function redraw(){
+    const canvas=document.getElementById('c5-graph');
+    const{ctx,w,h}=setupCanvas(canvas);
+    ctx.clearRect(0,0,w,h);ctx.fillStyle=getCSS('--c-canvas-bg');ctx.fillRect(0,0,w,h);
+    const margin=40;
+    function tx(frac){return margin+(w-2*margin)*frac;}
+    function ty(frac){return margin+(h-2*margin)*frac;}
+    // Draw edges
+    ctx.strokeStyle=getCSS('--c-axis');ctx.lineWidth=1.5;
+    const def=graphDefs[graphType];
+    def.edges.forEach(([a,b])=>{
+      ctx.beginPath();
+      ctx.moveTo(tx(nodePos[a].x),ty(nodePos[a].y));
+      ctx.lineTo(tx(nodePos[b].x),ty(nodePos[b].y));
+      ctx.stroke();
+    });
+    // Draw nodes
+    let maxV=Math.max(1,...visitCount);
+    for(let i=0;i<nNodes;i++){
+      const x=tx(nodePos[i].x),y=ty(nodePos[i].y);
+      const baseR=12;
+      const r=baseR+10*(visitCount[i]/maxV);
+      const alpha=0.3+0.7*(visitCount[i]/maxV);
+      ctx.globalAlpha=alpha;
+      ctx.fillStyle=i===currentNode?getCSS('--c-path2'):getCSS('--c-visited');
+      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1;
+      // Border for current
+      if(i===currentNode){
+        ctx.strokeStyle=getCSS('--c-path2');ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(x,y,r+2,0,Math.PI*2);ctx.stroke();
+      }
+      // Label
+      ctx.fillStyle=getCSS('--color-text');
+      ctx.font='bold 12px "General Sans", sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(i,x,y);
+    }
+  }
+  function redrawBarChart(){
+    const container=document.getElementById('c5-barchart');
+    if(totalSteps<1){container.innerHTML='';return;}
+    const totalDeg=adj.reduce((s,a)=>s+a.length,0);
+    let html='';
+    for(let i=0;i<nNodes;i++){
+      const emp=visitCount[i]/totalSteps;
+      const theo=adj[i].length/totalDeg;
+      const maxBar=Math.max(emp,theo);
+      const scale=maxBar>0?70/maxBar:0;
+      html+=`<div class="bar-group">
+        <div class="bar-pair">
+          <div class="bar-empirical" style="height:${emp*scale}px"></div>
+          <div class="bar-theoretical" style="height:${theo*scale}px"></div>
+        </div>
+        <div class="bar-label">${i}</div>
+      </div>`;
+    }
+    container.innerHTML=html;
+  }
+
+  document.getElementById('w5-play').onclick=play;
+  document.getElementById('w5-pause').onclick=stop;
+  document.getElementById('w5-step').onclick=()=>{stop();step();updateMetrics();redraw();redrawBarChart();};
+  document.getElementById('w5-reset').onclick=reset;
+  document.getElementById('w5-graph-select').onchange=function(){graphType=this.value;reset();};
+  document.getElementById('w5-speed').oninput=function(){speed=+this.value;document.getElementById('w5-speed-val').textContent=this.value;};
+
+  modules[id]={init:()=>{if(totalSteps===0)buildGraph();},stop,redraw:()=>{redraw();redrawBarChart();}};
+})();
+
+// ============================================================
+// MODULE 6: ESCALAMIENTO HACIA BROWNIANO
+// ============================================================
+(function(){
+  const id='brownian';
+  const panel=document.createElement('div');
+  panel.className='module-panel';
+  panel.id='mod-'+id;
+  panel.innerHTML=`
+    <div style="display:flex;flex:1;overflow:hidden;">
+      <div class="canvas-area">
+        <div class="context-box">
+          <strong>Qué estás viendo:</strong> Escena sincronizada del paso desde lo discreto hacia lo gaussiano. Arriba se ve la caminata original ${tex('S_k')}, en el centro la caminata reescalada ${tex('W_n(t)=S_{\\lfloor nt\\rfloor}/\\sqrt{n}')}, y abajo una trayectoria browniana de referencia. A la derecha, el histograma de ${tex('S_n/\\sqrt{n}')} se compara con ${tex('\\mathcal{N}(0,1)')}.
+        </div>
+        <div class="canvas-wrapper"><canvas id="c6-hero" data-height="420"></canvas></div>
+        <div class="dual-canvas">
+          <div>
+            <div style="font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);margin-bottom:4px;">HISTOGRAMA VIVO</div>
+            <div class="canvas-wrapper"><canvas id="c6-hist" data-height="260"></canvas></div>
+          </div>
+          <div>
+            <div class="context-box" style="height:100%;">
+              <strong>Idea clave:</strong> cuando aumentás ${tex('n')}, la caminata discreta conserva su irregularidad microscópica, pero la versión reescalada empieza a organizarse visualmente como una trayectoria browniana. El histograma captura el otro lado del mismo fenómeno: la convergencia de ${tex('S_n/\\sqrt{n}')} hacia una ley normal.
+            </div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-path)"></div>Caminata discreta</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-origin)"></div>Origen / referencia</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-path2)"></div>Trayectoria browniana</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-theory)"></div>Densidad normal</div>
+        </div>
+      </div>
+      <div class="sidebar">
+        <div class="control-group">
+          <div class="control-group-title">Escena principal</div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="w6-gen">▶ Generar escena</button>
+            <button class="btn btn-secondary btn-sm" id="w6-auto">⟲ Auto-escalar</button>
+            <button class="btn btn-secondary btn-sm" id="w6-multi">+500 muestras</button>
+            <button class="btn btn-secondary btn-sm" id="w6-reset">↺ Reiniciar</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Parámetros</div>
+          <div class="control-row">
+            <span class="control-label">${tex('n')}</span>
+            <input type="range" id="w6-n" min="10" max="5000" value="100" step="10">
+            <span class="control-value" id="w6-n-val">100</span>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Brillo</span>
+            <input type="range" id="w6-glow" min="0" max="100" value="70" step="5">
+            <span class="control-value" id="w6-glow-val">70</span>
+          </div>
+          <div class="control-row">
+            <label style="font-size:var(--text-sm);display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="checkbox" id="w6-cine" checked> modo espectáculo
+            </label>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Escala rápida</div>
+          <div class="btn-row">
+            <button class="btn btn-secondary btn-sm w6-preset" data-n="10">n=10</button>
+            <button class="btn btn-secondary btn-sm w6-preset" data-n="50">n=50</button>
+            <button class="btn btn-secondary btn-sm w6-preset" data-n="200">n=200</button>
+            <button class="btn btn-secondary btn-sm w6-preset" data-n="1000">n=1000</button>
+            <button class="btn btn-secondary btn-sm w6-preset" data-n="5000">n=5000</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">Métricas</div>
+          <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-label">${tex('n')}</div><div class="metric-value" id="w6-m-n">100</div></div>
+            <div class="metric-card"><div class="metric-label">${tex('S_n/\\sqrt{n}')}</div><div class="metric-value" id="w6-m-final">—</div></div>
+            <div class="metric-card"><div class="metric-label">Muestras hist.</div><div class="metric-value" id="w6-m-samples">0</div></div>
+            <div class="metric-card"><div class="metric-label">σ empírica</div><div class="metric-value" id="w6-m-std">—</div></div>
+            <div class="metric-card"><div class="metric-label">Régimen visual</div><div class="metric-value" id="w6-m-regime">—</div></div>
+            <div class="metric-card"><div class="metric-label">Secuencia auto</div><div class="metric-value" id="w6-m-auto">off</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('mainContent').appendChild(panel);
+
+  let n=100,scaledPath=[],brownianPath=[],rawWalk=[],histSamples=[],cinematic=true,glow=70,autoTimer=null,phase=0;
+
+  function gaussian(){
+    const u1=Math.max(1e-12,Math.random());
+    const u2=Math.random();
+    return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+  }
+
+  function generateBrownian(steps){
+    const dt=1/steps;
+    const path=[0];
+    for(let i=0;i<steps;i++){
+      path.push(path[path.length-1]+gaussian()*Math.sqrt(dt));
+    }
+    return path;
+  }
+
+  function classifyRegime(val){
+    if(val<=20) return 'discreto';
+    if(val<=150) return 'transición';
+    if(val<=1200) return 'pre-continuo';
+    return 'casi browniano';
+  }
+
+  function generate(){
+    const walk=[0];
+    let s=0;
+    for(let i=0;i<n;i++){ s+=randSign(); walk.push(s); }
+    rawWalk = walk.slice();
+
+    const sqrtN=Math.sqrt(n);
+    const points=Math.max(180,Math.min(420,Math.floor(n/4)));
+    scaledPath=[];
+    for(let k=0;k<=points;k++){
+      const t=k/points;
+      const idx=Math.min(Math.floor(n*t),n);
+      scaledPath.push({t,v:walk[idx]/sqrtN});
+    }
+
+    const bm=generateBrownian(points);
+    brownianPath=[];
+    for(let k=0;k<=points;k++){
+      brownianPath.push({t:k/points,v:bm[k]});
+    }
+
+    histSamples.push(walk[n]/sqrtN);
+
+    document.getElementById('w6-m-n').textContent=n;
+    document.getElementById('w6-m-final').textContent=(walk[n]/sqrtN).toFixed(3);
+    document.getElementById('w6-m-samples').textContent=histSamples.length;
+    document.getElementById('w6-m-regime').textContent=classifyRegime(n);
+    if(histSamples.length>1){
+      const mean=histSamples.reduce((a,b)=>a+b,0)/histSamples.length;
+      const variance=histSamples.reduce((a,b)=>a+(b-mean)**2,0)/(histSamples.length-1);
+      document.getElementById('w6-m-std').textContent=Math.sqrt(variance).toFixed(3);
+    } else {
+      document.getElementById('w6-m-std').textContent='—';
+    }
+    phase = (phase+1)%100000;
+    redraw();
+  }
+
+  function addMultiSamples(){
+    const sqrtN=Math.sqrt(n);
+    for(let r=0;r<500;r++){
+      let s=0;
+      for(let i=0;i<n;i++) s+=randSign();
+      histSamples.push(s/sqrtN);
+    }
+    document.getElementById('w6-m-samples').textContent=histSamples.length;
+    if(histSamples.length>1){
+      const mean=histSamples.reduce((a,b)=>a+b,0)/histSamples.length;
+      const variance=histSamples.reduce((a,b)=>a+(b-mean)**2,0)/(histSamples.length-1);
+      document.getElementById('w6-m-std').textContent=Math.sqrt(variance).toFixed(3);
+    }
+    redraw();
+  }
+
+  function stopAuto(){
+    if(autoTimer){ clearInterval(autoTimer); autoTimer=null; }
+    document.getElementById('w6-m-auto').textContent='off';
+  }
+
+  function autoScale(){
+    if(autoTimer){ stopAuto(); return; }
+    const presets=[10,30,50,100,200,500,1000,2500,5000];
+    let idx=0;
+    document.getElementById('w6-m-auto').textContent='on';
+    autoTimer=setInterval(()=>{
+      n=presets[idx%presets.length];
+      document.getElementById('w6-n').value=n;
+      document.getElementById('w6-n-val').textContent=n;
+      generate();
+      idx++;
+    }, 1200);
+  }
+
+  function reset(){
+    stopAuto();
+    rawWalk=[]; scaledPath=[]; brownianPath=[]; histSamples=[];
+    document.getElementById('w6-m-final').textContent='—';
+    document.getElementById('w6-m-samples').textContent='0';
+    document.getElementById('w6-m-std').textContent='—';
+    document.getElementById('w6-m-regime').textContent='—';
+    redraw();
+  }
+
+  function drawGlowLine(ctx, pts, color, width, alpha){
+    if(!pts.length) return;
+    if(cinematic){
+      ctx.save();
+      ctx.strokeStyle=color;
+      ctx.shadowColor=color;
+      ctx.shadowBlur=6 + glow*0.22;
+      ctx.globalAlpha=alpha;
+      ctx.lineWidth=width+1.2;
+      ctx.beginPath();
+      pts.forEach((p,i)=>{ i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y); });
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.save();
+    ctx.strokeStyle=color;
+    ctx.globalAlpha=alpha;
+    ctx.lineWidth=width;
+    ctx.beginPath();
+    pts.forEach((p,i)=>{ i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y); });
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawHero(){
+    const canvas=document.getElementById('c6-hero');
+    const {ctx,w,h}=setupCanvas(canvas);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle=getCSS('--c-canvas-bg');
+    ctx.fillRect(0,0,w,h);
+
+    const marginL=70, marginR=20, marginT=20, marginB=24;
+    const pw=w-marginL-marginR;
+    const ph=h-marginT-marginB;
+    const bands=3;
+    const bandH=ph/bands;
+    const labels=['discreta S_k','reescalada W_n(t)','browniano B(t)'];
+
+    if(cinematic){
+      const grad=ctx.createLinearGradient(0,0,w,h);
+      grad.addColorStop(0,'rgba(255,255,255,0.015)');
+      grad.addColorStop(0.5,'rgba(255,255,255,0)');
+      grad.addColorStop(1,'rgba(255,255,255,0.02)');
+      ctx.fillStyle=grad;
+      ctx.fillRect(0,0,w,h);
+    }
+
+    for(let b=0;b<bands;b++){
+      const y0=marginT+b*bandH;
+      const y1=y0+bandH;
+      ctx.strokeStyle=getCSS('--c-grid');
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(marginL,y1);
+      ctx.lineTo(w-marginR,y1);
+      ctx.stroke();
+
+      const refY=(y0+y1)/2;
+      ctx.strokeStyle=getCSS('--c-axis');
+      ctx.setLineDash([4,4]);
+      ctx.beginPath();
+      ctx.moveTo(marginL,refY);
+      ctx.lineTo(w-marginR,refY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle=getCSS('--color-text-muted');
+      ctx.font='11px "General Sans", sans-serif';
+      ctx.textAlign='right';
+      ctx.textBaseline='middle';
+      ctx.fillText(labels[b], marginL-10, refY);
+    }
+
+    ctx.fillStyle=getCSS('--color-text-muted');
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.font='11px "General Sans", sans-serif';
+    for(let t=0;t<=1.0001;t+=0.2){
+      const x=marginL+t*pw;
+      ctx.fillText(t.toFixed(1), x, h-18);
+    }
+    ctx.fillText('tiempo normalizado', marginL+pw/2, h-4);
+
+    if(!rawWalk.length || !scaledPath.length || !brownianPath.length){
+      ctx.fillStyle=getCSS('--color-text-faint');
+      ctx.font='15px "General Sans", sans-serif';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText('Generá una escena para activar la comparación visual', w/2, h/2);
+      return;
+    }
+
+    // Band 1: raw walk
+    {
+      const y0=marginT, y1=marginT+bandH;
+      const vals=rawWalk;
+      let min=Math.min(...vals), max=Math.max(...vals);
+      const pad=Math.max(4, Math.ceil((max-min)*0.15));
+      min-=pad; max+=pad;
+      const pts=vals.map((v,i)=>({
+        x: marginL + (i/(vals.length-1))*pw,
+        y: y0 + ((max-v)/(max-min))*(bandH-16) + 8
+      }));
+      drawGlowLine(ctx, pts, getCSS('--c-path'), 1.4, 0.95);
+
+      if(cinematic){
+        ctx.fillStyle=getCSS('--c-path');
+        for(let i=Math.max(1,pts.length-20);i<pts.length;i++){
+          const a=(i-(pts.length-20))/20;
+          ctx.globalAlpha=0.05 + 0.3*a;
+          ctx.beginPath();
+          ctx.arc(pts[i].x, pts[i].y, 1.5 + 2.5*a, 0, Math.PI*2);
+          ctx.fill();
+        }
+        ctx.globalAlpha=1;
+      }
+      const p=pts[pts.length-1];
+      ctx.fillStyle=getCSS('--c-path');
+      ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill();
+    }
+
+    // Band 2: scaled walk
+    {
+      const y0=marginT+bandH, y1=marginT+2*bandH;
+      let min=-2.8,max=2.8;
+      scaledPath.forEach(p=>{ if(p.v<min)min=p.v-0.3; if(p.v>max)max=p.v+0.3; });
+      brownianPath.forEach(p=>{ if(p.v<min)min=p.v-0.3; if(p.v>max)max=p.v+0.3; });
+      const pts=scaledPath.map(p=>({
+        x: marginL + p.t*pw,
+        y: y0 + ((max-p.v)/(max-min))*(bandH-16) + 8
+      }));
+      drawGlowLine(ctx, pts, getCSS('--c-origin'), 2.2, 0.95);
+      ctx.fillStyle=getCSS('--c-origin');
+      const p=pts[pts.length-1];
+      ctx.beginPath(); ctx.arc(p.x,p.y,4.5,0,Math.PI*2); ctx.fill();
+    }
+
+    // Band 3: brownian
+    {
+      const y0=marginT+2*bandH, y1=marginT+3*bandH;
+      let min=-2.8,max=2.8;
+      brownianPath.forEach(p=>{ if(p.v<min)min=p.v-0.3; if(p.v>max)max=p.v+0.3; });
+      const pts=brownianPath.map(p=>({
+        x: marginL + p.t*pw,
+        y: y0 + ((max-p.v)/(max-min))*(bandH-16) + 8
+      }));
+      drawGlowLine(ctx, pts, getCSS('--c-path2'), 2.1, 0.9);
+      ctx.fillStyle=getCSS('--c-path2');
+      const p=pts[pts.length-1];
+      ctx.beginPath(); ctx.arc(p.x,p.y,4.5,0,Math.PI*2); ctx.fill();
+    }
+
+    // Framing box on center band
+    if(cinematic){
+      const y0=marginT+bandH;
+      ctx.strokeStyle='rgba(255,255,255,0.05)';
+      ctx.lineWidth=1;
+      ctx.strokeRect(marginL, y0+4, pw, bandH-8);
+    }
+
+    ctx.fillStyle=getCSS('--color-text-muted');
+    ctx.textAlign='left';
+    ctx.textBaseline='top';
+    ctx.font='12px "JetBrains Mono", monospace';
+    ctx.fillText(`n = ${n}`, marginL+6, marginT+6);
+    ctx.fillText(`fase = ${classifyRegime(n)}`, marginL+6, marginT+bandH+6);
+    ctx.fillText(`muestras = ${histSamples.length}`, marginL+6, marginT+2*bandH+6);
+  }
+
+  function drawHistogram(){
+    const canvas=document.getElementById('c6-hist');
+    const {ctx,w,h}=setupCanvas(canvas);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle=getCSS('--c-canvas-bg');
+    ctx.fillRect(0,0,w,h);
+
+    const marginL=40,marginR=16,marginT=16,marginB=30;
+    const pw=w-marginL-marginR, ph=h-marginT-marginB;
+    const xMin=-4, xMax=4;
+    function tx(v){ return marginL + (v-xMin)/(xMax-xMin)*pw; }
+
+    ctx.font='10px "General Sans", sans-serif';
+    ctx.fillStyle=getCSS('--color-text-muted');
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    for(let v=-4; v<=4; v++){
+      ctx.fillText(v, tx(v), h-marginB+4);
+    }
+
+    ctx.strokeStyle=getCSS('--c-axis');
+    ctx.beginPath();
+    ctx.moveTo(marginL, marginT+ph);
+    ctx.lineTo(w-marginR, marginT+ph);
+    ctx.stroke();
+
+    if(!histSamples.length){
+      ctx.fillStyle=getCSS('--color-text-faint');
+      ctx.font='13px "General Sans", sans-serif';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText('Todavía no hay muestras: generá una escena o agregá muchas.', w/2, h/2);
+      return;
+    }
+
+    const nBins=34;
+    const bins=new Array(nBins).fill(0);
+    const binW=(xMax-xMin)/nBins;
+    histSamples.forEach(s=>{
+      const bi=Math.floor((s-xMin)/binW);
+      if(bi>=0 && bi<nBins) bins[bi]++;
+    });
+
+    const maxBin=Math.max(...bins);
+    const maxDensity=maxBin/(histSamples.length*binW);
+    const normalMax=1/Math.sqrt(2*Math.PI);
+    const scaleY=Math.max(maxDensity, normalMax) * 1.15;
+
+    for(let i=0;i<nBins;i++){
+      const density=bins[i]/(histSamples.length*binW);
+      const bx=tx(xMin+i*binW);
+      const bw=tx(xMin+(i+1)*binW) - bx;
+      const bh=(density/scaleY)*ph;
+      if(cinematic){
+        ctx.save();
+        ctx.fillStyle=getCSS('--c-path');
+        ctx.shadowColor=getCSS('--c-path');
+        ctx.shadowBlur=4 + glow*0.08;
+        ctx.globalAlpha=0.35;
+        ctx.fillRect(bx, marginT+ph-bh, Math.max(1,bw-1), bh);
+        ctx.restore();
+      }
+      ctx.fillStyle=getCSS('--c-path');
+      ctx.globalAlpha=0.55;
+      ctx.fillRect(bx, marginT+ph-bh, Math.max(1,bw-1), bh);
+      ctx.globalAlpha=1;
+    }
+
+    ctx.strokeStyle=getCSS('--c-theory');
+    ctx.lineWidth=2;
+    if(cinematic){
+      ctx.save();
+      ctx.strokeStyle=getCSS('--c-theory');
+      ctx.shadowColor=getCSS('--c-theory');
+      ctx.shadowBlur=5 + glow*0.08;
+      ctx.beginPath();
+      for(let px=0; px<=pw; px++){
+        const x=xMin + px/pw*(xMax-xMin);
+        const density=Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);
+        const y=marginT+ph - (density/scaleY)*ph;
+        px===0 ? ctx.moveTo(marginL+px,y) : ctx.lineTo(marginL+px,y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.beginPath();
+    for(let px=0; px<=pw; px++){
+      const x=xMin + px/pw*(xMax-xMin);
+      const density=Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);
+      const y=marginT+ph - (density/scaleY)*ph;
+      px===0 ? ctx.moveTo(marginL+px,y) : ctx.lineTo(marginL+px,y);
+    }
+    ctx.stroke();
+
+    // Mark current sample
+    if(rawWalk.length){
+      const current = rawWalk[rawWalk.length-1]/Math.sqrt(n);
+      const x=tx(current);
+      ctx.strokeStyle=getCSS('--c-origin');
+      ctx.lineWidth=1.5;
+      ctx.setLineDash([5,4]);
+      ctx.beginPath();
+      ctx.moveTo(x, marginT);
+      ctx.lineTo(x, marginT+ph);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  function redraw(){
+    drawHero();
+    drawHistogram();
+  }
+
+  document.getElementById('w6-gen').onclick=generate;
+  document.getElementById('w6-auto').onclick=autoScale;
+  document.getElementById('w6-multi').onclick=addMultiSamples;
+  document.getElementById('w6-reset').onclick=reset;
+  document.getElementById('w6-n').oninput=function(){ n=+this.value; document.getElementById('w6-n-val').textContent=this.value; };
+  document.getElementById('w6-glow').oninput=function(){ glow=+this.value; document.getElementById('w6-glow-val').textContent=this.value; redraw(); };
+  document.getElementById('w6-cine').onchange=function(){ cinematic=this.checked; redraw(); };
+  document.querySelectorAll('.w6-preset').forEach(btn=>{
+    btn.onclick=function(){
+      n=+this.dataset.n;
+      document.getElementById('w6-n').value=n;
+      document.getElementById('w6-n-val').textContent=n;
+      generate();
+    };
+  });
+
+  modules[id]={
+    init:()=>{},
+    stop:stopAuto,
+    redraw
+  };
+})();
+
+// ============================================================
+// INIT
+// ============================================================
+switchTab('walk1d');
+
+// Resize handler
+let resizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(()=>{
+    if(modules[activeModule]&&modules[activeModule].redraw)modules[activeModule].redraw();
+  },200);
+});
+</script>
+<script data-pplx-inline-edit>
+(function(){
+  if(window===window.top)return;
+  function inlineAll(orig,clone){
+    if(orig.nodeType!==1)return;
+    try{
+      var cs=getComputedStyle(orig);
+      var t='';
+      for(var i=0;i<cs.length;i++){t+=cs[i]+':'+cs.getPropertyValue(cs[i])+';';}
+      clone.style.cssText=t;
+    }catch(e){}
+    var oc=orig.children,cc=clone.children;
+    for(var j=0;j<oc.length&&j<cc.length;j++){inlineAll(oc[j],cc[j]);}
+  }
+  function stripExternal(clone){
+    var imgs=clone.querySelectorAll('img');
+    for(var i=0;i<imgs.length;i++){
+      var s=imgs[i].getAttribute('src');
+      if(s&&!s.startsWith('data:'))imgs[i].removeAttribute('src');
+    }
+    var all=clone.querySelectorAll('*');
+    for(var i=0;i<all.length;i++){
+      var st=all[i].style.cssText;
+      if(st&&st.indexOf('url(')>=0){
+        all[i].style.cssText=st.replace(/url\(["']?(?!data:)[^)"']*["']?\)/gi,'none');
+      }
+    }
+  }
+  window.addEventListener('message',function(e){
+    if(!e.data||e.data.type!=='INLINE_EDIT_CAPTURE_REQUEST')return;
+    var scrollX=window.scrollX||window.pageXOffset||0;
+    var scrollY=window.scrollY||window.pageYOffset||0;
+    var w=window.innerWidth,h=window.innerHeight;
+    try{
+      var clone=document.documentElement.cloneNode(true);
+      var rm=clone.querySelectorAll('script,link[rel="stylesheet"],style');
+      for(var i=0;i<rm.length;i++){rm[i].remove();}
+      inlineAll(document.documentElement,clone);
+      stripExternal(clone);
+      var html=new XMLSerializer().serializeToString(clone);
+      var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'
+        +'<foreignObject width="100%" height="100%">'
+        +'<div xmlns="http://www.w3.org/1999/xhtml" style="width:'+w+'px;height:'+h+'px;overflow:hidden">'
+        +'<div style="transform:translate(-'+scrollX+'px,-'+scrollY+'px);transform-origin:top left">'
+        +html+'</div></div></foreignObject></svg>';
+      var svgUrl='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+      var img=new Image();
+      img.onload=function(){
+        var c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0);
+        window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:c.toDataURL('image/png'),scrollX:scrollX,scrollY:scrollY},'*');
+      };
+      img.onerror=function(){
+        window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:null,scrollX:scrollX,scrollY:scrollY},'*');
+      };
+      img.src=svgUrl;
+    }catch(err){
+      window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:null,scrollX:scrollX,scrollY:scrollY},'*');
+    }
+  });
+})();
+</script></body>
+</html>

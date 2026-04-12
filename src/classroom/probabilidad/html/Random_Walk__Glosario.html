@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Glosario · Caminatas Aleatorias — Random Walks</title>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['$$', '$$']],
+        processEscapes: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      },
+      startup: {
+        ready() {
+          MathJax.startup.defaultReady();
+          MathJax.startup.promise.then(() => {
+            MathJax.typesetPromise();
+          });
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@300;400;500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ══════════════════════ TEMAS ══════════════════════ */
+    :root {
+      --bg:          #080d14;
+      --surface:     #0d1520;
+      --card:        #111c2a;
+      --card-open:   #0c1928;
+      --border:      #1e3048;
+      --accent1:     #2dd9b0;
+      --accent2:     #f5a623;
+      --accent3:     #e85d75;
+      --accent4:     #7ec8e3;
+      --text:        #dde6f0;
+      --muted:       #6a859e;
+      --body-text:   #b8cedd;
+      --answer-bg:   #0a1520;
+      --tag-bg:      rgba(45,217,176,0.10);
+      --tag-border:  rgba(45,217,176,0.30);
+      --hl-bg:       rgba(245,166,35,0.08);
+      --hl-border:   rgba(245,166,35,0.30);
+      --math-bg:     rgba(45,217,176,0.06);
+      --math-border: #2dd9b0;
+      --search-bg:   #0d1928;
+      --header-g1:   #0d1928;
+      --header-g2:   #080d14;
+      --pb-bg:       rgba(8,13,20,0.93);
+      --ref-bg:      rgba(126,200,227,0.08);
+      --ref-border:  rgba(126,200,227,0.25);
+      --ref-text:    #7ec8e3;
+      --radius:      13px;
+      --tr:          0.44s cubic-bezier(.4,0,.2,1);
+    }
+    [data-theme="light"] {
+      --bg:          #eef2f7;
+      --surface:     #e4eaf3;
+      --card:        #ffffff;
+      --card-open:   #f5f8ff;
+      --border:      #c8d6e8;
+      --accent1:     #0e9e80;
+      --accent2:     #c87d00;
+      --accent3:     #c43055;
+      --accent4:     #2a7fa8;
+      --text:        #0f1d2e;
+      --muted:       #5a7490;
+      --body-text:   #2c4460;
+      --answer-bg:   #f0f5fc;
+      --tag-bg:      rgba(14,158,128,0.08);
+      --tag-border:  rgba(14,158,128,0.30);
+      --hl-bg:       rgba(200,125,0,0.07);
+      --hl-border:   rgba(200,125,0,0.28);
+      --math-bg:     rgba(14,158,128,0.05);
+      --math-border: #0e9e80;
+      --search-bg:   #fff;
+      --header-g1:   #dde7f4;
+      --header-g2:   #eef2f7;
+      --pb-bg:       rgba(238,242,247,0.94);
+      --ref-bg:      rgba(42,127,168,0.06);
+      --ref-border:  rgba(42,127,168,0.22);
+      --ref-text:    #2a7fa8;
+    }
+    [data-theme="sepia"] {
+      --bg:          #f2ead8;
+      --surface:     #e8dfc6;
+      --card:        #fdf7ea;
+      --card-open:   #f8f0dc;
+      --border:      #c9b990;
+      --accent1:     #3d7d62;
+      --accent2:     #96600e;
+      --accent3:     #a03040;
+      --accent4:     #3a6e8a;
+      --text:        #221a08;
+      --muted:       #7a6540;
+      --body-text:   #3a2c14;
+      --answer-bg:   #ece3cc;
+      --tag-bg:      rgba(61,125,98,0.10);
+      --tag-border:  rgba(61,125,98,0.30);
+      --hl-bg:       rgba(150,96,14,0.08);
+      --hl-border:   rgba(150,96,14,0.28);
+      --math-bg:     rgba(61,125,98,0.07);
+      --math-border: #3d7d62;
+      --search-bg:   #f8f0dc;
+      --header-g1:   #e4dcc4;
+      --header-g2:   #f2ead8;
+      --pb-bg:       rgba(242,234,216,0.94);
+      --ref-bg:      rgba(58,110,138,0.07);
+      --ref-border:  rgba(58,110,138,0.22);
+      --ref-text:    #3a6e8a;
+    }
+
+    /* ══════════════════════ BASE ══════════════════════ */
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Source Serif 4', Georgia, serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background .35s ease, color .2s ease;
+    }
+
+    /* grain overlay */
+    body::before {
+      content:'';
+      position:fixed; inset:0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events:none; z-index:0;
+    }
+
+    /* ══════════════════════ HEADER ══════════════════════ */
+    header {
+      position:relative; z-index:10;
+      padding: 64px 24px 52px;
+      text-align:center;
+      background: linear-gradient(155deg, var(--header-g1) 0%, var(--header-g2) 65%);
+      border-bottom: 1px solid var(--border);
+      overflow:hidden;
+      transition: background .4s;
+    }
+    header::after {
+      content:'';
+      position:absolute; top:-100px; left:50%;
+      transform:translateX(-50%);
+      width:700px; height:350px;
+      background: radial-gradient(ellipse at center, rgba(45,217,176,0.09) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .header-tag {
+      display:inline-block;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:.68rem; letter-spacing:.22em; text-transform:uppercase;
+      color: var(--accent1);
+      border: 1px solid var(--tag-border);
+      background: var(--tag-bg);
+      padding: 5px 16px; border-radius:100px; margin-bottom:20px;
+    }
+    h1 {
+      font-family:'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 5.5vw, 4rem);
+      font-weight:700; line-height:1.08;
+      background: linear-gradient(130deg, var(--accent1) 0%, var(--accent4) 55%, var(--accent1) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+      margin-bottom:14px;
+    }
+    .subtitle {
+      font-family:'IBM Plex Mono', monospace;
+      font-size:.82rem; color:var(--muted); letter-spacing:.05em;
+    }
+    .author-credit {
+      font-family:'IBM Plex Mono', monospace;
+      font-size:.85rem; color:var(--accent1); letter-spacing:.05em;
+      margin-top: 12px; font-weight: 500;
+    }
+    .count-badge {
+      display:inline-block; margin-top:14px;
+      font-family:'IBM Plex Mono', monospace; font-size:.7rem;
+      background: rgba(45,217,176,0.12); border:1px solid var(--tag-border);
+      color:var(--accent1); padding:4px 14px; border-radius:100px;
+    }
+
+    /* ══════════════════════ STICKY BAR ══════════════════════ */
+    #sticky-bar {
+      position:sticky; top:0; z-index:100;
+      background: var(--pb-bg);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      padding:10px 20px;
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+      transition: background .4s;
+    }
+    #search-wrap {
+      display:flex; align-items:center; gap:8px;
+      background: var(--search-bg);
+      border:1px solid var(--border);
+      border-radius:8px; padding:6px 12px;
+      flex:1; min-width:160px; max-width:320px;
+      transition: border-color .25s, background .35s;
+    }
+    #search-wrap:focus-within { border-color:var(--accent1); }
+    #search-wrap svg { flex-shrink:0; stroke:var(--muted); }
+    #search-input {
+      border:none; background:transparent; outline:none;
+      font-family:'IBM Plex Mono', monospace; font-size:.78rem;
+      color:var(--text); width:100%;
+    }
+    #search-input::placeholder { color:var(--muted); }
+    #prog-text {
+      font-family:'IBM Plex Mono', monospace; font-size:.72rem;
+      color:var(--accent1); white-space:nowrap; flex-shrink:0;
+    }
+    #prog-outer {
+      flex:1; height:3px; background:var(--border);
+      border-radius:10px; overflow:hidden; min-width:60px;
+    }
+    #prog-inner {
+      height:100%; width:0%;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      border-radius:10px; transition:width .5s ease;
+    }
+    #open-count {
+      font-family:'IBM Plex Mono', monospace; font-size:.72rem;
+      color:var(--muted); white-space:nowrap; flex-shrink:0;
+    }
+
+    /* ══════════════════════ ALPHA INDEX ══════════════════════ */
+    #alpha-nav {
+      position:relative; z-index:1;
+      max-width:980px; margin:28px auto 0; padding:0 20px;
+      display:flex; flex-wrap:wrap; gap:6px 4px;
+    }
+    .alpha-btn {
+      font-family:'IBM Plex Mono', monospace;
+      font-size:.65rem; font-weight:500; letter-spacing:.08em; text-transform:uppercase;
+      padding:4px 9px; border-radius:6px; cursor:pointer;
+      border:1px solid var(--border); background:var(--card);
+      color:var(--muted); transition:all .2s;
+    }
+    .alpha-btn:hover, .alpha-btn.has-terms:hover {
+      background:var(--accent1); border-color:var(--accent1); color:#000;
+    }
+    .alpha-btn.has-terms { color:var(--accent1); border-color:var(--tag-border); }
+    .alpha-btn.dimmed { opacity:.3; pointer-events:none; }
+
+    /* ══════════════════════ MAIN ══════════════════════ */
+    main {
+      position:relative; z-index:1;
+      max-width:980px; margin:0 auto;
+      padding:24px 20px 100px;
+    }
+
+    /* Controls */
+    .controls {
+      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px;
+    }
+    .btn {
+      font-family:'IBM Plex Mono', monospace;
+      font-size:.7rem; letter-spacing:.08em; text-transform:uppercase;
+      padding:9px 20px; border-radius:100px;
+      border:1px solid var(--border); background:var(--card);
+      color:var(--muted); cursor:pointer; transition:all .22s;
+    }
+    .btn:hover { background:var(--accent1); border-color:var(--accent1); color:#000; }
+    .btn-em { border-color:var(--tag-border); color:var(--accent1); }
+
+    /* Letter section */
+    .letter-group { margin-bottom:6px; }
+    .letter-anchor {
+      font-family:'Cormorant Garamond', serif;
+      font-size:1.6rem; font-weight:700; color:var(--accent1);
+      padding:28px 0 10px;
+      display:flex; align-items:center; gap:14px;
+      opacity:.7;
+    }
+    .letter-anchor::after {
+      content:''; flex:1; height:1px;
+      background: linear-gradient(90deg, var(--tag-border), transparent);
+    }
+
+    /* ══════════════════════ CARD ══════════════════════ */
+    .card {
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      margin-bottom:10px;
+      overflow:hidden;
+      transition: border-color .3s, box-shadow .3s, background .35s;
+      opacity:0; transform:translateY(16px);
+      animation: fadeUp .4s forwards;
+    }
+    @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+    .card:hover { border-color:rgba(45,217,176,.22); box-shadow:0 4px 30px rgba(0,0,0,.3); }
+    .card.open {
+      border-color:rgba(45,217,176,.4);
+      background: var(--card-open);
+      box-shadow:0 6px 40px rgba(0,0,0,.35), 0 0 0 1px rgba(45,217,176,.08);
+    }
+    .card.hidden { display:none; }
+
+    /* Trigger */
+    .t-btn {
+      width:100%; background:none; border:none; cursor:pointer;
+      padding:18px 22px; display:grid;
+      grid-template-columns: auto 1fr auto;
+      align-items:center; gap:14px; text-align:left;
+    }
+    .t-letter {
+      font-family:'IBM Plex Mono', monospace; font-size:.62rem;
+      color:var(--accent1); background:var(--tag-bg);
+      border:1px solid var(--tag-border);
+      border-radius:5px; padding:3px 7px; white-space:nowrap;
+      text-transform:uppercase; letter-spacing:.1em;
+    }
+    .t-term {
+      font-family:'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      font-weight:700; color:var(--text); line-height:1.3;
+      transition:color .3s;
+    }
+    .t-term .term-sub {
+      font-family:'IBM Plex Mono', monospace;
+      font-size:.68rem; color:var(--muted); font-weight:400;
+      display:block; margin-top:2px; letter-spacing:.05em;
+    }
+    .card:hover .t-term, .card.open .t-term { color:var(--accent1); }
+    .t-icon {
+      width:28px; height:28px; border-radius:50%;
+      border:1px solid var(--border); display:flex;
+      align-items:center; justify-content:center; flex-shrink:0;
+      transition: all var(--tr);
+    }
+    .t-icon svg { transition:transform var(--tr); stroke:var(--muted); }
+    .card.open .t-icon { background:var(--accent1); border-color:var(--accent1); }
+    .card.open .t-icon svg { stroke:#000; transform:rotate(180deg); }
+
+    /* Answer panel */
+    .a-wrap { display:grid; grid-template-rows:0fr; transition:grid-template-rows var(--tr); }
+    .card.open .a-wrap { grid-template-rows:1fr; }
+    .a-inner { overflow:hidden; }
+    .a-body {
+      background:var(--answer-bg);
+      border-top:1px solid var(--border);
+      padding:0 22px 26px 60px;
+      transition: background .35s;
+    }
+    .card.open .a-body { padding-top:22px; }
+
+    .a-body p {
+      font-size:.96rem; line-height:1.88; color:var(--body-text);
+      margin-bottom:14px;
+    }
+    .a-body p:last-child { margin-bottom:0; }
+
+    .a-body strong { color:var(--accent1); font-weight:600; }
+    .a-body em { color:var(--muted); font-style:italic; }
+
+    /* Math block */
+    .math-block {
+      background:var(--math-bg);
+      border-left:3px solid var(--math-border);
+      border-radius:0 8px 8px 0;
+      padding:14px 18px; margin:16px 0;
+      overflow-x:auto; font-size:1.02rem;
+      transition: background .35s, border-color .35s;
+    }
+
+    /* Highlight box */
+    .hl {
+      background:var(--hl-bg);
+      border:1px solid var(--hl-border);
+      border-radius:8px; padding:14px 18px; margin:16px 0;
+      font-size:.93rem; line-height:1.78; color:var(--body-text);
+      transition: background .35s, border-color .35s;
+    }
+    .hl strong { color:var(--accent2); }
+
+    /* Example block */
+    .example {
+      border-left:3px solid var(--accent2);
+      background: rgba(245,166,35,.05);
+      border-radius:0 8px 8px 0;
+      padding:14px 18px; margin:18px 0;
+      transition: background .35s, border-color .35s;
+    }
+    .example-label {
+      font-family:'IBM Plex Mono', monospace;
+      font-size:.63rem; letter-spacing:.18em; text-transform:uppercase;
+      color:var(--accent2); margin-bottom:8px; display:block;
+    }
+    .example p { font-size:.92rem; line-height:1.8; color:var(--body-text); margin:0; }
+
+    /* ══════════════════════ CROSS-REFERENCES (NEW) ══════════════════════ */
+    .cross-refs {
+      margin-top:16px; padding-top:12px;
+      border-top:1px dashed var(--border);
+    }
+    .cross-refs-label {
+      font-family:'IBM Plex Mono', monospace;
+      font-size:.6rem; letter-spacing:.16em; text-transform:uppercase;
+      color:var(--muted); margin-bottom:8px; display:block;
+    }
+    .cross-refs a {
+      display:inline-block;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:.68rem; letter-spacing:.04em;
+      color:var(--ref-text);
+      background:var(--ref-bg);
+      border:1px solid var(--ref-border);
+      border-radius:6px; padding:3px 10px; margin:0 5px 5px 0;
+      text-decoration:none;
+      transition:all .2s;
+    }
+    .cross-refs a:hover {
+      background:var(--accent1); border-color:var(--accent1);
+      color:#000;
+    }
+
+    /* No results */
+    #no-results {
+      display:none; text-align:center; padding:60px 20px;
+      font-family:'IBM Plex Mono', monospace; font-size:.82rem;
+      color:var(--muted);
+    }
+
+    /* ══════════════════════ THEME TOGGLE ══════════════════════ */
+    #theme-btn {
+      position:fixed; bottom:26px; right:26px; z-index:999;
+      display:flex; align-items:center;
+      background:var(--card); border:1px solid var(--border);
+      border-radius:100px; padding:5px;
+      box-shadow:0 4px 24px rgba(0,0,0,.35);
+      transition: box-shadow .3s, border-color .35s, background .35s;
+    }
+    #theme-btn:hover { border-color:var(--accent1); box-shadow:0 6px 32px rgba(0,0,0,.45); }
+    .th-opt {
+      display:flex; align-items:center; justify-content:center;
+      width:34px; height:34px; border-radius:100px;
+      border:none; background:transparent; cursor:pointer;
+      font-size:.95rem; transition:background .22s, transform .2s;
+      position:relative;
+    }
+    .th-opt:hover { transform:scale(1.15); }
+    .th-opt.active { background:var(--accent1); }
+    .th-opt .tip {
+      position:absolute; bottom:calc(100% + 8px); left:50%;
+      transform:translateX(-50%);
+      background:var(--card); border:1px solid var(--border);
+      color:var(--text); font-family:'IBM Plex Mono', monospace;
+      font-size:.6rem; letter-spacing:.08em; text-transform:uppercase;
+      padding:3px 8px; border-radius:5px; white-space:nowrap;
+      opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    .th-opt:hover .tip { opacity:1; }
+
+    /* Smooth theme transitions */
+    *, *::before, *::after {
+      transition: background-color .35s ease, border-color .35s ease,
+                  color .2s ease, box-shadow .3s ease;
+    }
+    .a-wrap  { transition: grid-template-rows var(--tr) !important; }
+    #prog-inner { transition: width .5s ease !important; }
+    .t-icon svg { transition: transform var(--tr) !important; }
+    .t-icon { transition: background var(--tr), border-color var(--tr), transform var(--tr) !important; }
+
+    /* MathJax rendering fix */
+    .t-btn mjx-container, .term-sub mjx-container {
+      display: inline !important;
+      vertical-align: middle;
+    }
+    mjx-container[jax="CHTML"] {
+      line-height: 0;
+    }
+    mjx-container[jax="CHTML"][display="true"] {
+      display: block !important;
+      text-align: center;
+      margin: 0.5em 0;
+    }
+
+    /* ══════════════════════ FOOTER ══════════════════════ */
+    footer {
+      text-align:center; padding:28px 20px 44px;
+      font-family:'IBM Plex Mono', monospace; font-size:.68rem;
+      color:var(--muted); border-top:1px solid var(--border); letter-spacing:.06em;
+    }
+    .footer-credit {
+      display:block; margin-top:12px; font-size:.75rem; color:var(--accent1);
+    }
+
+    /* ══════════════════════ RESPONSIVE ══════════════════════ */
+    @media (max-width:600px) {
+      .a-body { padding-left:16px; padding-right:16px; }
+      .t-btn { padding:14px 16px; gap:10px; }
+      h1 { font-size:2rem; }
+      #theme-btn { bottom:14px; right:14px; }
+      #sticky-bar { gap:8px; padding:8px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="theme-btn" role="group" aria-label="Cambiar tema">
+  <button class="th-opt active" id="opt-dark"  onclick="setTheme('dark')" aria-label="Tema oscuro"><span aria-hidden="true">&#127769;</span><span class="tip">Oscuro</span></button>
+  <button class="th-opt"        id="opt-light" onclick="setTheme('light')" aria-label="Tema claro"><span aria-hidden="true">&#9728;&#65039;</span><span class="tip">Claro</span></button>
+  <button class="th-opt"        id="opt-sepia" onclick="setTheme('sepia')" aria-label="Tema sepia"><span aria-hidden="true">&#128220;</span><span class="tip">Sepia</span></button>
+</div>
+
+<header>
+  <div class="header-tag">Glosario Avanzado · Caminatas Aleatorias</div>
+  <h1>Random Walks &amp;<br>Procesos Estocásticos</h1>
+  <p class="subtitle">Definiciones rigurosas · Intuiciones profundas · Ejemplos concretos</p>
+  <p class="author-credit">Material elaborado por el profesor Sergio Gevatschnaider</p>
+  <div class="count-badge">84 términos</div>
+</header>
+
+<div id="sticky-bar">
+  <div id="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search-input" type="text" placeholder="Buscar término..." autocomplete="off" aria-label="Buscar término en el glosario" oninput="filterTerms()"/>
+  </div>
+  <span id="prog-text">0% ABIERTO</span>
+  <div id="prog-outer"><div id="prog-inner"></div></div>
+  <span id="open-count">0 / 84</span>
+</div>
+
+<nav id="alpha-nav" aria-label="Índice alfabético"></nav>
+
+<main>
+  <div class="controls">
+    <button class="btn btn-em" onclick="expandAll()">Expandir todo</button>
+    <button class="btn" onclick="collapseAll()">Colapsar todo</button>
+    <button class="btn" onclick="clearSearch()">Limpiar búsqueda</button>
+  </div>
+
+  <div id="no-results">&#8856; &nbsp; Ningún término coincide con la búsqueda.</div>
+
+
+  <div class="letter-group" data-letter="A">
+    <div class="letter-anchor" id="letra-A">A</div>
+
+    <div class="card" id="t-azar" data-term="Azar incertidumbre irreducible fundamentos" data-refs="incremento,tcl">
+      <button class="t-btn" onclick="toggle('azar')">
+        <span class="t-letter">Az</span>
+        <span class="t-term">Azar <span class="term-sub">incertidumbre irreducible</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>En teoría de la probabilidad, el azar se refiere a la imposibilidad de determinar con certeza el resultado de un experimento antes de su realización, aun cuando dicho experimento esté regido por una ley probabilística bien definida.</p>
+        <p>En el contexto de las caminatas aleatorias, el azar interviene en la selección de cada <strong>incremento</strong> del proceso. Así, aunque la evolución puntual de la trayectoria no sea predecible, su comportamiento global puede ser estudiado mediante herramientas probabilísticas precisas.</p>
+        <p>El azar no implica ausencia de estructura: las <strong>leyes de los grandes números</strong> y los <strong>teoremas centrales del límite</strong> muestran que la acumulación de decisiones aleatorias produce regularidades estadísticas robustas a escala macroscópica.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Imagina lanzar una moneda y avanzar un paso a la derecha si sale cara o a la izquierda si sale cruz. No puedes predecir el próximo paso, pero tras miles de lanzamientos la posición típica estará a distancia \(\sqrt{n}\) del origen.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="B">
+    <div class="letter-anchor" id="letra-B">B</div>
+
+    <div class="card" id="t-barrera" data-term="Barrera absorbente estado sin retorno estructura" data-refs="ruina,primer-paso">
+      <button class="t-btn" onclick="toggle('barrera')">
+        <span class="t-letter">▮</span>
+        <span class="t-term">Barrera absorbente <span class="term-sub">estado sin retorno</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un estado absorbente es aquel que, una vez alcanzado, no puede abandonarse.</p>
+        <p>En problemas de ruina del jugador, los extremos del intervalo de capital suelen modelarse como barreras absorbentes.</p>
+        <p>Estos estados simplifican y estructuran el análisis de probabilidades de absorción y <strong>tiempos de salida</strong>. Formalmente, \(p(a,a)=1\) para una barrera absorbente en \(a\).</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En un juego que termina cuando el capital llega a 0 (bancarrota) o a 100 (victoria), ambos extremos son barreras absorbentes: el juego se detiene permanentemente al alcanzarlos.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-brownian-bridge" data-term="Brownian bridge browniano condicionado a \(B(1)=0\) asintóticos" data-refs="movimiento-browniano,puente">
+      <button class="t-btn" onclick="toggle('brownian-bridge')">
+        <span class="t-letter">B°</span>
+        <span class="t-term">Brownian bridge <span class="term-sub">browniano condicionado a \(B(1)=0\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El Brownian bridge es el movimiento browniano condicionado a satisfacer una condición terminal, usualmente \(B(1)=0\).</p>
+        <p>Es el análogo continuo del <strong>puente aleatorio</strong> discreto y aparece en teoría de procesos condicionados, estadística y análisis asintótico.</p>
+        <p>Su covarianza es \(K(s,t)=\min(s,t)-st\), que se anula en los extremos \(t=0\) y \(t=1\), reflejando la condición de puente.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En el test de Kolmogorov-Smirnov, la distribución asintótica del estadístico de prueba involucra el supremo de un Brownian bridge. Así, las caminatas aleatorias condicionadas aparecen en la estadística clásica.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="C">
+    <div class="letter-anchor" id="letra-C">C</div>
+
+    <div class="card" id="t-camino" data-term="Camino sinónimo geométrico de trayectoria estructura" data-refs="trayectoria,reflexion,conteo-combinatorio">
+      <button class="t-btn" onclick="toggle('camino')">
+        <span class="t-letter">Ca</span>
+        <span class="t-term">Camino <span class="term-sub">sinónimo geométrico de trayectoria</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>En este contexto, "camino" suele emplearse como sinónimo de trayectoria.</p>
+        <p>No obstante, en ciertos desarrollos se reserva para enfatizar la interpretación geométrica del proceso como sucesión de puntos o como <strong>curva poligonal</strong> en el plano tiempo-posición.</p>
+        <p>El enfoque geométrico del camino es particularmente útil en el <strong>principio de reflexión</strong> y en el <strong>conteo combinatorio</strong> de trayectorias.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Al graficar \((n, S_n)\) uniendo puntos consecutivos con segmentos, obtienes un camino poligonal que visualiza la evolución temporal de la caminata.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-conteo-combinatorio" data-term="Conteo combinatorio trayectorias favorables / trayectorias totales herramientas" data-refs="distribucion-sn,reflexion,retorno">
+      <button class="t-btn" onclick="toggle('conteo-combinatorio')">
+        <span class="t-letter">C(n,k)</span>
+        <span class="t-term">Conteo combinatorio <span class="term-sub">trayectorias favorables / trayectorias totales</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El conteo combinatorio es una herramienta esencial en el análisis de caminatas aleatorias discretas.</p>
+        <p>Muchas probabilidades pueden obtenerse contando el número de trayectorias que satisfacen una determinada condición y dividiéndolo por el número total de trayectorias posibles.</p>
+        <p>Este método aparece de manera natural en el cálculo de <strong>distribuciones</strong>, <strong>retornos</strong> y <strong>máximos</strong>, y se potencia mediante el <strong>principio de reflexión</strong> para manejar restricciones.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>El número de caminos de longitud \(2n\) que retornan al origen es \(\binom{2n}{n}\). De los \(2^{2n}\) caminos posibles, exactamente \(\binom{2n}{n}\) pasan por cero en el tiempo \(2n\).</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-cero-interior" data-term="Cero interior visita intermedia al origen en un puente retorno" data-refs="puente,excursion">
+      <button class="t-btn" onclick="toggle('cero-interior')">
+        <span class="t-letter">0ᵢ</span>
+        <span class="t-term">Cero interior <span class="term-sub">visita intermedia al origen en un puente</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>En un puente aleatorio que comienza y termina en cero, un cero interior es un instante \(k\) con \(1\leq k\leq 2n-1\) tal que \(S_k=0\).</p>
+        <p>El estudio de los ceros interiores permite descomponer la trayectoria en <strong>excursiones</strong> sucesivas.</p>
+        <p>La cantidad y distribución de ceros interiores revelan la estructura fina de la trayectoria condicionada.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Un puente de longitud 10 podría tener ceros interiores en \(k=2,6,8\), dividiéndolo en 4 excursiones: tramos que parten del cero, se alejan y regresan.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-condicionamiento" data-term="Condicionamiento \(P(A\mid B)=\frac{P(A\cap B)}{P(B)}\) herramientas" data-refs="puente,hitting-time">
+      <button class="t-btn" onclick="toggle('condicionamiento')">
+        <span class="t-letter">P(·|B)</span>
+        <span class="t-term">Condicionamiento <span class="term-sub">\(P(A\mid B)=\frac{P(A\cap B)}{P(B)}\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Dado un evento \(B\) con probabilidad positiva, la probabilidad condicionada de un evento \(A\) dado \(B\) recalibra completamente la medida del universo.</p>
+        <p>El condicionamiento es una herramienta central en la teoría de caminatas aleatorias, en especial en el estudio de <strong>puentes</strong>, eventos de permanencia y tiempos de hitting.</p>
+        <p>Cuando \(P(B)=0\) (como en el continuo), se requieren versiones avanzadas basadas en la esperanza condicional y el <strong>teorema de Radon-Nikodym</strong>.</p>
+        <div class="math-block">$$P(A\mid B)=\frac{P(A\cap B)}{P(B)}$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>La probabilidad de que \(S_5=3\) dado que \(S_{10}=0\) es diferente de \(P(S_5=3)\) sin condicionamiento. El puente aleatorio se construye exactamente con este tipo de condicionamiento.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-cadena-markov" data-term="Cadena de Markov proceso con memoria únicamente del presente markov" data-refs="markov-prop,prob-transicion,homogeneidad">
+      <button class="t-btn" onclick="toggle('cadena-markov')">
+        <span class="t-letter">MC</span>
+        <span class="t-term">Cadena de Markov <span class="term-sub">proceso con memoria únicamente del presente</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una cadena de Markov es un proceso en tiempo discreto que satisface la <strong>propiedad de Markov</strong>: condicionado al presente, el futuro es independiente del pasado.</p>
+        <p>La caminata aleatoria clásica es un ejemplo paradigmático de cadena de Markov homogénea.</p>
+        <p>Las cadenas de Markov proporcionan el marco teórico general para estudiar procesos que "olvidan" su historia, permitiendo un análisis mediante <strong>matrices de transición</strong> y <strong>teoría espectral</strong>.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>El juego de la Oca, Serpientes y Escaleras, y la posición de un taxi en una ciudad modelada como grafo: todos son cadenas de Markov donde solo importa dónde estás, no cómo llegaste.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-chapman-kolmogorov" data-term="Chapman–Kolmogorov composición de transiciones en horizontes distintos markov" data-refs="prob-transicion">
+      <button class="t-btn" onclick="toggle('chapman-kolmogorov')">
+        <span class="t-letter">C-K</span>
+        <span class="t-term">Chapman–Kolmogorov <span class="term-sub">composición de transiciones en horizontes distintos</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Las ecuaciones de Chapman–Kolmogorov establecen que la probabilidad de ir de \(x\) a \(z\) en \(n+m\) pasos se obtiene sumando sobre todos los estados intermedios posibles en el tiempo \(n\).</p>
+        <p>Estas identidades expresan la compatibilidad entre transiciones en distintos horizontes temporales y constituyen una relación estructural básica de los procesos de Markov.</p>
+        <p>En notación matricial: \(P^{n+m} = P^n \cdot P^m\). La composición de transiciones es simplemente la multiplicación de matrices.</p>
+        <div class="math-block">$$p_{n+m}(x,z)=\sum_y p_n(x,y)\,p_m(y,z)$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Para calcular la probabilidad de ir de 0 a 4 en 10 pasos, puedes sumar: por cada posición intermedia \(y\), la probabilidad de ir de 0 a \(y\) en 6 pasos multiplicada por la de ir de \(y\) a 4 en 4 pasos.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="D">
+    <div class="letter-anchor" id="letra-D">D</div>
+
+    <div class="card" id="t-deriva" data-term="Deriva \(E(X_i)=p-q=2p-1\) estadísticos" data-refs="rw-sesgado,esperanza">
+      <button class="t-btn" onclick="toggle('deriva')">
+        <span class="t-letter">μ</span>
+        <span class="t-term">Deriva <span class="term-sub">\(E(X_i)=p-q=2p-1\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La deriva de una caminata aleatoria es la esperanza de un incremento: \(E(X_i)\).</p>
+        <p>La deriva cuantifica la tendencia media del proceso. Si es nula, el comportamiento está dominado por las <strong>fluctuaciones</strong>; si es distinta de cero, aparece una tendencia macroscópica de desplazamiento.</p>
+        <p>En finanzas, la deriva es el "retorno esperado" de un activo por unidad de tiempo. En caminatas sobre \(\mathbb{Z}\), una deriva positiva empuja al caminante hacia \(+\infty\).</p>
+        <div class="math-block">$$E(X_i)=p-q=2p-1$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si \(p=0.6\), la deriva vale \(2(0.6)-1=0.2\). Tras 1000 pasos, la posición esperada es \(200\): el sesgo se manifiesta como un desplazamiento lineal en \(n\).</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-distribucion-sn" data-term="Distribución de \(S_n\) probabilidades en cada estado al tiempo \(n\) estadísticos" data-refs="paridad,conteo-combinatorio">
+      <button class="t-btn" onclick="toggle('distribucion-sn')">
+        <span class="t-letter">P(Sₙ)</span>
+        <span class="t-term">Distribución de \(S_n\) <span class="term-sub">probabilidades en cada estado al tiempo \(n\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La distribución de \(S_n\) describe la probabilidad de que la caminata se encuentre en cada estado posible en el tiempo \(n\).</p>
+        <p>En la caminata simple simétrica sobre \(\mathbb{Z}\), la distribución se obtiene mediante argumentos combinatorios, siempre que \(n\) y \(k\) tengan la misma <strong>paridad</strong>.</p>
+        <p>Esta fórmula explícita es uno de los puntos de partida fundamentales de todo el análisis cuantitativo del modelo.</p>
+        <div class="math-block">$$P(S_n=k)=\binom{n}{\frac{n+k}{2}}\left(\frac{1}{2}\right)^n$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Para \(n=4\), la probabilidad de estar en el origen es \(\binom{4}{2}(1/2)^4 = 6/16 = 3/8\). Los estados impares (\(k=\pm 1, \pm 3\)) tienen probabilidad cero por la restricción de paridad.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-desviacion-estandar" data-term="Desviación estándar \(\sqrt{\mathrm{Var}(S_n)}=\sqrt{n}\) estadísticos" data-refs="varianza">
+      <button class="t-btn" onclick="toggle('desviacion-estandar')">
+        <span class="t-letter">σ</span>
+        <span class="t-term">Desviación estándar <span class="term-sub">\(\sqrt{\mathrm{Var}(S_n)}=\sqrt{n}\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La desviación estándar es la raíz cuadrada de la varianza.</p>
+        <p>Esta cantidad expresa la <strong>escala típica de las fluctuaciones</strong> del proceso y muestra que la magnitud natural de la posición a tiempo \(n\) es del orden de \(\sqrt{n}\).</p>
+        <p>El crecimiento sublineal \(\sqrt{n} \ll n\) explica por qué las caminatas simétricas se alejan del origen mucho más lentamente de lo que sugiere la intuición lineal.</p>
+        <div class="math-block">$$\sqrt{\mathrm{Var}(S_n)}=\sqrt{n}$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Tras \(n=10^6\) pasos, la posición típica está a distancia \(\sqrt{10^6}=1000\) del origen, no a distancia \(10^6\). Caminas un millón de pasos para desplazarte solo mil.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-distribucion-estacionaria" data-term="Distribución estacionaria \(\pi P=\pi\) — equilibrio de largo plazo grafos" data-refs="grado,reversibilidad,mezcla">
+      <button class="t-btn" onclick="toggle('distribucion-estacionaria')">
+        <span class="t-letter">π</span>
+        <span class="t-term">Distribución estacionaria <span class="term-sub">\(\pi P=\pi\) — equilibrio de largo plazo</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una distribución \(\pi\) es estacionaria si se preserva bajo la aplicación de la matriz de transición.</p>
+        <p>En grafos finitos no dirigidos, la distribución estacionaria de la caminata simple es proporcional al grado de los vértices: \(\pi(v)=d_v/(2|E|)\).</p>
+        <p>La distribución estacionaria describe el comportamiento de largo plazo de la cadena: tras suficientes pasos, la probabilidad de estar en cada vértice converge a \(\pi\).</p>
+        <div class="math-block">$$\pi P=\pi \quad\text{(discreto)}\qquad\qquad \pi Q=0 \quad\text{(continuo)}$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En un grafo triangular donde los tres vértices tienen grado 2, la distribución estacionaria es uniforme: \(\pi=(1/3,1/3,1/3)\). El caminante pasa igual tiempo en cada vértice a la larga.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-dist-variacion" data-term="Distancia de variación total máxima diferencia entre dos distribuciones grafos" data-refs="distribucion-estacionaria,mezcla">
+      <button class="t-btn" onclick="toggle('dist-variacion')">
+        <span class="t-letter">‖·‖</span>
+        <span class="t-term">Distancia de variación total <span class="term-sub">máxima diferencia entre dos distribuciones</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La distancia de variación total entre dos distribuciones mide cuán diferentes son como leyes probabilísticas.</p>
+        <p>En cadenas finitas, se utiliza para cuantificar la cercanía entre la ley del proceso en tiempo \(n\) y su <strong>distribución estacionaria</strong>.</p>
+        <p>Formalmente, \(\|\mu-\nu\|_{TV}=\frac{1}{2}\sum_x |\mu(x)-\nu(x)|\). Cuando esta distancia es pequeña, la cadena ha "olvidado" su condición inicial.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si tras 100 pasos en un grafo, la distribución del caminante dista 0.01 de la estacionaria en variación total, el proceso está prácticamente mezclado: la condición inicial es irrelevante.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="E">
+    <div class="letter-anchor" id="letra-E">E</div>
+
+    <div class="card" id="t-espacio-prob" data-term="Espacio de probabilidad terna \((\Omega,\mathcal{F},P)\) fundamentos" data-refs="trayectoria,variable-aleatoria">
+      <button class="t-btn" onclick="toggle('espacio-prob')">
+        <span class="t-letter">Ω</span>
+        <span class="t-term">Espacio de probabilidad <span class="term-sub">terna \((\Omega,\mathcal{F},P)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un espacio de probabilidad es una terna \((\Omega,\mathcal{F},P)\), donde \(\Omega\) es el conjunto de resultados elementales, \(\mathcal{F}\) es una sigma-álgebra de subconjuntos de \(\Omega\), y \(P\) es una medida de probabilidad definida sobre \(\mathcal{F}\).</p>
+        <p>En el estudio de caminatas aleatorias, \(\Omega\) puede interpretarse como el conjunto de todas las sucesiones posibles de incrementos, de modo que cada elemento de \(\Omega\) determina una <strong>trayectoria</strong> completa del proceso.</p>
+        <p>La sigma-álgebra \(\mathcal{F}\) define qué preguntas probabilísticas son legítimas, y \(P\) asigna una medida coherente a cada una de ellas. Esta formalización es el cimiento sobre el que se construye todo el análisis riguroso.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Para una caminata de \(n\) pasos con incrementos \(\pm 1\), el espacio \(\Omega = \{-1,+1\}^n\) tiene \(2^n\) elementos. Cada sucesión de signos define una trayectoria única.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-estado" data-term="Estado valor actual del proceso estructura" data-refs="markov-prop,espacio-estados">
+      <button class="t-btn" onclick="toggle('estado')">
+        <span class="t-letter">St</span>
+        <span class="t-term">Estado <span class="term-sub">valor actual del proceso</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>En el lenguaje de cadenas de Markov, el estado es el valor actual del proceso.</p>
+        <p>Esta noción generaliza la idea de posición y permite tratar caminatas aleatorias sobre espacios más abstractos que la recta o la retícula euclidiana.</p>
+        <p>La <strong>propiedad de Markov</strong> establece que el estado actual contiene toda la información relevante para predecir la evolución futura.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En una caminata sobre un grafo social, el "estado" puede ser una persona. El caminante salta aleatoriamente a un amigo del nodo actual, sin importar cómo llegó allí.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-espacio-estados" data-term="Espacio de estados conjunto de valores posibles del proceso estructura" data-refs="zd,polya,recurrencia,transitoriedad">
+      <button class="t-btn" onclick="toggle('espacio-estados')">
+        <span class="t-letter">S</span>
+        <span class="t-term">Espacio de estados <span class="term-sub">conjunto de valores posibles del proceso</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El espacio de estados es el conjunto de todos los valores posibles del proceso.</p>
+        <p>En una caminata sobre enteros, el espacio de estados es \(\mathbb{Z}\); en dimensión \(d\), es \(\mathbb{Z}^d\); en un grafo, es el conjunto de sus vértices.</p>
+        <p>La <strong>geometría del espacio de estados</strong> influye de forma decisiva en el comportamiento global de la caminata: la dimensión determina si el proceso es <strong>recurrente o transitorio</strong> (Teorema de Pólya).</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En el problema de la ruina del jugador con capital entre 0 y \(N\), el espacio de estados es el conjunto finito \(\{0,1,2,\dots,N\}\), con barreras absorbentes en los extremos.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-esperanza" data-term="Esperanza \(E(S_n)=E(S_0)+\sum E(X_k)\) estadísticos" data-refs="varianza,deriva">
+      <button class="t-btn" onclick="toggle('esperanza')">
+        <span class="t-letter">𝔼</span>
+        <span class="t-term">Esperanza <span class="term-sub">\(E(S_n)=E(S_0)+\sum E(X_k)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La esperanza de una variable aleatoria es su media teórica. En el caso de la caminata aleatoria, se descompone linealmente por la linealidad de la esperanza.</p>
+        <p>Cuando la caminata es simple simétrica y comienza en cero, se obtiene \(E(S_n)=0\).</p>
+        <p>La esperanza proporciona información sobre la tendencia promedio, aunque no describe por sí sola la variabilidad del proceso. Para eso se necesita la <strong>varianza</strong>.</p>
+        <div class="math-block">$$E(S_n)=E(S_0)+\sum_{k=1}^n E(X_k)$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En una caminata sesgada con \(p=0.7\) y \(S_0=0\), tras 100 pasos: \(E(S_{100})=100(0.7-0.3)=40\). El sesgo se amplifica linealmente.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-excursion" data-term="Excursión tramo entre dos visitas consecutivas al origen retorno" data-refs="visita-cero,movimiento-browniano">
+      <button class="t-btn" onclick="toggle('excursion')">
+        <span class="t-letter">⤴</span>
+        <span class="t-term">Excursión <span class="term-sub">tramo entre dos visitas consecutivas al origen</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una excursión es un tramo de trayectoria que parte del origen, evita el origen durante tiempos intermedios y regresa al final.</p>
+        <p>Las excursiones constituyen <strong>bloques elementales</strong> en la descomposición de trayectorias recurrentes.</p>
+        <p>La teoría de excursiones de Itô generaliza esta idea al tiempo continuo y es una herramienta central en el estudio del <strong>movimiento browniano</strong>.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si la caminata visita el cero en \(n=0,6,14,20\), hay 3 excursiones: \([0,6]\), \([6,14]\) y \([14,20]\). Cada excursión es positiva o negativa según el signo que mantenga durante su recorrido.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="F">
+    <div class="letter-anchor" id="letra-F">F</div>
+
+    <div class="card" id="t-funcion-generadora" data-term="Función generadora \(g_N(t)=\sum P(N=k)\,t^k\) herramientas" data-refs="recurrencia">
+      <button class="t-btn" onclick="toggle('funcion-generadora')">
+        <span class="t-letter">g(t)</span>
+        <span class="t-term">Función generadora <span class="term-sub">\(g_N(t)=\sum P(N=k)\,t^k\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La función generadora de probabilidades de una variable aleatoria entera no negativa \(N\) codifica toda su distribución en una sola función analítica.</p>
+        <p>Las funciones generadoras son instrumentos analíticos de gran utilidad en la teoría de caminatas aleatorias, ya que permiten codificar distribuciones completas y transformar problemas de <strong>recurrencia</strong> en problemas algebraicos o analíticos.</p>
+        <p>Multiplicar funciones generadoras equivale a sumar variables independientes, lo que facilita enormemente el cálculo de convoluciones.</p>
+        <div class="math-block">$$g_N(t)=\sum_{k=0}^{\infty}P(N=k)\,t^k$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Para un dado justo, \(g(t)=\frac{1}{6}(t+t^2+t^3+t^4+t^5+t^6)\). La función generadora del total de dos dados es simplemente \(g(t)^2\).</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-green" data-term="Función de Green visitas esperadas en régimen transitorio potencial" data-refs="transitoriedad,kernel-potencial">
+      <button class="t-btn" onclick="toggle('green')">
+        <span class="t-letter">G(x,y)</span>
+        <span class="t-term">Función de Green <span class="term-sub">visitas esperadas en régimen transitorio</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La función de Green mide, en regímenes transitorios, el número esperado de visitas a un estado o conjunto.</p>
+        <p>Es un objeto central en <strong>teoría del potencial</strong> discreto y conecta de forma profunda la probabilidad con el análisis.</p>
+        <p>Formalmente, \(G(x,y)=\sum_{n=0}^{\infty} p_n(x,y)\), que converge solo cuando el estado \(y\) es <strong>transitorio</strong>.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En \(\mathbb{Z}^3\), la función de Green \(G(0,0)\) es finita (\(\approx 1.516\)), lo que significa que la caminata visita el origen un número finito esperado de veces antes de escapar para siempre.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-funcion-armonica" data-term="Función armónica \(h(x)=\sum_y p(x,y)\,h(y)\) — propiedad del valor medio potencial" data-refs="dirichlet,ruina,laplaciano">
+      <button class="t-btn" onclick="toggle('funcion-armonica')">
+        <span class="t-letter">Δh=0</span>
+        <span class="t-term">Función armónica <span class="term-sub">\(h(x)=\sum_y p(x,y)\,h(y)\) — propiedad del valor medio</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una función \(h\) es armónica respecto de una caminata aleatoria si su valor en cada punto interior es exactamente la media ponderada de sus valores en los vecinos.</p>
+        <p>Las funciones armónicas ocupan un papel central en <strong>teoría del potencial</strong>, <strong>problemas de frontera</strong> y estudio de probabilidades de hitting.</p>
+        <p>Esta propiedad del "valor medio" es el análogo discreto de la ecuación de Laplace \(\Delta h=0\) del análisis clásico.</p>
+        <div class="math-block">$$h(x)=\sum_y p(x,y)\,h(y)$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>La probabilidad de alcanzar la barrera superior antes de la inferior en el problema de la ruina del jugador es una función armónica del capital inicial. Se calcula resolviendo la ecuación de valor medio con condiciones de frontera.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="G">
+    <div class="letter-anchor" id="letra-G">G</div>
+
+    <div class="card" id="t-generador-infinitesimal" data-term="Generador infinitesimal tasas instantáneas de salto entre estados markov" data-refs="rw-continuo,grafo">
+      <button class="t-btn" onclick="toggle('generador-infinitesimal')">
+        <span class="t-letter">Q</span>
+        <span class="t-term">Generador infinitesimal <span class="term-sub">tasas instantáneas de salto entre estados</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El generador infinitesimal describe la dinámica local de una cadena de Markov en tiempo continuo.</p>
+        <p>En el caso de un walk sobre grafos, determina las <strong>tasas instantáneas de salto</strong> entre estados vecinos.</p>
+        <p>Es el análogo continuo de la matriz de transición en tiempo discreto. Si \(Q\) es el generador, la matriz de transición en tiempo \(t\) es \(P(t)=e^{tQ}\) (exponencial matricial).</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En un grafo con 3 vértices, el generador \(Q\) es una matriz \(3\times 3\) donde las entradas fuera de la diagonal son tasas de salto positivas y la diagonal asegura que cada fila suma cero.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-grafo" data-term="Grafo \(G=(V,E)\) — vértices y aristas grafos" data-refs="vecino,grado,pagerank">
+      <button class="t-btn" onclick="toggle('grafo')">
+        <span class="t-letter">G</span>
+        <span class="t-term">Grafo <span class="term-sub">\(G=(V,E)\) — vértices y aristas</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un grafo es una estructura \(G=(V,E)\) compuesta por un conjunto de vértices \(V\) y un conjunto de aristas \(E\).</p>
+        <p>Los random walks sobre grafos son procesos que se desplazan entre vértices adyacentes y constituyen un marco general de gran importancia en probabilidad, <strong>teoría espectral</strong> y <strong>aplicaciones algorítmicas</strong>.</p>
+        <p>La topología del grafo determina completamente las propiedades de la caminata: <strong>tiempos de mezcla</strong>, <strong>cobertura</strong> y <strong>distribuciones estacionarias</strong>.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Internet es un grafo donde los sitios web son vértices y los hipervínculos son aristas. Una caminata aleatoria sobre este grafo es la idea fundamental detrás de <strong>PageRank</strong>.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-grado" data-term="Grado \(d_v\) — número de vecinos de \(v\) grafos" data-refs="vecino,distribucion-estacionaria">
+      <button class="t-btn" onclick="toggle('grado')">
+        <span class="t-letter">dᵥ</span>
+        <span class="t-term">Grado <span class="term-sub">\(d_v\) — número de vecinos de \(v\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El grado de un vértice \(v\), denotado \(d_v\), es el número de vecinos de \(v\).</p>
+        <p>Esta cantidad desempeña un papel fundamental en la teoría de random walks sobre grafos, especialmente en la caracterización de <strong>distribuciones estacionarias</strong>.</p>
+        <p>En la caminata simple sobre un grafo, la probabilidad de transición desde \(v\) a cualquiera de sus vecinos es \(1/d_v\).</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En \(\mathbb{Z}^2\), todo vértice tiene grado 4. En un grafo social, una persona con 500 amigos tiene grado 500, y el caminante aleatorio tiene probabilidad \(1/500\) de visitar cada amigo desde ella.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="H">
+    <div class="letter-anchor" id="letra-H">H</div>
+
+    <div class="card" id="t-hitting-time" data-term="Hitting time primer tiempo de llegada a un estado o conjunto tiempos" data-refs="primer-paso,tiempo-parada,markov-fuerte">
+      <button class="t-btn" onclick="toggle('hitting-time')">
+        <span class="t-letter">Hₜ</span>
+        <span class="t-term">Hitting time <span class="term-sub">primer tiempo de llegada a un estado o conjunto</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>"Hitting time" es la denominación inglesa del <strong>tiempo de primer paso</strong>.</p>
+        <p>En espacios de estados generales, se utiliza para designar el primer tiempo de llegada a un estado o conjunto.</p>
+        <p>Los hitting times son <strong>tiempos de parada</strong>, lo que permite aplicar la <strong>propiedad fuerte de Markov</strong> a partir de ellos.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En una caminata sobre un grafo, el hitting time del vértice \(v\) desde \(u\) es \(H(u,v)=\inf\{n\geq 0: S_n=v \mid S_0=u\}\). En general, \(H(u,v)\neq H(v,u)\).</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-homogeneidad" data-term="Homogeneidad temporal transiciones independientes del instante markov" data-refs="prob-transicion,iid">
+      <button class="t-btn" onclick="toggle('homogeneidad')">
+        <span class="t-letter">≡t</span>
+        <span class="t-term">Homogeneidad temporal <span class="term-sub">transiciones independientes del instante</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una cadena de Markov es homogénea en el tiempo si sus probabilidades de transición no dependen del instante temporal.</p>
+        <p>En la caminata aleatoria clásica, esta homogeneidad se deriva del hecho de que todos los incrementos tienen la misma distribución.</p>
+        <p>La homogeneidad simplifica el análisis: basta estudiar una sola <strong>matriz de transición</strong> \(P\), y las probabilidades en \(n\) pasos se obtienen como \(P^n\).</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Las reglas de la caminata son las mismas en el paso 1 que en el paso 10000. La moneda no "envejece" ni cambia sus probabilidades con el tiempo.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="I">
+    <div class="letter-anchor" id="letra-I">I</div>
+
+    <div class="card" id="t-incremento" data-term="Incremento \(X_{n+1}=S_{n+1}-S_n\) estructura" data-refs="iid,random-walk">
+      <button class="t-btn" onclick="toggle('incremento')">
+        <span class="t-letter">In</span>
+        <span class="t-term">Incremento <span class="term-sub">\(X_{n+1}=S_{n+1}-S_n\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El incremento de un proceso entre dos tiempos consecutivos es la diferencia entre sus valores en dichos tiempos.</p>
+        <p>En una caminata aleatoria discreta, el incremento en el paso \(n+1\) se define como la variación de posición entre instantes sucesivos.</p>
+        <p>La estructura del proceso queda completamente determinada por la ley conjunta de estos incrementos. Si son <strong>i.i.d.</strong>, el análisis se simplifica drásticamente.</p>
+        <div class="math-block">$$X_{n+1}=S_{n+1}-S_n$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En la caminata simple simétrica, cada incremento vale \(+1\) o \(-1\) con igual probabilidad. La posición \(S_n\) es simplemente la suma acumulada de estos saltos unitarios.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-irreducibilidad" data-term="Irreducibilidad cualquier estado es alcanzable desde cualquier otro markov" data-refs="espacio-estados,periodicidad">
+      <button class="t-btn" onclick="toggle('irreducibilidad')">
+        <span class="t-letter">↔</span>
+        <span class="t-term">Irreducibilidad <span class="term-sub">cualquier estado es alcanzable desde cualquier otro</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una cadena es irreducible si cualquier estado puede alcanzarse desde cualquier otro con probabilidad positiva en un número finito de pasos.</p>
+        <p>Esta propiedad garantiza que el espacio de estados forma una sola clase de comunicación.</p>
+        <p>La caminata simple sobre \(\mathbb{Z}\) es irreducible: desde cualquier entero se puede llegar a cualquier otro con suficientes pasos.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En un tablero de ajedrez donde un caballo se mueve al azar, la cadena es irreducible si el caballo puede alcanzar cualquier casilla desde cualquier posición inicial.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="K">
+    <div class="letter-anchor" id="letra-K">K</div>
+
+    <div class="card" id="t-kernel-covarianza" data-term="Kernel o función de covarianza \(K(s,t)=\mathrm{Cov}(X_s,X_t)=\min(s,t)\) asintóticos" data-refs="proceso-gaussiano,movimiento-browniano">
+      <button class="t-btn" onclick="toggle('kernel-covarianza')">
+        <span class="t-letter">K(s,t)</span>
+        <span class="t-term">Kernel o función de covarianza <span class="term-sub">\(K(s,t)=\mathrm{Cov}(X_s,X_t)=\min(s,t)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La función de covarianza de un proceso \((X_t)\) mide la dependencia lineal entre el proceso en dos instantes distintos.</p>
+        <p>En el movimiento browniano estándar, \(K(s,t)=\min(s,t)\). Esta forma refleja que los incrementos son independientes: la correlación entre \(B(s)\) y \(B(t)\) proviene únicamente de la parte compartida del recorrido.</p>
+        <p>Esta función codifica toda la estructura de dependencia temporal del proceso y debe ser <strong>definida positiva</strong> para que el proceso esté bien definido.</p>
+        <div class="math-block">$$K(s,t)=\mathrm{Cov}(X_s,X_t)=\min(s,t)$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si \(s=3\) y \(t=7\), entonces \(K(3,7)=\min(3,7)=3\). La correlación entre \(B(3)\) y \(B(7)\) es \(3/\sqrt{3\cdot 7}\approx 0.655\): están positivamente correlacionados porque comparten los primeros 3 unidades de "recorrido".</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-kernel-potencial" data-term="Kernel potencial herramienta para contextos recurrentes potencial" data-refs="green,recurrencia">
+      <button class="t-btn" onclick="toggle('kernel-potencial')">
+        <span class="t-letter">a(x,y)</span>
+        <span class="t-term">Kernel potencial <span class="term-sub">herramienta para contextos recurrentes</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El kernel potencial es una herramienta estrechamente relacionada con la <strong>función de Green</strong>, especialmente útil en contextos recurrentes donde el número esperado total de visitas diverge.</p>
+        <p>Su estudio es fundamental en dimensión baja (\(d\leq 2\)), donde la función de Green no está definida directamente.</p>
+        <p>Se construye como una versión "renormalizada" de la función de Green, sustrayendo la divergencia y preservando la información relevante sobre diferencias de potencial.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En \(\mathbb{Z}^2\), el kernel potencial \(a(0,x)\) crece logarítmicamente con \(\|x\|\), capturando cuánto más tiempo pasa la caminata cerca del origen que lejos de él.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="L">
+    <div class="letter-anchor" id="letra-L">L</div>
+
+    <div class="card" id="t-laplaciano" data-term="Laplaciano del grafo operador de conectividad y difusión grafos" data-refs="generador-infinitesimal,mezcla,funcion-armonica">
+      <button class="t-btn" onclick="toggle('laplaciano')">
+        <span class="t-letter">Δ</span>
+        <span class="t-term">Laplaciano del grafo <span class="term-sub">operador de conectividad y difusión</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El Laplaciano de un grafo es un operador discreto que codifica su estructura de conectividad.</p>
+        <p>En teoría de random walks, aparece naturalmente en la descripción del <strong>generador</strong>, en problemas armónicos y en el análisis de mezcla y difusión.</p>
+        <p>Sus autovalores determinan la velocidad de <strong>mezcla</strong> de la caminata: cuanto mayor es el <em>gap espectral</em> (diferencia entre los dos autovalores más grandes), más rápido converge la cadena a su distribución estacionaria.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>El segundo autovalor más pequeño del Laplaciano, llamado conectividad algebraica o valor de Fiedler, mide qué tan "bien conectado" está el grafo. Grafos con alta conectividad mezclan rápido.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-lerw" data-term="Loop-erased random walk caminata con lazos eliminados cronológicamente variantes" data-refs="loop,random-walk">
+      <button class="t-btn" onclick="toggle('lerw')">
+        <span class="t-letter">LERW</span>
+        <span class="t-term">Loop-erased random walk <span class="term-sub">caminata con lazos eliminados cronológicamente</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La loop-erased random walk se obtiene eliminando cronológicamente los <strong>lazos</strong> formados por una caminata aleatoria ordinaria.</p>
+        <p>Este objeto posee una estructura fina muy rica y está vinculado con <strong>árboles generadores aleatorios</strong> y teoría conforme discreta.</p>
+        <p>En \(d=2\), la LERW converge al SLE\(_2\) (Schramm-Loewner Evolution con parámetro 2), un resultado fundamental de la probabilidad moderna.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si la caminata visita los vértices \(A\to B\to C\to B\to D\), el lazo \(B\to C\to B\) se elimina, resultando en \(A\to B\to D\). El camino resultante es más "limpio" y tiene propiedades fractales notables.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-loop" data-term="Loop o lazo porción cerrada de la trayectoria variantes" data-refs="lerw,excursion">
+      <button class="t-btn" onclick="toggle('loop')">
+        <span class="t-letter">↺</span>
+        <span class="t-term">Loop o lazo <span class="term-sub">porción cerrada de la trayectoria</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un lazo es una porción cerrada de la trayectoria que regresa a un punto previamente visitado.</p>
+        <p>En el estudio moderno de caminatas aleatorias, los lazos tienen interés propio y aparecen en construcciones probabilísticas sofisticadas como las <strong>loop measures</strong> y el <strong>loop soup</strong>.</p>
+        <p>La <strong>loop-erased random walk</strong> se construye precisamente eliminando estos lazos de la trayectoria ordinaria.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En la secuencia de posiciones \(0,1,2,1,0,−1,0\), el segmento \(0\to 1\to 2\to 1\to 0\) forma un lazo: parte de 0 y regresa a 0 después de 4 pasos.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="M">
+    <div class="letter-anchor" id="letra-M">M</div>
+
+    <div class="card" id="t-maximo" data-term="Máximo \(M_n=\max\{S_0,S_1,\dots,S_n\}\) trayectoria-func" data-refs="reflexion,barrera,primer-paso">
+      <button class="t-btn" onclick="toggle('maximo')">
+        <span class="t-letter">Mₙ</span>
+        <span class="t-term">Máximo <span class="term-sub">\(M_n=\max\{S_0,S_1,\dots,S_n\}\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El máximo de la caminata hasta tiempo \(n\) registra la posición más alta alcanzada durante toda la trayectoria.</p>
+        <p>El estudio del máximo es relevante en problemas de <strong>barreras</strong>, permanencia y <strong>tiempos de primer cruce</strong>.</p>
+        <p>El <strong>principio de reflexión</strong> proporciona la herramienta combinatoria clave para calcular la distribución del máximo.</p>
+        <div class="math-block">$$M_n=\max\{S_0,S_1,\dots,S_n\}$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En finanzas, \(M_n\) representa el valor máximo histórico de un portafolio. El <em>drawdown</em> (caída desde el máximo) se calcula como \(M_n - S_n\).</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-minimo" data-term="Mínimo \(m_n=\min\{S_0,S_1,\dots,S_n\}\) trayectoria-func" data-refs="maximo,trayectoria">
+      <button class="t-btn" onclick="toggle('minimo')">
+        <span class="t-letter">mₙ</span>
+        <span class="t-term">Mínimo <span class="term-sub">\(m_n=\min\{S_0,S_1,\dots,S_n\}\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El mínimo de la caminata hasta tiempo \(n\) registra la posición más baja alcanzada.</p>
+        <p>Junto con el máximo, describe la <strong>extensión espacial</strong> (rango) recorrida por la trayectoria: \(M_n - m_n\).</p>
+        <p>Por simetría de la caminata simple, la distribución de \(-m_n\) coincide con la de \(M_n\).</p>
+        <div class="math-block">$$m_n=\min\{S_0,S_1,\dots,S_n\}$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si \(M_{100}=12\) y \(m_{100}=-8\), la caminata ha recorrido un rango total de 20 unidades en sus primeros 100 pasos.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-zd" data-term="\(\mathbb{Z}^d\) retícula de vectores enteros en dimensión \(d\) estructura" data-refs="polya,vector-canonico">
+      <button class="t-btn" onclick="toggle('zd')">
+        <span class="t-letter">ℤᵈ</span>
+        <span class="t-term">\(\mathbb{Z}^d\) <span class="term-sub">retícula de vectores enteros en dimensión \(d\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La retícula \(\mathbb{Z}^d\) está formada por todos los vectores de \(d\) coordenadas enteras.</p>
+        <p>Es el espacio natural para el estudio de caminatas aleatorias multidimensionales. La dimensión \(d\) influye de manera esencial sobre las propiedades de retorno y exploración del proceso.</p>
+        <p>El <strong>Teorema de Pólya</strong> muestra que la dimensión es el factor determinante para la dicotomía recurrencia/transitoriedad.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>\(\mathbb{Z}^1\) es la recta entera. \(\mathbb{Z}^2\) es la cuadrícula del papel milimetrado. \(\mathbb{Z}^3\) es la retícula cúbica del espacio. Cada dimensión adicional hace que el caminante se pierda con mayor facilidad.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-mezcla" data-term="Mezcla convergencia hacia el equilibrio estacionario grafos" data-refs="distribucion-estacionaria,dist-variacion,laplaciano">
+      <button class="t-btn" onclick="toggle('mezcla')">
+        <span class="t-letter">tmix</span>
+        <span class="t-term">Mezcla <span class="term-sub">convergencia hacia el equilibrio estacionario</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La mezcla describe el fenómeno por el cual una cadena de Markov pierde memoria de su condición inicial y converge hacia una <strong>distribución estacionaria</strong>.</p>
+        <p>El <strong>tiempo de mezcla</strong> es una magnitud central en la teoría de cadenas finitas y en aplicaciones algorítmicas (muestreo Monte Carlo, shuffling).</p>
+        <p>Un resultado célebre es que barajar un mazo de 52 cartas mediante <em>riffle shuffles</em> requiere aproximadamente 7 rondas para mezclar: el fenómeno de <strong>cutoff</strong> donde la convergencia es abrupta.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Imagina que un caminante parte de una esquina de un cubo \(n\)-dimensional. Tras \(O(n\log n)\) pasos, su posición es esencialmente uniforme sobre los \(2^n\) vértices del cubo.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-movimiento-browniano" data-term="Movimiento browniano \(B(t)-B(s)\sim N(0,t-s)\) — límite difusivo universal asintóticos" data-refs="donsker,proceso-gaussiano,brownian-bridge">
+      <button class="t-btn" onclick="toggle('movimiento-browniano')">
+        <span class="t-letter">Bₜ</span>
+        <span class="t-term">Movimiento browniano <span class="term-sub">\(B(t)-B(s)\sim N(0,t-s)\) — límite difusivo universal</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El movimiento browniano estándar es un proceso \(\{B(t)\}_{t\geq 0}\) tal que \(B(0)=0\), tiene trayectorias continuas, incrementos independientes y estacionarios.</p>
+        <p>Es el proceso gaussiano fundamental de la probabilidad continua y el <strong>límite difusivo canónico</strong> de las caminatas aleatorias centradas.</p>
+        <p>Sus trayectorias son continuas en todas partes pero diferenciables en ningún punto: una rugosidad fractal que refleja la acumulación infinita de fluctuaciones aleatorias.</p>
+        <div class="math-block">$$B(t)-B(s)\sim N(0,t-s),\qquad s<t$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>El movimiento errático de granos de polen observado por Robert Brown en 1827 bajo el microscopio es la manifestación física del proceso. Einstein lo modeló matemáticamente en 1905 como la difusión de partículas.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-media-gp" data-term="Media de un proceso gaussiano \(m(t)=E(X_t)\) asintóticos" data-refs="proceso-gaussiano,kernel-covarianza,deriva">
+      <button class="t-btn" onclick="toggle('media-gp')">
+        <span class="t-letter">m(t)</span>
+        <span class="t-term">Media de un proceso gaussiano <span class="term-sub">\(m(t)=E(X_t)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La media de un proceso gaussiano es la función \(m(t)=E(X_t)\).</p>
+        <p>Junto con la <strong>función de covarianza</strong>, determina completamente la ley del proceso.</p>
+        <p>En el movimiento browniano estándar, \(m(t)=0\) para todo \(t\). En versiones con <strong>deriva</strong>, \(m(t)=\mu t\).</p>
+        <div class="math-block">$$m(t)=E(X_t)$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si un activo financiero tiene un retorno esperado del 5\% anual, su modelo browniano geométrico tiene función media \(m(t)=0.05t\) (antes de exponenciar).</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="N">
+    <div class="letter-anchor" id="letra-N">N</div>
+
+    <div class="card" id="t-num-sitios" data-term="Número de sitios visitados \(R_n=|\{S_0,S_1,\dots,S_n\}|\) trayectoria-func" data-refs="recurrencia,transitoriedad">
+      <button class="t-btn" onclick="toggle('num-sitios')">
+        <span class="t-letter">Rₙ</span>
+        <span class="t-term">Número de sitios visitados <span class="term-sub">\(R_n=|\{S_0,S_1,\dots,S_n\}|\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>También llamado <em>rango</em> de la caminata, cuenta la cantidad de posiciones distintas que el proceso ha visitado hasta el tiempo \(n\).</p>
+        <p>Esta variable cuantifica la <strong>capacidad exploratoria</strong> del proceso y es particularmente relevante en estudios geométricos de caminatas en dimensión alta.</p>
+        <p>En régimen transitorio (\(d\geq 3\)), \(R_n\) crece linealmente; en régimen recurrente (\(d\leq 2\)), crece sublinealmente porque el caminante revisita constantemente sitios anteriores.</p>
+        <div class="math-block">$$R_n=\left|\{S_0,S_1,\dots,S_n\}\right|$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En \(d=1\), tras \(10^6\) pasos el caminante habrá visitado del orden de \(\sqrt{10^6}=1000\) sitios distintos, no \(10^6\), porque vuelve obsesivamente sobre sus pasos.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="P">
+    <div class="letter-anchor" id="letra-P">P</div>
+
+    <div class="card" id="t-proceso-estocastico" data-term="Proceso estocástico \(\{X_t\}_{t\in T}\) — familia de variables aleatorias fundamentos" data-refs="tiempo-discreto,tiempo-continuo,random-walk">
+      <button class="t-btn" onclick="toggle('proceso-estocastico')">
+        <span class="t-letter">Pr</span>
+        <span class="t-term">Proceso estocástico <span class="term-sub">\(\{X_t\}_{t\in T}\) — familia de variables aleatorias</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un proceso estocástico es una familia de variables aleatorias indexadas por un conjunto de tiempos, usualmente discreto o continuo. Se denota típicamente por \(\{X_t\}_{t\in T}\) o \(\{S_n\}_{n\geq 0}\).</p>
+        <p>Una caminata aleatoria es, por tanto, un proceso estocástico cuya dinámica queda determinada por la suma acumulada de <strong>incrementos aleatorios</strong>.</p>
+        <p>Estudiar un proceso estocástico implica analizar no solo la distribución de cada variable individual, sino las relaciones de dependencia temporal entre todas ellas.</p>
+        <div class="hl">\(\bullet\) <strong>Tiempo discreto</strong> → Caminata aleatoria, Cadena de Markov<br>\(\bullet\) <strong>Tiempo continuo</strong> → Movimiento Browniano, Proceso de Poisson</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Un electrocardiograma registra el voltaje cardíaco en cada instante: es un proceso estocástico continuo. La caminata aleatoria es su análogo discreto: una posición nueva en cada paso.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-posicion" data-term="Posición valor \(S_n\) en el tiempo \(n\) estructura" data-refs="estado,paridad,distribucion-sn">
+      <button class="t-btn" onclick="toggle('posicion')">
+        <span class="t-letter">Sₙ</span>
+        <span class="t-term">Posición <span class="term-sub">valor \(S_n\) en el tiempo \(n\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La posición del proceso en el tiempo \(n\) es el valor \(S_n\).</p>
+        <p>En caminatas sobre \(\mathbb{Z}\), la posición es un entero; en \(\mathbb{Z}^d\), un vector entero; en un grafo, un vértice.</p>
+        <p>La posición constituye el <strong>estado observable</strong> del sistema en un instante dado y es la cantidad que se estudia a través de su distribución, momentos y comportamiento asintótico.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Tras 50 pasos de una caminata simple simétrica partiendo del origen, la posición \(S_{50}\) es un entero entre \(-50\) y \(50\) que necesariamente tiene la misma paridad que 50 (es par).</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-paridad" data-term="Paridad \(S_n\) y \(n\) comparten paridad estructura" data-refs="periodicidad,visita-cero">
+      <button class="t-btn" onclick="toggle('paridad')">
+        <span class="t-letter">±</span>
+        <span class="t-term">Paridad <span class="term-sub">\(S_n\) y \(n\) comparten paridad</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>En la caminata simple sobre \(\mathbb{Z}\), la posición \(S_n\) tiene necesariamente la misma paridad que \(n\).</p>
+        <p>En consecuencia, el origen solo puede ser visitado en tiempos pares. Esta restricción aritmética es fundamental para comprender la <strong>periodicidad</strong> del proceso y la forma explícita de sus probabilidades de transición.</p>
+        <p>Olvidar la restricción de paridad es uno de los errores más comunes al calcular probabilidades de retorno y distribuciones.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si \(S_0=0\) y \(n=7\), es imposible que \(S_7=0\) porque 7 es impar. El primer retorno al origen tras el tiempo 0 solo puede ocurrir en tiempos pares: \(n=2,4,6,\dots\)</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-reflexion" data-term="Principio de reflexión biyección por reflexión geométrica herramientas" data-refs="maximo,barrera,primer-paso">
+      <button class="t-btn" onclick="toggle('reflexion')">
+        <span class="t-letter">↕</span>
+        <span class="t-term">Principio de reflexión <span class="term-sub">biyección por reflexión geométrica</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El principio de reflexión es una técnica combinatoria utilizada para contar trayectorias sujetas a restricciones, especialmente aquellas relacionadas con <strong>máximos</strong>, <strong>barreras</strong> o <strong>tiempos de primer paso</strong>.</p>
+        <p>Su idea central consiste en establecer una biyección entre caminos restringidos y caminos no restringidos mediante una reflexión geométrica apropiada.</p>
+        <p>Tras reflejar el segmento de trayectoria posterior al primer cruce de una barrera, cada camino "malo" se empareja unívocamente con un camino libre, lo que permite contar exactamente los caminos que nunca cruzan la barrera.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Para contar caminos de \((0,0)\) a \((n,k)\) con \(k>0\) que nunca tocan el eje, se refleja cada camino que sí toca el eje en el primer punto de contacto, obteniendo una biyección con caminos a \((n,-k-2)\).</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-primer-retorno" data-term="Primer retorno \(W=\inf\{n\geq 1: S_n=0\}\) retorno" data-refs="visita-cero,recurrencia">
+      <button class="t-btn" onclick="toggle('primer-retorno')">
+        <span class="t-letter">W</span>
+        <span class="t-term">Primer retorno <span class="term-sub">\(W=\inf\{n\geq 1: S_n=0\}\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El primer retorno al origen se define como el primer tiempo positivo en que la caminata alcanza el valor cero.</p>
+        <p>Esta variable aleatoria es uno de los objetos más importantes del modelo, ya que proporciona información detallada sobre la dinámica de retorno y sobre la distribución de los tiempos de visita.</p>
+        <p>En la caminata simple simétrica, \(P(W=2n)\sim \frac{1}{\sqrt{\pi}\,n^{3/2}}\) para \(n\) grande: la cola es tan pesada que \(E[W]=\infty\).</p>
+        <div class="math-block">$$W=\inf\{n\geq 1: S_n=0\}$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>La probabilidad de que el primer retorno ocurra en \(n=2\) es \(1/2\) (un paso a la derecha y luego a la izquierda, o viceversa). Para \(n=4\), es \(1/8\). Los retornos tardíos son raros individualmente, pero colectivamente acumulan toda la masa.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-puente" data-term="Puente aleatorio caminata condicionada a \(S_{2n}=0\) estructura" data-refs="brownian-bridge,cero-interior,condicionamiento">
+      <button class="t-btn" onclick="toggle('puente')">
+        <span class="t-letter">⌒</span>
+        <span class="t-term">Puente aleatorio <span class="term-sub">caminata condicionada a \(S_{2n}=0\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un puente aleatorio es una caminata condicionada a satisfacer una condición terminal, típicamente volver al origen en un tiempo prefijado.</p>
+        <p>Por ejemplo, un puente de longitud \(2n\) es la ley de una caminata condicionada por \(S_{2n}=0\).</p>
+        <p>Este objeto desempeña un papel importante en teoría de trayectorias condicionadas y en el paso a procesos continuos condicionados (<strong>Brownian bridge</strong>).</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>De todos los caminos de 100 pasos, seleccionar solo aquellos que terminan en el origen produce un puente aleatorio de longitud 100. La distribución de la posición intermedia \(S_{50}\) dentro del puente difiere de la distribución incondicional.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-markov-prop" data-term="Propiedad de Markov el futuro solo depende del presente markov" data-refs="cadena-markov,markov-fuerte">
+      <button class="t-btn" onclick="toggle('markov-prop')">
+        <span class="t-letter">⊥</span>
+        <span class="t-term">Propiedad de Markov <span class="term-sub">el futuro solo depende del presente</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La propiedad de Markov establece que la distribución del estado futuro depende únicamente del estado actual, no de la historia previa.</p>
+        <p>Esta propiedad expresa que la información relevante para la evolución futura queda contenida en el estado actual.</p>
+        <p>Es la hipótesis que permite "reiniciar" el análisis en cada paso y aplicar argumentos recursivos con extraordinaria eficiencia.</p>
+        <div class="math-block">$$P(X_{n+1}=j\mid X_n=i_n,\dots,X_0=i_0)=P(X_{n+1}=j\mid X_n=i_n)$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si sabes que una partícula está en la posición 5 en el instante \(n=100\), no importa si llegó allí por un camino tortuoso o directo: la distribución de \(S_{101}\) es idéntica en ambos casos.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-prob-transicion" data-term="Probabilidad de transición \(p(x,y)=P(S_{n+1}=y\mid S_n=x)\) markov" data-refs="cadena-markov,chapman-kolmogorov">
+      <button class="t-btn" onclick="toggle('prob-transicion')">
+        <span class="t-letter">p(x,y)</span>
+        <span class="t-term">Probabilidad de transición <span class="term-sub">\(p(x,y)=P(S_{n+1}=y\mid S_n=x)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La probabilidad de transición de un estado \(x\) a un estado \(y\) en un paso describe la dinámica local del proceso.</p>
+        <p>Estas probabilidades son la base de la formulación matricial de las cadenas de Markov.</p>
+        <p>En la caminata simple sobre \(\mathbb{Z}\), \(p(x,x+1)=p(x,x-1)=1/2\) y \(p(x,y)=0\) para \(|x-y|>1\). La <strong>matriz de transición</strong> es tridiagonal.</p>
+        <div class="math-block">$$p(x,y)=P(S_{n+1}=y\mid S_n=x)$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Desde la posición 3 en una caminata simple simétrica, las únicas transiciones posibles son: ir a 4 (prob. \(1/2\)) o ir a 2 (prob. \(1/2\)). El resto vale 0.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-periodicidad" data-term="Periodicidad m.c.d. de tiempos de retorno posibles markov" data-refs="paridad,distribucion-estacionaria">
+      <button class="t-btn" onclick="toggle('periodicidad')">
+        <span class="t-letter">d=2</span>
+        <span class="t-term">Periodicidad <span class="term-sub">m.c.d. de tiempos de retorno posibles</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El período de un estado es el máximo común divisor de los tiempos en los que es posible retornar a él.</p>
+        <p>En la caminata simple sobre \(\mathbb{Z}\), el origen tiene período 2 (por la restricción de <strong>paridad</strong>).</p>
+        <p>La periodicidad influye en la estructura temporal de los retornos y en la convergencia hacia distribuciones estacionarias en espacios finitos. Un estado es <strong>aperiódico</strong> si su período es 1.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En un tablero de ajedrez bipartito (casillas blancas y negras), un alfil solo puede retornar a su casilla en tiempos pares: su período es 2.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-markov-fuerte" data-term="Propiedad fuerte de Markov reinicio markoviano en tiempos de parada markov" data-refs="tiempo-parada,markov-prop,excursion">
+      <button class="t-btn" onclick="toggle('markov-fuerte')">
+        <span class="t-letter">⊥⊥</span>
+        <span class="t-term">Propiedad fuerte de Markov <span class="term-sub">reinicio markoviano en tiempos de parada</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La propiedad fuerte de Markov extiende la propiedad de Markov a <strong>tiempos de parada</strong>.</p>
+        <p>Intuitivamente, permite "reiniciar" el proceso en un tiempo aleatorio adaptado a la historia, preservando la estructura markoviana a partir de ese instante.</p>
+        <p>Esta herramienta es esencial en el análisis fino de trayectorias y tiempos de hitting. Permite, por ejemplo, descomponer la trayectoria en <strong>excursiones</strong> independientes.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si la caminata alcanza el nivel 5 por primera vez en \(T_5=17\), entonces a partir del instante 17 el proceso se comporta exactamente como una caminata nueva partiendo de 5, independiente de todo lo anterior.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-poisson" data-term="Proceso de Poisson \(X_t=S_{N_t}\) — conteo de eventos aleatorios modelos" data-refs="rw-continuo,tiempo-espera">
+      <button class="t-btn" onclick="toggle('poisson')">
+        <span class="t-letter">Nₜ</span>
+        <span class="t-term">Proceso de Poisson <span class="term-sub">\(X_t=S_{N_t}\) — conteo de eventos aleatorios</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El proceso de Poisson \((N_t)_{t\geq 0}\) cuenta el número de eventos ocurridos hasta el tiempo \(t\).</p>
+        <p>Una forma clásica de construir una caminata aleatoria en tiempo continuo consiste en componer una caminata discreta con un proceso de Poisson independiente.</p>
+        <p>Los incrementos del proceso de Poisson en intervalos disjuntos son independientes y siguen distribuciones de Poisson. Los tiempos entre eventos son <strong>exponenciales</strong>.</p>
+        <div class="math-block">$$X_t=S_{N_t}$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Clientes que llegan a una tienda: si llegan en promedio 5 por hora, \(N_t\) sigue un Poisson con tasa \(\lambda=5\). Cada llegada dispara un "paso" de la caminata.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-donsker" data-term="Principio de invariancia de Donsker convergencia al movimiento browniano tras reescalamiento asintóticos" data-refs="movimiento-browniano,universalidad,tcl">
+      <button class="t-btn" onclick="toggle('donsker')">
+        <span class="t-letter">⇝W</span>
+        <span class="t-term">Principio de invariancia de Donsker <span class="term-sub">convergencia al movimiento browniano tras reescalamiento</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El principio de invariancia de Donsker establece que, tras un reescalamiento adecuado de espacio y tiempo, la caminata aleatoria converge en distribución al <strong>movimiento browniano</strong>.</p>
+        <p>Este resultado muestra que el browniano surge como <strong>límite universal</strong> de una amplia clase de caminatas discretas, no solo de la caminata simple.</p>
+        <p>La convergencia es en el sentido funcional: no solo convergen las distribuciones marginales, sino las <strong>trayectorias</strong> completas como funciones continuas.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si graficas la caminata simple reescalada \(S_{\lfloor nt\rfloor}/\sqrt{n}\) para \(n\) grande, la curva resultante es indistinguible visualmente de una trayectoria browniana.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-proceso-gaussiano" data-term="Proceso gaussiano toda familia finita tiene distribución normal multivariada asintóticos" data-refs="movimiento-browniano,media-gp,kernel-covarianza">
+      <button class="t-btn" onclick="toggle('proceso-gaussiano')">
+        <span class="t-letter">GP</span>
+        <span class="t-term">Proceso gaussiano <span class="term-sub">toda familia finita tiene distribución normal multivariada</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un proceso gaussiano es aquel para el cual toda familia finita de variables aleatorias tiene distribución normal multivariada.</p>
+        <p>El <strong>movimiento browniano</strong> es uno de sus ejemplos más importantes.</p>
+        <p>Un proceso gaussiano queda completamente determinado por su <strong>función media</strong> y su <strong>función de covarianza (kernel)</strong>. Esto lo convierte en un modelo central en Machine Learning bayesiano.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En regresión gaussiana (Gaussian Process Regression), se utiliza un proceso gaussiano como prior sobre funciones: la predicción en puntos no observados viene dada por la distribución condicional, que también es gaussiana.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-dirichlet" data-term="Problema de Dirichlet discreto función armónica con valores de frontera prescritos potencial" data-refs="funcion-armonica,primer-paso,ruina">
+      <button class="t-btn" onclick="toggle('dirichlet')">
+        <span class="t-letter">∂D</span>
+        <span class="t-term">Problema de Dirichlet discreto <span class="term-sub">función armónica con valores de frontera prescritos</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El problema de Dirichlet discreto consiste en encontrar una <strong>función armónica</strong> en un dominio discreto a partir de valores prescritos en la frontera.</p>
+        <p>La caminata aleatoria proporciona una representación probabilística natural de su solución: \(h(x)=E_x[f(S_{T_\partial})]\), donde \(T_\partial\) es el tiempo de salida del dominio y \(f\) son los valores de frontera.</p>
+        <p>Este vínculo entre probabilidad y análisis es una de las conexiones más profundas y elegantes de la matemática.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Para calcular la temperatura estacionaria en una placa discreta con bordes a distintas temperaturas, puedes lanzar caminatas aleatorias desde cada punto interior y promediar la temperatura del borde donde escapan.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-pagerank" data-term="PageRank importancia de nodos por frecuencia de visita aleatoria aplicaciones" data-refs="distribucion-estacionaria,grafo,cadena-markov">
+      <button class="t-btn" onclick="toggle('pagerank')">
+        <span class="t-letter">PR</span>
+        <span class="t-term">PageRank <span class="term-sub">importancia de nodos por frecuencia de visita aleatoria</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>PageRank es un algoritmo basado en caminatas aleatorias sobre grafos dirigidos.</p>
+        <p>Su idea fundamental consiste en asignar importancia a un nodo según la frecuencia con la cual sería visitado por un caminante aleatorio que navega a través de la red.</p>
+        <p>Formalmente, PageRank es la <strong>distribución estacionaria</strong> de una cadena de Markov modificada con un factor de "teletransportación" que garantiza irreducibilidad y aperiodicidad.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Google usó PageRank para ordenar resultados de búsqueda: una página es "importante" si muchas páginas importantes enlazan a ella. Esto equivale a que el caminante aleatorio la visite frecuentemente en su recorrido por la web.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="R">
+    <div class="letter-anchor" id="letra-R">R</div>
+
+    <div class="card" id="t-random-walk" data-term="Random walk caminata aleatoria · \(S_n=S_0+\sum X_k\) modelos" data-refs="incremento,iid,rw-simple">
+      <button class="t-btn" onclick="toggle('random-walk')">
+        <span class="t-letter">RW</span>
+        <span class="t-term">Random walk <span class="term-sub">caminata aleatoria · \(S_n=S_0+\sum X_k\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una caminata aleatoria o <em>random walk</em> es un proceso de la forma donde \(S_0\) es la condición inicial y \((X_k)_{k\geq 1}\) es una sucesión de incrementos aleatorios.</p>
+        <p>Este modelo constituye uno de los objetos fundamentales de la probabilidad, debido a su simplicidad formal y a la riqueza de sus propiedades analíticas, geométricas y asintóticas.</p>
+        <p>A pesar de su definición elemental, las caminatas aleatorias conectan con la <strong>teoría del potencial</strong>, las <strong>redes eléctricas</strong>, la <strong>geometría diferencial</strong> y los <strong>algoritmos modernos</strong> como PageRank.</p>
+        <div class="math-block">$$S_n=S_0+\sum_{k=1}^n X_k$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Partiendo desde el origen, lanzas una moneda \(n\) veces. Cara suma \(+1\), cruz resta \(-1\). Tras 100 lanzamientos, tu posición \(S_{100}\) es la suma de 100 incrementos aleatorios.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-rw-simple" data-term="Random walk simple simétrico \(P(X_i=+1)=P(X_i=-1)=\tfrac{1}{2}\) modelos" data-refs="recurrencia,universalidad,random-walk">
+      <button class="t-btn" onclick="toggle('rw-simple')">
+        <span class="t-letter">±1</span>
+        <span class="t-term">Random walk simple simétrico <span class="term-sub">\(P(X_i=+1)=P(X_i=-1)=\tfrac{1}{2}\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La caminata aleatoria simple simétrica en \(\mathbb{Z}\) es aquella cuyos incrementos satisfacen probabilidades iguales para ambas direcciones.</p>
+        <p>Se denomina "simple" porque los pasos tienen magnitud unitaria, y "simétrica" porque ambas direcciones son equiprobables.</p>
+        <p>Este modelo ocupa una posición central en la teoría, ya que constituye el ejemplo prototípico sobre el cual se formulan y prueban numerosos resultados clásicos de <strong>recurrencia</strong>, <strong>convergencia</strong> y <strong>universalidad</strong>.</p>
+        <div class="math-block">$$P(X_i=1)=P(X_i=-1)=\frac{1}{2}$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Un borracho en una calle recta da un paso adelante o atrás con igual probabilidad. Su posición tras \(n\) pasos es la caminata simple simétrica más icónica de la probabilidad.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-rw-sesgado" data-term="Random walk sesgado o asimétrico \(P(X_i=1)=p,\ P(X_i=-1)=q=1-p\) modelos" data-refs="deriva,transitoriedad,ruina">
+      <button class="t-btn" onclick="toggle('rw-sesgado')">
+        <span class="t-letter">p≠q</span>
+        <span class="t-term">Random walk sesgado o asimétrico <span class="term-sub">\(P(X_i=1)=p,\ P(X_i=-1)=q=1-p\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La caminata aleatoria sesgada se define mediante incrementos con probabilidades asimétricas, con \(p\neq \frac{1}{2}\).</p>
+        <p>En este caso, la caminata presenta una preferencia direccional o <strong>sesgo</strong>. La presencia de asimetría modifica sustancialmente las propiedades de retorno, escape y absorción del proceso.</p>
+        <p>Con sesgo positivo (\(p>1/2\)), la caminata tiende a \(+\infty\) y se vuelve <strong>transitoria</strong>; la probabilidad de retorno al origen es estrictamente menor que 1.</p>
+        <div class="math-block">$$P(X_i=1)=p,\qquad P(X_i=-1)=q=1-p$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Un jugador de ruleta que apuesta al rojo: la probabilidad de ganar es \(18/37 \approx 0.486\), ligeramente menor que \(1/2\). Ese sesgo sutil conduce inexorablemente a la ruina a largo plazo.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-retorno" data-term="Retorno al origen \(\exists\, n>0:\, S_n=0\) retorno" data-refs="recurrencia,primer-retorno">
+      <button class="t-btn" onclick="toggle('retorno')">
+        <span class="t-letter">↩0</span>
+        <span class="t-term">Retorno al origen <span class="term-sub">\(\exists\, n>0:\, S_n=0\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un retorno al origen ocurre cuando existe \(n>0\) tal que \(S_n=0\).</p>
+        <p>En dimensión uno, la caminata simple simétrica retorna al origen <strong>casi seguramente</strong> (con probabilidad 1). Este hecho constituye una manifestación de <strong>recurrencia</strong>.</p>
+        <p>A pesar de la certeza del retorno, el <strong>tiempo esperado</strong> de retorno es infinito: \(E[W]=\infty\). La caminata siempre vuelve, pero puede tardar arbitrariamente mucho.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Un borracho en una calle infinita siempre regresa al punto de partida, pero nadie puede predecir cuándo. En promedio, la espera es infinita.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-recurrencia" data-term="Recurrencia probabilidad de retorno igual a 1 retorno" data-refs="transitoriedad,polya">
+      <button class="t-btn" onclick="toggle('recurrencia')">
+        <span class="t-letter">∞↩</span>
+        <span class="t-term">Recurrencia <span class="term-sub">probabilidad de retorno igual a 1</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un estado es recurrente si, comenzando desde él, la probabilidad de retorno es uno.</p>
+        <p>En el caso de la caminata simple simétrica, el origen es recurrente en dimensiones 1 y 2.</p>
+        <p>La recurrencia indica que el proceso no logra escapar definitivamente del entorno del punto inicial. El <strong>Teorema de Pólya</strong> clasifica exactamente en qué dimensiones se cumple esta propiedad.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En una cuadrícula bidimensional infinita, un caminante que se mueve al azar siempre vuelve a su punto de partida. Pero si le añades una tercera dimensión, existe probabilidad positiva de perderse para siempre.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-ruina" data-term="Ruina del jugador capital con barreras absorbentes en 0 y \(N\) aplicaciones" data-refs="barrera,dirichlet,cadena-markov">
+      <button class="t-btn" onclick="toggle('ruina')">
+        <span class="t-letter">$0</span>
+        <span class="t-term">Ruina del jugador <span class="term-sub">capital con barreras absorbentes en 0 y \(N\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El problema de la ruina del jugador modela la evolución aleatoria de un capital mediante una caminata con <strong>barreras absorbentes</strong>.</p>
+        <p>El jugador queda arruinado al alcanzar el estado 0, y puede alcanzar éxito al llegar a una barrera superior prefijada \(N\).</p>
+        <p>Este modelo es uno de los ejemplos clásicos de aplicación de caminatas aleatorias y cadenas de Markov. La probabilidad de ruina partiendo del capital \(k\) con sesgo \(p\) se obtiene resolviendo un <strong>problema de Dirichlet discreto</strong>.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Un jugador con \$50 frente a un casino con \$950 (barrera en \$1000). Si \(p=0.49\), la probabilidad de arruinarse es superior al 99.9\%, a pesar de que el sesgo parece pequeño.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-rw-continuo" data-term="Random walk en tiempo continuo saltos en instantes aleatorios modelos" data-refs="poisson,generador-infinitesimal,tiempo-espera">
+      <button class="t-btn" onclick="toggle('rw-continuo')">
+        <span class="t-letter">RWc</span>
+        <span class="t-term">Random walk en tiempo continuo <span class="term-sub">saltos en instantes aleatorios</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una caminata aleatoria en tiempo continuo es un proceso que permanece constante entre saltos y cambia de estado en tiempos aleatorios.</p>
+        <p>Constituye una generalización natural del modelo discreto y se estudia mediante <strong>generadores infinitesimales</strong> y semigrupos de transición.</p>
+        <p>Se construye típicamente subordinando una caminata discreta a un <strong>proceso de Poisson</strong> independiente que dicta los instantes de salto.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Un servidor web recibe peticiones en instantes aleatorios (proceso de Poisson). La carga acumulada evoluciona como una caminata aleatoria en tiempo continuo.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-reversibilidad" data-term="Reversibilidad balance detallado · \(\pi(v)P_{vw}=\pi(w)P_{wv}\) grafos" data-refs="distribucion-estacionaria,red-electrica">
+      <button class="t-btn" onclick="toggle('reversibilidad')">
+        <span class="t-letter">⇌</span>
+        <span class="t-term">Reversibilidad <span class="term-sub">balance detallado · \(\pi(v)P_{vw}=\pi(w)P_{wv}\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una cadena de Markov es reversible respecto de una distribución \(\pi\) si satisface la condición de <strong>balance detallado</strong>.</p>
+        <p>La reversibilidad simplifica notablemente el análisis de la cadena y la conecta con métodos espectrales y eléctricos.</p>
+        <p>Intuitivamente, una cadena reversible "se ve igual" si la película de su evolución se reproduce hacia adelante o hacia atrás.</p>
+        <div class="math-block">$$\pi(v)P_{vw}=\pi(w)P_{wv}$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>La caminata simple sobre cualquier grafo no dirigido es reversible. Esto permite usar la analogía con <strong>redes eléctricas</strong> para calcular probabilidades de hitting y tiempos de commute.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-red-electrica" data-term="Red eléctrica resistencias, voltajes y corrientes en grafos probabilísticos aplicaciones" data-refs="reversibilidad,funcion-armonica,hitting-time">
+      <button class="t-btn" onclick="toggle('red-electrica')">
+        <span class="t-letter">⚡</span>
+        <span class="t-term">Red eléctrica <span class="term-sub">resistencias, voltajes y corrientes en grafos probabilísticos</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La interpretación eléctrica de un grafo asigna resistencias o conductancias a sus aristas.</p>
+        <p>Existen conexiones profundas entre random walks y redes eléctricas: probabilidades de hitting, tiempos de commute y funciones armónicas admiten interpretaciones en términos de <strong>voltajes, corrientes y resistencias efectivas</strong>.</p>
+        <p>Esta analogía permite resolver problemas de caminatas aleatorias aplicando las leyes de Kirchhoff y el principio de Rayleigh.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>La resistencia efectiva entre dos nodos \(a\) y \(b\) de un grafo es proporcional al tiempo esperado de <em>commute</em> (ida y vuelta) de la caminata aleatoria entre ellos: \(E[T_a^b + T_b^a] = 2|E|\cdot R_{\text{ef}}(a,b)\).</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="S">
+    <div class="letter-anchor" id="letra-S">S</div>
+
+    <div class="card" id="t-saw" data-term="Self-avoiding walk caminata sin autocruce variantes" data-refs="markov-prop,num-sitios">
+      <button class="t-btn" onclick="toggle('saw')">
+        <span class="t-letter">SAW</span>
+        <span class="t-term">Self-avoiding walk <span class="term-sub">caminata sin autocruce</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una self-avoiding walk es una caminata que no visita ningún sitio más de una vez.</p>
+        <p>A diferencia de la caminata aleatoria clásica, <strong>no posee la propiedad de Markov</strong> en sentido simple, ya que el conjunto de movimientos permitidos depende de toda la historia.</p>
+        <p>Es un modelo central en <strong>física estadística</strong>, particularmente en la teoría de polímeros, donde una cadena molecular no puede ocupar el mismo espacio dos veces.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En \(\mathbb{Z}^2\), el número de SAWs de longitud \(n\) crece como \(\mu^n n^{\gamma-1}\) donde \(\mu\approx 2.638\) es la constante de conectividad. Determinar \(\mu\) exactamente sigue siendo un problema abierto.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="T">
+    <div class="letter-anchor" id="letra-T">T</div>
+
+    <div class="card" id="t-tiempo-discreto" data-term="Tiempo discreto parámetro en \(\{0,1,2,\dots\}\) fundamentos" data-refs="conteo-combinatorio,funcion-generadora">
+      <button class="t-btn" onclick="toggle('tiempo-discreto')">
+        <span class="t-letter">Td</span>
+        <span class="t-term">Tiempo discreto <span class="term-sub">parámetro en \(\{0,1,2,\dots\}\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Se dice que un proceso está en tiempo discreto cuando su parámetro temporal toma valores en un conjunto numerable, típicamente \(\{0,1,2,\dots\}\).</p>
+        <p>La caminata aleatoria clásica está formulada en tiempo discreto: en cada unidad temporal el sistema realiza exactamente un paso.</p>
+        <p>Esta restricción simplifica el análisis combinatorio y permite utilizar herramientas de <strong>conteo</strong> y <strong>funciones generadoras</strong> para obtener resultados explícitos.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Un jugador que apuesta una ficha por ronda en un casino: su capital se actualiza tras cada ronda, no de forma continua entre ellas.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-tiempo-continuo" data-term="Tiempo continuo parámetro en \([0,\infty)\) fundamentos" data-refs="rw-continuo,movimiento-browniano,donsker">
+      <button class="t-btn" onclick="toggle('tiempo-continuo')">
+        <span class="t-letter">Tc</span>
+        <span class="t-term">Tiempo continuo <span class="term-sub">parámetro en \([0,\infty)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un proceso estocástico en tiempo continuo es aquel cuyo parámetro temporal recorre un subconjunto no numerable de \(\mathbb{R}\), usualmente \([0,\infty)\).</p>
+        <p>Las caminatas aleatorias en tiempo continuo describen sistemas en los que los saltos ocurren en instantes aleatorios, separados por <strong>tiempos de espera</strong> aleatorios.</p>
+        <p>El paso al tiempo continuo permite conectar las caminatas discretas con procesos como el <strong>movimiento browniano</strong> mediante el <strong>principio de invariancia de Donsker</strong>.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Las moléculas de gas colisionan en instantes aleatorios, no en pasos sincronizados. Su dinámica requiere un modelo en tiempo continuo.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-trayectoria" data-term="Trayectoria sucesión \((S_0,S_1,\dots,S_n)\) estructura" data-refs="maximo,minimo,primer-paso,excursion">
+      <button class="t-btn" onclick="toggle('trayectoria')">
+        <span class="t-letter">γ</span>
+        <span class="t-term">Trayectoria <span class="term-sub">sucesión \((S_0,S_1,\dots,S_n)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La trayectoria del proceso hasta tiempo \(n\) es la sucesión \((S_0,S_1,\dots,S_n)\).</p>
+        <p>Desde un punto de vista probabilístico, la trayectoria contiene más información que la sola posición final, ya que registra la evolución completa del sistema.</p>
+        <p>Muchos problemas centrales en la teoría dependen de propiedades de la trayectoria y no únicamente de su estado terminal: <strong>máximos</strong>, <strong>mínimos</strong>, <strong>tiempos de primer paso</strong> y <strong>excursiones</strong> son todos funcionales de la trayectoria.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Dos caminatas pueden terminar ambas en \(S_{100}=4\), pero una pudo alcanzar un máximo de 30 y la otra nunca superar 10. La trayectoria revela estas diferencias cruciales.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-transitoriedad" data-term="Transitoriedad probabilidad positiva de no retornar retorno" data-refs="recurrencia,polya,zd">
+      <button class="t-btn" onclick="toggle('transitoriedad')">
+        <span class="t-letter">→∞</span>
+        <span class="t-term">Transitoriedad <span class="term-sub">probabilidad positiva de no retornar</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un estado es transitorio si existe probabilidad positiva de no volver nunca a él.</p>
+        <p>En la caminata simple simétrica sobre \(\mathbb{Z}^d\), la transitoriedad aparece a partir de la dimensión 3.</p>
+        <p>Este fenómeno muestra que la <strong>geometría del espacio de estados</strong> influye profundamente en la dinámica del proceso. En dimensión alta, el espacio es "demasiado amplio" para que el caminante encuentre el camino de regreso.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En \(\mathbb{Z}^3\), la probabilidad de retorno al origen es aproximadamente \(0.3405\). Hay un \(66\%\) de probabilidad de alejarse para siempre.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-polya" data-term="Teorema de Pólya recurrencia en \(d\leq 2\), transitoriedad en \(d\geq 3\) retorno" data-refs="recurrencia,transitoriedad,zd">
+      <button class="t-btn" onclick="toggle('polya')">
+        <span class="t-letter">d≤2</span>
+        <span class="t-term">Teorema de Pólya <span class="term-sub">recurrencia en \(d\leq 2\), transitoriedad en \(d\geq 3\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El teorema de Pólya establece que la caminata simple simétrica es recurrente en dimensiones 1 y 2, y transitoria en dimensiones \(d\geq 3\).</p>
+        <p>Este resultado es central en la teoría de caminatas aleatorias y constituye uno de los ejemplos más célebres de la influencia de la dimensión sobre el comportamiento probabilístico.</p>
+        <p>Intuitivamente, en dimensiones bajas hay "pocos caminos de escape" y el caminante inevitablemente se reencuentra con su pasado. En dimensión alta, el espacio crece demasiado rápido.</p>
+        <div class="hl">\(\bullet\) <strong>\(d=1\)</strong>: Recurrente (prob. retorno = 1)<br>\(\bullet\) <strong>\(d=2\)</strong>: Recurrente (prob. retorno = 1)<br>\(\bullet\) <strong>\(d=3\)</strong>: Transitorio (prob. retorno ≈ 0.3405)<br>\(\bullet\) <strong>\(d\geq 4\)</strong>: Transitorio (prob. retorno decrece rápidamente)</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Pólya lo resumió con una metáfora: "Un borracho siempre encontrará el camino a casa en un plano, pero un pájaro borracho en el espacio tridimensional podría perderse para siempre."</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-permanencia" data-term="Tiempo de permanencia instantes en una región dada retorno" data-refs="trayectoria">
+      <button class="t-btn" onclick="toggle('permanencia')">
+        <span class="t-letter">⏱</span>
+        <span class="t-term">Tiempo de permanencia <span class="term-sub">instantes en una región dada</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El tiempo de permanencia en una región o conjunto es la cantidad de instantes en que la caminata permanece en dicho subconjunto.</p>
+        <p>Estas variables permiten estudiar cómo se distribuye temporalmente la trayectoria en distintas zonas del espacio.</p>
+        <p>En la caminata simple simétrica, la <strong>ley del arco seno</strong> muestra que el tiempo de permanencia en el semiplano positivo tiene una distribución sorprendentemente no uniforme: tiende a concentrarse cerca de 0 o de \(n\).</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Tras 1000 pasos, podrías esperar que la caminata pase \(\sim 500\) pasos en el lado positivo. Pero la ley del arco seno dice que lo más probable es pasar casi todo el tiempo de un solo lado.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-primer-paso" data-term="Tiempo de primer paso \(T_a=\inf\{n\geq 0: S_n=a\}\) tiempos" data-refs="primer-retorno,hitting-time,dirichlet">
+      <button class="t-btn" onclick="toggle('primer-paso')">
+        <span class="t-letter">Tₐ</span>
+        <span class="t-term">Tiempo de primer paso <span class="term-sub">\(T_a=\inf\{n\geq 0: S_n=a\}\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Para un nivel \(a\), el tiempo de primer paso se define como el primer instante en que la caminata alcanza dicho nivel.</p>
+        <p>Esta variable mide el primer instante en que la caminata alcanza el nivel \(a\). Constituye un objeto central en teoría de absorción, potencial y <strong>problemas de frontera</strong>.</p>
+        <p>El <strong>primer retorno</strong> al origen es el caso especial \(T_0\) con la restricción adicional de que \(n\geq 1\).</p>
+        <div class="math-block">$$T_a=\inf\{n\geq 0: S_n=a\}$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si quieres saber cuántos pasos necesita la caminata simple para alcanzar por primera vez la posición \(a=10\), calculas \(T_{10}\). En la caminata simétrica, \(E[T_a]=\infty\) para todo \(a\neq 0\).</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-tiempo-parada" data-term="Tiempo de parada \(\{T=n\}\) depende solo de la historia hasta \(n\) tiempos" data-refs="hitting-time,primer-retorno,markov-fuerte">
+      <button class="t-btn" onclick="toggle('tiempo-parada')">
+        <span class="t-letter">τ</span>
+        <span class="t-term">Tiempo de parada <span class="term-sub">\(\{T=n\}\) depende solo de la historia hasta \(n\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un tiempo de parada es una variable aleatoria \(T\) tal que, para cada \(n\), el evento \(\{T=n\}\) depende únicamente de la historia observada hasta tiempo \(n\).</p>
+        <p>Los <strong>hitting times</strong> y <strong>primeros retornos</strong> son ejemplos fundamentales de tiempos de parada.</p>
+        <p>La noción de tiempo de parada es esencial porque permite aplicar la <strong>propiedad fuerte de Markov</strong>: el proceso puede "reiniciarse" legítimamente en un tiempo de parada.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>"Parar cuando la caminata alcance 10" es un tiempo de parada válido. "Parar un paso antes del máximo" no lo es, porque requiere conocer el futuro.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-tiempo-espera" data-term="Tiempo de espera exponencial falta de memoria · \(\text{Exp}(\lambda)\) modelos" data-refs="poisson,rw-continuo">
+      <button class="t-btn" onclick="toggle('tiempo-espera')">
+        <span class="t-letter">Exp</span>
+        <span class="t-term">Tiempo de espera exponencial <span class="term-sub">falta de memoria · \(\text{Exp}(\lambda)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>En muchos modelos de tiempo continuo, el tiempo transcurrido entre dos saltos consecutivos se modela mediante una distribución exponencial.</p>
+        <p>Esta elección se justifica por su propiedad de <strong>falta de memoria</strong>, compatible con la estructura markoviana: la probabilidad de esperar un tiempo adicional \(s\) no depende del tiempo ya transcurrido.</p>
+        <p>La distribución exponencial es la única distribución continua que posee esta propiedad, lo que la convierte en la elección canónica para procesos de Markov en tiempo continuo.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si esperas un autobús que llega según un Poisson, haber esperado 10 minutos sin éxito no cambia la distribución del tiempo restante. Es como si acabaras de llegar a la parada.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-tcl" data-term="Teorema central del límite \(S_n/\sqrt{n}\Rightarrow N(0,1)\) asintóticos" data-refs="iid,desviacion-estandar,donsker">
+      <button class="t-btn" onclick="toggle('tcl')">
+        <span class="t-letter">N(0,1)</span>
+        <span class="t-term">Teorema central del límite <span class="term-sub">\(S_n/\sqrt{n}\Rightarrow N(0,1)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El teorema central del límite afirma que, bajo condiciones adecuadas, la suma de variables i.i.d. centradas y con varianza finita, convenientemente reescalada, converge en distribución a una variable normal.</p>
+        <p>En el caso de la caminata simple simétrica, la distribución de \(S_n/\sqrt{n}\) se aproxima cada vez más a una campana gaussiana.</p>
+        <p>Este resultado constituye la primera aproximación asintótica global del random walk y explica por qué la distribución normal aparece tan frecuentemente en la naturaleza.</p>
+        <div class="math-block">$$\frac{S_n}{\sqrt{n}}\Rightarrow N(0,1)$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Tras \(n=10000\) pasos de la caminata simple, el histograma de \(S_n/100\) sobre muchas realizaciones se aproxima visualmente a la campana gaussiana estándar.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-tcl-local" data-term="Teorema central del límite local aproximaciones puntuales de \(P(S_n=k)\) asintóticos" data-refs="tcl,distribucion-sn">
+      <button class="t-btn" onclick="toggle('tcl-local')">
+        <span class="t-letter">P(Sₙ=k)</span>
+        <span class="t-term">Teorema central del límite local <span class="term-sub">aproximaciones puntuales de \(P(S_n=k)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El teorema central del límite local proporciona aproximaciones asintóticas para probabilidades puntuales como \(P(S_n=k)\).</p>
+        <p>Es una versión más precisa y refinada del teorema central del límite y resulta fundamental en el análisis fino de la transición del proceso.</p>
+        <p>Para la caminata simple simétrica: \(P(S_{2n}=0)\sim \frac{1}{\sqrt{\pi n}}\), lo que muestra que la probabilidad de retorno al origen decae como \(n^{-1/2}\).</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Para \(n=100\), el TCL local aproxima \(P(S_{100}=0)\approx \frac{1}{\sqrt{50\pi}}\approx 0.0798\). El valor exacto es \(\binom{100}{50}/2^{100}\approx 0.0796\): la aproximación es excelente.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="U">
+    <div class="letter-anchor" id="letra-U">U</div>
+
+    <div class="card" id="t-universalidad" data-term="Universalidad mismo límite macroscópico para modelos microscópicos distintos asintóticos" data-refs="donsker,movimiento-browniano">
+      <button class="t-btn" onclick="toggle('universalidad')">
+        <span class="t-letter">∞→</span>
+        <span class="t-term">Universalidad <span class="term-sub">mismo límite macroscópico para modelos microscópicos distintos</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La universalidad se refiere al fenómeno por el cual sistemas microscópicamente distintos presentan el mismo comportamiento macroscópico tras un reescalamiento adecuado.</p>
+        <p>En el contexto de caminatas aleatorias, esta idea se manifiesta en el hecho de que numerosas caminatas convergen, bajo hipótesis generales, al <strong>movimiento browniano</strong>.</p>
+        <p>La universalidad es una de las ideas más poderosas de la probabilidad moderna: los detalles microscópicos (distribución exacta de los incrementos) se vuelven irrelevantes a gran escala, siempre que la varianza sea finita.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>No importa si los incrementos son \(\pm 1\), uniformes en \([-1,1]\) o exponenciales centradas: tras reescalar, todas estas caminatas convergen al mismo movimiento browniano. Los detalles se borran bajo la lupa del límite.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="letter-group" data-letter="V">
+    <div class="letter-anchor" id="letra-V">V</div>
+
+    <div class="card" id="t-variable-aleatoria" data-term="Variable aleatoria función medible \(X:\Omega\to\mathbb{R}\) fundamentos" data-refs="espacio-prob,esperanza,varianza">
+      <button class="t-btn" onclick="toggle('variable-aleatoria')">
+        <span class="t-letter">VA</span>
+        <span class="t-term">Variable aleatoria <span class="term-sub">función medible \(X:\Omega\to\mathbb{R}\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Una variable aleatoria es una función medible \(X:\Omega\to\mathbb{R}\) definida sobre un espacio de probabilidad.</p>
+        <p>En las caminatas aleatorias, tanto los incrementos \(X_1,X_2,\dots\) como las posiciones \(S_0,S_1,S_2,\dots\) constituyen variables aleatorias. Esta formalización permite aplicar conceptos como <strong>esperanza</strong>, <strong>varianza</strong>, distribución y convergencia a distintos aspectos de la evolución del proceso.</p>
+        <p>Es estrictamente una función determinista: la componente de "aleatoriedad" reside en el espacio \(\Omega\) y la medida \(P\), no en la función en sí.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En la caminata simple, la variable \(S_n\) traduce una sucesión abstracta de \(n\) lanzamientos \(\omega\in\Omega\) en un número entero concreto: la posición del caminante.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-iid" data-term="Variables i.i.d. independientes e idénticamente distribuidas estructura" data-refs="random-walk,tcl,markov-prop">
+      <button class="t-btn" onclick="toggle('iid')">
+        <span class="t-letter">iid</span>
+        <span class="t-term">Variables i.i.d. <span class="term-sub">independientes e idénticamente distribuidas</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La sigla i.i.d. significa "independientes e idénticamente distribuidas". En el modelo clásico de caminata aleatoria, los incrementos \(X_1,X_2,\dots\) se suponen i.i.d.</p>
+        <p>Esta hipótesis implica, por una parte, que el conocimiento de incrementos pasados no altera la distribución de los futuros y, por otra, que todos los incrementos obedecen la misma ley.</p>
+        <p>Tal supuesto es central para el desarrollo de los resultados fundamentales: la <strong>Ley de los Grandes Números</strong>, el <strong>Teorema Central del Límite</strong> y la <strong>propiedad de Markov</strong> se apoyan en él.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Lanzar un dado repetidamente: cada lanzamiento es independiente de los anteriores y todos comparten la misma distribución uniforme sobre \(\{1,2,3,4,5,6\}\).</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-varianza" data-term="Varianza \(\mathrm{Var}(S_n)=\sum\mathrm{Var}(X_k)\) estadísticos" data-refs="desviacion-estandar,iid">
+      <button class="t-btn" onclick="toggle('varianza')">
+        <span class="t-letter">σ²</span>
+        <span class="t-term">Varianza <span class="term-sub">\(\mathrm{Var}(S_n)=\sum\mathrm{Var}(X_k)\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La varianza mide la dispersión de una variable aleatoria en torno a su media. Si los incrementos son independientes, las varianzas se suman.</p>
+        <p>En la caminata simple simétrica, \(\mathrm{Var}(X_k)=1\), por lo que \(\mathrm{Var}(S_n)=n\).</p>
+        <p>Este crecimiento <strong>lineal</strong> de la varianza es característico del <strong>régimen difusivo</strong> y constituye una firma universal de las caminatas aleatorias con incrementos i.i.d. de varianza finita.</p>
+        <div class="math-block">$$\mathrm{Var}(S_n)=\sum_{k=1}^n \mathrm{Var}(X_k)$$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Tras 10000 pasos simétricos, \(\mathrm{Var}(S_{10000})=10000\). La posición puede estar en torno a \(\pm 100\) (la desviación estándar), a pesar de que \(E(S_n)=0\).</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-visita-cero" data-term="Visita al cero \(S_n=0\) — retorno al origen retorno" data-refs="recurrencia,excursion,paridad">
+      <button class="t-btn" onclick="toggle('visita-cero')">
+        <span class="t-letter">0↩</span>
+        <span class="t-term">Visita al cero <span class="term-sub">\(S_n=0\) — retorno al origen</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Se dice que la caminata visita el cero en el tiempo \(n\) si \(S_n=0\).</p>
+        <p>El estudio del conjunto de tiempos de visita al origen es fundamental para analizar fenómenos de <strong>recurrencia</strong> y estructura de <strong>excursiones</strong>.</p>
+        <p>Por la restricción de <strong>paridad</strong>, en la caminata simple las visitas al cero solo ocurren en tiempos pares.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En una caminata de 1000 pasos, las visitas al cero pueden ocurrir en los tiempos \(n=2,4,6,\dots\) La cantidad y distribución temporal de estas visitas revelan la estructura profunda del proceso.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-vector-canonico" data-term="Vector canónico \(e_1,\dots,e_d\) — base estándar de \(\mathbb{Z}^d\) estructura" data-refs="zd,rw-simple">
+      <button class="t-btn" onclick="toggle('vector-canonico')">
+        <span class="t-letter">eᵢ</span>
+        <span class="t-term">Vector canónico <span class="term-sub">\(e_1,\dots,e_d\) — base estándar de \(\mathbb{Z}^d\)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Los vectores canónicos \(e_1,\dots,e_d\) de \(\mathbb{Z}^d\) son aquellos que tienen un 1 en una coordenada y 0 en las restantes.</p>
+        <p>En la caminata simple simétrica multidimensional, los incrementos toman valores en el conjunto \(\{\pm e_1,\dots,\pm e_d\}\).</p>
+        <p>Cada paso mueve al caminante exactamente una unidad a lo largo de uno de los \(2d\) ejes coordenados, con probabilidad \(1/(2d)\) cada uno.</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En \(\mathbb{Z}^2\), los vectores canónicos son \(e_1=(1,0)\) y \(e_2=(0,1)\). Los incrementos posibles son \(\{(\pm 1,0),(0,\pm 1)\}\): arriba, abajo, izquierda, derecha.</p></div>
+      </div></div></div>
+    </div>
+    <div class="card" id="t-vecino" data-term="Vecino vértices conectados por una arista grafos" data-refs="grafo,grado">
+      <button class="t-btn" onclick="toggle('vecino')">
+        <span class="t-letter">~</span>
+        <span class="t-term">Vecino <span class="term-sub">vértices conectados por una arista</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Dos vértices de un grafo son vecinos si están conectados por una arista.</p>
+        <p>En una caminata simple sobre grafos, los movimientos posibles desde un vértice están restringidos a sus vecinos.</p>
+        <p>El conjunto de vecinos de \(v\) determina las transiciones permitidas: \(p(v,w)>0\) solo si \(w\) es vecino de \(v\).</p>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En la retícula \(\mathbb{Z}^2\), cada punto tiene exactamente 4 vecinos: arriba, abajo, izquierda, derecha. En un grafo social, los vecinos de una persona son sus amigos directos.</p></div>
+      </div></div></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Glosario Avanzado de Caminatas Aleatorias &nbsp;&middot;&nbsp; 84 términos
+  <span class="footer-credit">Material elaborado por el profesor Sergio Gevatschnaider</span>
+</footer>
+
+<script>
+  // ─── DATA ───
+  const TOTAL = 84;
+  let openSet = new Set();
+
+  // ─── NORMALIZE for accent-insensitive search ───
+  function normalize(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
+  // Build alpha index
+  const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'U', 'V'];
+  const alphaNav = document.getElementById('alpha-nav');
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(l => {
+    const btn = document.createElement('button');
+    btn.className = 'alpha-btn' + (letters.includes(l) ? ' has-terms' : ' dimmed');
+    btn.textContent = l;
+    btn.setAttribute('aria-label', 'Ir a términos con ' + l);
+    if (letters.includes(l)) {
+      btn.onclick = () => {
+        const el = document.getElementById('letra-' + l);
+        if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+      };
+    }
+    alphaNav.appendChild(btn);
+  });
+
+  // ─── CROSS-REFERENCES ───
+  function buildCrossRefs() {
+    document.querySelectorAll('.card').forEach(card => {
+      const refs = card.getAttribute('data-refs');
+      if (!refs) return;
+      const refIds = refs.split(',').filter(Boolean);
+      if (refIds.length === 0) return;
+      const body = card.querySelector('.a-body');
+      if (!body) return;
+      // Check if already built
+      if (body.querySelector('.cross-refs')) return;
+      const container = document.createElement('div');
+      container.className = 'cross-refs';
+      container.innerHTML = '<span class="cross-refs-label">Ver también</span>';
+      refIds.forEach(refId => {
+        const target = document.getElementById('t-' + refId);
+        if (!target) return;
+        const termEl = target.querySelector('.t-term');
+        if (!termEl) return;
+        const name = termEl.childNodes[0].textContent.trim();
+        const a = document.createElement('a');
+        a.href = '#t-' + refId;
+        a.textContent = name;
+        a.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const t = document.getElementById('t-' + refId);
+          if (t) {
+            t.scrollIntoView({ behavior:'smooth', block:'center' });
+            if (!t.classList.contains('open')) {
+              toggle(refId);
+            }
+            t.style.boxShadow = '0 0 0 2px var(--accent1)';
+            setTimeout(() => { t.style.boxShadow = ''; }, 1500);
+          }
+        };
+        container.appendChild(a);
+      });
+      body.appendChild(container);
+    });
+  }
+
+  // ─── TOGGLE ───
+  function toggle(id) {
+    const card = document.getElementById('t-' + id);
+    if (!card) return;
+    const isOpen = card.classList.contains('open');
+    if (isOpen) {
+      card.classList.remove('open');
+      openSet.delete(id);
+    } else {
+      card.classList.add('open');
+      openSet.add(id);
+      if (window.MathJax) {
+        setTimeout(() => MathJax.typesetPromise([card]).catch(()=>{}), 50);
+      }
+    }
+    updateProgress();
+  }
+
+  function expandAll() {
+    document.querySelectorAll('.card:not(.hidden)').forEach(card => {
+      card.classList.add('open');
+      openSet.add(card.id.replace('t-',''));
+    });
+    updateProgress();
+    if (window.MathJax) {
+      setTimeout(() => MathJax.typesetPromise(Array.from(document.querySelectorAll('.card'))).catch(()=>{}), 50);
+    }
+  }
+
+  function collapseAll() {
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('open'));
+    openSet.clear();
+    updateProgress();
+  }
+
+  // ─── PROGRESS ───
+  function updateProgress() {
+    const count   = openSet.size;
+    const pct = TOTAL > 0 ? Math.round(count / TOTAL * 100) : 0;
+    document.getElementById('prog-inner').style.width = pct + '%';
+    document.getElementById('open-count').textContent  = count + ' / ' + TOTAL;
+    document.getElementById('prog-text').textContent   = pct + '% ABIERTO';
+  }
+
+  // ─── SEARCH (accent-insensitive) ───
+  function filterTerms() {
+    const q = normalize(document.getElementById('search-input').value.trim());
+    let anyVisible = false;
+    document.querySelectorAll('.card').forEach(card => {
+      const term = normalize(card.getAttribute('data-term') || '');
+      const body = normalize((card.querySelector('.a-body') || {innerText:''}).innerText);
+      const match = !q || term.includes(q) || body.includes(q);
+      card.classList.toggle('hidden', !match);
+      if (match) anyVisible = true;
+    });
+    document.querySelectorAll('.letter-group').forEach(grp => {
+      const visCards = grp.querySelectorAll('.card:not(.hidden)').length;
+      grp.style.display = visCards === 0 ? 'none' : '';
+    });
+    document.getElementById('no-results').style.display = anyVisible ? 'none' : 'block';
+  }
+
+  function clearSearch() {
+    document.getElementById('search-input').value = '';
+    filterTerms();
+  }
+
+  // ─── THEME ───
+  const themes = ['dark','light','sepia'];
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themes.forEach(th => {
+      document.getElementById('opt-' + th).classList.toggle('active', th === t);
+    });
+    try { localStorage.setItem('glosario-theme', t); } catch(e) {}
+  }
+  (function(){
+    try {
+      const saved = localStorage.getItem('glosario-theme');
+      if (saved && themes.includes(saved)) setTheme(saved);
+    } catch(e) {}
+  })();
+
+  // ─── STAGGER ANIMATION ───
+  document.querySelectorAll('.card').forEach((c, i) => {
+    c.style.animationDelay = (i * 0.02) + 's';
+  });
+
+  // ─── FORCE MATHJAX TYPESET ───
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(() => {});
+    }
+    buildCrossRefs();
+  });
+  window.addEventListener('load', () => {
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(() => {});
+    }
+    buildCrossRefs();
+  });
+
+  // ─── KEYBOARD ───
+  document.querySelectorAll('.t-btn').forEach(btn => {
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        btn.click();
+      }
+    });
+  });
+</script>
+<script data-pplx-inline-edit>
+(function(){
+  if(window===window.top)return;
+  function inlineAll(orig,clone){
+    if(orig.nodeType!==1)return;
+    try{
+      var cs=getComputedStyle(orig);
+      var t='';
+      for(var i=0;i<cs.length;i++){t+=cs[i]+':'+cs.getPropertyValue(cs[i])+';';}
+      clone.style.cssText=t;
+    }catch(e){}
+    var oc=orig.children,cc=clone.children;
+    for(var j=0;j<oc.length&&j<cc.length;j++){inlineAll(oc[j],cc[j]);}
+  }
+  function stripExternal(clone){
+    var imgs=clone.querySelectorAll('img');
+    for(var i=0;i<imgs.length;i++){
+      var s=imgs[i].getAttribute('src');
+      if(s&&!s.startsWith('data:'))imgs[i].removeAttribute('src');
+    }
+    var all=clone.querySelectorAll('*');
+    for(var i=0;i<all.length;i++){
+      var st=all[i].style.cssText;
+      if(st&&st.indexOf('url(')>=0){
+        all[i].style.cssText=st.replace(/url\(["']?(?!data:)[^)"']*["']?\)/gi,'none');
+      }
+    }
+  }
+  window.addEventListener('message',function(e){
+    if(!e.data||e.data.type!=='INLINE_EDIT_CAPTURE_REQUEST')return;
+    var scrollX=window.scrollX||window.pageXOffset||0;
+    var scrollY=window.scrollY||window.pageYOffset||0;
+    var w=window.innerWidth,h=window.innerHeight;
+    try{
+      var clone=document.documentElement.cloneNode(true);
+      var rm=clone.querySelectorAll('script,link[rel="stylesheet"],style');
+      for(var i=0;i<rm.length;i++){rm[i].remove();}
+      inlineAll(document.documentElement,clone);
+      stripExternal(clone);
+      var html=new XMLSerializer().serializeToString(clone);
+      var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'
+        +'<foreignObject width="100%" height="100%">'
+        +'<div xmlns="http://www.w3.org/1999/xhtml" style="width:'+w+'px;height:'+h+'px;overflow:hidden">'
+        +'<div style="transform:translate(-'+scrollX+'px,-'+scrollY+'px);transform-origin:top left">'
+        +html+'</div></div></foreignObject></svg>';
+      var svgUrl='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+      var img=new Image();
+      img.onload=function(){
+        var c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0);
+        window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:c.toDataURL('image/png'),scrollX:scrollX,scrollY:scrollY},'*');
+      };
+      img.onerror=function(){
+        window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:null,scrollX:scrollX,scrollY:scrollY},'*');
+      };
+      img.src=svgUrl;
+    }catch(err){
+      window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:null,scrollX:scrollX,scrollY:scrollY},'*');
+    }
+  });
+})();
+</script></body>
+</html>

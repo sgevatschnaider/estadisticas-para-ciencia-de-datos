@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cuestionario · Random Walk</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --surface: #111318;
+      --card: #161a23;
+      --border: #252b3a;
+      --accent1: #f0c040;
+      --accent2: #3de6c8;
+      --accent3: #f06060;
+      --accent4: #8b6fff;
+      --text: #e8e8f0;
+      --muted: #8e94ad;
+      --answer-bg: #0d1520;
+      --header-bg1: #0e1420;
+      --header-bg2: #0b0c10;
+      --progress-bg: rgba(11, 12, 16, 0.92);
+      --radius: 14px;
+      --shadow: 0 8px 40px rgba(0,0,0,0.35);
+      --transition: 0.35s ease;
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f5f8;
+      --surface: #ecedf2;
+      --card: #ffffff;
+      --border: #d8dae4;
+      --accent1: #c89a00;
+      --accent2: #0a9e87;
+      --accent3: #d94040;
+      --accent4: #6a4fd8;
+      --text: #1a1b26;
+      --muted: #6b7080;
+      --answer-bg: #f0f2f8;
+      --header-bg1: #e8eaf2;
+      --header-bg2: #f4f5f8;
+      --progress-bg: rgba(244,245,248,0.94);
+      --shadow: 0 8px 28px rgba(40,40,60,0.08);
+    }
+
+    [data-theme="sepia"] {
+      --bg: #f5efe2;
+      --surface: #ede7d6;
+      --card: #fdf8f0;
+      --border: #d4c9b0;
+      --accent1: #a06820;
+      --accent2: #4a8a72;
+      --accent3: #b84040;
+      --accent4: #7055a8;
+      --text: #2c2410;
+      --muted: #7a6a50;
+      --answer-bg: #efe7d8;
+      --header-bg1: #e8e0cc;
+      --header-bg2: #f5efe2;
+      --progress-bg: rgba(245,239,226,0.94);
+      --shadow: 0 8px 28px rgba(90,70,40,0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lora', Georgia, serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    }
+
+    header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 72px 24px 56px;
+      background: linear-gradient(155deg, var(--header-bg1) 0%, var(--header-bg2) 62%);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    header::after {
+      content: "";
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 720px;
+      height: 320px;
+      background: radial-gradient(ellipse at center, rgba(240,192,64,0.12) 0%, transparent 72%);
+      pointer-events: none;
+    }
+
+    .tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      border: 1px solid rgba(61,230,200,0.34);
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.1rem, 5vw, 3.8rem);
+      line-height: 1.08;
+      font-weight: 900;
+      background: linear-gradient(135deg, #f0c040 0%, #ffedb2 40%, #f0c040 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.92rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .author-credit {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.92rem;
+      color: var(--accent1);
+      background: rgba(240,192,64,0.08);
+      border: 1px solid rgba(240,192,64,0.22);
+    }
+
+    #status-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 24px;
+      background: var(--progress-bg);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #status-text,
+    #status-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    #status-text {
+      color: var(--accent1);
+    }
+
+    #status-count {
+      color: var(--muted);
+    }
+
+    #bar-outer {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    #bar-inner {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent1));
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 46px 20px 84px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 36px;
+    }
+
+    .btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      transition: background-color var(--transition), color var(--transition), border-color var(--transition), transform var(--transition);
+    }
+
+    .btn:hover,
+    .btn:focus-visible {
+      background: var(--accent1);
+      color: #000;
+      border-color: var(--accent1);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .btn-accent {
+      border-color: rgba(61,230,200,0.42);
+      color: var(--accent2);
+    }
+
+    .btn-accent:hover,
+    .btn-accent:focus-visible {
+      background: var(--accent2);
+      border-color: var(--accent2);
+      color: #000;
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0 18px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.70rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--accent4);
+    }
+
+    .section-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent4), transparent);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeUp 0.45s forwards;
+      transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    }
+
+    .card:hover {
+      border-color: rgba(240,192,64,0.25);
+    }
+
+    .card.open {
+      border-color: rgba(240,192,64,0.48);
+      box-shadow: 0 10px 46px rgba(0,0,0,0.42), 0 0 0 1px rgba(240,192,64,0.08);
+    }
+
+    .card:nth-of-type(1)  { animation-delay: 0.04s; }
+    .card:nth-of-type(2)  { animation-delay: 0.08s; }
+    .card:nth-of-type(3)  { animation-delay: 0.12s; }
+    .card:nth-of-type(4)  { animation-delay: 0.16s; }
+    .card:nth-of-type(5)  { animation-delay: 0.20s; }
+    .card:nth-of-type(6)  { animation-delay: 0.24s; }
+    .card:nth-of-type(7)  { animation-delay: 0.28s; }
+    .card:nth-of-type(8)  { animation-delay: 0.32s; }
+    .card:nth-of-type(9)  { animation-delay: 0.36s; }
+    .card:nth-of-type(10) { animation-delay: 0.40s; }
+    .card:nth-of-type(11) { animation-delay: 0.44s; }
+    .card:nth-of-type(12) { animation-delay: 0.48s; }
+    .card:nth-of-type(13) { animation-delay: 0.52s; }
+    .card:nth-of-type(14) { animation-delay: 0.56s; }
+    .card:nth-of-type(15) { animation-delay: 0.60s; }
+    .card:nth-of-type(16) { animation-delay: 0.64s; }
+    .card:nth-of-type(17) { animation-delay: 0.68s; }
+    .card:nth-of-type(18) { animation-delay: 0.72s; }
+    .card:nth-of-type(19) { animation-delay: 0.76s; }
+    .card:nth-of-type(20) { animation-delay: 0.80s; }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .q-trigger {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      padding: 24px 26px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 18px;
+      align-items: start;
+      text-align: left;
+    }
+
+    .q-trigger:focus-visible {
+      outline: 2px solid var(--accent2);
+      outline-offset: -2px;
+    }
+
+    .q-num {
+      margin-top: 2px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent1);
+      background: rgba(240,192,64,0.10);
+      border: 1px solid rgba(240,192,64,0.26);
+      border-radius: 7px;
+      padding: 4px 8px;
+      white-space: nowrap;
+    }
+
+    .q-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(0.98rem, 2vw, 1.12rem);
+      line-height: 1.45;
+      color: var(--text);
+      transition: color var(--transition);
+    }
+
+    .card.open .q-title,
+    .card:hover .q-title {
+      color: var(--accent1);
+    }
+
+    .q-icon {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      transition: background-color var(--transition), border-color var(--transition), transform var(--transition);
+    }
+
+    .q-icon svg {
+      stroke: var(--muted);
+      transition: transform var(--transition), stroke var(--transition);
+    }
+
+    .card.open .q-icon {
+      background: var(--accent1);
+      border-color: var(--accent1);
+      transform: scale(1.06);
+    }
+
+    .card.open .q-icon svg {
+      stroke: #000;
+      transform: rotate(180deg);
+    }
+
+    .a-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.38s ease;
+    }
+
+    .card.open .a-wrap {
+      grid-template-rows: 1fr;
+    }
+
+    .a-inner {
+      overflow: hidden;
+    }
+
+    .a-body {
+      padding: 0 26px 28px 70px;
+      border-top: 1px solid var(--border);
+      background: var(--answer-bg);
+    }
+
+    .card.open .a-body {
+      padding-top: 24px;
+    }
+
+    .a-body p {
+      margin: 0 0 14px;
+      color: var(--text);
+      opacity: 0.94;
+      font-size: 0.98rem;
+      line-height: 1.84;
+    }
+
+    .a-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .math-block {
+      margin: 18px 0;
+      padding: 16px 20px;
+      border-left: 3px solid var(--accent2);
+      border-radius: 0 8px 8px 0;
+      background: rgba(61,230,200,0.06);
+      overflow-x: auto;
+      font-size: 1.03rem;
+    }
+
+    .highlight {
+      margin: 16px 0;
+      padding: 14px 18px;
+      border-radius: 8px;
+      background: rgba(240,192,64,0.10);
+      border: 1px solid rgba(240,192,64,0.22);
+      color: var(--text);
+      line-height: 1.76;
+      font-size: 0.93rem;
+    }
+
+    strong {
+      color: var(--accent2);
+      font-weight: 700;
+    }
+
+    em {
+      color: var(--muted);
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px 20px 48px;
+      border-top: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.74rem;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+
+    .footer-author {
+      color: var(--accent1);
+      font-size: 0.82rem;
+    }
+
+    #theme-btn {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .theme-opt {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color var(--transition), transform var(--transition);
+    }
+
+    .theme-opt:hover,
+    .theme-opt:focus-visible {
+      transform: scale(1.08);
+      outline: none;
+    }
+
+    .theme-opt.active {
+      background: var(--accent1);
+    }
+
+    .theme-opt .tip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: opacity var(--transition);
+    }
+
+    .theme-opt:hover .tip,
+    .theme-opt:focus-visible .tip {
+      opacity: 1;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 56px 18px 42px;
+      }
+
+      .q-trigger {
+        padding: 18px;
+        gap: 12px;
+      }
+
+      .a-body {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      #theme-btn {
+        right: 14px;
+        bottom: 14px;
+      }
+
+      #status-wrap {
+        padding: 10px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="theme-btn" role="group" aria-label="Cambiar tema">
+    <button class="theme-opt active" id="opt-dark" type="button" onclick="setTheme('dark')" aria-label="Tema oscuro">
+      🌙<span class="tip">Oscuro</span>
+    </button>
+    <button class="theme-opt" id="opt-light" type="button" onclick="setTheme('light')" aria-label="Tema claro">
+      ☀️<span class="tip">Claro</span>
+    </button>
+    <button class="theme-opt" id="opt-sepia" type="button" onclick="setTheme('sepia')" aria-label="Tema sepia">
+      📜<span class="tip">Sepia</span>
+    </button>
+  </div>
+
+  <header>
+    <div class="tag">Cuestionario Académico · 20 Preguntas</div>
+    <h1>Random Walk<br>y Caminatas Aleatorias</h1>
+    <p class="subtitle">Procesos estocásticos · Recurrencia · Puentes · Browniano · Grafos</p>
+    <div class="author-credit">Material elaborado por el profesor Sergio Gevatschnaider</div>
+  </header>
+
+  <div id="status-wrap" aria-label="Estado de lectura del cuestionario">
+    <span id="status-text">SECCIONES ABIERTAS</span>
+    <div id="bar-outer" aria-hidden="true">
+      <div id="bar-inner"></div>
+    </div>
+    <span id="status-count">0 / 20</span>
+  </div>
+
+  <main>
+    <div class="controls">
+      <button class="btn btn-accent" type="button" onclick="expandAll()">Expandir todo</button>
+      <button class="btn" type="button" onclick="collapseAll()">Colapsar todo</button>
+    </div>
+
+    <div class="section-label">Cuestionario desarrollado</div>
+
+    <!-- 1 -->
+    <section class="card" id="c1">
+      <button class="q-trigger" id="q1" type="button" aria-expanded="false" aria-controls="a1" onclick="toggle(1)">
+        <span class="q-num">01</span>
+        <span class="q-title">¿Cuál es la idea central del modelo de random walk?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a1" role="region" aria-labelledby="q1" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>La idea central del modelo de caminata aleatoria consiste en representar la evolución de un sistema por medio de una sucesión de incrementos aleatorios que se van acumulando en el tiempo. En su formulación clásica, la posición del proceso en el instante \(n\) se obtiene como una suma parcial de variables aleatorias independientes e idénticamente distribuidas.</p>
+            <div class="math-block">
+              \[
+              S_n = S_0 + \sum_{k=1}^{n} X_k
+              \]
+            </div>
+            <p>Desde esta perspectiva, el <strong>random walk</strong> constituye un modelo fundamental de dinámica estocástica. La incertidumbre local asociada a cada incremento se traduce en una estructura global susceptible de estudio mediante herramientas de probabilidad, teoría de procesos estocásticos y resultados de convergencia asintótica.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="card" id="c2">
+      <button class="q-trigger" id="q2" type="button" aria-expanded="false" aria-controls="a2" onclick="toggle(2)">
+        <span class="q-num">02</span>
+        <span class="q-title">¿Cuáles son los tres ejemplos intuitivos clásicos de un random walk mencionados en el texto?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a2" role="region" aria-labelledby="q2" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>Los ejemplos clásicos son, en primer lugar, el desplazamiento de un caminante sobre una recta numérica, que en cada etapa avanza una unidad hacia la izquierda o hacia la derecha; en segundo lugar, el problema de la <strong>ruina del jugador</strong>, donde el capital de un individuo fluctúa mediante ganancias y pérdidas sucesivas; y, en tercer lugar, la difusión discreta de partículas en suspensión, cuya trayectoria resulta afectada por perturbaciones aleatorias sucesivas.</p>
+            <div class="highlight">
+              Estos tres casos ilustran, respectivamente, una interpretación <strong>geométrica</strong>, una interpretación <strong>financiera</strong> y una interpretación <strong>física</strong> del modelo.
+            </div>
+            <p>Su interés radica en que muestran cómo una misma estructura probabilística puede describir fenómenos de naturaleza muy distinta.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="card" id="c3">
+      <button class="q-trigger" id="q3" type="button" aria-expanded="false" aria-controls="a3" onclick="toggle(3)">
+        <span class="q-num">03</span>
+        <span class="q-title">¿Cuál es la diferencia fundamental entre el random walk en tiempo discreto y en tiempo continuo?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a3" role="region" aria-labelledby="q3" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>La diferencia fundamental reside en la naturaleza del parámetro temporal. En el caso <strong>discreto</strong>, el proceso está definido sobre un conjunto numerable de tiempos, típicamente \(\{0,1,2,\dots\}\), y evoluciona mediante una sucesión ordenada de pasos. En el caso <strong>continuo</strong>, en cambio, el proceso se define sobre un intervalo de la recta real, usualmente \([0,\infty)\), y los cambios de estado tienen lugar en instantes distribuidos a lo largo del tiempo continuo.</p>
+            <p>En este segundo marco suelen intervenir tiempos de espera exponenciales, procesos de Poisson o generadores infinitesimales, lo que permite modelar sistemas cuya evolución no se organiza en etapas sucesivas fijas, sino en eventos aleatorios continuos.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="card" id="c4">
+      <button class="q-trigger" id="q4" type="button" aria-expanded="false" aria-controls="a4" onclick="toggle(4)">
+        <span class="q-num">04</span>
+        <span class="q-title">¿Cómo se define el random walk simple simétrico en una dimensión \(\mathbb{Z}\)?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a4" role="region" aria-labelledby="q4" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>El random walk simple simétrico en una dimensión es el proceso estocástico \((S_n)_{n\ge 0}\) definido sobre \(\mathbb{Z}\) por la relación</p>
+            <div class="math-block">
+              \[
+              S_n = S_0 + \sum_{k=1}^{n} X_k,
+              \qquad
+              \mathbb{P}(X_k=1)=\mathbb{P}(X_k=-1)=\frac12.
+              \]
+            </div>
+            <p>Los incrementos \((X_k)\) son independientes e idénticamente distribuidos. Se trata del modelo canónico de caminata aleatoria en una dimensión, pues combina una formulación elemental con una notable riqueza estructural, lo que lo convierte en punto de partida natural para el estudio de recurrencia, tiempos de retorno, máximos, leyes límite y aproximaciones difusivas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="card" id="c5">
+      <button class="q-trigger" id="q5" type="button" aria-expanded="false" aria-controls="a5" onclick="toggle(5)">
+        <span class="q-num">05</span>
+        <span class="q-title">¿Cuál es el comportamiento de la esperanza y la varianza en un random walk simple simétrico después de \(n\) pasos?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a5" role="region" aria-labelledby="q5" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>Si se supone \(S_0=0\), la esperanza matemática de la posición en el tiempo \(n\) es</p>
+            <div class="math-block">
+              \[
+              \mathbb{E}[S_n]=0,
+              \]
+            </div>
+            <p>como consecuencia de la simetría de los incrementos. Por otra parte, la varianza satisface</p>
+            <div class="math-block">
+              \[
+              \operatorname{Var}(S_n)=n,
+              \]
+            </div>
+            <p>puesto que los incrementos son independientes, centrados y de varianza unitaria. La media nula expresa ausencia de desplazamiento preferencial, mientras que la varianza creciente refleja el incremento lineal de la dispersión espacial del proceso.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="card" id="c6">
+      <button class="q-trigger" id="q6" type="button" aria-expanded="false" aria-controls="a6" onclick="toggle(6)">
+        <span class="q-num">06</span>
+        <span class="q-title">¿Cómo crece el tamaño típico de las fluctuaciones en un random walk de \(n\) pasos?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a6" role="region" aria-labelledby="q6" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>La magnitud típica de las fluctuaciones tras \(n\) pasos es del orden de \(\sqrt{n}\). Esto se deduce de que la desviación estándar es la raíz cuadrada de la varianza:</p>
+            <div class="math-block">
+              \[
+              \sqrt{\operatorname{Var}(S_n)}=\sqrt{n}.
+              \]
+            </div>
+            <p>En consecuencia, aunque el número de incrementos crece linealmente, el desplazamiento neto típicamente observable no es del orden de \(n\), sino del orden sublineal \(\sqrt{n}\), debido a la compensación estadística entre pasos en sentidos opuestos.</p>
+            <div class="highlight">
+              Esta es la <strong>escala difusiva natural</strong> del proceso y resulta fundamental para el Teorema Central del Límite y el principio de invariancia.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="card" id="c7">
+      <button class="q-trigger" id="q7" type="button" aria-expanded="false" aria-controls="a7" onclick="toggle(7)">
+        <span class="q-num">07</span>
+        <span class="q-title">¿Qué es un puente aleatorio (random walk bridge)?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a7" role="region" aria-labelledby="q7" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>Un <strong>puente aleatorio</strong> es una caminata aleatoria condicionada a satisfacer una restricción terminal. El caso prototípico es una caminata condicionada a regresar al origen en un tiempo final prefijado, por ejemplo bajo la condición \(S_{2n}=0\).</p>
+            <p>Ese condicionamiento modifica de manera sustancial la ley del proceso, pues las trayectorias admisibles dejan de estar regidas por la independencia libre de los incrementos y pasan a responder a una dependencia global inducida por la condición final.</p>
+            <p>Los puentes aleatorios constituyen el análogo discreto del <em>Brownian bridge</em> en el marco continuo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="card" id="c8">
+      <button class="q-trigger" id="q8" type="button" aria-expanded="false" aria-controls="a8" onclick="toggle(8)">
+        <span class="q-num">08</span>
+        <span class="q-title">¿Qué es un random walk sesgado o asimétrico?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a8" role="region" aria-labelledby="q8" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>Se habla de un random walk <strong>sesgado</strong> cuando las probabilidades de desplazamiento en las distintas direcciones no coinciden. En una dimensión, esto se expresa mediante</p>
+            <div class="math-block">
+              \[
+              \mathbb{P}(X_k=1)=p,
+              \qquad
+              \mathbb{P}(X_k=-1)=q=1-p,
+              \qquad
+              p\neq q.
+              \]
+            </div>
+            <p>La consecuencia inmediata es la aparición de una deriva media no nula:</p>
+            <div class="math-block">
+              \[
+              \mathbb{E}[X_k]=p-q=2p-1.
+              \]
+            </div>
+            <p>Esta asimetría altera de manera esencial las propiedades de retorno, escape y absorción, y distingue claramente el régimen centrado del régimen con tendencia direccional.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="card" id="c9">
+      <button class="q-trigger" id="q9" type="button" aria-expanded="false" aria-controls="a9" onclick="toggle(9)">
+        <span class="q-num">09</span>
+        <span class="q-title">¿Qué establece el Teorema de Pólya respecto a la dimensión del espacio en el random walk?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a9" role="region" aria-labelledby="q9" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>El Teorema de Pólya afirma que la caminata aleatoria simple simétrica es <strong>recurrente</strong> en dimensiones \(d=1\) y \(d=2\), mientras que es <strong>transitoria</strong> en dimensiones \(d\ge 3\).</p>
+            <div class="highlight">
+              Recurrente significa que el proceso retorna al origen con probabilidad uno. Transitoria significa que existe una probabilidad estrictamente positiva de que el proceso se aleje indefinidamente sin regresar.
+            </div>
+            <p>El resultado muestra de manera nítida la influencia de la dimensión del espacio de estados sobre la naturaleza cualitativa del proceso.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="card" id="c10">
+      <button class="q-trigger" id="q10" type="button" aria-expanded="false" aria-controls="a10" onclick="toggle(10)">
+        <span class="q-num">10</span>
+        <span class="q-title">¿Cuál es la relación principal entre el random walk y el movimiento browniano?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a10" role="region" aria-labelledby="q10" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>La relación entre ambos procesos es de tipo límite. El movimiento browniano puede obtenerse como límite continuo de una familia adecuadamente reescalada de caminatas aleatorias discretas centradas.</p>
+            <p>Si se normaliza la posición por un factor del orden de \(\sqrt{n}\) y se acelera el tiempo de manera compatible, las trayectorias reescaladas convergen en distribución al movimiento browniano.</p>
+            <div class="highlight">
+              Este resultado, formalizado por el <strong>principio de invariancia de Donsker</strong>, es una de las expresiones más importantes de universalidad en probabilidad.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section class="card" id="c11">
+      <button class="q-trigger" id="q11" type="button" aria-expanded="false" aria-controls="a11" onclick="toggle(11)">
+        <span class="q-num">11</span>
+        <span class="q-title">¿En qué consiste la propiedad de Markov dentro de este modelo?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a11" role="region" aria-labelledby="q11" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>La propiedad de Markov establece que, condicionado al estado presente, el futuro del proceso es independiente del pasado. En el contexto de la caminata aleatoria, ello significa que la distribución del próximo estado depende solo de la posición actual y no de la trayectoria previa.</p>
+            <div class="math-block">
+              \[
+              \mathbb{P}(S_{n+1}=y \mid S_n=x,S_{n-1},\dots,S_0)
+              =
+              \mathbb{P}(S_{n+1}=y \mid S_n=x).
+              \]
+            </div>
+            <p>Esta propiedad convierte al random walk en un ejemplo prototípico de cadena de Markov y habilita el uso de una teoría estructural muy amplia basada en probabilidades de transición, tiempos de parada y clasificación de estados.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section class="card" id="c12">
+      <button class="q-trigger" id="q12" type="button" aria-expanded="false" aria-controls="a12" onclick="toggle(12)">
+        <span class="q-num">12</span>
+        <span class="q-title">¿Qué herramientas de análisis combinatorio y probabilístico son claves en el estudio de las caminatas aleatorias?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a12" role="region" aria-labelledby="q12" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>Entre las herramientas fundamentales se encuentran el conteo combinatorio de trayectorias admisibles, el <strong>principio de reflexión</strong>, las <strong>funciones generadoras</strong> y los resultados asintóticos derivados del <strong>Teorema Central del Límite</strong>.</p>
+            <p>El conteo combinatorio permite obtener expresiones exactas para distribuciones y probabilidades de eventos condicionados. El principio de reflexión es especialmente útil en el estudio de máximos, barreras y tiempos de primer paso. Las funciones generadoras condensan información distributiva en objetos analíticos muy eficaces para el estudio de recurrencias y tiempos de retorno.</p>
+            <p>Por último, el Teorema Central del Límite ofrece la descripción asintótica de la posición del proceso a gran escala y fundamenta el paso al régimen gaussiano continuo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 -->
+    <section class="card" id="c13">
+      <button class="q-trigger" id="q13" type="button" aria-expanded="false" aria-controls="a13" onclick="toggle(13)">
+        <span class="q-num">13</span>
+        <span class="q-title">¿Cómo se relaciona el modelo de la ruina del jugador con los tiempos de parada y las barreras?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a13" role="region" aria-labelledby="q13" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>En el modelo de la ruina del jugador, la fortuna del individuo evoluciona como una caminata aleatoria sobre un subconjunto de los enteros. La ruina corresponde al primer instante en que el capital alcanza el estado \(0\), mientras que el éxito puede representarse como el primer acceso a una barrera superior prefijada.</p>
+            <p>Tales instantes son <strong>tiempos de parada</strong>, porque su ocurrencia puede determinarse a partir de la información disponible hasta el instante actual.</p>
+            <div class="highlight">
+              El problema se formula naturalmente en términos de <strong>probabilidades de absorción</strong> y <strong>tiempos de primer paso</strong> en dominios con barreras absorbentes.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 -->
+    <section class="card" id="c14">
+      <button class="q-trigger" id="q14" type="button" aria-expanded="false" aria-controls="a14" onclick="toggle(14)">
+        <span class="q-num">14</span>
+        <span class="q-title">¿Cómo puede vincularse la posición de un random walk simple con la distribución binomial?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a14" role="region" aria-labelledby="q14" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>La relación se establece observando que cada paso de la caminata simple simétrica corresponde a una elección binaria independiente. Si \(B_n\) denota el número de pasos hacia la derecha entre los primeros \(n\) incrementos, entonces \(B_n\) sigue una distribución binomial con parámetros \(n\) y \(1/2\).</p>
+            <p>Como el número de pasos hacia la izquierda es \(n-B_n\), la posición final satisface</p>
+            <div class="math-block">
+              \[
+              S_n = B_n - (n-B_n) = 2B_n - n.
+              \]
+            </div>
+            <p>Esta representación permite deducir de inmediato la distribución exacta de \(S_n\) y muestra que la caminata simple puede verse como una transformación afín de una variable binomial.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15 -->
+    <section class="card" id="c15">
+      <button class="q-trigger" id="q15" type="button" aria-expanded="false" aria-controls="a15" onclick="toggle(15)">
+        <span class="q-num">15</span>
+        <span class="q-title">En el estudio de un random walk en grafos no dirigidos, ¿a qué valor tiende a ser proporcional la distribución estacionaria?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a15" role="region" aria-labelledby="q15" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>En grafos finitos no dirigidos, la distribución estacionaria de la caminata aleatoria simple es proporcional al grado de los vértices. Si \(d(v)\) denota el grado del vértice \(v\), entonces la medida estacionaria \(\pi\) satisface una relación del tipo</p>
+            <div class="math-block">
+              \[
+              \pi(v)\propto d(v).
+              \]
+            </div>
+            <p>Esto significa que los vértices más conectados concentran una mayor masa estacionaria, pues admiten más formas de ser alcanzados manteniendo el equilibrio probabilístico.</p>
+            <p>El resultado se apoya en la reversibilidad de la cadena y en la condición de balance detallado.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16 -->
+    <section class="card" id="c16">
+      <button class="q-trigger" id="q16" type="button" aria-expanded="false" aria-controls="a16" onclick="toggle(16)">
+        <span class="q-num">16</span>
+        <span class="q-title">¿Qué papel cumple la ecuación \(S_n = X_1 + X_2 + \cdots + X_n\) en este proceso?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a16" role="region" aria-labelledby="q16" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>La ecuación</p>
+            <div class="math-block">
+              \[
+              S_n = X_1 + X_2 + \cdots + X_n
+              \]
+            </div>
+            <p>constituye la formulación estructural básica de la caminata aleatoria. Su importancia reside en que expresa la posición del proceso como una suma acumulativa de incrementos elementales, lo que permite traducir un problema dinámico sobre trayectorias en un problema analítico sobre sumas de variables aleatorias.</p>
+            <p>Gracias a esta representación es posible aplicar linealidad de la esperanza, aditividad de la varianza bajo independencia, teoremas de convergencia y aproximaciones asintóticas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17 -->
+    <section class="card" id="c17">
+      <button class="q-trigger" id="q17" type="button" aria-expanded="false" aria-controls="a17" onclick="toggle(17)">
+        <span class="q-num">17</span>
+        <span class="q-title">¿Qué es el Principio de Reflexión en el contexto de los random walks?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a17" role="region" aria-labelledby="q17" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>El <strong>Principio de Reflexión</strong> es una técnica clásica de naturaleza combinatoria que permite establecer correspondencias biyectivas entre familias de trayectorias con restricciones y familias de trayectorias sin esas restricciones.</p>
+            <p>En caminatas aleatorias se utiliza de manera especial en el análisis de eventos ligados al cruce de barreras, la distribución de máximos y los tiempos de primer paso.</p>
+            <div class="highlight">
+              La idea central consiste en reflejar una porción apropiada de la trayectoria respecto de una barrera, transformando el problema original en otro de conteo más accesible.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 18 -->
+    <section class="card" id="c18">
+      <button class="q-trigger" id="q18" type="button" aria-expanded="false" aria-controls="a18" onclick="toggle(18)">
+        <span class="q-num">18</span>
+        <span class="q-title">En el random walk continuo, ¿cuál es la función del generador infinitesimal?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a18" role="region" aria-labelledby="q18" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>El generador infinitesimal es el operador que codifica la dinámica local del proceso en tiempo continuo. Mientras que en tiempo discreto la evolución se describe por probabilidades de transición paso a paso, en tiempo continuo el generador especifica las tasas instantáneas de transición.</p>
+            <p>Su papel es central tanto en la formulación de las ecuaciones de Kolmogorov como en la teoría de semigrupos de operadores, y constituye el vínculo entre la descripción probabilística del proceso y su tratamiento analítico mediante ecuaciones diferenciales y técnicas funcionales.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 19 -->
+    <section class="card" id="c19">
+      <button class="q-trigger" id="q19" type="button" aria-expanded="false" aria-controls="a19" onclick="toggle(19)">
+        <span class="q-num">19</span>
+        <span class="q-title">Aparte del análisis en el tiempo y espacio estándar, ¿qué es un self-avoiding walk?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a19" role="region" aria-labelledby="q19" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>Un <strong>self-avoiding walk</strong> es una caminata en la cual se impone la restricción de no visitar un mismo estado más de una vez. Esta condición elimina las auto-intersecciones y modifica de forma profunda la estructura del modelo.</p>
+            <p>Dado que la elección del siguiente paso depende de toda la trayectoria previa y no solo del estado actual, el proceso deja de poseer la propiedad de Markov en su forma elemental.</p>
+            <p>Este modelo es especialmente importante en física estadística, donde se emplea para representar polímeros lineales, y también en combinatoria enumerativa y teoría crítica.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 20 -->
+    <section class="card" id="c20">
+      <button class="q-trigger" id="q20" type="button" aria-expanded="false" aria-controls="a20" onclick="toggle(20)">
+        <span class="q-num">20</span>
+        <span class="q-title">¿Cómo explica históricamente el material el nacimiento y la unificación del modelo del random walk?</span>
+        <span class="q-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+      <div class="a-wrap" id="a20" role="region" aria-labelledby="q20" hidden>
+        <div class="a-inner">
+          <div class="a-body">
+            <p>Desde el punto de vista histórico, el modelo de caminata aleatoria emergió de la convergencia de problemas provenientes de distintas áreas del conocimiento. Por una parte, apareció en contextos biológicos y demográficos vinculados a migraciones y dispersión, como en la célebre pregunta formulada por Karl Pearson.</p>
+            <p>Por otra parte, adquirió relevancia en física al ofrecer un marco matemático para el movimiento browniano y la agitación térmica de partículas, en relación con los desarrollos de Brown y Einstein. Finalmente, también se consolidó en el estudio de juegos de azar, donde los problemas de ganancias, pérdidas y ruina condujeron de forma natural a modelos de suma de incrementos aleatorios.</p>
+            <div class="highlight">
+              La unificación de estas vertientes históricas dio lugar a un objeto matemático de extraordinaria generalidad, hoy central en probabilidad, física matemática, teoría de grafos y aplicaciones algorítmicas.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-author">Material elaborado por el profesor Sergio Gevatschnaider</div>
+    <br>
+    Random Walk · 20 preguntas y respuestas desarrolladas en estilo formal
+  </footer>
+
+  <script>
+    const total = 20;
+    const themes = ["dark", "light", "sepia"];
+    const openSet = new Set();
+
+    function getCard(n) {
+      return document.getElementById(`c${n}`);
+    }
+
+    function getButton(n) {
+      return document.getElementById(`q${n}`);
+    }
+
+    function getPanel(n) {
+      return document.getElementById(`a${n}`);
+    }
+
+    function openCard(n) {
+      const card = getCard(n);
+      const button = getButton(n);
+      const panel = getPanel(n);
+
+      card.classList.add("open");
+      button.setAttribute("aria-expanded", "true");
+      panel.hidden = false;
+      openSet.add(n);
+
+      if (window.MathJax) {
+        MathJax.typesetPromise([panel]).catch(err => console.log(err));
+      }
+    }
+
+    function closeCard(n) {
+      const card = getCard(n);
+      const button = getButton(n);
+      const panel = getPanel(n);
+
+      card.classList.remove("open");
+      button.setAttribute("aria-expanded", "false");
+      panel.hidden = true;
+      openSet.delete(n);
+    }
+
+    function toggle(n) {
+      const card = getCard(n);
+      if (card.classList.contains("open")) {
+        closeCard(n);
+      } else {
+        openCard(n);
+      }
+      updateStatus();
+    }
+
+    function expandAll() {
+      for (let i = 1; i <= total; i++) {
+        openCard(i);
+      }
+      updateStatus();
+      if (window.MathJax) {
+        const panels = Array.from(document.querySelectorAll(".a-wrap"));
+        MathJax.typesetPromise(panels).catch(err => console.log(err));
+      }
+    }
+
+    function collapseAll() {
+      for (let i = 1; i <= total; i++) {
+        closeCard(i);
+      }
+      updateStatus();
+    }
+
+    function updateStatus() {
+      const count = openSet.size;
+      const pct = Math.round((count / total) * 100);
+      document.getElementById("bar-inner").style.width = `${pct}%`;
+      document.getElementById("status-count").textContent = `${count} / ${total}`;
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      themes.forEach(t => {
+        document.getElementById(`opt-${t}`).classList.toggle("active", t === theme);
+      });
+      try {
+        localStorage.setItem("rw-theme", theme);
+      } catch (e) {}
+    }
+
+    (function restoreTheme() {
+      try {
+        const saved = localStorage.getItem("rw-theme");
+        if (saved && themes.includes(saved)) {
+          setTheme(saved);
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>
