@@ -210,6 +210,41 @@ El recorrido sigue una secuencia pedagógica gradual: primero se introducen los 
 | **Random Walk · Glosario Interactivo**  <br><br> <details><summary><strong>Resumen</strong></summary><p>Glosario avanzado dedicado a los conceptos fundamentales y extensiones del random walk. Reúne definiciones rigurosas, intuiciones matemáticas y ejemplos concretos sobre incrementos, deriva, recurrencia, transitoriedad, tiempos de primer paso, puentes aleatorios, teoremas límite, procesos de Markov y escalamiento browniano, entre otros términos clave para el estudio moderno de las caminatas aleatorias.</p></details> | [![Ver Glosario](https://img.shields.io/badge/Ver%20Glosario-Interactivo-2ea44f?style=for-the-badge)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/src/classroom/probabilidad/html/Random_Walk__Glosario.html) |
 | **Random Walk · Laboratorio Interactivo**  <br><br> <details><summary><strong>Resumen</strong></summary><p>Laboratorio visual e interactivo que permite experimentar con múltiples manifestaciones del random walk a través de simulaciones, paneles temáticos y controles dinámicos. Incluye exploraciones de caminatas en una dimensión, sesgo y ruina del jugador, puentes aleatorios, caminatas en \(\mathbb{Z}^2\), recorridos sobre grafos y escalamiento hacia el movimiento browniano, ofreciendo una articulación entre teoría, visualización y experimentación computacional.</p></details> | [![Ver Laboratorio](https://img.shields.io/badge/Ver%20Laboratorio-Interactivo-2ea44f?style=for-the-badge)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/src/classroom/probabilidad/html/Random_Walk__Laboratorio.html) |
 
+
+### 🎥 Videos recomendados · Random Walks
+
+#### 1. Introducción e intuición visual
+
+| 🎬 Tema y Concepto Clave | 👨‍🏫 Canal / Autor | 🔗 Enlace |
+| :--- | :--- | :--- |
+| **¿Qué es un Random Walk?**<br><sub>*Introduce la idea de caminata aleatoria con ejemplos en finanzas, algoritmos y biología. Muy recomendable para construir intuición visual desde el comienzo.*</sub> | **Infinite Series (PBS)**<br><sub>*What is a Random Walk?*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=stgYW6M5o4k) |
+| **Random Walk como metáfora de incertidumbre y progreso**<br><sub>*Charla motivacional que parte de la caminata aleatoria 1D y la conecta con la idea de avanzar en entornos inciertos. Muy útil para abrir una clase o contextualizar el tema.*</sub> | **TEDx St. Gilgen International School**<br><sub>*Random walking*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=-yDTUE-QVno) |
+
+#### 2. Desarrollo formal y enfoque universitario
+
+| 🎬 Tema y Concepto Clave | 👨‍🏫 Canal / Autor | 🔗 Enlace |
+| :--- | :--- | :--- |
+| **Introducción formal a los Random Walks**<br><sub>*Presentación más técnica del modelo, enlazándolo con procesos en física y finanzas. Ideal para pasar de la intuición a una formulación más rigurosa.*</sub> | **Complexity Explorer / Santa Fe Institute**<br><sub>*Random Walks Tutorial: Introduction*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=ilwEHzovpJk) |
+| **Simulación y análisis probabilístico del Random Walk**<br><sub>*Clase de MIT donde se simulan caminatas aleatorias y se estudian propiedades como la distancia al origen, articulando teoría probabilística y experimentación computacional.*</sub> | **MIT OpenCourseWare**<br><sub>*5. Random Walks*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=6wUD_gp5WeE) |
+
+#### 3. Escalamiento, difusión y movimiento browniano
+
+| 🎬 Tema y Concepto Clave | 👨‍🏫 Canal / Autor | 🔗 Enlace |
+| :--- | :--- | :--- |
+| **Del Random Walk al Movimiento Browniano**<br><sub>*Explica cómo la caminata aleatoria se relaciona con la difusión y el movimiento browniano, mostrando el paso desde el modelo discreto hacia su límite continuo.*</sub> | **Complexity Explorer / Santa Fe Institute**<br><sub>*Random Walks Tutorial: Brownian Motion*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=89LP5pHWxM8) |
+
+#### 4. Conexiones con econometría y series de tiempo
+
+| 🎬 Tema y Concepto Clave | 👨‍🏫 Canal / Autor | 🔗 Enlace |
+| :--- | :--- | :--- |
+| **Random Walk y Series de Tiempo**<br><sub>*Presenta la caminata aleatoria como caso particular de un modelo AR(1) con \(\rho = 1\), muy útil para conectar el tema con econometría y análisis de series temporales.*</sub> | **Ben Lambert**<br><sub>*A Random Walk – introduction and properties*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=ouahL4HbwBE) |
+
+#### 5. Código, simulación y aplicaciones
+
+| 🎬 Tema y Concepto Clave | 👨‍🏫 Canal / Autor | 🔗 Enlace |
+| :--- | :--- | :--- |
+| **Código y visualización de un Random Walk simple**<br><sub>*Video breve centrado en programación y visualización de una caminata aleatoria simple. Útil como complemento práctico para simulaciones básicas.*</sub> | **YouTube / Recurso de programación**<br><sub>*Simple Random Walk*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=ZZcne16szFM) |
+| **Aplicaciones del Random Walk**<br><sub>*Lección dedicada a aplicaciones en física, juegos de azar y finanzas, con simulaciones y ejemplos computacionales que permiten vincular teoría y práctica.*</sub> | **YouTube / Lección aplicada**<br><sub>*14. Random Walk Applications*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=aDmFbsBp_u4) |
 ## Proceso browniano
 
 Visualización generativa de movimiento browniano, inspirada en la dispersión aleatoria de partículas y en la forma global de una distribución gaussiana en tres dimensiones.
