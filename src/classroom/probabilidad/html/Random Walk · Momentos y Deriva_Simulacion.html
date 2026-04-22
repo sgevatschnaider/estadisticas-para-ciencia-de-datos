@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Random Walk — Simulador Interactivo</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: #2a3555;
+    --text: #e2e8f0;
+    --muted: #8b9bc4;
+    --sym: #00e5c3;
+    --asym: #ff6b8a;
+    --accent: #7c8cff;
+    --stat-bg: #131d35;
+    --btn-bg: #1e2d4e;
+    --btn-hover: #2a3f6e;
+    --grid: rgba(255,255,255,0.04);
+    --zero: rgba(255,255,255,0.12);
+    --formula-bg: #0d1526;
+  }
+  .theme-light {
+    --bg: #f0f4ff;
+    --surface: #ffffff;
+    --surface2: #eef2fe;
+    --border: #c5d0f0;
+    --text: #1a1f3a;
+    --muted: #6070a8;
+    --sym: #008f79;
+    --asym: #cc2255;
+    --accent: #4455dd;
+    --stat-bg: #e8eeff;
+    --btn-bg: #dde5ff;
+    --btn-hover: #c5d0f5;
+    --grid: rgba(0,0,0,0.04);
+    --zero: rgba(0,0,0,0.15);
+    --formula-bg: #e0e7ff;
+  }
+  .theme-neon {
+    --bg: #03020a;
+    --surface: #080616;
+    --surface2: #0d0b22;
+    --border: #1f1a55;
+    --text: #f0eeff;
+    --muted: #8878dd;
+    --sym: #00ffcc;
+    --asym: #ff00aa;
+    --accent: #aaff00;
+    --stat-bg: #0a0820;
+    --btn-bg: #130f35;
+    --btn-hover: #1f1a50;
+    --grid: rgba(0,255,204,0.04);
+    --zero: rgba(0,255,204,0.2);
+    --formula-bg: #060416;
+  }
+  .theme-solar {
+    --bg: #1a0a00;
+    --surface: #241200;
+    --surface2: #2e1800;
+    --border: #5a3010;
+    --text: #fff0d0;
+    --muted: #c08050;
+    --sym: #ffaa00;
+    --asym: #ff4444;
+    --accent: #ff7700;
+    --stat-bg: #1e0f00;
+    --btn-bg: #3a1c00;
+    --btn-hover: #4f2800;
+    --grid: rgba(255,170,0,0.05);
+    --zero: rgba(255,170,0,0.2);
+    --formula-bg: #150800;
+  }
+  .theme-arctic {
+    --bg: #e8f4ff;
+    --surface: #ffffff;
+    --surface2: #d8eeff;
+    --border: #90c4e8;
+    --text: #0a2040;
+    --muted: #4070a0;
+    --sym: #0077cc;
+    --asym: #cc4400;
+    --accent: #0044aa;
+    --stat-bg: #d0e8ff;
+    --btn-bg: #c0d8f5;
+    --btn-hover: #a8c8ee;
+    --grid: rgba(0,80,160,0.05);
+    --zero: rgba(0,80,160,0.2);
+    --formula-bg: #cce0ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    transition: background 0.4s, color 0.4s;
+  }
+
+  header {
+    padding: 18px 28px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: var(--surface);
+  }
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .header-left p {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .theme-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .theme-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-right: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .theme-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .theme-btn:hover { transform: scale(1.15); }
+  .theme-btn.active { border-color: var(--text); }
+  .theme-btn.t-dark   { background: radial-gradient(#00e5c3 30%, #0a0e1a 100%); }
+  .theme-btn.t-light  { background: radial-gradient(#008f79 30%, #f0f4ff 100%); }
+  .theme-btn.t-neon   { background: radial-gradient(#00ffcc 30%, #03020a 100%); }
+  .theme-btn.t-solar  { background: radial-gradient(#ffaa00 30%, #1a0a00 100%); }
+  .theme-btn.t-arctic { background: radial-gradient(#0077cc 30%, #e8f4ff 100%); }
+
+  .main {
+    display: flex;
+    gap: 0;
+    height: calc(100vh - 68px);
+  }
+
+  .sidebar {
+    width: 230px;
+    min-width: 200px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    transition: background 0.4s;
+  }
+  .ctrl-group label {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .ctrl-group .val {
+    float: right;
+    font-weight: 700;
+    color: var(--text);
+    font-size: 11px;
+  }
+  input[type=range] {
+    width: 100%;
+    height: 4px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    margin-top: 4px;
+    transition: accent-color 0.4s;
+  }
+  select {
+    width: 100%;
+    padding: 6px 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    transition: background 0.4s;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    flex: 1;
+    min-width: 48px;
+    padding: 7px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--btn-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+  .btn:hover { background: var(--btn-hover); }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: transparent;
+  }
+  .btn.primary:hover { filter: brightness(1.15); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+
+  .stat-block {
+    background: var(--stat-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .stat-block .sblabel {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 4px 0;
+  }
+  .stat-row .sk { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .stat-row .sv { font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .sym-color { color: var(--sym); }
+  .asym-color { color: var(--asym); }
+
+  .formula-box {
+    background: var(--formula-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .formula-box .fline { color: var(--text); }
+  .formula-box .fval { color: var(--accent); font-weight: 700; }
+
+  .content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+    transition: background 0.4s;
+  }
+
+  .canvases {
+    flex: 1;
+    display: flex;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .canvas-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  .canvas-panel:first-child {
+    border-right: 1px solid var(--border);
+  }
+
+  .panel-header {
+    padding: 10px 16px 8px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.4s;
+  }
+  .panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .panel-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-sym { background: var(--sym); color: #000; }
+  .badge-asym { background: var(--asym); color: #fff; }
+
+  .panel-stats {
+    display: flex;
+    gap: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+  .pstat { color: var(--muted); }
+  .pstat span { color: var(--text); font-weight: 700; }
+
+  canvas.rw {
+    display: block;
+    width: 100%;
+    flex: 1;
+  }
+
+  .bottom-bar {
+    padding: 8px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    transition: background 0.4s;
+  }
+  .step-counter { color: var(--text); font-weight: 700; }
+  .legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .running-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--sym);
+    animation: pulse 1s infinite;
+  }
+  .pulse.stopped { background: var(--muted); animation: none; }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  .section-title {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+  }
+
+  .credit-footer {
+    padding: 10px 16px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+    transition: background 0.4s, color 0.4s;
+  }
+
+</style>
+</head>
+<body class="theme-dark">
+
+<header>
+  <div class="header-left">
+    <h1>Random Walk — Simulador</h1>
+    <p>S<sub>n</sub> = X<sub>1</sub> + X<sub>2</sub> + ... + X<sub>n</sub> &nbsp;|&nbsp; X<sub>i</sub> ∈ {+1, -1}</p>
+  </div>
+  <div class="theme-row">
+    <span class="theme-label">TEMA</span>
+    <button class="theme-btn t-dark   active" onclick="setTheme('dark',this)"   title="Dark Lab"></button>
+    <button class="theme-btn t-light"         onclick="setTheme('light',this)"  title="Académico"></button>
+    <button class="theme-btn t-neon"          onclick="setTheme('neon',this)"   title="Neón"></button>
+    <button class="theme-btn t-solar"         onclick="setTheme('solar',this)"  title="Solar"></button>
+    <button class="theme-btn t-arctic"        onclick="setTheme('arctic',this)" title="Ártico"></button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <div>
+      <div class="section-title">Controles</div>
+      <div class="btn-row">
+        <button class="btn primary" id="btnPlay" onclick="togglePlay()">▶ PLAY</button>
+        <button class="btn" onclick="resetSim()">↺ RESET</button>
+        <button class="btn" onclick="stepOnce()">⊳ STEP</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+      <div class="section-title">Parámetros</div>
+
+      <div class="ctrl-group">
+        <label>Prob. p (asimétrico) <span class="val" id="pval">0.70</span></label>
+        <input type="range" min="1" max="99" value="70" id="pSlider" oninput="updateP(this.value)">
+        <div style="display:flex;justify-content:space-between;font-size:10px;font-family:'JetBrains Mono',monospace;margin-top:3px;">
+          <span style="color:var(--asym)">← izq</span>
+          <span style="color:var(--muted)">0.50</span>
+          <span style="color:var(--sym)">der →</span>
+        </div>
+      </div>
+
+      <div class="ctrl-group" style="margin-top:12px">
+        <label>Velocidad <span class="val" id="speedval">Rápida</span></label>
+        <input type="range" min="1" max="5" value="4" id="speedSlider" oninput="updateSpeed(this.value)">
+      </div>
+
+      <div class="ctrl-group" style="margin-top:12px">
+        <label>N° de caminantes <span class="val" id="walkersval">5</span></label>
+        <input type="range" min="1" max="12" value="5" id="walkersSlider" oninput="updateWalkers(this.value)">
+      </div>
+
+      <div class="ctrl-group" style="margin-top:12px">
+        <label>Pasos máximos</label>
+        <select id="maxStepsSelect" onchange="updateMaxSteps(this.value)">
+          <option value="200">200 pasos</option>
+          <option value="500" selected>500 pasos</option>
+          <option value="1000">1 000 pasos</option>
+          <option value="2000">2 000 pasos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+      <div class="section-title">Estadísticas en vivo</div>
+      <div class="stat-block">
+        <div class="sblabel">Simétrico (p = ½)</div>
+        <div class="stat-row"><span class="sk">E[Sₙ]</span>      <span class="sv sym-color" id="s_evals">—</span></div>
+        <div class="stat-row"><span class="sk">Var[Sₙ]</span>    <span class="sv sym-color" id="s_var">—</span></div>
+        <div class="stat-row"><span class="sk">σ[Sₙ] teórico</span><span class="sv sym-color" id="s_std">—</span></div>
+        <div class="stat-row"><span class="sk">Pos. media</span>  <span class="sv sym-color" id="s_mean">—</span></div>
+      </div>
+    </div>
+
+    <div class="stat-block">
+      <div class="sblabel">Asimétrico (p = <span id="pLabel">0.70</span>)</div>
+      <div class="stat-row"><span class="sk">E[Sₙ]</span>       <span class="sv asym-color" id="a_evals">—</span></div>
+      <div class="stat-row"><span class="sk">Var[Sₙ]</span>     <span class="sv asym-color" id="a_var">—</span></div>
+      <div class="stat-row"><span class="sk">σ[Sₙ] teórico</span><span class="sv asym-color" id="a_std">—</span></div>
+      <div class="stat-row"><span class="sk">Drift/paso</span>  <span class="sv asym-color" id="a_drift">—</span></div>
+      <div class="stat-row"><span class="sk">Pos. media</span>  <span class="sv asym-color" id="a_mean">—</span></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+      <div class="section-title">Fórmulas</div>
+      <div class="formula-box" id="formulaBox">
+        <div class="fline">Simétrico</div>
+        E[Sₙ] = <span class="fval">0</span><br>
+        Var[Sₙ] = <span class="fval">n</span><br>
+        σ = <span class="fval">√n</span><br><br>
+        <div class="fline">Asimétrico</div>
+        E[Sₙ] = <span class="fval" id="fE">0.4n</span><br>
+        Var[Sₙ] = <span class="fval" id="fV">0.84n</span><br>
+        σ = <span class="fval" id="fS">√(0.84n)</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CANVAS AREA -->
+  <div class="content-area">
+    <div class="canvases">
+
+      <!-- Panel Simétrico -->
+      <div class="canvas-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Paseo Simétrico</div>
+          </div>
+          <span class="panel-badge badge-sym">p = 0.50</span>
+          <div class="panel-stats">
+            <div class="pstat">n=<span id="sym_n">0</span></div>
+            <div class="pstat">pos̄=<span id="sym_pos">0.0</span></div>
+          </div>
+        </div>
+        <canvas class="rw" id="cvSym"></canvas>
+      </div>
+
+      <!-- Panel Asimétrico -->
+      <div class="canvas-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Paseo Asimétrico</div>
+          </div>
+          <span class="panel-badge badge-asym" id="asymBadge">p = 0.70</span>
+          <div class="panel-stats">
+            <div class="pstat">n=<span id="asym_n">0</span></div>
+            <div class="pstat">pos̄=<span id="asym_pos">0.0</span></div>
+          </div>
+        </div>
+        <canvas class="rw" id="cvAsym"></canvas>
+      </div>
+
+    </div>
+
+    <div class="bottom-bar">
+      <span><span class="legend-dot" style="background:var(--sym)"></span>Simétrico</span>
+      <span><span class="legend-dot" style="background:var(--asym)"></span>Asimétrico</span>
+      <span>Paso: <span class="step-counter" id="stepCounter">0</span></span>
+      <div class="running-indicator">
+        <div class="pulse stopped" id="pulseEl"></div>
+        <span id="statusTxt">Detenido</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+// State
+// ──────────────────────────────────────────────
+let p = 0.70, q = 0.30;
+let nWalkers = 5;
+let maxSteps = 500;
+let currentStep = 0;
+let running = false;
+let animId = null;
+let speedLevel = 4; // steps per frame
+const speedMap = {1:1, 2:2, 3:4, 4:8, 5:20};
+const speedNames = {1:'Muy lenta', 2:'Lenta', 3:'Media', 4:'Rápida', 5:'Turbo'};
+
+// Walkers: array of arrays of positions (one per step, index 0 = step 0 = pos 0)
+let symWalkers = [];
+let asymWalkers = [];
+// Each walker is an array of y-positions: [0, +1, 0, -1, ...]
+
+const PALETTE = [
+  '#00e5c3','#7c8cff','#ff9f40','#ffdd44','#00ccff',
+  '#cc88ff','#66ff88','#ff6644','#44ddff','#ffaacc','#aaffcc','#ffcc44'
+];
+const PALETTE_ASYM = [
+  '#ff6b8a','#ff9955','#ffcc55','#ff44aa','#ff8855',
+  '#ffaa88','#ff5577','#ff7744','#ffaaaa','#ff4466','#ff8899','#ffaa44'
+];
+
+function initWalkers() {
+  symWalkers  = Array.from({length: nWalkers}, () => [0]);
+  asymWalkers = Array.from({length: nWalkers}, () => [0]);
+  currentStep = 0;
+}
+
+function stepWalkers(n=1) {
+  for (let s = 0; s < n; s++) {
+    if (currentStep >= maxSteps) { stopSim(); return; }
+    // Symmetric
+    for (let i = 0; i < nWalkers; i++) {
+      const last = symWalkers[i][symWalkers[i].length - 1];
+      symWalkers[i].push(last + (Math.random() < 0.5 ? 1 : -1));
+    }
+    // Asymmetric
+    for (let i = 0; i < nWalkers; i++) {
+      const last = asymWalkers[i][asymWalkers[i].length - 1];
+      asymWalkers[i].push(last + (Math.random() < p ? 1 : -1));
+    }
+    currentStep++;
+  }
+}
+
+// ──────────────────────────────────────────────
+// Canvas drawing
+// ──────────────────────────────────────────────
+const cvSym  = document.getElementById('cvSym');
+const cvAsym = document.getElementById('cvAsym');
+const ctxSym  = cvSym.getContext('2d');
+const ctxAsym = cvAsym.getContext('2d');
+
+function resizeCanvas(cv) {
+  cv.width  = cv.offsetWidth  * window.devicePixelRatio;
+  cv.height = cv.offsetHeight * window.devicePixelRatio;
+}
+
+function drawPanel(cv, ctx, walkers, palette, isAsym) {
+  resizeCanvas(cv);
+  const W = cv.width, H = cv.height;
+  const style = getComputedStyle(document.body);
+  const gridC = style.getPropertyValue('--grid').trim();
+  const zeroC = style.getPropertyValue('--zero').trim();
+  const bgC   = style.getPropertyValue('--bg').trim();
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = bgC;
+  ctx.fillRect(0,0,W,H);
+
+  if (currentStep === 0) return;
+
+  const steps = currentStep + 1;
+  const xScale = W / (steps - 1 || 1);
+
+  // Compute y range
+  let minY = Infinity, maxY = -Infinity;
+  for (const w of walkers) {
+    for (const v of w) { if(v<minY) minY=v; if(v>maxY) maxY=v; }
+  }
+  if (isAsym) {
+    // also include theoretical E[Sn] range
+    const drift = (2*p-1)*currentStep;
+    if(drift>maxY) maxY=drift;
+    if(drift<minY) minY=drift;
+  }
+  const padding = Math.max(Math.abs(maxY-minY)*0.15, 5);
+  const yMin = minY - padding, yMax = maxY + padding;
+  const yRange = yMax - yMin || 1;
+
+  function toX(step) { return step * xScale; }
+  function toY(pos)  { return H - ((pos - yMin) / yRange) * H; }
+
+  // Grid lines
+  const nGridLines = 6;
+  ctx.strokeStyle = gridC;
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= nGridLines; i++) {
+    const y = (i / nGridLines) * H;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  }
+  for (let i = 0; i <= 10; i++) {
+    const x = (i / 10) * W;
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+  }
+
+  // Zero line
+  const z0 = toY(0);
+  ctx.strokeStyle = zeroC;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.moveTo(0,z0); ctx.lineTo(W,z0); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Theoretical E[Sn] line for asym
+  if (isAsym && currentStep > 0) {
+    const drift = 2*p - 1;
+    ctx.strokeStyle = '#ffffff44';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath();
+    ctx.moveTo(0, toY(0));
+    ctx.lineTo(W, toY(drift * currentStep));
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // ±σ bands for symmetric
+  if (!isAsym && currentStep > 1) {
+    const sigma = Math.sqrt(currentStep);
+    ctx.fillStyle = 'rgba(0,229,195,0.06)';
+    const yPlus  = toY(sigma), yMinus = toY(-sigma);
+    ctx.fillRect(0, yPlus, W, yMinus - yPlus);
+    ctx.strokeStyle = 'rgba(0,229,195,0.2)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(0,yPlus); ctx.lineTo(W,yPlus); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,yMinus); ctx.lineTo(W,yMinus); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Draw each walker path
+  for (let i = 0; i < walkers.length; i++) {
+    const w = walkers[i];
+    const col = palette[i % palette.length];
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 1.6;
+    ctx.globalAlpha = 0.75;
+    ctx.beginPath();
+    ctx.moveTo(toX(0), toY(w[0]));
+    for (let s = 1; s < w.length; s++) {
+      ctx.lineTo(toX(s), toY(w[s]));
+    }
+    ctx.stroke();
+
+    // Last point dot
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(toX(w.length-1), toY(w[w.length-1]), 3.5, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ──────────────────────────────────────────────
+// Stats update
+// ──────────────────────────────────────────────
+function updateStats() {
+  const n = currentStep;
+  document.getElementById('stepCounter').textContent = n;
+  document.getElementById('sym_n').textContent = n;
+  document.getElementById('asym_n').textContent = n;
+
+  if (n === 0) return;
+
+  // Symmetric
+  const symPositions = symWalkers.map(w => w[w.length-1]);
+  const symMean = symPositions.reduce((a,b)=>a+b,0)/nWalkers;
+  const symVar  = symPositions.reduce((a,b)=>a+(b-symMean)**2,0)/nWalkers;
+  document.getElementById('s_evals').textContent = '0';
+  document.getElementById('s_var').textContent   = n.toFixed(0);
+  document.getElementById('s_std').textContent   = '√' + n + ' = ' + Math.sqrt(n).toFixed(2);
+  document.getElementById('s_mean').textContent  = symMean.toFixed(2);
+  document.getElementById('sym_pos').textContent = symMean.toFixed(1);
+
+  // Asymmetric
+  const asymPositions = asymWalkers.map(w => w[w.length-1]);
+  const asymMean = asymPositions.reduce((a,b)=>a+b,0)/nWalkers;
+  const drift = 2*p - 1;
+  const varTheory = 4*p*q*n;
+  document.getElementById('a_evals').textContent  = (drift*n).toFixed(2);
+  document.getElementById('a_var').textContent    = varTheory.toFixed(2);
+  document.getElementById('a_std').textContent    = Math.sqrt(varTheory).toFixed(2);
+  document.getElementById('a_drift').textContent  = (drift >= 0 ? '+' : '') + drift.toFixed(3);
+  document.getElementById('a_mean').textContent   = asymMean.toFixed(2);
+  document.getElementById('asym_pos').textContent = asymMean.toFixed(1);
+  document.getElementById('pLabel').textContent   = p.toFixed(2);
+}
+
+// ──────────────────────────────────────────────
+// Animation loop
+// ──────────────────────────────────────────────
+function frame() {
+  if (!running) return;
+  const stepsPerFrame = speedMap[speedLevel];
+  stepWalkers(stepsPerFrame);
+  drawPanel(cvSym,  ctxSym,  symWalkers,  PALETTE,      false);
+  drawPanel(cvAsym, ctxAsym, asymWalkers, PALETTE_ASYM, true);
+  updateStats();
+  if (currentStep < maxSteps) {
+    animId = requestAnimationFrame(frame);
+  } else {
+    stopSim();
+  }
+}
+
+function startSim() {
+  running = true;
+  document.getElementById('btnPlay').textContent  = '⏸ PAUSE';
+  document.getElementById('pulseEl').classList.remove('stopped');
+  document.getElementById('statusTxt').textContent = 'Corriendo';
+  animId = requestAnimationFrame(frame);
+}
+function stopSim() {
+  running = false;
+  if (animId) cancelAnimationFrame(animId);
+  document.getElementById('btnPlay').textContent = '▶ PLAY';
+  document.getElementById('pulseEl').classList.add('stopped');
+  document.getElementById('statusTxt').textContent = currentStep >= maxSteps ? 'Completado' : 'Detenido';
+}
+function togglePlay() {
+  if (running) stopSim(); else startSim();
+}
+function resetSim() {
+  stopSim();
+  initWalkers();
+  updateStats();
+  drawPanel(cvSym,  ctxSym,  symWalkers,  PALETTE,      false);
+  drawPanel(cvAsym, ctxAsym, asymWalkers, PALETTE_ASYM, true);
+  document.getElementById('stepCounter').textContent = '0';
+  document.getElementById('sym_n').textContent  = '0';
+  document.getElementById('asym_n').textContent = '0';
+  document.getElementById('sym_pos').textContent = '0.0';
+  document.getElementById('asym_pos').textContent = '0.0';
+  ['s_evals','s_var','s_std','s_mean','a_evals','a_var','a_std','a_drift','a_mean'].forEach(id=>{
+    document.getElementById(id).textContent='—';
+  });
+  document.getElementById('statusTxt').textContent = 'Detenido';
+}
+function stepOnce() {
+  if (currentStep < maxSteps) {
+    stepWalkers(1);
+    drawPanel(cvSym,  ctxSym,  symWalkers,  PALETTE,      false);
+    drawPanel(cvAsym, ctxAsym, asymWalkers, PALETTE_ASYM, true);
+    updateStats();
+  }
+}
+
+// ──────────────────────────────────────────────
+// Control handlers
+// ──────────────────────────────────────────────
+function updateP(val) {
+  p = val / 100;
+  q = 1 - p;
+  document.getElementById('pval').textContent = p.toFixed(2);
+  const badge = document.getElementById('asymBadge');
+  badge.textContent = 'p = ' + p.toFixed(2);
+  if (p < 0.5) { badge.style.background='var(--asym)'; badge.style.color='#fff'; }
+  else if (p > 0.5) { badge.style.background='var(--sym)'; badge.style.color='#000'; }
+  else { badge.style.background='var(--muted)'; badge.style.color='#fff'; }
+  document.getElementById('pLabel').textContent = p.toFixed(2);
+  const drift = (2*p-1).toFixed(3);
+  const vcoef = (4*p*q).toFixed(4);
+  const driftNum = parseFloat(drift);
+  const driftStr = driftNum > 0 ? '+'+drift : drift;
+  document.getElementById('fE').textContent = driftStr + 'n';
+  document.getElementById('fV').textContent = vcoef + 'n';
+  document.getElementById('fS').textContent = '√(' + vcoef + 'n)';
+}
+function updateSpeed(val) {
+  speedLevel = parseInt(val);
+  document.getElementById('speedval').textContent = speedNames[speedLevel];
+}
+function updateWalkers(val) {
+  nWalkers = parseInt(val);
+  document.getElementById('walkersval').textContent = val;
+  resetSim();
+}
+function updateMaxSteps(val) {
+  maxSteps = parseInt(val);
+  resetSim();
+}
+
+// ──────────────────────────────────────────────
+// Themes
+// ──────────────────────────────────────────────
+function setTheme(name, btn) {
+  document.body.className = 'theme-' + name;
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Redraw
+  drawPanel(cvSym,  ctxSym,  symWalkers,  PALETTE,      false);
+  drawPanel(cvAsym, ctxAsym, asymWalkers, PALETTE_ASYM, true);
+}
+
+// ──────────────────────────────────────────────
+// Resize
+// ──────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  drawPanel(cvSym,  ctxSym,  symWalkers,  PALETTE,      false);
+  drawPanel(cvAsym, ctxAsym, asymWalkers, PALETTE_ASYM, true);
+});
+
+// ──────────────────────────────────────────────
+// Init
+// ──────────────────────────────────────────────
+updateP(70);
+initWalkers();
+drawPanel(cvSym,  ctxSym,  symWalkers,  PALETTE,      false);
+drawPanel(cvAsym, ctxAsym, asymWalkers, PALETTE_ASYM, true);
+</script>
+
+<div class="credit-footer">Material elaborado por el profesor Sergio Gevatschnaider</div>
+</body>
+</html>

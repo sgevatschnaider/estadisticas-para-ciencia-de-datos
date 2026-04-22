@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cuestionario · Random Walk Avanzado</title>
+
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ══════════ TEMAS ══════════ */
+    :root {
+      --bg: #0b0c10;
+      --surface: #111318;
+      --card: #161a23;
+      --border: #252b3a;
+      --accent1: #f0c040;
+      --accent2: #3de6c8;
+      --accent3: #f06060;
+      --accent4: #8b6fff;
+      --text: #e8e8f0;
+      --muted: #7a7f9a;
+      --answer-bg: #0d1520;
+      --header-bg1: #0e1420;
+      --header-bg2: #0b0c10;
+      --progress-bg: rgba(11,12,16,0.92);
+      --radius: 14px;
+      --transition: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }[data-theme="light"] {
+      --bg: #f4f5f8;
+      --surface: #ecedf2;
+      --card: #ffffff;
+      --border: #d8dae4;
+      --accent1: #c89a00;
+      --accent2: #0a9e87;
+      --accent3: #d94040;
+      --accent4: #6a4fd8;
+      --text: #1a1b26;
+      --muted: #6b7080;
+      --answer-bg: #f0f2f8;
+      --header-bg1: #e8eaf2;
+      --header-bg2: #f4f5f8;
+      --progress-bg: rgba(244,245,248,0.94);
+    }
+
+    [data-theme="sepia"] {
+      --bg: #f5efe2;
+      --surface: #ede7d6;
+      --card: #fdf8f0;
+      --border: #d4c9b0;
+      --accent1: #a06820;
+      --accent2: #4a8a72;
+      --accent3: #b84040;
+      --accent4: #7055a8;
+      --text: #2c2410;
+      --muted: #7a6a50;
+      --answer-bg: #ede7d6;
+      --header-bg1: #e8e0cc;
+      --header-bg2: #f5efe2;
+      --progress-bg: rgba(245,239,226,0.94);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lora', Georgia, serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 72px 24px 56px;
+      background: linear-gradient(160deg, var(--header-bg1) 0%, var(--header-bg2) 60%);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      transition: background 0.4s ease;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse at center, rgba(240,192,64,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      border: 1px solid rgba(61,230,200,0.35);
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      font-weight: 900;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #f0c040 0%, #ffecaa 40%, #f0c040 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+
+    .subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .author-credit {
+      margin-top: 24px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--accent1);
+      letter-spacing: 0.05em;
+      font-weight: 500;
+      display: inline-block;
+      padding: 8px 20px;
+      background: rgba(240,192,64,0.08);
+      border: 1px solid rgba(240,192,64,0.2);
+      border-radius: 8px;
+    }
+
+    #progress-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--progress-bg);
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: background 0.4s ease;
+    }
+
+    #progress-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--accent1);
+      white-space: nowrap;
+    }
+
+    #progress-bar-outer {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #progress-bar-inner {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent1));
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    #open-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent4);
+      padding: 32px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent4), transparent);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      border-color: rgba(240,192,64,0.25);
+      box-shadow: 0 4px 40px rgba(0,0,0,0.4);
+    }
+
+    .card.open {
+      border-color: rgba(240,192,64,0.45);
+      box-shadow: 0 8px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(240,192,64,0.1);
+    }
+
+    .q-trigger {
+      width: 100%;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 24px 26px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+      gap: 18px;
+      text-align: left;
+    }
+
+    .q-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent1);
+      background: rgba(240,192,64,0.1);
+      border: 1px solid rgba(240,192,64,0.25);
+      border-radius: 6px;
+      padding: 4px 8px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .q-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(0.95rem, 2vw, 1.08rem);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.45;
+      transition: color 0.3s;
+    }
+
+    .card.open .q-title,
+    .card:hover .q-title {
+      color: var(--accent1);
+    }
+
+    .q-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background var(--transition), border-color var(--transition), transform var(--transition);
+      margin-top: 2px;
+    }
+
+    .q-icon svg {
+      transition: transform var(--transition);
+      stroke: var(--muted);
+    }
+
+    .card.open .q-icon {
+      background: var(--accent1);
+      border-color: var(--accent1);
+      transform: scale(1.08);
+    }
+
+    .card.open .q-icon svg {
+      stroke: #000;
+      transform: rotate(180deg);
+    }
+
+    .a-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows var(--transition);
+    }
+
+    .card.open .a-wrap {
+      grid-template-rows: 1fr;
+    }
+
+    .a-inner {
+      overflow: hidden;
+    }
+
+    .a-body {
+      padding: 0 26px 28px 70px;
+      border-top: 1px solid var(--border);
+      background: var(--answer-bg);
+      animation: none;
+    }
+
+    .card.open .a-body {
+      padding-top: 24px;
+    }
+
+    .a-body p {
+      font-size: 0.975rem;
+      line-height: 1.82;
+      color: #c8c8d8;
+      margin-bottom: 14px;
+    }
+
+    .a-body p:last-child { margin-bottom: 0; }
+
+    .math-block {
+      background: rgba(61,230,200,0.06);
+      border-left: 3px solid var(--accent2);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 18px 0;
+      overflow-x: auto;
+      font-size: 1.05rem;
+    }
+
+    .highlight {
+      background: rgba(240,192,64,0.1);
+      border: 1px solid rgba(240,192,64,0.2);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 0.92rem;
+      line-height: 1.75;
+      color: #d8d0b8;
+    }
+
+    .highlight strong {
+      color: var(--accent1);
+      font-style: normal;
+    }
+
+    strong { color: var(--accent2); font-weight: 600; }
+    em { color: var(--muted); font-style: italic; }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin: 0 0 36px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .btn:hover {
+      background: var(--accent1);
+      border-color: var(--accent1);
+      color: #000;
+    }
+
+    .btn-accent {
+      border-color: rgba(61,230,200,0.4);
+      color: var(--accent2);
+    }
+
+    .btn-accent:hover {
+      background: var(--accent2);
+      border-color: var(--accent2);
+      color: #000;
+    }
+
+    footer {
+      text-align: center;
+      padding: 32px 20px 48px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+    }
+
+    .footer-author {
+      color: var(--accent1);
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .card {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.5s forwards;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card:nth-child(1)  { animation-delay: 0.05s; }
+    .card:nth-child(2)  { animation-delay: 0.10s; }
+    .card:nth-child(3)  { animation-delay: 0.15s; }
+    .card:nth-child(4)  { animation-delay: 0.20s; }
+    .card:nth-child(5)  { animation-delay: 0.25s; }
+    .card:nth-child(6)  { animation-delay: 0.30s; }
+    .card:nth-child(7)  { animation-delay: 0.35s; }
+    .card:nth-child(8)  { animation-delay: 0.40s; }
+    .card:nth-child(9)  { animation-delay: 0.45s; }
+    .card:nth-child(10) { animation-delay: 0.50s; }
+    .card:nth-child(11) { animation-delay: 0.55s; }
+    .card:nth-child(12) { animation-delay: 0.60s; }
+    .card:nth-child(13) { animation-delay: 0.65s; }
+    .card:nth-child(14) { animation-delay: 0.70s; }
+    .card:nth-child(15) { animation-delay: 0.75s; }
+    .card:nth-child(16) { animation-delay: 0.80s; }
+    .card:nth-child(17) { animation-delay: 0.85s; }
+    .card:nth-child(18) { animation-delay: 0.90s; }
+    .card:nth-child(19) { animation-delay: 0.95s; }
+    .card:nth-child(20) { animation-delay: 1.00s; }
+
+    #theme-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+      transition: box-shadow 0.3s, border-color 0.3s;
+    }
+
+    #theme-btn:hover {
+      box-shadow: 0 6px 32px rgba(0,0,0,0.45);
+      border-color: var(--accent1);
+    }
+
+    .theme-opt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 100px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.25s, transform 0.2s;
+      position: relative;
+    }
+
+    .theme-opt:hover { transform: scale(1.15); }
+
+    .theme-opt.active {
+      background: var(--accent1);
+    }
+
+    .theme-opt .tip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .theme-opt:hover .tip { opacity: 1; }
+
+    *, *::before, *::after {
+      transition: background-color 0.35s ease, border-color 0.35s ease, color 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .a-wrap { transition: grid-template-rows var(--transition) !important; }
+    #progress-bar-inner { transition: width 0.5s ease !important; }
+    .q-icon svg { transition: transform var(--transition) !important; }
+    .q-icon { transition: background var(--transition), border-color var(--transition), transform var(--transition) !important; }
+
+    @media (max-width: 600px) {
+      .a-body { padding-left: 20px; padding-right: 20px; }
+      .q-trigger { padding: 18px; gap: 12px; }
+      h1 { font-size: 1.9rem; }
+      #theme-btn { bottom: 16px; right: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="theme-btn" role="group" aria-label="Cambiar tema">
+  <button class="theme-opt active" id="opt-dark"  onclick="setTheme('dark')"  title="Oscuro">
+    🌙<span class="tip">Oscuro</span>
+  </button>
+  <button class="theme-opt" id="opt-light" onclick="setTheme('light')" title="Claro">
+    ☀️<span class="tip">Claro</span>
+  </button>
+  <button class="theme-opt" id="opt-sepia" onclick="setTheme('sepia')"  title="Sepia">
+    📜<span class="tip">Sepia</span>
+  </button>
+</div>
+
+<header>
+  <div class="tag">Nivel Más Difícil · 20 Ejercicios</div>
+  <h1>Random Walk:<br>Conteo & Probabilidad</h1>
+  <p class="subtitle">Paridad · Reflexión · Números de Catalán · Esperanza y Varianza</p>
+  <div class="author-credit">Material elaborado por el profesor Sergio Gevatschnaider</div>
+</header>
+
+<div id="progress-wrap">
+  <span id="progress-text">PROGRESO</span>
+  <div id="progress-bar-outer"><div id="progress-bar-inner"></div></div>
+  <span id="open-count">0 / 20 abiertas</span>
+</div>
+
+<main>
+  <div class="controls">
+    <button class="btn btn-accent" onclick="expandAll()">Expandir todo</button>
+    <button class="btn" onclick="collapseAll()">Colapsar todo</button>
+  </div>
+
+  <div class="card" id="c1">
+    <button class="q-trigger" onclick="toggle(1)">
+      <span class="q-num">01</span>
+      <span class="q-title">¿Cuántas trayectorias de 10 pasos terminan en $S_{10} = 2$?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Primero, relacionamos la posición final con la cantidad de subidas. Si $r$ es el número de pasos U, entonces sabemos que la posición final está dada por:</p>
+      <div class="math-block">
+        $$S_{10} = 2r - 10$$
+      </div>
+      <p>Igualamos a la posición deseada y resolvemos para $r$:</p>
+      <div class="math-block">
+        $$2r - 10 = 2 \implies 2r = 12 \implies r = 6$$
+      </div>
+      <p>Debemos elegir cuáles 6 de los 10 pasos son subidas utilizando números combinatorios:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\binom{10}{6} = 210$ trayectorias.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c2">
+    <button class="q-trigger" onclick="toggle(2)">
+      <span class="q-num">02</span>
+      <span class="q-title">Hallar la probabilidad $\mathbb{P}(S_{10} = 2)$.</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Utilizamos el resultado del ejercicio anterior para los <strong>casos favorables</strong>: existen $210$ caminos que cumplen la condición.</p>
+      <p>Para contar el <strong>total de caminos</strong> posibles, consideramos que cada uno de los 10 pasos puede ser U (arriba) o D (abajo):</p>
+      <div class="math-block">
+        $$\text{Totales} = 2^{10} = 1024$$
+      </div>
+      <p>Finalmente, dividimos los casos favorables por los casos totales y simplificamos la fracción:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\mathbb{P}(S_{10} = 2) = \frac{210}{1024} = \frac{105}{512}$
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c3">
+    <button class="q-trigger" onclick="toggle(3)">
+      <span class="q-num">03</span>
+      <span class="q-title">¿Cuántas trayectorias de 12 pasos terminan en $S_{12} = 2$?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Hallamos primero el número de subidas necesarias ($r$) aplicando la fórmula de la posición final para $n = 12$:</p>
+      <div class="math-block">
+        $$2r - 12 = 2 \implies 2r = 14 \implies r = 7$$
+      </div>
+      <p>Procedemos a contar las combinaciones eligiendo 7 posiciones de subida de un total de 12:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\binom{12}{7} = 792$ trayectorias.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c4">
+    <button class="q-trigger" onclick="toggle(4)">
+      <span class="q-num">04</span>
+      <span class="q-title">Hallar la probabilidad $\mathbb{P}(S_{12} = 2)$.</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Basados en el ejercicio anterior, nuestros <strong>casos favorables</strong> suman $792$.</p>
+      <p>Calculamos el <strong>total de caminos</strong> posibles para 12 pasos independientes:</p>
+      <div class="math-block">
+        $$\text{Totales} = 2^{12} = 4096$$
+      </div>
+      <p>Planteamos la probabilidad y simplificamos dividiendo numerador y denominador:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\mathbb{P}(S_{12} = 2) = \frac{792}{4096} = \frac{99}{512}$
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c5">
+    <button class="q-trigger" onclick="toggle(5)">
+      <span class="q-num">05</span>
+      <span class="q-title">¿Cuántas trayectorias de 10 pasos terminan en $S_{10} = 0$?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Para regresar al origen luego de 10 pasos, la cantidad de subidas debe compensar exactamente a la cantidad de bajadas. Buscamos $r$:</p>
+      <div class="math-block">
+        $$2r - 10 = 0 \implies 2r = 10 \implies r = 5$$
+      </div>
+      <p>Contamos las formas de distribuir estas 5 subidas en los 10 pasos totales:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\binom{10}{5} = 252$ trayectorias.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c6">
+    <button class="q-trigger" onclick="toggle(6)">
+      <span class="q-num">06</span>
+      <span class="q-title">Hallar la probabilidad $\mathbb{P}(S_{10} = 0)$.</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>De nuestro cálculo previo, los <strong>casos favorables</strong> son $252$.</p>
+      <p>Los <strong>casos totales</strong> para 10 pasos siguen siendo $2^{10} = 1024$. Establecemos la razón probabilística:</p>
+      <div class="math-block">
+        $$\mathbb{P}(S_{10} = 0) = \frac{252}{1024}$$
+      </div>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> Simplificando, obtenemos $\frac{63}{256}$.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c7">
+    <button class="q-trigger" onclick="toggle(7)">
+      <span class="q-num">07</span>
+      <span class="q-title">Explicar analíticamente por qué $\mathbb{P}(S_{11} = 0) = 0$.</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Si utilizamos la fórmula de las subidas asumiendo $S_{11} = 0$:</p>
+      <div class="math-block">
+        $$2r - 11 = 0 \implies 2r = 11 \implies r = \frac{11}{2} = 5.5$$
+      </div>
+      <p>Este resultado <strong>no es un número entero</strong>, y es conceptualmente imposible dar media subida.</p>
+      <p>Por otro lado, la posición final $S_n$ <strong>siempre conserva la misma paridad</strong> que la cantidad total de pasos $n$. Como 11 es un número impar, $S_{11}$ debe ser forzosamente impar, por lo que es matemáticamente imposible que tome el valor 0 (par).</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\mathbb{P}(S_{11} = 0) = 0$
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c8">
+    <button class="q-trigger" onclick="toggle(8)">
+      <span class="q-num">08</span>
+      <span class="q-title">¿Cuántas trayectorias de 12 pasos van de 0 a 4?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Hallamos la cantidad de pasos hacia arriba $r$ que nos permite finalizar en la posición $S_{12} = 4$:</p>
+      <div class="math-block">
+        $$2r - 12 = 4 \implies 2r = 16 \implies r = 8$$
+      </div>
+      <p>A continuación, calculamos de cuántas maneras podemos ordenar estas 8 subidas:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\binom{12}{8} = 495$ trayectorias.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c9">
+    <button class="q-trigger" onclick="toggle(9)">
+      <span class="q-num">09</span>
+      <span class="q-title">¿Cuántas trayectorias de 8 pasos van de 0 a 0 y nunca bajan de 0?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Este es un problema canónico que se resuelve mediante los <strong>Números de Catalán</strong>. Para terminar en 0 tras 8 pasos, debe haber exactamente 4 subidas y 4 bajadas, por ende $2n = 8 \implies n = 4$.</p>
+      <p>Aplicamos la fórmula del enésimo número de Catalán $C_n = \frac{1}{n+1} \binom{2n}{n}$:</p>
+      <div class="math-block">
+        $$C_4 = \frac{1}{4+1} \binom{8}{4} = \frac{1}{5} \cdot 70 = \frac{70}{5}$$
+      </div>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $14$ trayectorias válidas.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c10">
+    <button class="q-trigger" onclick="toggle(10)">
+      <span class="q-num">10</span>
+      <span class="q-title">Hallar la probabilidad de que una caminata de 8 pasos termine en 0 y nunca baje de 0.</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Tomando el resultado del número de Catalán, poseemos <strong>14 casos favorables</strong>.</p>
+      <p>Para la caminata completa de 8 pasos, las posibilidades totales sin restricciones ascienden a:</p>
+      <div class="math-block">
+        $$\text{Totales} = 2^8 = 256$$
+      </div>
+      <p>Realizamos el cociente probabilístico y reducimos:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\mathbb{P} = \frac{14}{256} = \frac{7}{128}$
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c11">
+    <button class="q-trigger" onclick="toggle(11)">
+      <span class="q-num">11</span>
+      <span class="q-title">¿Cuántos caminos de 8 pasos van de 0 a 2 y nunca bajan de 0?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Emplearemos el <strong>Principio de Reflexión</strong>. Primero, contamos absolutamente todos los caminos de 0 a 2 en 8 pasos:</p>
+      <div class="math-block">
+        $$2r - 8 = 2 \implies r = 5 \implies \binom{8}{5} = 56 \text{ caminos}$$
+      </div>
+      <p>Luego, restamos aquellos caminos "malos" que tocan el nivel $-1$. Por el principio de reflexión, la cantidad de caminos que van de 0 a 2 y tocan $-1$ es equivalente a la cantidad de caminos que van desde $-2$ a 2, o bien de 0 a 4 (en ambos casos, $r=6$):</p>
+      <div class="math-block">
+        $$\text{Caminos malos} = \binom{8}{6} = 28$$
+      </div>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\binom{8}{5} - \binom{8}{6} = 56 - 28 = 28$ caminos.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c12">
+    <button class="q-trigger" onclick="toggle(12)">
+      <span class="q-num">12</span>
+      <span class="q-title">Hallar la probabilidad de que una caminata de 8 pasos vaya de 0 a 2 y nunca baje de 0.</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Según el análisis de reflexión anterior, contamos con <strong>28 casos favorables</strong>.</p>
+      <p>El universo muestral para 8 pasos consta de:</p>
+      <div class="math-block">
+        $$\text{Totales} = 2^8 = 256$$
+      </div>
+      <p>Formamos la fracción y extraemos el factor común 4:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\mathbb{P} = \frac{28}{256} = \frac{7}{64}$
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c13">
+    <button class="q-trigger" onclick="toggle(13)">
+      <span class="q-num">13</span>
+      <span class="q-title">¿Cuántos caminos de 10 pasos van de 0 a 2 y nunca bajan de 0?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Replicamos la heurística del <strong>Principio de Reflexión</strong> para $n=10$. Primero, los caminos totales de 0 a 2:</p>
+      <div class="math-block">
+        $$2r - 10 = 2 \implies r = 6 \implies \binom{10}{6} = 210$$
+      </div>
+      <p>Ahora descontamos los caminos interceptados por el umbral negativo $y = -1$ (equivalente a alcanzar un neto de 4, implicando $r=7$):</p>
+      <div class="math-block">
+        $$\text{Caminos malos} = \binom{10}{7} = 120$$
+      </div>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $210 - 120 = 90$ caminos.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c14">
+    <button class="q-trigger" onclick="toggle(14)">
+      <span class="q-num">14</span>
+      <span class="q-title">Hallar la probabilidad de que una caminata de 10 pasos vaya de 0 a 2 y nunca baje de 0.</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Recuperamos nuestros <strong>90 casos favorables</strong> protegidos por la barrera en $0$.</p>
+      <p>El total de rutas en este espacio de 10 dimensiones dicotómicas es:</p>
+      <div class="math-block">
+        $$\text{Totales} = 2^{10} = 1024$$
+      </div>
+      <p>Planteamos la división:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\mathbb{P} = \frac{90}{1024} = \frac{45}{512}$
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c15">
+    <button class="q-trigger" onclick="toggle(15)">
+      <span class="q-num">15</span>
+      <span class="q-title">¿Cuántos caminos de 10 pasos van de 0 a 4 y nunca bajan de 0?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Paso 1: Calcular la totalidad de trayectorias irrestrictas hacia $S_{10} = 4$:</p>
+      <div class="math-block">
+        $$2r - 10 = 4 \implies r = 7 \implies \binom{10}{7} = 120$$
+      </div>
+      <p>Paso 2: Excluir las rutas mediante <strong>reflexión</strong>. El objetivo reflejado desde el eje $y = -1$ nos pide hallar trayectorias equivalentes hacia $S_{10} = 6$ ($r=8$):</p>
+      <div class="math-block">
+        $$\text{Caminos malos} = \binom{10}{8} = 45$$
+      </div>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $120 - 45 = 75$ caminos.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c16">
+    <button class="q-trigger" onclick="toggle(16)">
+      <span class="q-num">16</span>
+      <span class="q-title">¿Cuántos caminos de 10 pasos van de 0 a 2 y son estrictamente positivos después del primer paso?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>La idea fundamental aquí es que ser <em>"estrictamente positivo"</em> implica que luego de abandonar el origen, la trayectoria nunca más debe tocar el 0. Este problema puede mapearse estructuralmente al mismo método analítico de reflexión.</p>
+      <p>Para concluir en el nivel 2 en 10 pasos, sabemos que $r = 6$. Usando la misma deducción que en los caminos acotados inferiores ordinarios, la magnitud combinatoria demandada coincide exactamente con:</p>
+      <div class="math-block">
+        $$\binom{10}{6} - \binom{10}{7} = 210 - 120$$
+      </div>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $90$ caminos estrictamente positivos.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c17">
+    <button class="q-trigger" onclick="toggle(17)">
+      <span class="q-num">17</span>
+      <span class="q-title">¿Cuántos caminos de 12 pasos vuelven a 0 y nunca bajan de 0?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Reconocemos un escenario estructural para los <strong>Números de Catalán</strong>. Al iniciar y terminar en 0 después de $2n = 12$ pasos, deducimos que $n = 6$.</p>
+      <p>Aplicamos la fórmula principal de Catalán $C_6$:</p>
+      <div class="math-block">
+        $$C_6 = \frac{1}{6+1} \binom{12}{6} = \frac{1}{7} \cdot 924$$
+      </div>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $C_6 = \frac{924}{7} = 132$ caminos.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c18">
+    <button class="q-trigger" onclick="toggle(18)">
+      <span class="q-num">18</span>
+      <span class="q-title">Hallar la probabilidad de que una caminata de 12 pasos vuelva a 0 y nunca baje de 0.</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Integrando el resultado del ejercicio precedente, los <strong>casos favorables</strong> suman 132.</p>
+      <p>Calculamos el conjunto universal para 12 pasos:</p>
+      <div class="math-block">
+        $$\text{Totales} = 2^{12} = 4096$$
+      </div>
+      <p>Construimos la probabilidad y simplificamos por el factor común 4:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\mathbb{P} = \frac{132}{4096} = \frac{33}{1024}$
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c19">
+    <button class="q-trigger" onclick="toggle(19)">
+      <span class="q-num">19</span>
+      <span class="q-title">¿Cuántos caminos de 14 pasos vuelven a 0 y nunca bajan de 0?</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>Dado que $2n = 14$, establecemos que $n = 7$. Continuamos aplicando la estructura de conteo de <strong>Catalán</strong>:</p>
+      <div class="math-block">
+        $$C_7 = \frac{1}{7+1} \binom{14}{7} = \frac{1}{8} \cdot 3432$$
+      </div>
+      <p>Realizamos la división exacta:</p>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $C_7 = \frac{3432}{8} = 429$ caminos.
+      </div>
+    </div></div></div>
+  </div>
+
+  <div class="card" id="c20">
+    <button class="q-trigger" onclick="toggle(20)">
+      <span class="q-num">20</span>
+      <span class="q-title">Hallar la Esperanza $\mathbb{E}(S_{20})$, Varianza $\mathrm{Var}(S_{20})$ y Desvío Estándar $\sigma(S_{20})$.</span>
+      <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="a-wrap"><div class="a-inner"><div class="a-body">
+      <p>En un <em>Random Walk</em> simétrico clásico ($p = 0.5$ hacia arriba, $q = 0.5$ hacia abajo), el valor esperado tras cualquier número $n$ de pasos permanece anclado al origen debido a la simetría perfecta:</p>
+      <div class="math-block">
+        $$\mathbb{E}(S_{20}) = 0$$
+      </div>
+      <p>La varianza de un paseo aleatorio escala linealmente con el tiempo (o cantidad de pasos), siendo $\mathrm{Var}(S_n) = n$. Por ende:</p>
+      <div class="math-block">
+        $$\mathrm{Var}(S_{20}) = 20$$
+      </div>
+      <p>El desvío estándar es la raíz cuadrada matemática de la varianza:</p>
+      <div class="math-block">
+        $$\sigma(S_{20}) = \sqrt{20} = \sqrt{4 \cdot 5} = 2\sqrt{5}$$
+      </div>
+      <div class="highlight">
+        <strong>Respuesta Final:</strong> $\mathbb{E}(S_{20}) = 0 \;\; | \;\; \mathrm{Var}(S_{20}) = 20 \;\; | \;\; \sigma(S_{20}) = 2\sqrt{5}$
+      </div>
+    </div></div></div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-author">Material elaborado por el profesor Sergio Gevatschnaider</div>
+  <br>
+  Random Walk Avanzado &nbsp;·&nbsp; 20 Ejercicios Resueltos
+</footer>
+
+<script>
+  const total = 20;
+  let openSet = new Set();
+
+  function toggle(n) {
+    const card = document.getElementById('c' + n);
+    if (card.classList.contains('open')) {
+      card.classList.remove('open');
+      openSet.delete(n);
+    } else {
+      card.classList.add('open');
+      openSet.add(n);
+      if (window.MathJax) {
+        MathJax.typesetPromise([card]).catch(err => console.log(err));
+      }
+    }
+    updateProgress();
+  }
+
+  function expandAll() {
+    for (let i = 1; i <= total; i++) {
+      const card = document.getElementById('c' + i);
+      card.classList.add('open');
+      openSet.add(i);
+    }
+    updateProgress();
+    if (window.MathJax) {
+      MathJax.typesetPromise(document.querySelectorAll('.card')).catch(err => console.log(err));
+    }
+  }
+
+  function collapseAll() {
+    for (let i = 1; i <= total; i++) {
+      document.getElementById('c' + i).classList.remove('open');
+    }
+    openSet.clear();
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const count = openSet.size;
+    const pct = (count / total * 100).toFixed(0);
+    document.getElementById('progress-bar-inner').style.width = pct + '%';
+    document.getElementById('open-count').textContent = count + ' / ' + total + ' abiertas';
+    document.getElementById('progress-text').textContent = pct + '% COMPLETADO';
+  }
+
+  const themes = ['dark', 'light', 'sepia'];
+
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themes.forEach(th => {
+      document.getElementById('opt-' + th).classList.toggle('active', th === t);
+    });
+    try { localStorage.setItem('quiz-theme', t); } catch(e) {}
+  }
+
+  (function() {
+    try {
+      const saved = localStorage.getItem('quiz-theme');
+      if (saved && themes.includes(saved)) setTheme(saved);
+    } catch(e) {}
+  })();
+
+  document.querySelectorAll('.q-trigger').forEach((btn, idx) => {
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle(idx + 1);
+      }
+    });
+  });
+</script>
+</body>
+</html>

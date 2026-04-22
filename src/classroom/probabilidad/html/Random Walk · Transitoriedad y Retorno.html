@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bloque 2 · Random Walk · Transitoriedad y Retorno</title>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        processEscapes: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --surface:#111318;
+      --card:#161a23;
+      --border:#252b3a;
+      --accent1:#f0c040;
+      --accent2:#3de6c8;
+      --accent3:#8b6fff;
+      --text:#e8e8f0;
+      --muted:#9aa0b5;
+      --answer-bg:#0d1520;
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height:1.6;
+    }
+    header{
+      padding:56px 24px 40px;
+      text-align:center;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg,#111826 0%, #0b0c10 100%);
+    }
+    .tag{
+      display:inline-block;
+      padding:6px 14px;
+      border:1px solid rgba(61,230,200,0.35);
+      border-radius:999px;
+      color:var(--accent2);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.8rem;
+      margin-bottom:18px;
+    }
+    h1{
+      margin:0 0 12px;
+      font-size:clamp(2rem,4vw,3.4rem);
+      color:var(--accent1);
+    }
+    .subtitle{
+      color:var(--muted);
+      font-size:1rem;
+      max-width:920px;
+      margin:0 auto;
+    }
+    .credit{
+      margin-top:18px;
+      color:var(--accent1);
+      font-size:.95rem;
+    }
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:32px 18px 72px;
+    }
+    .intro{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:24px;
+      margin-bottom:24px;
+    }
+    .intro h2{
+      margin-top:0;
+      color:var(--accent3);
+    }
+    .formula{
+      background:rgba(61,230,200,0.06);
+      border-left:3px solid var(--accent2);
+      padding:14px 16px;
+      margin:14px 0;
+      overflow-x:auto;
+      border-radius:0 8px 8px 0;
+    }
+    .note{
+      background:rgba(240,192,64,0.08);
+      border:1px solid rgba(240,192,64,0.20);
+      border-radius:10px;
+      padding:14px 16px;
+      margin-top:16px;
+    }
+    .controls{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin:0 0 24px;
+    }
+    button.ctrl{
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      padding:10px 18px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:.92rem;
+    }
+    button.ctrl:hover{
+      border-color:var(--accent1);
+      color:var(--accent1);
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      margin-bottom:16px;
+      overflow:hidden;
+    }
+    .q{
+      width:100%;
+      border:none;
+      background:none;
+      color:var(--text);
+      text-align:left;
+      padding:22px 22px;
+      cursor:pointer;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:14px;
+      align-items:start;
+    }
+    .num{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color:var(--accent1);
+      border:1px solid rgba(240,192,64,0.25);
+      background:rgba(240,192,64,0.08);
+      border-radius:8px;
+      padding:4px 8px;
+      font-size:.8rem;
+      min-width:38px;
+      text-align:center;
+    }
+    .title{
+      font-size:1.06rem;
+      font-weight:700;
+      line-height:1.45;
+    }
+    .icon{
+      font-size:1.1rem;
+      color:var(--muted);
+      transition:transform .25s ease;
+    }
+    .a{
+      display:none;
+      border-top:1px solid var(--border);
+      background:var(--answer-bg);
+      padding:22px 22px 26px 62px;
+    }
+    .card.open .a{display:block}
+    .card.open .icon{transform:rotate(180deg)}
+    .a p{margin:0 0 12px}
+    .final{
+      margin-top:16px;
+      padding:14px 16px;
+      background:rgba(240,192,64,0.08);
+      border:1px solid rgba(240,192,64,0.22);
+      border-radius:10px;
+    }
+    .final strong{color:var(--accent1)}
+    footer{
+      border-top:1px solid var(--border);
+      text-align:center;
+      padding:28px 20px 40px;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+    mjx-container{
+      overflow-x:auto;
+      overflow-y:hidden;
+      max-width:100%;
+    }
+    @media (max-width:700px){
+      .a{padding-left:20px}
+      .q{padding:18px}
+      .title{font-size:1rem}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="tag">Bloque 2 · 10 ejercicios resueltos</div>
+    <h1>Random Walk · Transitoriedad y Retorno</h1>
+    <p class="subtitle">Recurrencia, transitoriedad, probabilidad de retorno al origen y probabilidades de alcanzar un estado dado cuando existe deriva.</p>
+    <div class="credit">Material elaborado por el profesor Sergio Gevatschnaider</div>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <h2>Ideas centrales del bloque</h2>
+      <p>Para un random walk en Z con pasos &plusmn;1:</p>
+      <div class="formula">
+        \[
+        S_n=\sum_{i=1}^{n} X_i, \qquad P(X_i=+1)=p,\qquad P(X_i=-1)=q=1-p.
+        \]
+      </div>
+      <p>Recordemos:</p>
+      <div class="formula">
+        \[
+        \text{Si } p=q=\tfrac12,\ \text{el proceso es recurrente.}
+        \]
+        \[
+        \text{Si } p\neq q,\ \text{el proceso es transiente.}
+        \]
+      </div>
+      <p>La probabilidad de volver al origen alguna vez, partiendo desde 0, es:</p>
+      <div class="formula">
+        \[
+        P(\text{retornar al origen})=1-|p-q|=2\min(p,q).
+        \]
+      </div>
+      <p>Además, cuando p &gt; q (deriva hacia la derecha):</p>
+      <div class="formula">
+        \[
+        P_x(\text{alcanzar }0)=\left(\frac{q}{p}\right)^x \quad \text{para } x\ge 1,
+        \]
+        \[
+        P_x(\text{alcanzar un nivel superior})=1 \quad \text{si } x \text{ está por debajo del objetivo.}
+        \]
+      </div>
+      <p>Cuando p &lt; q (deriva hacia la izquierda), desde 0 la probabilidad de alcanzar +1 alguna vez es:</p>
+      <div class="formula">
+        \[
+        P_0(T_1<\infty)=\frac{p}{q}.
+        \]
+      </div>
+    </section>
+
+    <div class="controls">
+      <button class="ctrl" onclick="expandAll()">Expandir todo</button>
+      <button class="ctrl" onclick="collapseAll()">Colapsar todo</button>
+    </div>
+
+    <div class="card" id="c1">
+      <button class="q" onclick="toggleCard(1)">
+        <span class="num">2.1</span>
+        <span class="title">Sea \(p=\tfrac{2}{3}\), \(q=\tfrac{1}{3}\). Hallar la probabilidad de volver al origen alguna vez.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Aplicar la fórmula general de retorno</strong></p>
+        <div class="formula">\[P_0(T_0^+<\infty)=1-|p-q|\]</div>
+
+        <p><strong>Paso 2: Sustituir</strong></p>
+        <div class="formula">\[1-\left|\frac{2}{3}-\frac{1}{3}\right|=1-\frac{1}{3}=\frac{2}{3}\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong> \[P_0(T_0^+<\infty)=\frac{2}{3}\]</div>
+      </div>
+    </div>
+
+    <div class="card" id="c2">
+      <button class="q" onclick="toggleCard(2)">
+        <span class="num">2.2</span>
+        <span class="title">Con \(p=\tfrac{2}{3}\), \(q=\tfrac{1}{3}\), hallar la probabilidad de nunca volver al origen.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Usar complemento</strong></p>
+        <div class="formula">\[P_0(T_0^+=\infty)=1-P_0(T_0^+<\infty)\]</div>
+
+        <p><strong>Paso 2: Sustituir el valor anterior</strong></p>
+        <div class="formula">\[1-\frac{2}{3}=\frac{1}{3}\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong> \[P_0(T_0^+=\infty)=\frac{1}{3}\]</div>
+      </div>
+    </div>
+
+    <div class="card" id="c3">
+      <button class="q" onclick="toggleCard(3)">
+        <span class="num">2.3</span>
+        <span class="title">Sea \(p=0.6\), \(q=0.4\). Hallar la probabilidad de retorno al origen.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Diferencia absoluta</strong></p>
+        <div class="formula">\[|p-q|=|0.6-0.4|=0.2\]</div>
+
+        <p><strong>Paso 2: Aplicar la fórmula</strong></p>
+        <div class="formula">\[P_0(T_0^+<\infty)=1-0.2=0.8\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong> \[P_0(T_0^+<\infty)=0.8\]</div>
+      </div>
+    </div>
+
+    <div class="card" id="c4">
+      <button class="q" onclick="toggleCard(4)">
+        <span class="num">2.4</span>
+        <span class="title">Sea \(p=0.6\), \(q=0.4\). Hallar la probabilidad de escape definitivo.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Probabilidad de retorno</strong></p>
+        <div class="formula">\[P_0(T_0^+<\infty)=0.8\]</div>
+
+        <p><strong>Paso 2: Complemento</strong></p>
+        <div class="formula">\[P_0(T_0^+=\infty)=1-0.8=0.2\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong> \[P(\text{escape definitivo})=0.2\]</div>
+      </div>
+    </div>
+
+    <div class="card" id="c5">
+      <button class="q" onclick="toggleCard(5)">
+        <span class="num">2.5</span>
+        <span class="title">Con \(p=\tfrac{3}{4}\), \(q=\tfrac{1}{4}\), hallar la probabilidad de que el caminante vuelva al origen al menos una vez.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Calcular la diferencia</strong></p>
+        <div class="formula">\[|p-q|=\left|\frac{3}{4}-\frac{1}{4}\right|=\frac{1}{2}\]</div>
+
+        <p><strong>Paso 2: Retorno al origen</strong></p>
+        <div class="formula">\[P(\text{retorno})=1-\frac{1}{2}=\frac{1}{2}\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong> \[P_0(T_0^+<\infty)=\frac{1}{2}\]</div>
+      </div>
+    </div>
+
+    <div class="card" id="c6">
+      <button class="q" onclick="toggleCard(6)">
+        <span class="num">2.6</span>
+        <span class="title">Con \(p=\tfrac{3}{4}\), \(q=\tfrac{1}{4}\), si \(S_1=-1\), hallar la probabilidad de alcanzar el origen alguna vez.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Interpretar la posición inicial</strong></p>
+        <p>El caminante parte desde \(-1\) y quiere alcanzar \(0\).</p>
+
+        <p><strong>Paso 2: Usar la deriva positiva</strong></p>
+        <p>Como \(p>q\), la caminata tiene deriva hacia la derecha. Desde un punto situado a la izquierda del objetivo, la probabilidad de alcanzar un nivel superior es \(1\).</p>
+
+        <div class="formula">\[P_{-1}(T_0<\infty)=1\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong> \[1\]</div>
+      </div>
+    </div>
+
+    <div class="card" id="c7">
+      <button class="q" onclick="toggleCard(7)">
+        <span class="num">2.7</span>
+        <span class="title">Con \(p=\tfrac{3}{4}\), \(q=\tfrac{1}{4}\), si \(S_1=1\), hallar la probabilidad de volver al origen.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Fórmula de hitting hacia abajo con deriva positiva</strong></p>
+        <p>Partiendo desde \(1\), la probabilidad de alcanzar \(0\) alguna vez es:</p>
+        <div class="formula">\[P_1(T_0<\infty)=\left(\frac{q}{p}\right)^1\]</div>
+
+        <p><strong>Paso 2: Sustituir</strong></p>
+        <div class="formula">\[\frac{q}{p}=\frac{1/4}{3/4}=\frac{1}{3}\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong> \[P_1(T_0<\infty)=\frac{1}{3}\]</div>
+      </div>
+    </div>
+
+    <div class="card" id="c8">
+      <button class="q" onclick="toggleCard(8)">
+        <span class="num">2.8</span>
+        <span class="title">Con \(p=\tfrac{2}{3}\), \(q=\tfrac{1}{3}\), si el caminante está en \(2\), hallar la probabilidad de volver al origen alguna vez.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Fórmula</strong></p>
+        <p>Con deriva positiva, partiendo desde \(x\ge 1\):</p>
+        <div class="formula">\[P_x(T_0<\infty)=\left(\frac{q}{p}\right)^x\]</div>
+
+        <p><strong>Paso 2: Sustituir \(x=2\)</strong></p>
+        <div class="formula">\[P_2(T_0<\infty)=\left(\frac{1/3}{2/3}\right)^2=\left(\frac{1}{2}\right)^2=\frac{1}{4}\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong> \[P_2(T_0<\infty)=\frac{1}{4}\]</div>
+      </div>
+    </div>
+
+    <div class="card" id="c9">
+      <button class="q" onclick="toggleCard(9)">
+        <span class="num">2.9</span>
+        <span class="title">Con \(p=0.4\), \(q=0.6\), hallar la probabilidad de retorno al origen.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Diferencia absoluta</strong></p>
+        <div class="formula">\[|p-q|=|0.4-0.6|=0.2\]</div>
+
+        <p><strong>Paso 2: Aplicar la fórmula</strong></p>
+        <div class="formula">\[P_0(T_0^+<\infty)=1-0.2=0.8\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong> \[P_0(T_0^+<\infty)=0.8\]</div>
+      </div>
+    </div>
+
+    <div class="card open" id="c10">
+      <button class="q" onclick="toggleCard(10)">
+        <span class="num">2.10</span>
+        <span class="title">Pregunta conceptual: si p &gt; q, ¿el caminante necesariamente vuelve infinitas veces al origen?</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Recordar el tipo del proceso</strong></p>
+        <p>Si \(p\neq q\), el random walk en \(\mathbb{Z}\) es <strong>transiente</strong>.</p>
+
+        <p><strong>Paso 2: Consecuencia</strong></p>
+        <p>Ser transiente significa que el número de retornos al origen no es infinito casi seguramente.</p>
+
+        <p><strong>Paso 3: Interpretación</strong></p>
+        <p>Puede haber uno o varios retornos, pero no ocurre con probabilidad 1 que el caminante vuelva infinitas veces al origen.</p>
+
+        <div class="final"><strong>Respuesta final:</strong> <p><strong>No.</strong> Si \(p\neq q\), el random walk es transiente, por lo que no vuelve infinitas veces al origen casi seguramente.</p></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Bloque 2 · Transitoriedad y retorno · Random Walk<br>
+    Material elaborado por el profesor Sergio Gevatschnaider
+  </footer>
+
+  <script>
+    function typesetTarget(target){
+      if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise(target ? [target] : undefined).catch(() => {});
+      }
+    }
+
+    function toggleCard(n){
+      const card = document.getElementById('c' + n);
+      card.classList.toggle('open');
+      typesetTarget(card);
+    }
+
+    function expandAll(){
+      document.querySelectorAll('.card').forEach(card => card.classList.add('open'));
+      typesetTarget();
+    }
+
+    function collapseAll(){
+      document.querySelectorAll('.card').forEach(card => card.classList.remove('open'));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      typesetTarget();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Random Walk — Recurrencia y Transitoriedad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c1018;
+  --panel:#131a26;
+  --panel2:#182233;
+  --border:rgba(255,255,255,.09);
+  --text:#e8edf7;
+  --muted:#8ea0c0;
+  --muted2:#65748d;
+  --rec:#f0a500;
+  --trans:#4ea1ff;
+  --ok:#35d39a;
+  --warn:#ff7a59;
+  --shadow:0 14px 40px rgba(0,0,0,.28);
+  --grid:rgba(255,255,255,.05);
+}
+
+[data-theme="light"]{
+  --bg:#eef3fb;
+  --panel:#ffffff;
+  --panel2:#e7eef8;
+  --border:rgba(18,42,70,.12);
+  --text:#13243d;
+  --muted:#4f6786;
+  --muted2:#7388a3;
+  --rec:#c98200;
+  --trans:#176fd8;
+  --ok:#218c68;
+  --warn:#cc5a3e;
+  --shadow:0 14px 34px rgba(20,40,70,.10);
+  --grid:rgba(18,42,70,.07);
+}
+[data-theme="sepia"]{
+  --bg:#f2eadf;
+  --panel:#fbf5ec;
+  --panel2:#efe4d4;
+  --border:rgba(82,55,24,.12);
+  --text:#3b2917;
+  --muted:#7a5d3b;
+  --muted2:#9b7f60;
+  --rec:#c67a00;
+  --trans:#2d6ca2;
+  --ok:#3d8752;
+  --warn:#b85b3d;
+  --shadow:0 14px 34px rgba(82,55,24,.10);
+  --grid:rgba(82,55,24,.08);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:22px 16px 30px;
+  transition:background .25s,color .25s;
+}
+.wrapper{max-width:1320px;margin:0 auto}
+.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px;flex-wrap:wrap}
+.header h1{font-size:clamp(20px,3vw,30px);line-height:1.1;margin-bottom:6px}
+.header p{color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;line-height:1.5}
+.top-note{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:18px;box-shadow:var(--shadow)}
+.top-note p{color:var(--muted);font-size:14px;line-height:1.6}
+.top-note b{color:var(--text)}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.btn{
+  border:1px solid var(--border);
+  background:var(--panel2);
+  color:var(--text);
+  border-radius:10px;
+  padding:9px 14px;
+  cursor:pointer;
+  font-family:'DM Mono',monospace;
+  font-size:12px;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn.primary{background:#24344d}
+.slider-wrap{display:flex;align-items:center;gap:10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px}
+
+.theme-wrap{display:flex;align-items:center;gap:8px;margin-left:auto}
+.theme-label{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)}
+.theme-btn{
+  width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer;
+  background:var(--panel2); transition:transform .15s,border-color .15s,filter .15s;
+}
+.theme-btn:hover{transform:scale(1.12)}
+.theme-btn.active{border-color:var(--text);transform:scale(1.08)}
+.theme-btn.dark{background:radial-gradient(circle at 35% 35%, #4ea1ff, #0c1018)}
+.theme-btn.light{background:radial-gradient(circle at 35% 35%, #ffffff, #cdd9ea)}
+.theme-btn.sepia{background:radial-gradient(circle at 35% 35%, #d8b07a, #8a6946)}
+
+input[type=range]{width:120px;accent-color:#8ab7ff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel{
+  background:linear-gradient(180deg,var(--panel) 0%, #101824 100%);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:16px;
+  box-shadow:var(--shadow);
+  min-width:0;
+}
+.panel.rec{border-color:color-mix(in srgb,var(--rec) 35%, var(--border))}
+.panel.trans{border-color:color-mix(in srgb,var(--trans) 35%, var(--border))}
+.panel-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap}
+.title-wrap h2{font-size:20px;margin-bottom:5px}
+.title-wrap p{color:var(--muted);font-size:13px;line-height:1.5}
+.badge{font-family:'DM Mono',monospace;font-size:11px;padding:5px 9px;border-radius:999px;border:1px solid var(--border)}
+.badge.rec{color:var(--rec);background:color-mix(in srgb,var(--rec) 12%, transparent);border-color:color-mix(in srgb,var(--rec) 40%, var(--border))}
+.badge.trans{color:var(--trans);background:color-mix(in srgb,var(--trans) 12%, transparent);border-color:color-mix(in srgb,var(--trans) 40%, var(--border))}
+.formula-box{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.mini{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.02);
+}
+.mini .k{font-family:'DM Mono',monospace;color:var(--muted2);font-size:11px;margin-bottom:4px;text-transform:uppercase}
+.mini .v{font-family:'DM Mono',monospace;color:var(--text);font-size:15px;line-height:1.35}
+.canvas-wrap{border:1px solid var(--border);border-radius:16px;overflow:hidden;background:#0d131d;margin-bottom:10px}
+.canvas-head{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 12px;background:rgba(255,255,255,.025);border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex-wrap:wrap}
+canvas.walk{display:block;width:100%;height:190px}
+.status{min-height:18px;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.card{border:1px solid var(--border);border-radius:12px;padding:11px 12px;background:rgba(255,255,255,.02)}
+.card .label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:6px;text-transform:uppercase}
+.card .value{font-family:'DM Mono',monospace;font-size:20px;color:var(--text);font-weight:500}
+.chart-wrap{border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.02);padding:8px;height:220px;margin-bottom:10px}
+.explain{font-size:13px;line-height:1.6;color:var(--muted)}
+.explain b{color:var(--text)}
+.footer{margin-top:22px;text-align:center;color:var(--muted);font-size:13px;border-top:1px solid var(--border);padding-top:14px}
+@media (max-width: 1020px){
+  .grid{grid-template-columns:1fr}
+}
+@media (max-width: 700px){
+  .stats,.formula-box{grid-template-columns:1fr 1fr}
+}
+@media (max-width: 520px){
+  .stats,.formula-box{grid-template-columns:1fr}
+  .slider-wrap{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div>
+      <h1>Random Walk en ℤ — Recurrencia y Transitoriedad</h1>
+      <p>Dos simulaciones separadas · ambas parten desde 0 · foco exclusivo en si el origen se visita infinitamente o no en sentido probabilístico.</p>
+    </div>
+    <div class="theme-wrap" aria-label="Cambio de tema">
+      <span class="theme-label">Tema</span>
+      <button class="theme-btn dark active" data-theme-btn="dark" onclick="setTheme('dark')" title="Oscuro"></button>
+      <button class="theme-btn light" data-theme-btn="light" onclick="setTheme('light')" title="Claro"></button>
+      <button class="theme-btn sepia" data-theme-btn="sepia" onclick="setTheme('sepia')" title="Sepia"></button>
+    </div>
+  </div>
+
+  <div class="top-note">
+    <p><b>Idea central:</b> acá ya no miramos <b>h₁ = P₁(alcanzar 0)</b>. En esta versión miramos solo <b>r₀ = P₀(volver al origen después de salir</b>). Así se ve con claridad que el paseo <b>simétrico</b> es recurrente y que el paseo <b>asimétrico</b> es transitorio, aunque pueda volver muchas veces en trayectorias individuales.</p>
+  </div>
+
+  <div class="controls">
+    <button class="btn primary" id="playBtn">⏸ Pausa</button>
+    <button class="btn" id="resetBtn">↺ Reiniciar</button>
+    <button class="btn" id="batchBtn">+ Lote extra</button>
+    <div class="slider-wrap">
+      <span>Lento</span>
+      <input type="range" id="speed" min="1" max="10" value="5">
+      <span>Rápido</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="panel rec">
+      <div class="panel-head">
+        <div class="title-wrap">
+          <h2>Simulación A · Recurrencia</h2>
+          <p>Paseo simétrico con <b>p = q = 0.5</b>. Desde 0, la probabilidad de volver al origen es 1.</p>
+        </div>
+        <div class="badge rec">RECURRENTE</div>
+      </div>
+
+      <div class="formula-box">
+        <div class="mini">
+          <div class="k">Clasificación</div>
+          <div class="v">p = q = 1/2 ⟹ recurrente</div>
+        </div>
+        <div class="mini">
+          <div class="k">Retorno teórico</div>
+          <div class="v">r₀ = P₀(τ₀⁺ &lt; ∞) = 1</div>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <div class="canvas-head">
+          <span>Trayectoria visual desde 0</span>
+          <span id="recPosHead">posición = 0</span>
+        </div>
+        <canvas id="recWalk" class="walk"></canvas>
+      </div>
+      <div class="status" id="recStatus">Sale de 0 y tarde o temprano vuelve con probabilidad 1.</div>
+
+      <div class="stats">
+        <div class="card"><div class="label">Intentos</div><div class="value" id="recAttempts">0</div></div>
+        <div class="card"><div class="label">Retornos</div><div class="value" id="recReturns">0</div></div>
+        <div class="card"><div class="label">r₀ empírico</div><div class="value" id="recEmp">—</div></div>
+        <div class="card"><div class="label">r₀ teórico</div><div class="value">1.000</div></div>
+      </div>
+
+      <div class="chart-wrap"><canvas id="recChart"></canvas></div>
+      <div class="explain">
+        <b>Lectura:</b> aunque el paseo pueda alejarse bastante, la probabilidad total de retorno al origen es 1. El gráfico empírico debería estabilizarse cerca de <b>1</b>.
+      </div>
+    </section>
+
+    <section class="panel trans">
+      <div class="panel-head">
+        <div class="title-wrap">
+          <h2>Simulación B · Transitoriedad</h2>
+          <p>Paseo asimétrico con <b>p = 0.7, q = 0.3</b>. Desde 0, la probabilidad de volver al origen es menor que 1.</p>
+        </div>
+        <div class="badge trans">TRANSITORIO</div>
+      </div>
+
+      <div class="formula-box">
+        <div class="mini">
+          <div class="k">Clasificación</div>
+          <div class="v">p ≠ q ⟹ transitorio</div>
+        </div>
+        <div class="mini">
+          <div class="k">Retorno teórico</div>
+          <div class="v">r₀ = 2 min(p,q) = 0.6</div>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <div class="canvas-head">
+          <span>Trayectoria visual desde 0</span>
+          <span id="transPosHead">posición = 0</span>
+        </div>
+        <canvas id="transWalk" class="walk"></canvas>
+      </div>
+      <div class="status" id="transStatus">A veces vuelve, pero otras veces se aleja y no retorna.</div>
+
+      <div class="stats">
+        <div class="card"><div class="label">Intentos</div><div class="value" id="transAttempts">0</div></div>
+        <div class="card"><div class="label">Retornos</div><div class="value" id="transReturns">0</div></div>
+        <div class="card"><div class="label">r₀ empírico</div><div class="value" id="transEmp">—</div></div>
+        <div class="card"><div class="label">r₀ teórico</div><div class="value">0.600</div></div>
+      </div>
+
+      <div class="chart-wrap"><canvas id="transChart"></canvas></div>
+      <div class="explain">
+        <b>Lectura:</b> una trayectoria concreta puede volver varias veces, pero la clasificación del proceso depende de la probabilidad total de retorno. Acá esa probabilidad es <b>0.6</b>, no 1.
+      </div>
+    </section>
+  </div>
+
+  <div class="footer">Material elaborado por el profesor Sergio Gevatschnaider</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let currentTheme = 'dark';
+
+function refreshColors(){
+  return {
+    rec: getComputedStyle(document.documentElement).getPropertyValue('--rec').trim(),
+    trans: getComputedStyle(document.documentElement).getPropertyValue('--trans').trim(),
+    grid: getComputedStyle(document.documentElement).getPropertyValue('--grid').trim(),
+    muted: getComputedStyle(document.documentElement).getPropertyValue('--muted2').trim(),
+    border: getComputedStyle(document.documentElement).getPropertyValue('--border').trim()
+  };
+}
+let COLORS = refreshColors();
+
+function setTheme(theme){
+  currentTheme = theme;
+  if(theme === 'dark'){
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+  document.querySelectorAll('[data-theme-btn]').forEach(btn=>{
+    btn.classList.toggle('active', btn.getAttribute('data-theme-btn') === theme);
+  });
+  COLORS = refreshColors();
+  recSim.color = COLORS.rec;
+  transSim.color = COLORS.trans;
+  [recSim, transSim].forEach(sim=>{
+    if(sim.chart){
+      sim.chart.data.datasets[0].borderColor = sim.color;
+      sim.chart.data.datasets[0].backgroundColor = sim.color + '18';
+    }
+    updateChart(sim);
+    drawWalk(sim);
+  });
+}
+
+function retornoOrigenTeorico(p,q){
+  return Math.abs(p-q) < 1e-12 ? 1 : 2*Math.min(p,q);
+}
+
+function createSim(kind, p, color, ids){
+  const q = 1-p;
+  const sim = {
+    kind, p, q, color,
+    attempts: 0,
+    returns: 0,
+    history: [],
+    pos: 0,
+    trail: [0],
+    leftOrigin: false,
+    walkNumber: 1,
+    paused: false,
+    canvas: document.getElementById(ids.canvas),
+    ctx: null,
+    posHead: document.getElementById(ids.posHead),
+    status: document.getElementById(ids.status),
+    attemptsEl: document.getElementById(ids.attempts),
+    returnsEl: document.getElementById(ids.returns),
+    empEl: document.getElementById(ids.emp),
+    chartEl: document.getElementById(ids.chart),
+    chart: null
+  };
+  return sim;
+}
+
+const recSim = createSim('rec', 0.5, COLORS.rec, {
+  canvas:'recWalk', posHead:'recPosHead', status:'recStatus', attempts:'recAttempts', returns:'recReturns', emp:'recEmp', chart:'recChart'
+});
+const transSim = createSim('trans', 0.7, COLORS.trans, {
+  canvas:'transWalk', posHead:'transPosHead', status:'transStatus', attempts:'transAttempts', returns:'transReturns', emp:'transEmp', chart:'transChart'
+});
+const sims = [recSim, transSim];
+
+function initCanvas(sim){
+  const dpr = window.devicePixelRatio || 1;
+  const w = sim.canvas.clientWidth || 500;
+  const h = sim.canvas.clientHeight || 190;
+  sim.canvas.width = w*dpr;
+  sim.canvas.height = h*dpr;
+  sim.ctx = sim.canvas.getContext('2d');
+  sim.ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+function posToX(pos, w, range=24){
+  const pad = 28;
+  return w/2 + (pos/range)*(w/2-pad);
+}
+
+function drawWalk(sim){
+  if(!sim.ctx) return;
+  const ctx = sim.ctx;
+  const w = sim.canvas.clientWidth || 500;
+  const h = sim.canvas.clientHeight || 190;
+  const mid = h/2 + 8;
+  ctx.clearRect(0,0,w,h);
+
+  ctx.strokeStyle = COLORS.grid;
+  ctx.lineWidth = 1;
+  for(let i=0;i<=10;i++){
+    const x = 18 + i*(w-36)/10;
+    ctx.beginPath(); ctx.moveTo(x,20); ctx.lineTo(x,h-22); ctx.stroke();
+  }
+  ctx.beginPath(); ctx.moveTo(18,mid); ctx.lineTo(w-18,mid); ctx.stroke();
+
+  for(let p=-20;p<=20;p+=5){
+    const x = posToX(p,w);
+    ctx.strokeStyle = COLORS.border;
+    ctx.beginPath(); ctx.moveTo(x,mid-10); ctx.lineTo(x,mid+10); ctx.stroke();
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '10px DM Mono';
+    ctx.textAlign = 'center';
+    if(p!==0) ctx.fillText(String(p), x, mid+24);
+  }
+
+  const ox = posToX(0,w);
+  ctx.strokeStyle = sim.color;
+  ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(ox,18); ctx.lineTo(ox,h-24); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = sim.color;
+  ctx.font = 'bold 10px DM Mono';
+  ctx.fillText('0', ox, 14);
+
+  const maxTrail = sim.trail.slice(-32);
+  for(let i=0;i<maxTrail.length;i++){
+    const alpha = 0.08 + 0.72*(i/maxTrail.length);
+    const r = 3 + 4*(i/maxTrail.length);
+    ctx.beginPath();
+    ctx.arc(posToX(maxTrail[i],w), mid, r, 0, Math.PI*2);
+    const rgb = hexToRgb(sim.color);
+    ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
+    ctx.fill();
+  }
+
+  const x = posToX(sim.pos,w);
+  const rgb = hexToRgb(sim.color);
+  ctx.beginPath();
+  ctx.arc(x, mid, 14, 0, Math.PI*2);
+  ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.22)`;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x, mid, 10, 0, Math.PI*2);
+  ctx.fillStyle = sim.color;
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '10px DM Mono';
+  ctx.textAlign = 'center';
+  ctx.fillText(String(sim.pos), x, mid+3.5);
+
+  sim.posHead.textContent = `posición = ${sim.pos >=0 ? '+'+sim.pos : sim.pos}`;
+}
+
+function hexToRgb(hex){
+  const h = hex.replace('#','');
+  const bigint = parseInt(h,16);
+  return {r:(bigint>>16)&255, g:(bigint>>8)&255, b:bigint&255};
+}
+
+function updateStats(sim){
+  sim.attemptsEl.textContent = sim.attempts.toLocaleString('es');
+  sim.returnsEl.textContent = sim.returns.toLocaleString('es');
+  sim.empEl.textContent = sim.attempts ? (sim.returns/sim.attempts).toFixed(3) : '—';
+}
+
+function initChart(sim){
+  sim.chart = new Chart(sim.chartEl, {
+    type:'line',
+    data:{
+      labels:[],
+      datasets:[
+        {
+          label:'Empírica',
+          data:[],
+          borderColor:sim.color,
+          backgroundColor:sim.color+'18',
+          borderWidth:2.2,
+          pointRadius:0,
+          tension:.28,
+          fill:true
+        },
+        {
+          label:'Teórica',
+          data:[],
+          borderColor:'#8a96aa',
+          borderDash:[8,6],
+          borderWidth:1.4,
+          pointRadius:0,
+          tension:0,
+          fill:false
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{
+          grid:{color:COLORS.grid},
+          ticks:{color:COLORS.muted,font:{size:10,family:'DM Mono'},maxTicksLimit:6},
+          title:{display:true,text:'intentos acumulados',color:COLORS.muted,font:{size:10,family:'DM Mono'}}
+        },
+        y:{
+          min:-0.05,max:1.08,
+          grid:{color:COLORS.grid},
+          ticks:{color:COLORS.muted,font:{size:10,family:'DM Mono'},stepSize:0.25,callback:v=>Number(v).toFixed(2)},
+          title:{display:true,text:'r₀ empírico',color:COLORS.muted,font:{size:10,family:'DM Mono'}}
+        }
+      }
+    }
+  });
+}
+
+function updateChart(sim){
+  const theo = retornoOrigenTeorico(sim.p, sim.q);
+  sim.chart.data.labels = sim.history.map((_,i)=> String((i+1)*200));
+  sim.chart.data.datasets[0].data = sim.history;
+  sim.chart.data.datasets[1].data = sim.history.map(()=>theo);
+  sim.chart.update('none');
+}
+
+function resetWalk(sim){
+  sim.pos = 0;
+  sim.trail = [0];
+  sim.leftOrigin = false;
+  sim.paused = false;
+}
+
+function walkMessage(sim, msg){ sim.status.textContent = msg; }
+
+function stepWalk(sim){
+  if(sim.paused) return;
+  const mv = Math.random() < sim.p ? 1 : -1;
+  sim.pos += mv;
+  sim.trail.push(sim.pos);
+  if(sim.trail.length > 36) sim.trail.shift();
+
+  if(!sim.leftOrigin && sim.pos !== 0){
+    sim.leftOrigin = true;
+    walkMessage(sim, `Caminata #${sim.walkNumber}: salió del origen y ahora observamos si vuelve.`);
+  } else if(sim.leftOrigin && sim.pos === 0){
+    sim.paused = true;
+    walkMessage(sim, `✓ Caminata #${sim.walkNumber}: volvió al origen. Reinicio visual.`);
+    drawWalk(sim);
+    setTimeout(()=>{
+      sim.walkNumber++;
+      resetWalk(sim);
+      walkMessage(sim, `Nueva caminata visual desde 0.`);
+      drawWalk(sim);
+    }, 850);
+    return;
+  } else if(Math.abs(sim.pos) >= 22){
+    sim.paused = true;
+    walkMessage(sim, `Se alejó hasta ${sim.pos > 0 ? '+' : ''}${sim.pos}. Esto es un corte visual, no una prueba matemática por sí sola.`);
+    drawWalk(sim);
+    setTimeout(()=>{
+      sim.walkNumber++;
+      resetWalk(sim);
+      walkMessage(sim, `Nueva caminata visual desde 0.`);
+      drawWalk(sim);
+    }, 900);
+    return;
+  } else {
+    walkMessage(sim, `Caminata #${sim.walkNumber}: posición ${sim.pos > 0 ? '+' : ''}${sim.pos} ${mv>0?'→':'←'}`);
+  }
+  drawWalk(sim);
+}
+
+function runBatchFor(sim, B=200, M=6000){
+  for(let i=0;i<B;i++){
+    let pos = 0;
+    let ok = false;
+    let left = false;
+    for(let j=0;j<M;j++){
+      pos += Math.random() < sim.p ? 1 : -1;
+      if(pos !== 0) left = true;
+      if(left && pos === 0){ ok = true; break; }
+      if(Math.abs(pos) > 160) break;
+    }
+    sim.attempts++;
+    if(ok) sim.returns++;
+  }
+  sim.history.push(sim.returns/sim.attempts);
+  if(sim.history.length > 90) sim.history.shift();
+  updateStats(sim);
+  updateChart(sim);
+}
+
+function resetAll(){
+  sims.forEach(sim=>{
+    sim.attempts = 0;
+    sim.returns = 0;
+    sim.history = [];
+    sim.walkNumber = 1;
+    resetWalk(sim);
+    updateStats(sim);
+    walkMessage(sim, sim.kind==='rec'
+      ? 'Sale de 0 y tarde o temprano vuelve con probabilidad 1.'
+      : 'A veces vuelve, pero otras veces se aleja y no retorna.');
+    updateChart(sim);
+    drawWalk(sim);
+  });
+}
+
+let playing = true;
+let walkTimer = null;
+let batchTimer = null;
+
+function intervalMs(){
+  const v = parseInt(document.getElementById('speed').value,10);
+  return Math.max(45, 520 - 42*v);
+}
+
+function startTimers(){
+  clearInterval(walkTimer);
+  clearInterval(batchTimer);
+  walkTimer = setInterval(()=>{ if(playing) sims.forEach(stepWalk); }, intervalMs());
+  batchTimer = setInterval(()=>{ if(playing) sims.forEach(sim=>runBatchFor(sim, 120, 5000)); }, 320);
+}
+
+window.addEventListener('resize', ()=>{
+  sims.forEach(sim=>{ initCanvas(sim); drawWalk(sim); });
+});
+
+document.getElementById('playBtn').addEventListener('click', ()=>{
+  playing = !playing;
+  document.getElementById('playBtn').textContent = playing ? '⏸ Pausa' : '▶ Reanudar';
+});
+
+document.getElementById('resetBtn').addEventListener('click', resetAll);
+document.getElementById('batchBtn').addEventListener('click', ()=> sims.forEach(sim=>runBatchFor(sim, 300, 6000)));
+document.getElementById('speed').addEventListener('input', startTimers);
+
+sims.forEach(sim=>{ initCanvas(sim); initChart(sim); updateStats(sim); drawWalk(sim); });
+resetAll();
+setTheme('dark');
+startTimers();
+</script>
+</body>
+</html>

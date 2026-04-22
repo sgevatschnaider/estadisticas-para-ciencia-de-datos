@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teorema de Pólya — Random Walk</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  /* ── THEME SYSTEM ── */
+  :root {
+    --bg:        #090c14;
+    --surface:   #0f1523;
+    --border:    #1e2d4a;
+    --text:      #cdd6f4;
+    --muted:     #6c7a96;
+    --accent1:   #00ffe7;
+    --accent2:   #ff6b6b;
+    --accent3:   #ffd166;
+    --c1:        #00ffe7;   /* 1D color */
+    --c2:        #7b61ff;   /* 2D color */
+    --c3:        #ff6b6b;   /* 3D color */
+    --glow1:     rgba(0,255,231,.25);
+    --glow2:     rgba(123,97,255,.25);
+    --glow3:     rgba(255,107,107,.25);
+    --grid-line: rgba(255,255,255,.04);
+  }
+  [data-theme="matrix"] {
+    --bg:#000800;--surface:#001200;--border:#003d00;--text:#00ff41;--muted:#007a1c;
+    --accent1:#00ff41;--accent2:#39ff14;--accent3:#00e676;
+    --c1:#00ff41;--c2:#39ff14;--c3:#00e676;
+    --glow1:rgba(0,255,65,.25);--glow2:rgba(57,255,20,.2);--glow3:rgba(0,230,118,.2);
+    --grid-line:rgba(0,255,65,.05);
+  }
+  [data-theme="solar"] {
+    --bg:#1a0a00;--surface:#241200;--border:#5c2800;--text:#ffd6a5;--muted:#995533;
+    --accent1:#ff9500;--accent2:#ff4800;--accent3:#ffcc00;
+    --c1:#ff9500;--c2:#ff4800;--c3:#ffcc00;
+    --glow1:rgba(255,149,0,.25);--glow2:rgba(255,72,0,.2);--glow3:rgba(255,204,0,.2);
+    --grid-line:rgba(255,149,0,.05);
+  }
+  [data-theme="arctic"] {
+    --bg:#f0f5ff;--surface:#ffffff;--border:#c8d8f0;--text:#1a2540;--muted:#7090b0;
+    --accent1:#0066ff;--accent2:#ff2d55;--accent3:#ff9f0a;
+    --c1:#0066ff;--c2:#7b2fff;--c3:#ff2d55;
+    --glow1:rgba(0,102,255,.15);--glow2:rgba(123,47,255,.1);--glow3:rgba(255,45,85,.1);
+    --grid-line:rgba(0,0,0,.05);
+  }
+  [data-theme="blueprint"] {
+    --bg:#0a1628;--surface:#0d1f3c;--border:#1a3a6b;--text:#a8c4e0;--muted:#4a6a8a;
+    --accent1:#4fc3f7;--accent2:#ef5350;--accent3:#ffb300;
+    --c1:#4fc3f7;--c2:#ce93d8;--c3:#ef5350;
+    --glow1:rgba(79,195,247,.2);--glow2:rgba(206,147,216,.2);--glow3:rgba(239,83,80,.2);
+    --grid-line:rgba(79,195,247,.06);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background .4s, color .4s;
+  }
+
+  /* Background grid */
+  body::before {
+    content:'';position:fixed;inset:0;pointer-events:none;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index:0;
+  }
+
+  .wrap {position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 20px 60px;}
+
+  /* ── HEADER ── */
+  header {
+    display:flex; align-items:flex-start; justify-content:space-between;
+    margin-bottom:28px; gap:16px; flex-wrap:wrap;
+  }
+  .title-block h1 {
+    font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(1.4rem,3.5vw,2.6rem);
+    letter-spacing:-.02em; line-height:1.1;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  .title-block p {
+    font-size:.72rem; color:var(--muted); margin-top:6px; letter-spacing:.06em;
+  }
+
+  /* ── THEMES ── */
+  .theme-bar {display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .theme-bar label{font-size:.65rem;color:var(--muted);letter-spacing:.08em;margin-right:4px;}
+  .theme-btn {
+    width:22px;height:22px;border-radius:50%;border:2px solid transparent;
+    cursor:pointer;transition:transform .2s,border-color .2s;outline:none;
+    position:relative;
+  }
+  .theme-btn:hover{transform:scale(1.2);}
+  .theme-btn.active{border-color:var(--text);}
+  .theme-btn[data-t="dark"]{background:radial-gradient(circle at 40% 40%,#1e2d4a,#090c14);}
+  .theme-btn[data-t="matrix"]{background:radial-gradient(circle at 40% 40%,#003d00,#000800);}
+  .theme-btn[data-t="solar"]{background:radial-gradient(circle at 40% 40%,#ff9500,#1a0a00);}
+  .theme-btn[data-t="arctic"]{background:radial-gradient(circle at 40% 40%,#c8d8f0,#f0f5ff);}
+  .theme-btn[data-t="blueprint"]{background:radial-gradient(circle at 40% 40%,#1a3a6b,#0a1628);}
+
+  /* ── CONTROLS ── */
+  .controls {
+    display:flex;gap:16px;flex-wrap:wrap;align-items:center;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:16px 20px;margin-bottom:24px;
+  }
+  .ctrl-group{display:flex;flex-direction:column;gap:4px;min-width:140px;}
+  .ctrl-group label{font-size:.62rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;}
+  .ctrl-group .val{font-size:.85rem;color:var(--accent1);font-weight:700;}
+  input[type=range]{
+    accent-color:var(--accent1);cursor:pointer;width:100%;
+    -webkit-appearance:none;height:3px;background:var(--border);border-radius:2px;outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+    background:var(--accent1);box-shadow:0 0 6px var(--glow1);cursor:pointer;
+  }
+
+  .btn {
+    display:inline-flex;align-items:center;gap:8px;
+    padding:9px 20px;border:none;border-radius:8px;cursor:pointer;
+    font-family:'Space Mono',monospace;font-size:.78rem;font-weight:700;
+    letter-spacing:.05em;transition:all .2s;position:relative;overflow:hidden;
+    text-transform:uppercase;
+  }
+  .btn::after{
+    content:'';position:absolute;inset:0;background:rgba(255,255,255,.08);
+    opacity:0;transition:opacity .2s;
+  }
+  .btn:hover::after{opacity:1;}
+  .btn-primary{background:var(--accent1);color:#000;}
+  .btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border);}
+  .btn-auto{background:linear-gradient(135deg,var(--accent2),var(--accent3));color:#000;}
+  .btn-auto.running{animation:pulse-btn 1s infinite alternate;}
+  @keyframes pulse-btn{from{opacity:1}to{opacity:.75}}
+
+  /* ── PANELS ── */
+  .panels {display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+  @media(max-width:900px){.panels{grid-template-columns:1fr;}}
+
+  .panel {
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;
+    transition:border-color .3s;position:relative;overflow:hidden;
+  }
+  .panel::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  }
+  .panel-1d::before{background:var(--c1);}
+  .panel-2d::before{background:var(--c2);}
+  .panel-3d::before{background:var(--c3);}
+
+  .panel-header{display:flex;justify-content:space-between;align-items:center;}
+  .panel-title{
+    font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;letter-spacing:-.01em;
+  }
+  .badge {
+    font-size:.6rem;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .badge-rec{background:rgba(0,255,150,.15);color:#00ff96;border:1px solid rgba(0,255,150,.3);}
+  .badge-trans{background:rgba(255,80,80,.15);color:#ff6060;border:1px solid rgba(255,80,80,.3);}
+
+  canvas.walk-canvas{
+    width:100%;border-radius:8px;background:rgba(0,0,0,.25);
+    border:1px solid var(--border);display:block;
+  }
+  canvas.chart-canvas{
+    width:100%;border-radius:8px;background:rgba(0,0,0,.2);
+    border:1px solid var(--border);display:block;
+  }
+
+  .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .stat-box{
+    background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:8px;
+    padding:8px 10px;text-align:center;
+  }
+  .stat-box .sv{font-size:1.1rem;font-weight:700;line-height:1;}
+  .stat-box .sl{font-size:.58rem;color:var(--muted);margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
+  .stat-1d .sv{color:var(--c1);}
+  .stat-2d .sv{color:var(--c2);}
+  .stat-3d .sv{color:var(--c3);}
+
+  .return-prob{
+    display:flex;justify-content:space-between;align-items:center;
+    background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;
+  }
+  .return-prob .label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+  .return-prob .val{font-size:1.2rem;font-weight:700;}
+
+  .theory-bar{
+    font-size:.62rem;color:var(--muted);text-align:center;
+    padding:4px;letter-spacing:.04em;
+    border-top:1px dashed var(--border);padding-top:8px;margin-top:4px;
+  }
+
+  /* ── CONVERGENCE CHART ── */
+  .chart-section{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:16px;margin-bottom:16px;
+  }
+  .chart-section h2{
+    font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;
+    margin-bottom:12px;letter-spacing:.02em;
+  }
+  .chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:.65rem;color:var(--muted);}
+  .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+  /* ── AUTO STEPS LOG ── */
+  .log-section{
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;
+    font-size:.68rem;line-height:1.7;color:var(--muted);max-height:120px;overflow-y:auto;
+    font-family:'Space Mono',monospace;
+  }
+  .log-section .log-entry{border-bottom:1px solid var(--border);padding:2px 0;}
+  .log-section .log-entry span{color:var(--accent1);}
+
+  .canvas-note{
+    font-size:.6rem;color:var(--muted);line-height:1.55;
+    background:rgba(0,0,0,.14);border:1px dashed var(--border);
+    border-radius:8px;padding:8px 10px;
+  }
+
+  .footer-credit{
+    margin-top:18px;text-align:center;font-size:.72rem;color:var(--muted);
+    letter-spacing:.03em;padding:12px 10px;border-top:1px solid var(--border);
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body data-theme="dark">
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="title-block">
+      <h1>Teorema de Pólya</h1>
+      <p>RANDOM WALK SIMPLE SIMÉTRICO · RETORNO AL ORIGEN · LA SIMULACIÓN ESTIMA r_d(N)=P₀(τ₀⁺ ≤ N)</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
+      <div class="theme-bar">
+        <label>TEMA</label>
+        <button class="theme-btn active" data-t="dark" title="Dark Lab" onclick="setTheme('dark',this)"></button>
+        <button class="theme-btn" data-t="matrix" title="Matrix" onclick="setTheme('matrix',this)"></button>
+        <button class="theme-btn" data-t="solar" title="Solar" onclick="setTheme('solar',this)"></button>
+        <button class="theme-btn" data-t="arctic" title="Arctic" onclick="setTheme('arctic',this)"></button>
+        <button class="theme-btn" data-t="blueprint" title="Blueprint" onclick="setTheme('blueprint',this)"></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>Pasos máx (N)</label>
+      <input type="range" min="50" max="2000" value="500" step="50" id="slN"
+             oninput="document.getElementById('vN').textContent=this.value">
+      <div class="val" id="vN">500</div>
+    </div>
+    <div class="ctrl-group">
+      <label>Trayectorias (M)</label>
+      <input type="range" min="10" max="300" value="60" step="10" id="slM"
+             oninput="document.getElementById('vM').textContent=this.value">
+      <div class="val" id="vM">60</div>
+    </div>
+    <div class="ctrl-group">
+      <label>Velocidad anim.</label>
+      <input type="range" min="1" max="10" value="5" step="1" id="slSpd"
+             oninput="document.getElementById('vSpd').textContent=this.value">
+      <div class="val" id="vSpd">5</div>
+    </div>
+    <button class="btn btn-primary" onclick="resetAll()">↺ Reiniciar</button>
+    <button class="btn btn-secondary" onclick="runOnce()">▶ Una corrida</button>
+    <button class="btn btn-auto" id="btnAuto" onclick="toggleAuto()">⚡ Auto</button>
+  </div>
+
+  <!-- WALK PANELS -->
+  <div class="panels">
+    <!-- 1D -->
+    <div class="panel panel-1d">
+      <div class="panel-header">
+        <div class="panel-title" style="color:var(--c1)">ℤ¹ — Dimensión 1</div>
+        <span class="badge badge-rec">RECURRENTE</span>
+      </div>
+      <canvas class="walk-canvas" id="c1d" width="360" height="180"></canvas>
+      <div class="canvas-note">La trayectoria animada muestra un solo ejemplo visual. La clasificación recurrente o transitoria se decide por la estadística acumulada de muchas trayectorias.</div>
+      <div class="stats-row">
+        <div class="stat-box stat-1d">
+          <div class="sv" id="s1-noret">0</div>
+          <div class="sl">No retornaron</div>
+        </div>
+        <div class="stat-box stat-1d">
+          <div class="sv" id="s1-sims">0</div>
+          <div class="sl">Trayectorias</div>
+        </div>
+        <div class="stat-box stat-1d">
+          <div class="sv" id="s1-ret">0</div>
+          <div class="sl">Retornaron</div>
+        </div>
+        <div class="stat-box stat-1d">
+          <div class="sv" id="s1-step">0</div>
+          <div class="sl">Paso actual</div>
+        </div>
+      </div>
+      <div class="return-prob">
+        <div class="label">P̂ retorno (empírica)</div>
+        <div class="val" id="s1-prob" style="color:var(--c1)">—</div>
+      </div>
+      <canvas class="chart-canvas" id="ch1d" width="360" height="100"></canvas>
+      <div class="theory-bar">La curva empírica estima r₁(N)=P₀(τ₀⁺ ≤ N). Al aumentar N, se aproxima a r₁(∞)=1 → <strong style="color:var(--c1)">recurrente</strong>.</div>
+    </div>
+
+    <!-- 2D -->
+    <div class="panel panel-2d">
+      <div class="panel-header">
+        <div class="panel-title" style="color:var(--c2)">ℤ² — Dimensión 2</div>
+        <span class="badge badge-rec">RECURRENTE</span>
+      </div>
+      <canvas class="walk-canvas" id="c2d" width="360" height="180"></canvas>
+      <div class="canvas-note">Una sola trayectoria puede tardar mucho en volver. En dimensión 2 el retorno sigue siendo seguro en el límite, pero la convergencia empírica suele ser lenta.</div>
+      <div class="stats-row">
+        <div class="stat-box stat-2d">
+          <div class="sv" id="s2-noret">0</div>
+          <div class="sl">No retornaron</div>
+        </div>
+        <div class="stat-box stat-2d">
+          <div class="sv" id="s2-sims">0</div>
+          <div class="sl">Trayectorias</div>
+        </div>
+        <div class="stat-box stat-2d">
+          <div class="sv" id="s2-ret">0</div>
+          <div class="sl">Retornaron</div>
+        </div>
+        <div class="stat-box stat-2d">
+          <div class="sv" id="s2-step">0</div>
+          <div class="sl">Paso actual</div>
+        </div>
+      </div>
+      <div class="return-prob">
+        <div class="label">P̂ retorno (empírica)</div>
+        <div class="val" id="s2-prob" style="color:var(--c2)">—</div>
+      </div>
+      <canvas class="chart-canvas" id="ch2d" width="360" height="100"></canvas>
+      <div class="theory-bar">La curva empírica estima r₂(N)=P₀(τ₀⁺ ≤ N). Al aumentar N, se aproxima a r₂(∞)=1, aunque más lentamente que en 1D → <strong style="color:var(--c2)">recurrente lento</strong>.</div>
+    </div>
+
+    <!-- 3D -->
+    <div class="panel panel-3d">
+      <div class="panel-header">
+        <div class="panel-title" style="color:var(--c3)">ℤ³ — Dimensión 3</div>
+        <span class="badge badge-trans">TRANSITORIO</span>
+      </div>
+      <canvas class="walk-canvas" id="c3d" width="360" height="180"></canvas>
+      <div class="canvas-note">Una trayectoria 3D puede volver varias veces, pero eso no decide la teoría. Lo importante es que la probabilidad total de retorno queda estabilizada por debajo de 1.</div>
+      <div class="stats-row">
+        <div class="stat-box stat-3d">
+          <div class="sv" id="s3-noret">0</div>
+          <div class="sl">No retornaron</div>
+        </div>
+        <div class="stat-box stat-3d">
+          <div class="sv" id="s3-sims">0</div>
+          <div class="sl">Trayectorias</div>
+        </div>
+        <div class="stat-box stat-3d">
+          <div class="sv" id="s3-ret">0</div>
+          <div class="sl">Retornaron</div>
+        </div>
+        <div class="stat-box stat-3d">
+          <div class="sv" id="s3-step">0</div>
+          <div class="sl">Paso actual</div>
+        </div>
+      </div>
+      <div class="return-prob">
+        <div class="label">P̂ retorno (empírica)</div>
+        <div class="val" id="s3-prob" style="color:var(--c3)">—</div>
+      </div>
+      <canvas class="chart-canvas" id="ch3d" width="360" height="100"></canvas>
+      <div class="theory-bar">La curva empírica estima r₃(N)=P₀(τ₀⁺ ≤ N). Al aumentar N, se estabiliza cerca de r₃(∞)≈0.3405 y queda por debajo de 1 → <strong style="color:var(--c3)">transitorio</strong>.</div>
+    </div>
+  </div>
+
+  <!-- CONVERGENCE GLOBAL CHART -->
+  <div class="chart-section">
+    <h2>📈 Convergencia de la estimación empírica r_d(N)=P₀(τ₀⁺ ≤ N)</h2>
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c1)"></div>d=1 (recurrente)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c2)"></div>d=2 (recurrente lento)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c3)"></div>d=3 (transitorio ≈0.34)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,.3);border:1px dashed rgba(255,255,255,.5)"></div>Teórico d=1,2</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(255,107,107,.28);border:1px dashed rgba(255,107,107,.55)"></div>Teórico d=3</div>
+    </div>
+    <canvas id="chGlobal" style="width:100%;height:180px;display:block;" width="1200" height="180"></canvas>
+  </div>
+
+  <!-- LOG -->
+  <div class="log-section" id="logBox">
+    <div class="log-entry">Sistema iniciado. Configura los parámetros y presiona <span>▶ Una corrida</span> o <span>⚡ Auto</span>.</div>
+  </div>
+
+  <div class="footer-credit">Material elaborado por el profesor Sergio Gevatschnaider</div>
+
+</div>
+
+<script>
+// ── THEME ──────────────────────────────────────────────────────────────────
+function setTheme(t, btn) {
+  document.body.setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  redrawAll();
+}
+
+// ── CSS VAR HELPER ─────────────────────────────────────────────────────────
+function cssv(name){return getComputedStyle(document.body).getPropertyValue(name).trim();}
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+const state = {
+  dims: [
+    {id:1, sims:0, rets:0, visits:0, history:[], walkPath:[], step:0, returning:false},
+    {id:2, sims:0, rets:0, visits:0, history:[], walkPath:[], step:0, returning:false},
+    {id:3, sims:0, rets:0, visits:0, history:[], walkPath:[], step:0, returning:false},
+  ],
+  autoRunning:false,
+  animFrame:null,
+  lastTime:0,
+  speed:5,
+};
+
+// history[] = [{sims, prob}] for convergence chart
+const globalHistory = {d1:[], d2:[], d3:[]};
+
+function getN(){return +document.getElementById('slN').value;}
+function getM(){return +document.getElementById('slM').value;}
+function getSpd(){return +document.getElementById('slSpd').value;}
+
+// ── RANDOM WALK SIMULATORS ─────────────────────────────────────────────────
+function walkFull1D(N) {
+  let x=0, ret=false, visits=0, path=[[x]];
+  for(let i=0;i<N;i++){
+    x += Math.random()<.5?1:-1;
+    path.push([x]);
+    if(x===0){visits++; if(!ret)ret=true;}
+  }
+  return {ret, visits, path};
+}
+function walkFull2D(N) {
+  let x=0,y=0, ret=false, visits=0, path=[[x,y]];
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+  for(let i=0;i<N;i++){
+    const d=dirs[Math.floor(Math.random()*4)];
+    x+=d[0];y+=d[1];
+    path.push([x,y]);
+    if(x===0&&y===0){visits++; if(!ret)ret=true;}
+  }
+  return {ret, visits, path};
+}
+function walkFull3D(N) {
+  let x=0,y=0,z=0, ret=false, visits=0, path=[[x,y,z]];
+  const dirs=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+  for(let i=0;i<N;i++){
+    const d=dirs[Math.floor(Math.random()*6)];
+    x+=d[0];y+=d[1];z+=d[2];
+    path.push([x,y,z]);
+    if(x===0&&y===0&&z===0){visits++; if(!ret)ret=true;}
+  }
+  return {ret, visits, path};
+}
+
+// ── BATCH SIMULATOR (updates state) ───────────────────────────────────────
+function runBatch(dimIdx, M, N) {
+  const walkers = [walkFull1D, walkFull2D, walkFull3D];
+  const s = state.dims[dimIdx];
+  let lastResult;
+  for(let m=0;m<M;m++){
+    lastResult = walkers[dimIdx](N);
+    s.sims++;
+    if(lastResult.ret) s.rets++;
+    s.visits += lastResult.visits;
+  }
+  // store last walk path for animation
+  s.walkPath = lastResult.path;
+  s.step = 0;
+  // convergence history
+  const prob = s.rets/s.sims;
+  const hKey = ['d1','d2','d3'][dimIdx];
+  globalHistory[hKey].push({n:s.sims, p:prob});
+}
+
+// ── DRAW WALK 1D ──────────────────────────────────────────────────────────
+function draw1D(cv, path, step) {
+  const ctx = cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  const c = cssv('--c1');
+  const muted = cssv('--muted');
+  const text = cssv('--text');
+
+  ctx.strokeStyle = muted;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();
+  ctx.moveTo(16, H/2);
+  ctx.lineTo(W-16, H/2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle='rgba(255,255,255,.55)';
+  ctx.fillRect(W/2-1, H/2-10, 2, 20);
+
+  if(!path || !path.length) return;
+  const visible = path.slice(0, step+1);
+  const maxAbs = Math.max(8, ...visible.map(p => Math.abs(p[0])));
+  const scaleX = (W/2 - 26) / maxAbs;
+
+  const tail = visible.slice(-28);
+  tail.forEach((p, i) => {
+    const alpha = 0.12 + 0.78 * ((i+1) / tail.length);
+    const r = 2 + 3.2 * ((i+1) / tail.length);
+    const x = W/2 + p[0] * scaleX;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${hexToRgb(c)}, ${alpha.toFixed(3)})`;
+    ctx.arc(x, H/2, r, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  const last = visible[visible.length-1];
+  const hx = W/2 + last[0] * scaleX;
+  ctx.fillStyle = c;
+  ctx.shadowColor = c;
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.arc(hx, H/2, 6, 0, Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = text;
+  ctx.font = '10px Space Mono';
+  ctx.fillText(`x=${last[0]}`, Math.min(W-58, hx+10), H/2-10);
+  ctx.fillStyle = muted;
+  ctx.font = '8px Space Mono';
+  ctx.fillText('origen', W/2+6, H/2-12);
+}
+
+// ── DRAW WALK 2D ──────────────────────────────────────────────────────────
+function draw2D(cv, path, step) {
+  const ctx = cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  const c = cssv('--c2');
+  const muted = cssv('--muted');
+  const text = cssv('--text');
+
+  if(!path||!path.length) return;
+  const visible = path.slice(0, step+1);
+  const xs = visible.map(p=>p[0]), ys = visible.map(p=>p[1]);
+  const maxR = Math.max(1, Math.max(Math.abs(Math.min(...xs)),Math.abs(Math.max(...xs)),Math.abs(Math.min(...ys)),Math.abs(Math.max(...ys))));
+  const scale = Math.min((W/2-20)/Math.max(maxR,8), (H/2-20)/Math.max(maxR,8));
+
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=.5;
+  for(let g=-3;g<=3;g++){
+    const gx=W/2+g*scale*4; const gy=H/2+g*scale*4;
+    ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke();
+  }
+
+  // axes
+  ctx.strokeStyle=muted; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // trail with gradient color
+  ctx.lineWidth=1.5;
+  for(let i=1;i<visible.length;i++){
+    const t=i/visible.length;
+    ctx.strokeStyle=`rgba(${hexToRgb(c)},${.3+t*.7})`;
+    ctx.beginPath();
+    ctx.moveTo(W/2+visible[i-1][0]*scale, H/2-visible[i-1][1]*scale);
+    ctx.lineTo(W/2+visible[i][0]*scale,   H/2-visible[i][1]*scale);
+    ctx.stroke();
+  }
+
+  // origin
+  ctx.fillStyle='rgba(255,255,255,.7)';
+  ctx.beginPath(); ctx.arc(W/2,H/2,3,0,Math.PI*2); ctx.fill();
+
+  // head
+  const last = visible[visible.length-1];
+  const hx = W/2+last[0]*scale, hy = H/2-last[1]*scale;
+  ctx.fillStyle=c; ctx.shadowColor=c; ctx.shadowBlur=14;
+  ctx.beginPath(); ctx.arc(hx,hy,5,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+
+  ctx.fillStyle=text; ctx.font='9px Space Mono';
+  ctx.fillText(`(${last[0]},${last[1]})`, hx+7, hy-5);
+}
+
+// ── DRAW WALK 3D (isometric projection) ───────────────────────────────────
+function draw3D(cv, path, step) {
+  const ctx = cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  const c = cssv('--c3');
+  const text = cssv('--text');
+
+  if(!path||!path.length) return;
+  const visible = path.slice(0, step+1);
+
+  // isometric transform
+  function iso(x,y,z){
+    return {
+      px: W/2 + (x-z)*20,
+      py: H/2 + (x+z)*10 - y*18
+    };
+  }
+
+  // draw axes
+  const o = iso(0,0,0);
+  ctx.strokeStyle='rgba(255,255,255,.2)'; ctx.lineWidth=1;
+  const ax=iso(4,0,0),ay=iso(0,4,0),az=iso(0,0,4);
+  [ax,ay,az].forEach(a=>{
+    ctx.beginPath(); ctx.moveTo(o.px,o.py); ctx.lineTo(a.px,a.py); ctx.stroke();
+  });
+
+  // trail
+  ctx.lineWidth=1.5;
+  for(let i=1;i<visible.length;i++){
+    const t=i/visible.length;
+    const p0=iso(...visible[i-1]), p1=iso(...visible[i]);
+    ctx.strokeStyle=`rgba(${hexToRgb(c)},${.2+t*.8})`;
+    ctx.beginPath(); ctx.moveTo(p0.px,p0.py); ctx.lineTo(p1.px,p1.py); ctx.stroke();
+  }
+
+  // origin sphere
+  ctx.fillStyle='rgba(255,255,255,.6)';
+  ctx.beginPath(); ctx.arc(o.px,o.py,3,0,Math.PI*2); ctx.fill();
+
+  // head
+  const last=visible[visible.length-1];
+  const h=iso(...last);
+  ctx.fillStyle=c; ctx.shadowColor=c; ctx.shadowBlur=14;
+  ctx.beginPath(); ctx.arc(h.px,h.py,5,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+
+  ctx.fillStyle=text; ctx.font='9px Space Mono';
+  ctx.fillText(`(${last[0]},${last[1]},${last[2]})`,h.px+7,h.py-5);
+
+  // radius display
+  const r=Math.sqrt(last[0]**2+last[1]**2+last[2]**2).toFixed(1);
+  ctx.fillStyle=c; ctx.font='10px Space Mono';
+  ctx.fillText(`|r|=${r}`, 8, H-10);
+}
+
+// ── DRAW CONVERGENCE MINI CHART ────────────────────────────────────────────
+function drawMiniChart(cv, history, color, theoretical) {
+  const ctx = cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  if(!history.length) return;
+
+  const bg = cssv('--border');
+  ctx.strokeStyle=bg; ctx.lineWidth=.5; ctx.setLineDash([2,2]);
+  [0,.25,.5,.75,1].forEach(v=>{
+    const y=H-v*(H-10)-2;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    ctx.fillStyle=cssv('--muted'); ctx.font='7px Space Mono';
+    ctx.fillText(v.toFixed(2),2,y-2);
+  });
+  ctx.setLineDash([]);
+
+  // theoretical line
+  if(theoretical!==null){
+    ctx.strokeStyle='rgba(255,255,255,.3)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+    const ty=H-(theoretical*(H-10))-2;
+    ctx.beginPath(); ctx.moveTo(0,ty); ctx.lineTo(W,ty); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // empirical
+  ctx.strokeStyle=color; ctx.lineWidth=2;
+  ctx.beginPath();
+  history.forEach((d,i)=>{
+    const x=(i/(Math.max(history.length-1,1)))*W;
+    const y=H-(d.p*(H-10))-2;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // last value dot
+  const last=history[history.length-1];
+  const lx=W-4, ly=H-(last.p*(H-10))-2;
+  ctx.fillStyle=color; ctx.shadowColor=color; ctx.shadowBlur=8;
+  ctx.beginPath(); ctx.arc(lx,ly,3,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+}
+
+// ── DRAW GLOBAL CONVERGENCE ───────────────────────────────────────────────
+function drawGlobal() {
+  const cv=document.getElementById('chGlobal');
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  const allN = Math.max(
+    globalHistory.d1.length, globalHistory.d2.length, globalHistory.d3.length, 1
+  );
+
+  // grid
+  ctx.strokeStyle=cssv('--border'); ctx.lineWidth=.5;
+  [0,.2,.4,.6,.8,1].forEach(v=>{
+    const y=H-4-v*(H-20);
+    ctx.beginPath(); ctx.moveTo(40,y); ctx.lineTo(W,y); ctx.stroke();
+    ctx.fillStyle=cssv('--muted'); ctx.font='10px Space Mono';
+    ctx.fillText(v.toFixed(1),2,y+4);
+  });
+
+  // theoretical lines
+  ctx.strokeStyle='rgba(255,255,255,.2)';
+  ctx.lineWidth=1;
+  ctx.setLineDash([6,4]);
+  const ty1=H-4-(1*(H-20));
+  ctx.beginPath(); ctx.moveTo(40,ty1); ctx.lineTo(W,ty1); ctx.stroke();
+
+  const r3 = 0.3405;
+  const ty3 = H-4-(r3*(H-20));
+  ctx.strokeStyle='rgba(255,107,107,.35)';
+  ctx.beginPath(); ctx.moveTo(40,ty3); ctx.lineTo(W,ty3); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = cssv('--muted');
+  ctx.font = '10px Space Mono';
+  ctx.fillText('1.000', W-52, ty1-6);
+  ctx.fillStyle = cssv('--c3');
+  ctx.fillText('0.3405', W-64, ty3-6);
+
+  // draw each dim
+  [
+    {h:globalHistory.d1, c:'--c1'},
+    {h:globalHistory.d2, c:'--c2'},
+    {h:globalHistory.d3, c:'--c3'},
+  ].forEach(({h,c})=>{
+    if(!h.length) return;
+    const color=cssv(c);
+    ctx.strokeStyle=color; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    h.forEach((d,i)=>{
+      const x=40+(i/(allN-1||1))*(W-50);
+      const y=H-4-(d.p*(H-20));
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    if(h.length){
+      const last=h[h.length-1];
+      const lx=40+(h.length-1)/(allN-1||1)*(W-50);
+      const ly=H-4-(last.p*(H-20));
+      ctx.fillStyle=color; ctx.shadowColor=color; ctx.shadowBlur=10;
+      ctx.beginPath(); ctx.arc(lx,ly,4,0,Math.PI*2); ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle=color; ctx.font='10px Space Mono';
+      ctx.fillText(last.p.toFixed(3), lx+6, ly-4);
+    }
+  });
+}
+
+// ── UPDATE STATS UI ───────────────────────────────────────────────────────
+function updateStats() {
+  state.dims.forEach((s,i)=>{
+    const d=i+1;
+    const prob=s.sims>0?(s.rets/s.sims):null;
+    document.getElementById(`s${d}-noret`).textContent = Math.max(0, s.sims - s.rets);
+    document.getElementById(`s${d}-sims`).textContent=s.sims;
+    document.getElementById(`s${d}-ret`).textContent=s.rets;
+    document.getElementById(`s${d}-step`).textContent=s.step;
+    document.getElementById(`s${d}-prob`).textContent=prob!==null?prob.toFixed(4):'—';
+  });
+}
+
+// ── ANIMATION LOOP ────────────────────────────────────────────────────────
+let animStep=0, animMax=0, animFrameId=null;
+
+function startAnimation() {
+  animMax = Math.max(
+    ...[0,1,2].map(i => state.dims[i].walkPath.length)
+  );
+  animStep=0;
+  if(animFrameId) cancelAnimationFrame(animFrameId);
+  animateStep();
+}
+
+function animateStep() {
+  const spd = getSpd();
+  const stepsPerFrame = Math.max(1, Math.floor(spd*2));
+
+  animStep = Math.min(animStep + stepsPerFrame, animMax-1);
+
+  // Draw walks
+  [0,1,2].forEach(i=>{
+    const s=state.dims[i];
+    const step=Math.min(animStep, s.walkPath.length-1);
+    s.step=step;
+    const c=[
+      document.getElementById('c1d'),
+      document.getElementById('c2d'),
+      document.getElementById('c3d'),
+    ][i];
+    const drawFn=[draw1D,draw2D,draw3D][i];
+    if(s.walkPath.length>0) drawFn(c, s.walkPath, step);
+  });
+
+  updateStats();
+  drawGlobal();
+
+  if(animStep < animMax-1) {
+    animFrameId = requestAnimationFrame(animateStep);
+  } else {
+    // draw mini charts
+    drawMiniChart(document.getElementById('ch1d'), globalHistory.d1, cssv('--c1'), 1);
+    drawMiniChart(document.getElementById('ch2d'), globalHistory.d2, cssv('--c2'), 1);
+    drawMiniChart(document.getElementById('ch3d'), globalHistory.d3, cssv('--c3'), 0.34);
+  }
+}
+
+// ── RUN ONCE ──────────────────────────────────────────────────────────────
+function runOnce() {
+  const N=getN(), M=getM();
+  [0,1,2].forEach(i=>runBatch(i, M, N));
+  startAnimation();
+  log(`Ejecutadas M=${M} trayectorias con N=${N} pasos por dimensión. Se está estimando r_d(N)=P₀(τ₀⁺ ≤ N).`);
+}
+
+// ── AUTO RUN ──────────────────────────────────────────────────────────────
+let autoInterval=null;
+function toggleAuto() {
+  state.autoRunning = !state.autoRunning;
+  const btn=document.getElementById('btnAuto');
+  if(state.autoRunning){
+    btn.textContent='⏹ Detener'; btn.classList.add('running');
+    scheduleAuto();
+  } else {
+    btn.textContent='⚡ Auto'; btn.classList.remove('running');
+    if(autoInterval) clearTimeout(autoInterval);
+  }
+}
+function scheduleAuto(){
+  if(!state.autoRunning) return;
+  const N=getN(), M=Math.max(5,Math.floor(getM()/4));
+  [0,1,2].forEach(i=>runBatch(i, M, N));
+  startAnimation();
+  log(`[AUTO] +${M} trayectorias | d=1: ${(state.dims[0].rets/Math.max(state.dims[0].sims,1)).toFixed(3)} | d=2: ${(state.dims[1].rets/Math.max(state.dims[1].sims,1)).toFixed(3)} | d=3: ${(state.dims[2].rets/Math.max(state.dims[2].sims,1)).toFixed(3)}`);
+  const delay = Math.max(800, 3000/getSpd());
+  autoInterval = setTimeout(scheduleAuto, delay);
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────
+function resetAll() {
+  if(animFrameId) cancelAnimationFrame(animFrameId);
+  if(autoInterval) clearTimeout(autoInterval);
+  state.autoRunning=false;
+  document.getElementById('btnAuto').textContent='⚡ Auto';
+  document.getElementById('btnAuto').classList.remove('running');
+
+  state.dims.forEach(s=>{s.sims=0;s.rets=0;s.visits=0;s.walkPath=[];s.step=0;});
+  globalHistory.d1=[]; globalHistory.d2=[]; globalHistory.d3=[];
+
+  ['c1d','c2d','c3d','ch1d','ch2d','ch3d','chGlobal'].forEach(id=>{
+    const cv=document.getElementById(id);
+    cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
+  });
+  updateStats();
+  log('Simulación reiniciada.');
+}
+
+// ── LOG ───────────────────────────────────────────────────────────────────
+function log(msg) {
+  const box=document.getElementById('logBox');
+  const el=document.createElement('div'); el.className='log-entry';
+  const t=new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  el.innerHTML=`<span>[${t}]</span> ${msg}`;
+  box.insertBefore(el, box.firstChild);
+  while(box.children.length>30) box.removeChild(box.lastChild);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function hexToRgb(hex) {
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.slice(0,2),16)||0;
+  const g=parseInt(hex.slice(2,4),16)||0;
+  const b=parseInt(hex.slice(4,6),16)||0;
+  // handle css named/computed colors
+  if(isNaN(r)){return '200,200,200';}
+  return `${r},${g},${b}`;
+}
+
+function redrawAll() {
+  [0,1,2].forEach(i=>{
+    const s=state.dims[i];
+    const c=[document.getElementById('c1d'),document.getElementById('c2d'),document.getElementById('c3d')][i];
+    const fn=[draw1D,draw2D,draw3D][i];
+    if(s.walkPath.length) fn(c,s.walkPath,s.step);
+  });
+  drawMiniChart(document.getElementById('ch1d'), globalHistory.d1, cssv('--c1'), 1);
+  drawMiniChart(document.getElementById('ch2d'), globalHistory.d2, cssv('--c2'), 1);
+  drawMiniChart(document.getElementById('ch3d'), globalHistory.d3, cssv('--c3'), 0.34);
+  drawGlobal();
+}
+
+// Make hexToRgb work with CSS-var resolved colors
+const _origHexToRgb = hexToRgb;
+window.hexToRgb = function(color) {
+  if(color.startsWith('#')) return _origHexToRgb(color);
+  // rgb(r,g,b) format
+  const m=color.match(/\d+/g);
+  if(m&&m.length>=3) return `${m[0]},${m[1]},${m[2]}`;
+  return '180,180,180';
+};
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+window.addEventListener('load', ()=>{
+  log('Bienvenido. La simulación estima r_d(N)=P₀(τ₀⁺ ≤ N): en d≤2 la curva debería acercarse a 1; en d=3 estabilizarse por debajo de 1.');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stopping Time - Visualización dinámica premium</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #08111f;
+      --bg-2: #0e1b32;
+      --panel: rgba(13, 23, 43, 0.82);
+      --panel-solid: #0f1a30;
+      --text: #ebf2ff;
+      --muted: #9fb0d0;
+      --accent: #60a5fa;
+      --accent-2: #818cf8;
+      --accent-3: #22d3ee;
+      --danger: #fb7185;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --border: rgba(148, 163, 184, 0.22);
+      --glow: 0 0 30px rgba(96, 165, 250, 0.22);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    body.light {
+      --bg: #eef4ff;
+      --bg-2: #dce9ff;
+      --panel: rgba(255, 255, 255, 0.78);
+      --panel-solid: #ffffff;
+      --text: #16233a;
+      --muted: #5a6b89;
+      --accent: #2563eb;
+      --accent-2: #7c3aed;
+      --accent-3: #0891b2;
+      --danger: #e11d48;
+      --success: #059669;
+      --warning: #d97706;
+      --border: rgba(59, 130, 246, 0.18);
+      --glow: 0 0 26px rgba(37, 99, 235, 0.12);
+      --shadow: 0 18px 40px rgba(30, 41, 59, 0.12);
+    }
+
+    body.sunset {
+      --bg: #22111a;
+      --bg-2: #3b1725;
+      --panel: rgba(41, 20, 33, 0.82);
+      --panel-solid: #341726;
+      --text: #fff1ea;
+      --muted: #e5b9aa;
+      --accent: #fb7185;
+      --accent-2: #f59e0b;
+      --accent-3: #f97316;
+      --danger: #fecdd3;
+      --success: #86efac;
+      --warning: #fde68a;
+      --border: rgba(251, 113, 133, 0.22);
+      --glow: 0 0 30px rgba(251, 113, 133, 0.18);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+    }
+
+    body.neon {
+      --bg: #06110d;
+      --bg-2: #0b1f18;
+      --panel: rgba(7, 24, 19, 0.82);
+      --panel-solid: #092019;
+      --text: #ebfff8;
+      --muted: #93cab5;
+      --accent: #10b981;
+      --accent-2: #22d3ee;
+      --accent-3: #34d399;
+      --danger: #f472b6;
+      --success: #6ee7b7;
+      --warning: #facc15;
+      --border: rgba(16, 185, 129, 0.24);
+      --glow: 0 0 30px rgba(16, 185, 129, 0.18);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.36);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 15%, rgba(255,255,255,0.08), transparent 20%),
+        radial-gradient(circle at 85% 12%, rgba(129,140,248,0.15), transparent 22%),
+        radial-gradient(circle at 70% 80%, rgba(34,211,238,0.12), transparent 24%),
+        linear-gradient(135deg, var(--bg), var(--bg-2));
+      transition: background .3s ease, color .3s ease;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: radial-gradient(circle at center, black, transparent 85%);
+      opacity: .6;
+    }
+
+    .orb {
+      position: fixed;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      filter: blur(70px);
+      pointer-events: none;
+      opacity: .2;
+      z-index: 0;
+      animation: float 12s ease-in-out infinite;
+    }
+    .orb.a { top: -60px; left: -80px; background: var(--accent); }
+    .orb.b { bottom: -90px; right: -50px; background: var(--accent-2); animation-delay: -4s; }
+    .orb.c { top: 38%; right: 12%; background: var(--accent-3); animation-delay: -8s; }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0px) translateX(0px); }
+      50% { transform: translateY(18px) translateX(14px); }
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1450px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      backdrop-filter: blur(18px);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-main {
+      padding: 24px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.04;
+      letter-spacing: -.03em;
+    }
+
+    .hero p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      max-width: 800px;
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    .badges {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge {
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: .88rem;
+      font-weight: 700;
+    }
+
+    .hero-side {
+      padding: 20px;
+      display: grid;
+      align-content: center;
+      gap: 14px;
+    }
+
+    .mini-card {
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      box-shadow: var(--glow);
+    }
+
+    .mini-label {
+      color: var(--muted);
+      font-size: .84rem;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .mini-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+    }
+
+    .sidebar, .main {
+      min-width: 0;
+    }
+
+    .sidebar .panel, .main .panel { padding: 18px; }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 1rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .themes, .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      transition: transform .15s ease, border-color .2s ease, background .2s ease, opacity .2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    button:hover { transform: translateY(-1px); border-color: var(--accent); }
+    button:active { transform: translateY(0); }
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: none;
+      color: #fff;
+    }
+    button.ghost { background: rgba(255,255,255,0.03); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: .92rem;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .field output {
+      color: var(--text);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"], input[type="number"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    input[type="number"] {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .stat .k { color: var(--muted); font-size: .84rem; margin-bottom: 8px; }
+    .stat .v { font-size: 1.35rem; font-weight: 800; }
+
+    .chart-wrap {
+      position: relative;
+      padding: 12px;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), var(--glow);
+    }
+
+    .chart-overlay {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .overlay-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.24);
+      border: 1px solid var(--border);
+      font-size: .85rem;
+      font-weight: 800;
+      backdrop-filter: blur(10px);
+    }
+
+    .canvas-holder {
+      position: relative;
+      min-height: 520px;
+      max-height: 520px;
+      height: 520px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .legend span {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .timeline {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .progress {
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin: 10px 0 8px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      box-shadow: var(--glow);
+      transition: width .12s linear;
+    }
+
+    .status-text {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    footer {
+      margin-top: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .95rem;
+      padding: 14px 8px 20px;
+    }
+
+    @media (max-width: 1150px) {
+      .layout { grid-template-columns: 1fr; }
+      .hero { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .canvas-holder { min-height: 420px; height: 420px; max-height: 420px; }
+    }
+    @media (max-width: 560px) {
+      .stats { grid-template-columns: 1fr; }
+      .chart-overlay { position: static; align-items: flex-start; margin-bottom: 10px; }
+      .canvas-holder { min-height: 340px; height: 340px; max-height: 340px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb a"></div>
+  <div class="orb b"></div>
+  <div class="orb c"></div>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="panel hero-main">
+        <h1>Stopping Time<br>Visualización Dinámica</h1>
+        <p>
+          Simulación visual enfocada en el comportamiento de la trayectoria, la detección automática del hitting level y la animación en tiempo real del primer instante de llegada.
+        </p>
+        <div class="badges">
+          <span class="badge">Animación automática</span>
+          <span class="badge">4 temas visuales</span>
+          <span class="badge">Trayectoria en vivo</span>
+          <span class="badge">Detección de hitting</span>
+        </div>
+      </div>
+      <div class="panel hero-side">
+        <div class="mini-card">
+          <div class="mini-label">Estado</div>
+          <div class="mini-value" id="heroStatus">Listo para simular</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-label">Tiempo de llegada</div>
+          <div class="mini-value" id="heroHit">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <aside class="sidebar">
+        <div class="panel" style="margin-bottom:18px;">
+          <h2 class="section-title">Temas</h2>
+          <div class="themes">
+            <button onclick="setTheme('')">Oscuro</button>
+            <button onclick="setTheme('light')">Claro</button>
+            <button onclick="setTheme('sunset')">Sunset</button>
+            <button onclick="setTheme('neon')">Neón</button>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:18px;">
+          <h2 class="section-title">Controles</h2>
+          <div class="controls">
+            <div class="field">
+              <label for="pRange">Probabilidad de subir p <output id="pOut">0.50</output></label>
+              <input id="pRange" type="range" min="0.05" max="0.95" step="0.01" value="0.50">
+            </div>
+            <div class="field">
+              <label for="targetInput">Nivel objetivo a <output id="aOut">4</output></label>
+              <input id="targetInput" type="number" min="-30" max="30" step="1" value="4">
+            </div>
+            <div class="field">
+              <label for="stepsRange">Máximo de pasos <output id="stepsOut">120</output></label>
+              <input id="stepsRange" type="range" min="20" max="400" step="10" value="120">
+            </div>
+            <div class="field">
+              <label for="speedRange">Velocidad de animación <output id="speedOut">55 ms</output></label>
+              <input id="speedRange" type="range" min="10" max="180" step="5" value="55">
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="section-title">Acciones</h2>
+          <div class="buttons">
+            <button class="primary" id="playBtn">Simulación automática</button>
+            <button class="ghost" id="pauseBtn">Pausar</button>
+            <button class="ghost" id="singleBtn">Paso a paso</button>
+            <button class="ghost" id="resetBtn">Reiniciar</button>
+            <button class="ghost" id="newBtn">Nueva trayectoria</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="panel">
+          <div class="stats">
+            <div class="stat">
+              <div class="k">Posición actual</div>
+              <div class="v" id="statPosition">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Paso actual</div>
+              <div class="v" id="statStep">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Deriva p − q</div>
+              <div class="v" id="statDrift">0.00</div>
+            </div>
+            <div class="stat">
+              <div class="k">Resultado</div>
+              <div class="v" id="statResult">En espera</div>
+            </div>
+          </div>
+
+          <div class="chart-wrap">
+            <div class="chart-overlay">
+              <div class="overlay-pill" id="overlayTarget">Objetivo a = 4</div>
+              <div class="overlay-pill" id="overlayMode">Animación detenida</div>
+            </div>
+            <div class="canvas-holder">
+              <canvas id="walkChart"></canvas>
+            </div>
+          </div>
+
+          <div class="legend">
+            <span>Trayectoria acumulada</span>
+            <span>Nivel objetivo</span>
+            <span>Primera llegada resaltada</span>
+            <span>Marcador del punto actual</span>
+          </div>
+
+          <div class="timeline">
+            <strong>Progreso visual</strong>
+            <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+            <div class="status-text" id="statusText">Ajustá los controles y lanzá la simulación automática.</div>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <footer>Material elaborado por el profesor Sergio Gevatschnaider</footer>
+  </div>
+
+  <script>
+    const els = {
+      pRange: document.getElementById('pRange'),
+      targetInput: document.getElementById('targetInput'),
+      stepsRange: document.getElementById('stepsRange'),
+      speedRange: document.getElementById('speedRange'),
+      pOut: document.getElementById('pOut'),
+      aOut: document.getElementById('aOut'),
+      stepsOut: document.getElementById('stepsOut'),
+      speedOut: document.getElementById('speedOut'),
+      playBtn: document.getElementById('playBtn'),
+      pauseBtn: document.getElementById('pauseBtn'),
+      singleBtn: document.getElementById('singleBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      newBtn: document.getElementById('newBtn'),
+      statPosition: document.getElementById('statPosition'),
+      statStep: document.getElementById('statStep'),
+      statDrift: document.getElementById('statDrift'),
+      statResult: document.getElementById('statResult'),
+      heroStatus: document.getElementById('heroStatus'),
+      heroHit: document.getElementById('heroHit'),
+      overlayTarget: document.getElementById('overlayTarget'),
+      overlayMode: document.getElementById('overlayMode'),
+      progressBar: document.getElementById('progressBar'),
+      statusText: document.getElementById('statusText')
+    };
+
+    const state = {
+      p: 0.5,
+      q: 0.5,
+      a: 4,
+      maxSteps: 120,
+      speed: 55,
+      path: [0],
+      currentStep: 0,
+      currentPos: 0,
+      hitTime: null,
+      playing: false,
+      timer: null
+    };
+
+    const ctx = document.getElementById('walkChart');
+    const walkChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [0],
+        datasets: [
+          {
+            label: 'Trayectoria',
+            data: [0],
+            borderWidth: 3,
+            tension: 0.18,
+            fill: false,
+            pointRadius: 0,
+            pointHoverRadius: 0
+          },
+          {
+            label: 'Nivel objetivo',
+            data: [state.a],
+            borderColor: '#fb7185',
+            borderDash: [9, 6],
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: false,
+            tension: 0
+          },
+          {
+            label: 'Primera llegada',
+            data: [null],
+            showLine: false,
+            pointRadius: 7,
+            pointHoverRadius: 7,
+            borderColor: '#fbbf24',
+            backgroundColor: '#fbbf24'
+          },
+          {
+            label: 'Punto actual',
+            data: [0],
+            showLine: false,
+            pointRadius: 6,
+            pointHoverRadius: 6,
+            borderColor: '#ffffff',
+            backgroundColor: '#ffffff'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'Trayectoria animada del random walk',
+            color: '#e5e7eb',
+            font: { size: 18, weight: '700' }
+          },
+          tooltip: {
+            callbacks: {
+              label(context) {
+                if (context.parsed.y === null) return '';
+                return `${context.dataset.label}: ${context.parsed.y}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Tiempo n', color: '#cbd5e1', font: { weight: '700' } },
+            ticks: { color: '#cbd5e1', maxTicksLimit: 12 },
+            grid: { color: 'rgba(148,163,184,0.16)' }
+          },
+          y: {
+            title: { display: true, text: 'Posición Sₙ', color: '#cbd5e1', font: { weight: '700' } },
+            ticks: { color: '#cbd5e1' },
+            grid: { color: 'rgba(148,163,184,0.16)' }
+          }
+        }
+      }
+    });
+
+    function themeColors() {
+      const css = getComputedStyle(document.body);
+      return {
+        text: css.getPropertyValue('--text').trim(),
+        muted: css.getPropertyValue('--muted').trim(),
+        accent: css.getPropertyValue('--accent').trim(),
+        accent2: css.getPropertyValue('--accent-2').trim(),
+        danger: css.getPropertyValue('--danger').trim(),
+        warning: css.getPropertyValue('--warning').trim(),
+        grid: 'rgba(148,163,184,0.16)'
+      };
+    }
+
+    function setTheme(name) {
+      document.body.className = name;
+      updateChartTheme();
+    }
+
+    function updateChartTheme() {
+      const c = themeColors();
+      walkChart.data.datasets[0].borderColor = c.accent;
+      walkChart.data.datasets[0].backgroundColor = c.accent;
+      walkChart.data.datasets[1].borderColor = c.danger;
+      walkChart.data.datasets[2].backgroundColor = c.warning;
+      walkChart.data.datasets[2].borderColor = c.warning;
+      walkChart.data.datasets[3].backgroundColor = c.text;
+      walkChart.data.datasets[3].borderColor = c.text;
+      walkChart.options.plugins.title.color = c.text;
+      walkChart.options.scales.x.title.color = c.text;
+      walkChart.options.scales.y.title.color = c.text;
+      walkChart.options.scales.x.ticks.color = c.text;
+      walkChart.options.scales.y.ticks.color = c.text;
+      walkChart.options.scales.x.grid.color = c.grid;
+      walkChart.options.scales.y.grid.color = c.grid;
+      walkChart.update();
+    }
+
+    function syncControls() {
+      state.p = Number(els.pRange.value);
+      state.q = 1 - state.p;
+      state.a = Math.trunc(Number(els.targetInput.value));
+      if (state.a === 0) state.a = 1;
+      els.targetInput.value = state.a;
+      state.maxSteps = Number(els.stepsRange.value);
+      state.speed = Number(els.speedRange.value);
+
+      els.pOut.value = state.p.toFixed(2);
+      els.aOut.value = String(state.a);
+      els.stepsOut.value = String(state.maxSteps);
+      els.speedOut.value = `${state.speed} ms`;
+
+      els.statDrift.textContent = (state.p - state.q).toFixed(2);
+      els.overlayTarget.textContent = `Objetivo a = ${state.a}`;
+    }
+
+    function generateFullPath() {
+      state.path = [0];
+      let pos = 0;
+      state.hitTime = null;
+      for (let i = 1; i <= state.maxSteps; i++) {
+        pos += Math.random() < state.p ? 1 : -1;
+        state.path.push(pos);
+        if (state.hitTime === null && pos === state.a) {
+          state.hitTime = i;
+        }
+      }
+      state.currentStep = 0;
+      state.currentPos = 0;
+    }
+
+    function hitDatasetData(length) {
+      const arr = Array(length).fill(null);
+      if (state.hitTime !== null && state.hitTime < length) arr[state.hitTime] = state.a;
+      return arr;
+    }
+
+    function currentPointData(length) {
+      const arr = Array(length).fill(null);
+      arr[length - 1] = state.path[length - 1];
+      return arr;
+    }
+
+    function renderFrame(stepIndex) {
+      const length = stepIndex + 1;
+      const labels = Array.from({ length }, (_, i) => i);
+      const visiblePath = state.path.slice(0, length);
+      const targetLine = Array(length).fill(state.a);
+
+      walkChart.data.labels = labels;
+      walkChart.data.datasets[0].data = visiblePath;
+      walkChart.data.datasets[1].data = targetLine;
+      walkChart.data.datasets[2].data = hitDatasetData(length);
+      walkChart.data.datasets[3].data = currentPointData(length);
+      walkChart.update();
+
+      state.currentStep = stepIndex;
+      state.currentPos = state.path[stepIndex];
+      els.statStep.textContent = String(stepIndex);
+      els.statPosition.textContent = String(state.currentPos);
+      els.progressBar.style.width = `${(stepIndex / state.maxSteps) * 100}%`;
+
+      const hitReached = state.hitTime !== null && stepIndex >= state.hitTime;
+      if (hitReached) {
+        els.statResult.textContent = 'Objetivo alcanzado';
+        els.heroStatus.textContent = 'Stopping time detectado';
+        els.heroHit.textContent = `Tₐ = ${state.hitTime}`;
+        els.statusText.textContent = `La trayectoria alcanzó el nivel objetivo en el paso ${state.hitTime}. Desde ese instante el primer tiempo de llegada ya quedó determinado.`;
+      } else if (stepIndex >= state.maxSteps) {
+        els.statResult.textContent = 'No alcanzado';
+        els.heroStatus.textContent = 'Horizonte terminado';
+        els.heroHit.textContent = 'No observado';
+        els.statusText.textContent = `La trayectoria terminó en ${state.maxSteps} pasos sin tocar el nivel ${state.a}.`;
+      } else {
+        els.statResult.textContent = 'En curso';
+        els.heroStatus.textContent = 'Simulación en progreso';
+        els.heroHit.textContent = '—';
+        els.statusText.textContent = `La trayectoria se está construyendo en tiempo real. Posición actual: ${state.currentPos}.`;
+      }
+    }
+
+    function stopTimer() {
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+      state.playing = false;
+      els.overlayMode.textContent = 'Animación detenida';
+    }
+
+    function finishIfNeeded() {
+      if (state.currentStep >= state.maxSteps) {
+        stopTimer();
+        renderFrame(state.maxSteps);
+      }
+    }
+
+    function stepForward() {
+      if (state.currentStep < state.maxSteps) {
+        renderFrame(state.currentStep + 1);
+      }
+      finishIfNeeded();
+    }
+
+    function playAuto() {
+      stopTimer();
+      state.playing = true;
+      els.overlayMode.textContent = 'Animación automática';
+      state.timer = setInterval(() => {
+        if (state.currentStep < state.maxSteps) {
+          renderFrame(state.currentStep + 1);
+        } else {
+          stopTimer();
+        }
+      }, state.speed);
+    }
+
+    function resetSimulation(regenerate = false) {
+      stopTimer();
+      syncControls();
+      if (regenerate || state.path.length !== state.maxSteps + 1) {
+        generateFullPath();
+      } else {
+        state.currentStep = 0;
+        state.currentPos = 0;
+      }
+      els.statResult.textContent = 'En espera';
+      els.heroStatus.textContent = 'Listo para simular';
+      els.heroHit.textContent = '—';
+      els.statusText.textContent = 'Ajustá los controles y lanzá la simulación automática.';
+      renderFrame(0);
+    }
+
+    els.pRange.addEventListener('input', () => resetSimulation(true));
+    els.targetInput.addEventListener('input', () => resetSimulation(true));
+    els.stepsRange.addEventListener('input', () => resetSimulation(true));
+    els.speedRange.addEventListener('input', () => {
+      syncControls();
+      if (state.playing) playAuto();
+    });
+
+    els.playBtn.addEventListener('click', () => playAuto());
+    els.pauseBtn.addEventListener('click', () => stopTimer());
+    els.singleBtn.addEventListener('click', () => { stopTimer(); stepForward(); });
+    els.resetBtn.addEventListener('click', () => resetSimulation(false));
+    els.newBtn.addEventListener('click', () => resetSimulation(true));
+
+    syncControls();
+    generateFullPath();
+    updateChartTheme();
+    renderFrame(0);
+  </script>
+</body>
+</html>

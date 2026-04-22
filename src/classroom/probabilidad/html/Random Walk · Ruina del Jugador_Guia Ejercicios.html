@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bloque 3 · Random Walk · Ruina del Jugador</title>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        processEscapes: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --surface:#111318;
+      --card:#161a23;
+      --border:#252b3a;
+      --accent1:#f0c040;
+      --accent2:#3de6c8;
+      --accent3:#8b6fff;
+      --text:#e8e8f0;
+      --muted:#9aa0b5;
+      --answer-bg:#0d1520;
+      --radius:14px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height:1.65;
+    }
+
+    header{
+      padding:56px 24px 40px;
+      text-align:center;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg,#111826 0%, #0b0c10 100%);
+    }
+
+    .tag{
+      display:inline-block;
+      padding:6px 14px;
+      border:1px solid rgba(61,230,200,0.35);
+      border-radius:999px;
+      color:var(--accent2);
+      font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.8rem;
+      margin-bottom:18px;
+    }
+
+    h1{
+      margin:0 0 12px;
+      font-size:clamp(2rem,4vw,3.4rem);
+      color:var(--accent1);
+    }
+
+    .subtitle{
+      color:var(--muted);
+      font-size:1rem;
+      max-width:920px;
+      margin:0 auto;
+    }
+
+    .credit{
+      margin-top:18px;
+      color:var(--accent1);
+      font-size:.95rem;
+    }
+
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:32px 18px 72px;
+    }
+
+    .intro{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:24px;
+      margin-bottom:24px;
+    }
+
+    .intro h2{
+      margin-top:0;
+      color:var(--accent3);
+    }
+
+    .formula{
+      background:rgba(61,230,200,0.06);
+      border-left:3px solid var(--accent2);
+      padding:14px 16px;
+      margin:14px 0;
+      overflow-x:auto;
+      border-radius:0 8px 8px 0;
+    }
+
+    .controls{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin:0 0 24px;
+    }
+
+    button.ctrl{
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      padding:10px 18px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:.92rem;
+    }
+
+    button.ctrl:hover{
+      border-color:var(--accent1);
+      color:var(--accent1);
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      margin-bottom:16px;
+      overflow:hidden;
+    }
+
+    .q{
+      width:100%;
+      border:none;
+      background:none;
+      color:var(--text);
+      text-align:left;
+      padding:22px;
+      cursor:pointer;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:14px;
+      align-items:start;
+    }
+
+    .num{
+      font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color:var(--accent1);
+      border:1px solid rgba(240,192,64,0.25);
+      background:rgba(240,192,64,0.08);
+      border-radius:8px;
+      padding:4px 8px;
+      font-size:.8rem;
+      min-width:38px;
+      text-align:center;
+    }
+
+    .title{
+      font-size:1.06rem;
+      font-weight:700;
+      line-height:1.45;
+    }
+
+    .icon{
+      font-size:1.1rem;
+      color:var(--muted);
+      transition:transform .25s ease;
+    }
+
+    .a{
+      display:none;
+      border-top:1px solid var(--border);
+      background:var(--answer-bg);
+      padding:22px 22px 26px 62px;
+    }
+
+    .card.open .a{display:block}
+    .card.open .icon{transform:rotate(180deg)}
+
+    .a p{margin:0 0 12px}
+
+    .final{
+      margin-top:16px;
+      padding:14px 16px;
+      background:rgba(240,192,64,0.08);
+      border:1px solid rgba(240,192,64,0.22);
+      border-radius:10px;
+    }
+
+    .final strong{color:var(--accent1)}
+
+    footer{
+      border-top:1px solid var(--border);
+      text-align:center;
+      padding:28px 20px 40px;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    mjx-container{overflow-x:auto; overflow-y:hidden; max-width:100%;}
+
+    @media (max-width:700px){
+      .a{padding-left:20px}
+      .q{padding:18px}
+      .title{font-size:1rem}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="tag">Bloque 3 · 10 ejercicios resueltos</div>
+    <h1>Random Walk · Ruina del Jugador</h1>
+    <p class="subtitle">Probabilidad de alcanzar una meta \(N\) antes que la ruina en \(0\), ecuaciones en diferencias y fórmulas cerradas para el caso simétrico y asimétrico.</p>
+    <div class="credit">Material elaborado por el profesor Sergio Gevatschnaider</div>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <h2>Planteo general</h2>
+      <p>Sea \(P_k\) la probabilidad de alcanzar \(N\) antes que \(0\), comenzando en el capital \(k\), con \(1 \le k \le N-1\).</p>
+      <div class="formula">
+        \[
+        P_k = pP_{k+1} + qP_{k-1}, \qquad 1\le k\le N-1
+        \]
+        \[
+        P_0=0, \qquad P_N=1
+        \]
+      </div>
+      <p>Las fórmulas cerradas correctas son:</p>
+      <div class="formula">
+        \[
+        \text{Si } p\neq q,\qquad P_k=\frac{1-(q/p)^k}{1-(q/p)^N}
+        \]
+        \[
+        \text{Si } p=q=\frac12,\qquad P_k=\frac{k}{N}
+        \]
+      </div>
+    </section>
+
+    <div class="controls">
+      <button class="ctrl" onclick="expandAll()">Expandir todo</button>
+      <button class="ctrl" onclick="collapseAll()">Colapsar todo</button>
+    </div>
+
+    <div class="card" id="c1">
+      <button class="q" onclick="toggleCard(1)">
+        <span class="num">3.1</span>
+        <span class="title">Con \(p = 18/37\), \(q = 19/37\), \(k = 50\) y \(N = 100\), plantear la ecuación en diferencias.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Escribir la ecuación general</strong></p>
+        <div class="formula">\[P_k=pP_{k+1}+qP_{k-1}\]</div>
+
+        <p><strong>Paso 2: Sustituir \(p\) y \(q\)</strong></p>
+        <div class="formula">\[P_k=\frac{18}{37}P_{k+1}+\frac{19}{37}P_{k-1}\]</div>
+
+        <p><strong>Paso 3: Agregar condiciones de borde</strong></p>
+        <div class="formula">\[P_0=0,\qquad P_{100}=1\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong>
+          \[P_k=\frac{18}{37}P_{k+1}+\frac{19}{37}P_{k-1}, \qquad P_0=0,\qquad P_{100}=1\]
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="c2">
+      <button class="q" onclick="toggleCard(2)">
+        <span class="num">3.2</span>
+        <span class="title">Con esos mismos datos, expresar la probabilidad exacta de éxito.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Usar la fórmula para \(p\neq q\)</strong></p>
+        <div class="formula">\[P_k=\frac{1-(q/p)^k}{1-(q/p)^N}\]</div>
+
+        <p><strong>Paso 2: Calcular el cociente</strong></p>
+        <div class="formula">\[\frac{q}{p}=\frac{19/37}{18/37}=\frac{19}{18}\]</div>
+
+        <p><strong>Paso 3: Sustituir \(k=50\) y \(N=100\)</strong></p>
+        <div class="formula">\[P_{50}=\frac{1-\left(\frac{19}{18}\right)^{50}}{1-\left(\frac{19}{18}\right)^{100}}\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong>
+          \[P_{50}=\frac{1-\left(\frac{19}{18}\right)^{50}}{1-\left(\frac{19}{18}\right)^{100}}\]
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="c3">
+      <button class="q" onclick="toggleCard(3)">
+        <span class="num">3.3</span>
+        <span class="title">Con \(p = 18/37\), \(q = 19/37\), \(k = 50\) y \(N = 55\), escribir la nueva probabilidad de éxito.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Aplicar la fórmula general</strong></p>
+        <div class="formula">\[P_k=\frac{1-(q/p)^k}{1-(q/p)^N}\]</div>
+
+        <p><strong>Paso 2: Sustituir los valores</strong></p>
+        <div class="formula">\[P_{50}=\frac{1-\left(\frac{19}{18}\right)^{50}}{1-\left(\frac{19}{18}\right)^{55}}\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong>
+          \[P_{50}=\frac{1-\left(\frac{19}{18}\right)^{50}}{1-\left(\frac{19}{18}\right)^{55}}\]
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="c4">
+      <button class="q" onclick="toggleCard(4)">
+        <span class="num">3.4</span>
+        <span class="title">Comparar conceptualmente las probabilidades de éxito de los ejercicios 3.2 y 3.3.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Analizar la meta</strong></p>
+        <div class="formula">\[55<100\]</div>
+
+        <p><strong>Paso 2: Consecuencia</strong></p>
+        <p>Si la meta está más cerca, el jugador necesita menos avances netos para alcanzarla antes de tocar \(0\).</p>
+
+        <p><strong>Paso 3: Interpretación</strong></p>
+        <p>Con una meta más próxima, la probabilidad de éxito aumenta.</p>
+
+        <div class="final"><strong>Respuesta final:</strong>
+          <p>La probabilidad de éxito con \(N=55\) es mayor que con \(N=100\).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="c5">
+      <button class="q" onclick="toggleCard(5)">
+        <span class="num">3.5</span>
+        <span class="title">Si \(p = q = 1/2\), \(k = 20\) y \(N = 50\), hallar \(P_k\).</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Caso simétrico</strong></p>
+        <div class="formula">\[P_k=\frac{k}{N}\]</div>
+
+        <p><strong>Paso 2: Sustituir</strong></p>
+        <div class="formula">\[P_{20}=\frac{20}{50}=\frac{2}{5}\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong> \[P_{20}=\frac{2}{5}\]</div>
+      </div>
+    </div>
+
+    <div class="card" id="c6">
+      <button class="q" onclick="toggleCard(6)">
+        <span class="num">3.6</span>
+        <span class="title">Si \(p = 0.6\), \(q = 0.4\), \(k = 10\) y \(N = 20\), hallar la probabilidad de llegar a 20 antes que a 0.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Calcular el cociente</strong></p>
+        <div class="formula">\[\frac{q}{p}=\frac{0.4}{0.6}=\frac{2}{3}\]</div>
+
+        <p><strong>Paso 2: Aplicar la fórmula</strong></p>
+        <div class="formula">\[P_{10}=\frac{1-\left(\frac{2}{3}\right)^{10}}{1-\left(\frac{2}{3}\right)^{20}}\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong>
+          \[P_{10}=\frac{1-\left(\frac{2}{3}\right)^{10}}{1-\left(\frac{2}{3}\right)^{20}}\]
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="c7">
+      <button class="q" onclick="toggleCard(7)">
+        <span class="num">3.7</span>
+        <span class="title">Si \(p = 0.4\), \(q = 0.6\), \(k = 10\) y \(N = 20\), expresar \(P_{10}\).</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Cociente</strong></p>
+        <div class="formula">\[\frac{q}{p}=\frac{0.6}{0.4}=\frac{3}{2}\]</div>
+
+        <p><strong>Paso 2: Fórmula</strong></p>
+        <div class="formula">\[P_{10}=\frac{1-\left(\frac{3}{2}\right)^{10}}{1-\left(\frac{3}{2}\right)^{20}}\]</div>
+
+        <div class="final"><strong>Respuesta final:</strong>
+          \[P_{10}=\frac{1-\left(\frac{3}{2}\right)^{10}}{1-\left(\frac{3}{2}\right)^{20}}\]
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="c8">
+      <button class="q" onclick="toggleCard(8)">
+        <span class="num">3.8</span>
+        <span class="title">Si \(p = 0.55\), \(q = 0.45\), \(k = 30\) y \(N = 40\), plantear el problema de ruina.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Escribir la ecuación en diferencias</strong></p>
+        <div class="formula">\[P_k=0.55P_{k+1}+0.45P_{k-1}\]</div>
+
+        <p><strong>Paso 2: Condiciones de borde</strong></p>
+        <div class="formula">\[P_0=0,\qquad P_{40}=1\]</div>
+
+        <p><strong>Paso 3: Fórmula cerrada</strong></p>
+        <div class="formula">
+          \[\frac{q}{p}=\frac{0.45}{0.55}=\frac{9}{11}\]
+          \[P_{30}=\frac{1-\left(\frac{9}{11}\right)^{30}}{1-\left(\frac{9}{11}\right)^{40}}\]
+        </div>
+
+        <div class="final"><strong>Respuesta final:</strong>
+          \[P_k=0.55P_{k+1}+0.45P_{k-1},\qquad P_0=0,\qquad P_{40}=1\]
+          \[P_{30}=\frac{1-\left(\frac{9}{11}\right)^{30}}{1-\left(\frac{9}{11}\right)^{40}}\]
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="c9">
+      <button class="q" onclick="toggleCard(9)">
+        <span class="num">3.9</span>
+        <span class="title">En el caso simétrico \(p = q = 1/2\), comparar \(P_{25}\) para \(N = 50\) y para \(N = 100\).</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Con \(N=50\)</strong></p>
+        <div class="formula">\[P_{25}=\frac{25}{50}=\frac{1}{2}\]</div>
+
+        <p><strong>Paso 2: Con \(N=100\)</strong></p>
+        <div class="formula">\[P_{25}=\frac{25}{100}=\frac{1}{4}\]</div>
+
+        <p><strong>Paso 3: Comparación</strong></p>
+        <p>Una meta más lejana reduce la probabilidad de éxito.</p>
+
+        <div class="final"><strong>Respuesta final:</strong>
+          \[P_{25}\text{ con }N=50=\frac12,\qquad P_{25}\text{ con }N=100=\frac14\]
+        </div>
+      </div>
+    </div>
+
+    <div class="card open" id="c10">
+      <button class="q" onclick="toggleCard(10)">
+        <span class="num">3.10</span>
+        <span class="title">Pregunta conceptual: si \(p &lt; q\), ¿aumentar la meta \(N\) mejora o empeora las chances de éxito?</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Identificar la deriva</strong></p>
+        <p>Si \(p&lt;q\), el juego es desfavorable: hay deriva hacia la ruina.</p>
+
+        <p><strong>Paso 2: Efecto de una meta más grande</strong></p>
+        <p>Una meta más alta exige más avances netos antes de tocar \(0\).</p>
+
+        <p><strong>Paso 3: Interpretación</strong></p>
+        <p>Cuanto más lejos está la meta, menor es la probabilidad de alcanzarla antes de la ruina.</p>
+
+        <div class="final"><strong>Respuesta final:</strong>
+          <p>Empeora las chances de éxito.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Bloque 3 · Ruina del jugador · Random Walk<br />
+    Material elaborado por el profesor Sergio Gevatschnaider
+  </footer>
+
+  <script>
+    function typesetTarget(target) {
+      if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise(target ? [target] : undefined).catch(() => {});
+      }
+    }
+
+    function toggleCard(n){
+      const card = document.getElementById('c' + n);
+      card.classList.toggle('open');
+      typesetTarget(card);
+    }
+
+    function expandAll(){
+      document.querySelectorAll('.card').forEach(card => card.classList.add('open'));
+      typesetTarget();
+    }
+
+    function collapseAll(){
+      document.querySelectorAll('.card').forEach(card => card.classList.remove('open'));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      typesetTarget();
+    });
+  </script>
+</body>
+</html>

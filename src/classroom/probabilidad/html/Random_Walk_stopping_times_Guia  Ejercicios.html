@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bloque 4 · Random Walk · Stopping Times</title>
+
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --surface:#111318;
+      --card:#161a23;
+      --border:#252b3a;
+      --accent1:#f0c040;
+      --accent2:#3de6c8;
+      --accent3:#8b6fff;
+      --text:#e8e8f0;
+      --muted:#9aa0b5;
+      --answer-bg:#0d1520;
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height:1.6;
+    }
+    header{
+      padding:56px 24px 40px;
+      text-align:center;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg,#111826 0%, #0b0c10 100%);
+    }
+    .tag{
+      display:inline-block;
+      padding:6px 14px;
+      border:1px solid rgba(61,230,200,0.35);
+      border-radius:999px;
+      color:var(--accent2);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.8rem;
+      margin-bottom:18px;
+    }
+    h1{
+      margin:0 0 12px;
+      font-size:clamp(2rem,4vw,3.4rem);
+      color:var(--accent1);
+    }
+    .subtitle{
+      color:var(--muted);
+      font-size:1rem;
+      max-width:920px;
+      margin:0 auto;
+    }
+    .credit{
+      margin-top:18px;
+      color:var(--accent1);
+      font-size:.95rem;
+    }
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:32px 18px 72px;
+    }
+    .intro{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:24px;
+      margin-bottom:24px;
+    }
+    .intro h2{
+      margin-top:0;
+      color:var(--accent3);
+    }
+    .formula{
+      background:rgba(61,230,200,0.06);
+      border-left:3px solid var(--accent2);
+      padding:14px 16px;
+      margin:14px 0;
+      overflow-x:auto;
+      border-radius:0 8px 8px 0;
+    }
+    .note{
+      background:rgba(240,192,64,0.08);
+      border:1px solid rgba(240,192,64,0.20);
+      border-radius:10px;
+      padding:14px 16px;
+      margin-top:16px;
+    }
+    .controls{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin:0 0 24px;
+    }
+    button.ctrl{
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      padding:10px 18px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:.92rem;
+    }
+    button.ctrl:hover{
+      border-color:var(--accent1);
+      color:var(--accent1);
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      margin-bottom:16px;
+      overflow:hidden;
+    }
+    .q{
+      width:100%;
+      border:none;
+      background:none;
+      color:var(--text);
+      text-align:left;
+      padding:22px 22px;
+      cursor:pointer;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:14px;
+      align-items:start;
+    }
+    .num{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color:var(--accent1);
+      border:1px solid rgba(240,192,64,0.25);
+      background:rgba(240,192,64,0.08);
+      border-radius:8px;
+      padding:4px 8px;
+      font-size:.8rem;
+      min-width:38px;
+      text-align:center;
+    }
+    .title{
+      font-size:1.06rem;
+      font-weight:700;
+      line-height:1.45;
+    }
+    .icon{
+      font-size:1.1rem;
+      color:var(--muted);
+      transition:transform .25s ease;
+    }
+    .a{
+      display:none;
+      border-top:1px solid var(--border);
+      background:var(--answer-bg);
+      padding:22px 22px 26px 62px;
+    }
+    .card.open .a{display:block}
+    .card.open .icon{transform:rotate(180deg)}
+    .a p{margin:0 0 12px}
+    .final{
+      margin-top:16px;
+      padding:14px 16px;
+      background:rgba(240,192,64,0.08);
+      border:1px solid rgba(240,192,64,0.22);
+      border-radius:10px;
+    }
+    .final strong{color:var(--accent1)}
+    footer{
+      border-top:1px solid var(--border);
+      text-align:center;
+      padding:28px 20px 40px;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .math-pending{visibility:hidden}
+
+    @media (max-width:700px){
+      .a{padding-left:20px}
+      .q{padding:18px}
+      .title{font-size:1rem}
+    }
+  </style>
+</head>
+<body class="math-pending">
+  <header>
+    <div class="tag">Bloque 4 · 10 ejercicios resueltos</div>
+    <h1>Random Walk · Stopping Times</h1>
+    <p class="subtitle">Tiempos de parada, filtración natural, medibilidad del primer tiempo de llegada y relación entre hitting probabilities y deriva del proceso.</p>
+    <div class="credit">Material elaborado por el profesor Sergio Gevatschnaider</div>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <h2>Planteo general</h2>
+      <p>Sea el random walk unidimensional:</p>
+      <div class="formula">
+        $$S_n=\sum_{i=1}^{n}X_i, \qquad P(X_i=+1)=p,\qquad P(X_i=-1)=q=1-p.$$
+      </div>
+      <p>Definimos el primer tiempo de llegada al estado <strong>a</strong> por la siguiente expresión:</p>
+      <div class="formula">
+        $$T_a=\min\{n\ge 1:\ S_n=a\}.$$
+      </div>
+      <p>La filtración natural del proceso viene dada por:</p>
+      <div class="formula">
+        $$\mathcal{F}_n=\sigma(X_1,\dots,X_n).$$
+      </div>
+      <p>Un tiempo aleatorio <strong>T</strong> es un <em>stopping time</em> si satisface:</p>
+      <div class="formula">
+        $$\{T\le n\}\in\mathcal{F}_n \qquad \text{para todo } n.$$
+      </div>
+      <p>Además, en el caso <strong>p &lt; q</strong>, comenzando desde <strong>0</strong>, la probabilidad de alcanzar el estado <strong>+1</strong> alguna vez es:</p>
+      <div class="formula">
+        $$P_0(T_1<\infty)=\frac{p}{q}.$$
+      </div>
+          </section>
+
+    <div class="controls">
+      <button class="ctrl" onclick="expandAll()">Expandir todo</button>
+      <button class="ctrl" onclick="collapseAll()">Colapsar todo</button>
+    </div>
+
+    <div class="card" id="c1">
+      <button class="q" onclick="toggleCard(1)">
+        <span class="num">4.1</span>
+        <span class="title">Demostrar que T<sub>1</sub> = min{n ≥ 1 : S<sub>n</sub> = 1} es un stopping time.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Escribir el evento $\{T_1\le n\}$</strong></p>
+        <div class="formula">
+          $$\{T_1\le n\}=\bigcup_{k=1}^{n}\{S_k=1\}.$$
+        </div>
+        <p><strong>Paso 2: Medibilidad</strong></p>
+        <p>Cada evento $\{S_k=1\}$ depende solo de $X_1,\dots,X_k$, por lo tanto pertenece a $\mathcal{F}_k\subseteq \mathcal{F}_n$.</p>
+        <p><strong>Paso 3: Unión finita</strong></p>
+        <p>Una unión finita de eventos de $\mathcal{F}_n$ sigue perteneciendo a $\mathcal{F}_n$.</p>
+        <div class="final"><strong>Respuesta final:</strong><p>$T_1$ es un stopping time.</p></div>
+      </div>
+    </div>
+
+    <div class="card" id="c2">
+      <button class="q" onclick="toggleCard(2)">
+        <span class="num">4.2</span>
+        <span class="title">Sea T<sub>3</sub> = min{n ≥ 1 : S<sub>n</sub> = 3}. Mostrar que T<sub>3</sub> es stopping time.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Escribir el evento</strong></p>
+        <div class="formula">
+          $$\{T_3\le n\}=\bigcup_{k=1}^{n}\{S_k=3\}.$$
+        </div>
+        <p><strong>Paso 2: Medibilidad</strong></p>
+        <p>Cada $\{S_k=3\}\in\mathcal{F}_k\subseteq\mathcal{F}_n$.</p>
+        <p><strong>Paso 3: Conclusión</strong></p>
+        <p>La unión finita pertenece a $\mathcal{F}_n$.</p>
+        <div class="final"><strong>Respuesta final:</strong><p>$T_3$ es un stopping time.</p></div>
+      </div>
+    </div>
+
+    <div class="card" id="c3">
+      <button class="q" onclick="toggleCard(3)">
+        <span class="num">4.3</span>
+        <span class="title">Sea T<sub>-2</sub> = min{n ≥ 1 : S<sub>n</sub> = -2}. Demostrar que es stopping time.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Evento observable hasta tiempo $n$</strong></p>
+        <div class="formula">
+          $$\{T_{-2}\le n\}=\bigcup_{k=1}^{n}\{S_k=-2\}.$$
+        </div>
+        <p><strong>Paso 2: Medibilidad</strong></p>
+        <p>Cada evento $\{S_k=-2\}$ depende solo de la trayectoria hasta el tiempo $k$, luego está en $\mathcal{F}_k\subseteq\mathcal{F}_n$.</p>
+        <div class="final"><strong>Respuesta final:</strong><p>$T_{-2}$ es un stopping time.</p></div>
+      </div>
+    </div>
+
+    <div class="card" id="c4">
+      <button class="q" onclick="toggleCard(4)">
+        <span class="num">4.4</span>
+        <span class="title">Sea p &lt; q. Justificar por qué P(T<sub>1</sub> = ∞) &gt; 0.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Interpretar la deriva</strong></p>
+        <p>Si $p<q$, la caminata tiene deriva negativa, es decir, tiende a desplazarse hacia la izquierda.</p>
+        <p><strong>Paso 2: Consecuencia probabilística</strong></p>
+        <p>Existe probabilidad positiva de que el proceso se aleje hacia $-\infty$ sin tocar nunca el nivel $+1$.</p>
+        <p><strong>Paso 3: Conclusión</strong></p>
+        <div class="formula">
+          $$P(T_1<\infty)<1 \quad \Longrightarrow \quad P(T_1=\infty)>0.$$
+        </div>
+        <div class="final"><strong>Respuesta final:</strong><p>$$P(T_1=\infty)>0$$</p></div>
+      </div>
+    </div>
+
+    <div class="card" id="c5">
+      <button class="q" onclick="toggleCard(5)">
+        <span class="num">4.5</span>
+        <span class="title">Con p = 0.4, q = 0.6, hallar P(T<sub>1</sub> &lt; ∞).</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Fórmula de alcanzar $+1$ con deriva negativa</strong></p>
+        <div class="formula">$$P_0(T_1<\infty)=\frac{p}{q}.$$</div>
+        <p><strong>Paso 2: Sustituir</strong></p>
+        <div class="formula">$$\frac{0.4}{0.6}=\frac{2}{3}.$$</div>
+        <div class="final"><strong>Respuesta final:</strong><p>$$P(T_1<\infty)=\frac{2}{3}.$$</p></div>
+      </div>
+    </div>
+
+    <div class="card" id="c6">
+      <button class="q" onclick="toggleCard(6)">
+        <span class="num">4.6</span>
+        <span class="title">Con p = 0.4, q = 0.6, hallar P(T<sub>1</sub> = ∞).</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Usar complemento</strong></p>
+        <div class="formula">$$P(T_1=\infty)=1-P(T_1<\infty).$$</div>
+        <p><strong>Paso 2: Sustituir el valor anterior</strong></p>
+        <div class="formula">$$1-\frac{2}{3}=\frac{1}{3}.$$</div>
+        <div class="final"><strong>Respuesta final:</strong><p>$$P(T_1=\infty)=\frac{1}{3}.$$</p></div>
+      </div>
+    </div>
+
+    <div class="card" id="c7">
+      <button class="q" onclick="toggleCard(7)">
+        <span class="num">4.7</span>
+        <span class="title">Sea p = 0.3, q = 0.7. Hallar P(T<sub>1</sub> &lt; ∞).</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Aplicar la fórmula</strong></p>
+        <div class="formula">$$P_0(T_1<\infty)=\frac{p}{q}.$$</div>
+        <p><strong>Paso 2: Sustituir</strong></p>
+        <div class="formula">$$\frac{0.3}{0.7}=\frac{3}{7}.$$</div>
+        <div class="final"><strong>Respuesta final:</strong><p>$$P(T_1<\infty)=\frac{3}{7}.$$</p></div>
+      </div>
+    </div>
+
+    <div class="card" id="c8">
+      <button class="q" onclick="toggleCard(8)">
+        <span class="num">4.8</span>
+        <span class="title">Sea p = 0.3, q = 0.7. Hallar P(T<sub>1</sub> = ∞).</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Complemento</strong></p>
+        <div class="formula">$$P(T_1=\infty)=1-\frac{3}{7}.$$</div>
+        <p><strong>Paso 2: Calcular</strong></p>
+        <div class="formula">$$1-\frac{3}{7}=\frac{4}{7}.$$</div>
+        <div class="final"><strong>Respuesta final:</strong><p>$$P(T_1=\infty)=\frac{4}{7}.$$</p></div>
+      </div>
+    </div>
+
+    <div class="card" id="c9">
+      <button class="q" onclick="toggleCard(9)">
+        <span class="num">4.9</span>
+        <span class="title">Explicar la relación entre P(T<sub>1</sub> = ∞) &gt; 0 y la ley fuerte de los grandes números cuando p &lt; q.</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Aplicar la ley fuerte de los grandes números</strong></p>
+        <div class="formula">$$\frac{S_n}{n}\to E(X_1)=p-q<0 \qquad \text{casi seguramente.}$$</div>
+        <p><strong>Paso 2: Interpretación</strong></p>
+        <p>A largo plazo, el caminante muestra una tendencia lineal hacia valores negativos.</p>
+        <p><strong>Paso 3: Consecuencia</strong></p>
+        <p>Eso vuelve consistente que exista probabilidad positiva de no alcanzar nunca el nivel $+1$.</p>
+        <div class="final"><strong>Respuesta final:</strong><p>La ley fuerte muestra una deriva casi segura hacia $-\infty$, lo que explica por qué $P(T_1=\infty)>0$ cuando $p<q$.</p></div>
+      </div>
+    </div>
+
+    <div class="card" id="c10">
+      <button class="q" onclick="toggleCard(10)">
+        <span class="num">4.10</span>
+        <span class="title">Pregunta conceptual: ¿es cierto que todo tiempo aleatorio definido como “el primer instante en que ocurre un evento observable” es un stopping time?</span>
+        <span class="icon">⌄</span>
+      </button>
+      <div class="a">
+        <p><strong>Paso 1: Idea general</strong></p>
+        <p>Si para decidir si $T\le n$ alcanza con observar la trayectoria hasta el tiempo $n$, entonces el evento es medible respecto de $\mathcal{F}_n$.</p>
+        <p><strong>Paso 2: Conclusión formal</strong></p>
+        <p>Eso coincide exactamente con la definición de stopping time.</p>
+        <div class="final"><strong>Respuesta final:</strong><p><strong>Sí</strong>, siempre que el evento pueda decidirse usando solo la información disponible hasta el tiempo $n$.</p></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Bloque 4 · Stopping times · Random Walk
+  </footer>
+
+  <script>
+    window.addEventListener('load', () => {
+      const reveal = () => document.body.classList.remove('math-pending');
+      if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
+        MathJax.startup.promise.then(reveal).catch(reveal);
+      } else {
+        reveal();
+      }
+    });
+
+    function toggleCard(n){
+      const card = document.getElementById('c' + n);
+      card.classList.toggle('open');
+      if (window.MathJax) {
+        MathJax.typesetPromise([card]).catch(() => {});
+      }
+    }
+    function expandAll(){
+      document.querySelectorAll('.card').forEach(card => card.classList.add('open'));
+      if (window.MathJax) {
+        MathJax.typesetPromise().catch(() => {});
+      }
+    }
+    function collapseAll(){
+      document.querySelectorAll('.card').forEach(card => card.classList.remove('open'));
+    }
+  </script>
+</body>
+</html>
