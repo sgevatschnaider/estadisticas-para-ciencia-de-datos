@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Glosario · Movimiento Browniano</title>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['$$', '$$']],
+        processEscapes: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@300;400;500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --bg:#080d14; --surface:#0d1520; --card:#111c2a; --card-open:#0c1928;
+      --border:#1e3048; --accent1:#2dd9b0; --accent2:#f5a623; --accent3:#e85d75; --accent4:#7ec8e3;
+      --text:#dde6f0; --muted:#6a859e; --body-text:#b8cedd; --answer-bg:#0a1520;
+      --tag-bg:rgba(45,217,176,.10); --tag-border:rgba(45,217,176,.30);
+      --hl-bg:rgba(245,166,35,.08); --hl-border:rgba(245,166,35,.30);
+      --math-bg:rgba(45,217,176,.06); --math-border:#2dd9b0;
+      --search-bg:#0d1928; --header-g1:#0d1928; --header-g2:#080d14; --pb-bg:rgba(8,13,20,.93);
+      --radius:13px; --tr:.44s cubic-bezier(.4,0,.2,1);
+    }
+    [data-theme="light"] {
+      --bg:#eef2f7; --surface:#e4eaf3; --card:#fff; --card-open:#f5f8ff;
+      --border:#c8d6e8; --accent1:#0e9e80; --accent2:#c87d00; --accent3:#c43055; --accent4:#2a7fa8;
+      --text:#0f1d2e; --muted:#5a7490; --body-text:#2c4460; --answer-bg:#f0f5fc;
+      --tag-bg:rgba(14,158,128,.08); --tag-border:rgba(14,158,128,.30);
+      --hl-bg:rgba(200,125,0,.07); --hl-border:rgba(200,125,0,.28);
+      --math-bg:rgba(14,158,128,.05); --math-border:#0e9e80;
+      --search-bg:#fff; --header-g1:#dde7f4; --header-g2:#eef2f7; --pb-bg:rgba(238,242,247,.94);
+    }
+    [data-theme="sepia"] {
+      --bg:#f2ead8; --surface:#e8dfc6; --card:#fdf7ea; --card-open:#f8f0dc;
+      --border:#c9b990; --accent1:#3d7d62; --accent2:#96600e; --accent3:#a03040; --accent4:#3a6e8a;
+      --text:#221a08; --muted:#7a6540; --body-text:#3a2c14; --answer-bg:#ece3cc;
+      --tag-bg:rgba(61,125,98,.10); --tag-border:rgba(61,125,98,.30);
+      --hl-bg:rgba(150,96,14,.08); --hl-border:rgba(150,96,14,.28);
+      --math-bg:rgba(61,125,98,.07); --math-border:#3d7d62;
+      --search-bg:#f8f0dc; --header-g1:#e4dcc4; --header-g2:#f2ead8; --pb-bg:rgba(242,234,216,.94);
+    }
+
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; }
+    body {
+      background:var(--bg); color:var(--text); font-family:'Source Serif 4', Georgia, serif;
+      min-height:100vh; overflow-x:hidden; transition:background .35s ease,color .2s ease;
+    }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events:none; z-index:0;
+    }
+
+    header {
+      position:relative; z-index:10; padding:64px 24px 52px; text-align:center;
+      background:linear-gradient(155deg,var(--header-g1) 0%,var(--header-g2) 65%);
+      border-bottom:1px solid var(--border); overflow:hidden; transition:background .4s;
+    }
+    header::after {
+      content:''; position:absolute; top:-100px; left:50%; transform:translateX(-50%);
+      width:760px; height:360px;
+      background:radial-gradient(ellipse at center, rgba(45,217,176,.10) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .header-tag {
+      display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:.68rem;
+      letter-spacing:.22em; text-transform:uppercase; color:var(--accent1);
+      border:1px solid var(--tag-border); background:var(--tag-bg);
+      padding:5px 16px; border-radius:100px; margin-bottom:20px;
+    }
+    h1 {
+      font-family:'Cormorant Garamond', serif; font-size:clamp(2.25rem,5.5vw,4.2rem);
+      font-weight:700; line-height:1.05;
+      background:linear-gradient(130deg,var(--accent1) 0%,var(--accent4) 55%,var(--accent1) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      margin-bottom:14px;
+    }
+    .subtitle {
+      font-family:'IBM Plex Mono', monospace; font-size:.82rem; color:var(--muted); letter-spacing:.05em;
+      max-width:760px; margin:0 auto;
+    }
+    .author-credit {
+      font-family:'IBM Plex Mono', monospace; font-size:.85rem; color:var(--accent1);
+      letter-spacing:.05em; margin-top:14px; font-weight:500;
+    }
+    .count-badge {
+      display:inline-block; margin-top:14px; font-family:'IBM Plex Mono', monospace; font-size:.7rem;
+      background:rgba(45,217,176,.12); border:1px solid var(--tag-border);
+      color:var(--accent1); padding:4px 14px; border-radius:100px;
+    }
+
+    #sticky-bar {
+      position:sticky; top:0; z-index:100; background:var(--pb-bg); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border); padding:10px 20px;
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap; transition:background .4s;
+    }
+    #search-wrap {
+      display:flex; align-items:center; gap:8px; background:var(--search-bg);
+      border:1px solid var(--border); border-radius:8px; padding:6px 12px;
+      flex:1; min-width:180px; max-width:360px; transition:border-color .25s, background .35s;
+    }
+    #search-wrap:focus-within { border-color:var(--accent1); }
+    #search-wrap svg { flex-shrink:0; stroke:var(--muted); }
+    #search-input {
+      border:none; background:transparent; outline:none; font-family:'IBM Plex Mono', monospace;
+      font-size:.78rem; color:var(--text); width:100%;
+    }
+    #search-input::placeholder { color:var(--muted); }
+    #prog-text {
+      font-family:'IBM Plex Mono', monospace; font-size:.72rem; color:var(--accent1); white-space:nowrap; flex-shrink:0;
+    }
+    #prog-outer {
+      flex:1; height:3px; background:var(--border); border-radius:10px; overflow:hidden; min-width:80px;
+    }
+    #prog-inner {
+      height:100%; width:0%; background:linear-gradient(90deg,var(--accent1),var(--accent2));
+      border-radius:10px; transition:width .5s ease;
+    }
+    #open-count, #visible-count {
+      font-family:'IBM Plex Mono', monospace; font-size:.72rem; color:var(--muted); white-space:nowrap; flex-shrink:0;
+    }
+
+    #alpha-nav {
+      position:relative; z-index:1; max-width:980px; margin:28px auto 0; padding:0 20px;
+      display:flex; flex-wrap:wrap; gap:6px 4px;
+    }
+    .alpha-btn {
+      font-family:'IBM Plex Mono', monospace; font-size:.65rem; font-weight:500; letter-spacing:.08em;
+      text-transform:uppercase; padding:4px 9px; border-radius:6px; cursor:pointer;
+      border:1px solid var(--border); background:var(--card); color:var(--muted); transition:all .2s;
+    }
+    .alpha-btn:hover, .alpha-btn.has-terms:hover {
+      background:var(--accent1); border-color:var(--accent1); color:#000;
+    }
+    .alpha-btn.has-terms { color:var(--accent1); border-color:var(--tag-border); }
+    .alpha-btn.dimmed { opacity:.3; pointer-events:none; }
+
+    main {
+      position:relative; z-index:1; max-width:980px; margin:0 auto; padding:24px 20px 100px;
+    }
+    .controls { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px; }
+    .btn {
+      font-family:'IBM Plex Mono', monospace; font-size:.7rem; letter-spacing:.08em; text-transform:uppercase;
+      padding:9px 20px; border-radius:100px; border:1px solid var(--border);
+      background:var(--card); color:var(--muted); cursor:pointer; transition:all .22s;
+    }
+    .btn:hover { background:var(--accent1); border-color:var(--accent1); color:#000; }
+    .btn-em { border-color:var(--tag-border); color:var(--accent1); }
+
+    .letter-group { margin-bottom:6px; }
+    .letter-group.hidden { display:none; }
+    .letter-anchor {
+      font-family:'Cormorant Garamond', serif; font-size:1.65rem; font-weight:700; color:var(--accent1);
+      padding:28px 0 10px; display:flex; align-items:center; gap:14px; opacity:.78;
+    }
+    .letter-anchor::after {
+      content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--tag-border),transparent);
+    }
+
+    .card {
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      margin-bottom:10px; overflow:hidden; transition:border-color .3s, box-shadow .3s, background .35s;
+      opacity:0; transform:translateY(16px); animation:fadeUp .4s forwards;
+    }
+    @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+    .card:hover { border-color:rgba(45,217,176,.22); box-shadow:0 4px 30px rgba(0,0,0,.3); }
+    .card.open {
+      border-color:rgba(45,217,176,.4); background:var(--card-open);
+      box-shadow:0 6px 40px rgba(0,0,0,.35), 0 0 0 1px rgba(45,217,176,.08);
+    }
+    .card.hidden { display:none; }
+
+    .t-btn {
+      width:100%; background:none; border:none; cursor:pointer; padding:18px 22px;
+      display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:14px; text-align:left;
+    }
+    .t-letter {
+      font-family:'IBM Plex Mono', monospace; font-size:.62rem; color:var(--accent1);
+      background:var(--tag-bg); border:1px solid var(--tag-border); border-radius:5px;
+      padding:3px 7px; white-space:nowrap; text-transform:uppercase; letter-spacing:.1em;
+      min-width:34px; text-align:center;
+    }
+    .t-term {
+      font-family:'Cormorant Garamond', serif; font-size:clamp(1.05rem,2.2vw,1.25rem);
+      font-weight:700; color:var(--text); line-height:1.25; transition:color .3s;
+    }
+    .t-term .term-sub {
+      font-family:'IBM Plex Mono', monospace; font-size:.68rem; color:var(--muted);
+      font-weight:400; display:block; margin-top:3px; letter-spacing:.05em;
+    }
+    .card:hover .t-term, .card.open .t-term { color:var(--accent1); }
+    .t-icon {
+      width:28px; height:28px; border-radius:50%; border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all var(--tr);
+    }
+    .t-icon svg { transition:transform var(--tr); stroke:var(--muted); }
+    .card.open .t-icon { background:var(--accent1); border-color:var(--accent1); }
+    .card.open .t-icon svg { stroke:#000; transform:rotate(180deg); }
+
+    .a-wrap { display:grid; grid-template-rows:0fr; transition:grid-template-rows var(--tr); }
+    .card.open .a-wrap { grid-template-rows:1fr; }
+    .a-inner { overflow:hidden; }
+    .a-body {
+      background:var(--answer-bg); border-top:1px solid var(--border);
+      padding:0 22px 26px 60px; transition:background .35s;
+    }
+    .card.open .a-body { padding-top:22px; }
+    .a-body p {
+      font-size:.965rem; line-height:1.88; color:var(--body-text); margin-bottom:14px;
+    }
+    .a-body p:last-child { margin-bottom:0; }
+    .a-body strong { color:var(--accent1); font-weight:600; }
+    .a-body em { color:var(--muted); font-style:italic; }
+
+    .math-block {
+      background:var(--math-bg); border-left:3px solid var(--math-border);
+      border-radius:0 8px 8px 0; padding:14px 18px; margin:16px 0;
+      overflow-x:auto; font-size:1.02rem; transition:background .35s,border-color .35s;
+    }
+    .example {
+      border-left:3px solid var(--accent2); background:rgba(245,166,35,.05);
+      border-radius:0 8px 8px 0; padding:14px 18px; margin:18px 0;
+      transition:background .35s,border-color .35s;
+    }
+    .example-label {
+      font-family:'IBM Plex Mono', monospace; font-size:.63rem; letter-spacing:.18em;
+      text-transform:uppercase; color:var(--accent2); margin-bottom:8px; display:block;
+    }
+    .example p { font-size:.92rem; line-height:1.8; color:var(--body-text); margin:0; }
+    #no-results {
+      display:none; text-align:center; padding:60px 20px;
+      font-family:'IBM Plex Mono', monospace; font-size:.82rem; color:var(--muted);
+    }
+
+    #theme-btn {
+      position:fixed; bottom:26px; right:26px; z-index:999; display:flex; align-items:center;
+      background:var(--card); border:1px solid var(--border); border-radius:100px; padding:5px;
+      box-shadow:0 4px 24px rgba(0,0,0,.35); transition:box-shadow .3s,border-color .35s,background .35s;
+    }
+    #theme-btn:hover { border-color:var(--accent1); box-shadow:0 6px 32px rgba(0,0,0,.45); }
+    .th-opt {
+      display:flex; align-items:center; justify-content:center; width:34px; height:34px;
+      border-radius:100px; border:none; background:transparent; cursor:pointer; font-size:.95rem;
+      transition:background .22s, transform .2s; position:relative;
+    }
+    .th-opt:hover { transform:scale(1.15); }
+    .th-opt.active { background:var(--accent1); }
+    .th-opt .tip {
+      position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%);
+      background:var(--card); border:1px solid var(--border); color:var(--text);
+      font-family:'IBM Plex Mono', monospace; font-size:.6rem; letter-spacing:.08em;
+      text-transform:uppercase; padding:3px 8px; border-radius:5px; white-space:nowrap;
+      opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    .th-opt:hover .tip { opacity:1; }
+
+    footer {
+      text-align:center; padding:28px 20px 44px; font-family:'IBM Plex Mono', monospace;
+      font-size:.68rem; color:var(--muted); border-top:1px solid var(--border); letter-spacing:.06em;
+      line-height:1.8;
+    }
+    .footer-credit { display:block; margin-top:12px; font-size:.75rem; color:var(--accent1); }
+
+    *,*::before,*::after {
+      transition:background-color .35s ease,border-color .35s ease,color .2s ease,box-shadow .3s ease;
+    }
+    .a-wrap { transition:grid-template-rows var(--tr) !important; }
+    #prog-inner { transition:width .5s ease !important; }
+    .t-icon svg { transition:transform var(--tr) !important; }
+    .t-icon { transition:background var(--tr),border-color var(--tr),transform var(--tr) !important; }
+
+    .t-btn mjx-container, .term-sub mjx-container { display:inline !important; vertical-align:middle; }
+    mjx-container[jax="CHTML"] { line-height:0; }
+    mjx-container[jax="CHTML"][display="true"] {
+      display:block !important; text-align:center; margin:.5em 0;
+    }
+
+    @media (max-width:700px) {
+      .a-body { padding-left:16px; padding-right:16px; }
+      .t-btn { padding:14px 16px; gap:10px; }
+      h1 { font-size:2.15rem; }
+      #theme-btn { bottom:14px; right:14px; }
+      #sticky-bar { gap:8px; padding:8px 14px; }
+      #prog-outer { min-width:100%; flex-basis:100%; }
+    }
+  </style>
+</head>
+
+<body>
+<div id="theme-btn" role="group" aria-label="Cambiar tema">
+  <button class="th-opt active" id="opt-dark" onclick="setTheme('dark')">🌙<span class="tip">Oscuro</span></button>
+  <button class="th-opt" id="opt-light" onclick="setTheme('light')">☀️<span class="tip">Claro</span></button>
+  <button class="th-opt" id="opt-sepia" onclick="setTheme('sepia')">📜<span class="tip">Sepia</span></button>
+</div>
+
+<header>
+  <div class="header-tag">Glosario académico · Movimiento Browniano</div>
+  <h1>Movimiento Browniano<br>&amp; Cálculo Estocástico</h1>
+  <p class="subtitle">Definiciones desarrolladas · fórmulas clave · intuición geométrica · aplicaciones en física, finanzas, ciencia de datos e IA</p>
+  <p class="author-credit">Material elaborado por el profesor Sergio Gevatschnaider</p>
+  <div class="count-badge">39 términos</div>
+</header>
+
+<div id="sticky-bar">
+  <div id="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search-input" type="text" placeholder="Buscar término, fórmula o concepto..." autocomplete="off" oninput="filterTerms()"/>
+  </div>
+  <span id="prog-text">0% ABIERTO</span>
+  <div id="prog-outer"><div id="prog-inner"></div></div>
+  <span id="open-count">0 / 39</span>
+  <span id="visible-count">39 visibles</span>
+</div>
+
+<nav id="alpha-nav" aria-label="Índice alfabético"></nav>
+
+<main>
+  <div class="controls">
+    <button class="btn btn-em" onclick="expandVisible()">Expandir visibles</button>
+    <button class="btn" onclick="expandAll()">Expandir todo</button>
+    <button class="btn" onclick="collapseAll()">Colapsar todo</button>
+    <button class="btn" onclick="clearSearch()">Limpiar búsqueda</button>
+  </div>
+
+  <div id="no-results">⊘ &nbsp; Ningún término coincide con la búsqueda.</div>
+
+
+  <div class="letter-group" data-letter="A">
+    <div class="letter-anchor" id="letra-A">A</div>
+    
+    <div class="card" id="t-anomalous-diffusion" data-term="Anomalous diffusion difusión anómala \operatorname{Var}(X_t) \propto t^{2H} Generalización del movimiento browniano estándar en la que la varianza de la posición crece de forma no lineal en el tiempo. En lugar de la ley clásica proporcional a \(t\), se tiene una ley proporcional a \(t^{2H}\), donde \(H\) no necesariamente es \(1/2\). Cuando \(H  sub-difusión : la partícula se dispersa más lentamente, como si estuviera parcialmente atrapada por el medio. Cuando \(H &gt; 1/2\), se habla de  super-difusión : la partícula se dispersa más rápido que en el browniano estándar. Aparece en biofísica, por ejemplo en el movimiento de proteínas en membranas, en física de materiales y en modelos de transporte anómalo. El movimiento browniano fraccionario es uno de sus modelos canónicos.">
+      <button class="t-btn" onclick="toggle('anomalous-diffusion')">
+        <span class="t-letter">An</span>
+        <span class="t-term">Anomalous diffusion<span class="term-sub">difusión anómala</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Generalización del movimiento browniano estándar en la que la varianza de la posición crece de forma no lineal en el tiempo. En lugar de la ley clásica proporcional a \(t\), se tiene una ley proporcional a \(t^{2H}\), donde \(H\) no necesariamente es \(1/2\).</p>
+<p>Cuando \(H < 1/2\), se habla de <strong>sub-difusión</strong>: la partícula se dispersa más lentamente, como si estuviera parcialmente atrapada por el medio. Cuando \(H > 1/2\), se habla de <strong>super-difusión</strong>: la partícula se dispersa más rápido que en el browniano estándar.</p>
+<p>Aparece en biofísica, por ejemplo en el movimiento de proteínas en membranas, en física de materiales y en modelos de transporte anómalo. El movimiento browniano fraccionario es uno de sus modelos canónicos.</p>
+        <div class="math-block">$$ \operatorname{Var}(X_t) \propto t^{2H} $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si una molécula dentro de una membrana celular se mueve en un entorno con obstáculos, su desplazamiento puede crecer más lentamente que en el browniano clásico. Ese comportamiento se modela como sub-difusión.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="B">
+    <div class="letter-anchor" id="letra-B">B</div>
+    
+    <div class="card" id="t-brownian-bridge" data-term="Brownian bridge puente browniano X_t = B_t - \frac{t}{T}B_T, \qquad X_0=X_T=0 Movimiento browniano condicionado a volver a cero en un tiempo fijo \(T\). Si \((B_t)\) es un movimiento browniano estándar, el puente browniano se define como \(X_t = B_t - \frac{t}{T}B_T\), para \(t \in [0,T]\). Este proceso satisface \(X_0 = X_T = 0\). Tiene estructura gaussiana, pero ya no posee incrementos independientes como el movimiento browniano libre, porque el condicionamiento final introduce dependencia global. Se usa en el test de Kolmogorov-Smirnov, en finanzas, en teoría de procesos estocásticos y en simulaciones donde se necesita interpolar trayectorias aleatorias sujetas a un valor final.">
+      <button class="t-btn" onclick="toggle('brownian-bridge')">
+        <span class="t-letter">Bb</span>
+        <span class="t-term">Brownian bridge<span class="term-sub">puente browniano</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Movimiento browniano condicionado a volver a cero en un tiempo fijo \(T\). Si \((B_t)\) es un movimiento browniano estándar, el puente browniano se define como \(X_t = B_t - \frac{t}{T}B_T\), para \(t \in [0,T]\).</p>
+<p>Este proceso satisface \(X_0 = X_T = 0\). Tiene estructura gaussiana, pero ya no posee incrementos independientes como el movimiento browniano libre, porque el condicionamiento final introduce dependencia global.</p>
+<p>Se usa en el test de Kolmogorov-Smirnov, en finanzas, en teoría de procesos estocásticos y en simulaciones donde se necesita interpolar trayectorias aleatorias sujetas a un valor final.</p>
+        <div class="math-block">$$ X_t = B_t - \frac{t}{T}B_T, \qquad X_0=X_T=0 $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si se simula una partícula que parte de cero y debe regresar exactamente a cero en el instante final, la trayectoria intermedia puede modelarse mediante un puente browniano.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-brownian-motion" data-term="Brownian motion movimiento browniano / proceso de Wiener B_t-B_s \sim \mathcal{N}(0,t-s), \qquad 0\le s&lt;t Proceso estocástico fundamental de la probabilidad moderna. Fue observado por Robert Brown en 1827 al estudiar partículas microscópicas suspendidas en agua y explicado por Einstein en 1905 como consecuencia de los choques moleculares del fluido. El proceso \((B_t)_{t\ge 0}\) satisface cuatro propiedades: \(B_0=0\) casi seguramente; trayectorias continuas casi seguramente; incrementos independientes; e incrementos gaussianos estacionarios, es decir, \(B_t-B_s\sim \mathcal{N}(0,t-s)\). Una propiedad crucial es que sus trayectorias son continuas en todo punto, pero no diferenciables en ningún punto. Por eso es el ejemplo central de una curva aleatoria irregular, con estructura fractal y variación cuadrática no nula.">
+      <button class="t-btn" onclick="toggle('brownian-motion')">
+        <span class="t-letter">Bm</span>
+        <span class="t-term">Brownian motion<span class="term-sub">movimiento browniano / proceso de Wiener</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Proceso estocástico fundamental de la probabilidad moderna. Fue observado por Robert Brown en 1827 al estudiar partículas microscópicas suspendidas en agua y explicado por Einstein en 1905 como consecuencia de los choques moleculares del fluido.</p>
+<p>El proceso \((B_t)_{t\ge 0}\) satisface cuatro propiedades: \(B_0=0\) casi seguramente; trayectorias continuas casi seguramente; incrementos independientes; e incrementos gaussianos estacionarios, es decir, \(B_t-B_s\sim \mathcal{N}(0,t-s)\).</p>
+<p>Una propiedad crucial es que sus trayectorias son continuas en todo punto, pero no diferenciables en ningún punto. Por eso es el ejemplo central de una curva aleatoria irregular, con estructura fractal y variación cuadrática no nula.</p>
+        <div class="math-block">$$ B_t-B_s \sim \mathcal{N}(0,t-s), \qquad 0\le s<t $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>La posición horizontal de una pequeña partícula de polen suspendida en agua, observada bajo microscopio, puede idealizarse mediante un movimiento browniano.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="C">
+    <div class="letter-anchor" id="letra-C">C</div>
+    
+    <div class="card" id="t-caminata-aleatoria" data-term="Caminata aleatoria random walk S_n = X_0 + \sum_{k=1}^{n}\xi_k Proceso en tiempo discreto donde una partícula parte de una posición inicial \(X_0\) y da pasos independientes e idénticamente distribuidos. Se escribe \(S_n = X_0 + \xi_1 + \cdots + \xi_n\). En la caminata simple simétrica sobre \(\mathbb{Z}\), cada paso vale \(+1\) o \(-1\) con probabilidad \(1/2\). Por el Teorema Central del Límite, \(S_n/\sqrt{n}\) converge en distribución a una normal. Por el Teorema de Invarianza de Donsker, la trayectoria completa reescalada de una caminata aleatoria converge al movimiento browniano. Por eso la caminata aleatoria es el punto de partida conceptual para entender la difusión.">
+      <button class="t-btn" onclick="toggle('caminata-aleatoria')">
+        <span class="t-letter">Rw</span>
+        <span class="t-term">Caminata aleatoria<span class="term-sub">random walk</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Proceso en tiempo discreto donde una partícula parte de una posición inicial \(X_0\) y da pasos independientes e idénticamente distribuidos. Se escribe \(S_n = X_0 + \xi_1 + \cdots + \xi_n\).</p>
+<p>En la caminata simple simétrica sobre \(\mathbb{Z}\), cada paso vale \(+1\) o \(-1\) con probabilidad \(1/2\). Por el Teorema Central del Límite, \(S_n/\sqrt{n}\) converge en distribución a una normal.</p>
+<p>Por el Teorema de Invarianza de Donsker, la trayectoria completa reescalada de una caminata aleatoria converge al movimiento browniano. Por eso la caminata aleatoria es el punto de partida conceptual para entender la difusión.</p>
+        <div class="math-block">$$ S_n = X_0 + \sum_{k=1}^{n}\xi_k $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Un borracho que en cada paso avanza una unidad a la derecha o a la izquierda con igual probabilidad describe una caminata aleatoria simple.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-coeficiente-difusion" data-term="Coeficiente de difusión parámetro D D = \frac{k_B T}{6\pi\eta a} Parámetro que cuantifica la rapidez con que una partícula browniana se dispersa. En una dimensión, Einstein mostró que la varianza crece linealmente con el tiempo según \(\langle X_t^2\rangle = 2Dt\). La relación de Einstein-Stokes conecta \(D\) con la temperatura \(T\), la viscosidad \(\eta\) y el radio de la partícula \(a\). A mayor temperatura, mayor difusión; a mayor viscosidad o mayor radio, menor difusión. Esta relación fue una de las primeras verificaciones cuantitativas de la existencia de los átomos, porque permitía conectar magnitudes macroscópicas medibles con el movimiento microscópico molecular.">
+      <button class="t-btn" onclick="toggle('coeficiente-difusion')">
+        <span class="t-letter">D</span>
+        <span class="t-term">Coeficiente de difusión<span class="term-sub">parámetro D</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Parámetro que cuantifica la rapidez con que una partícula browniana se dispersa. En una dimensión, Einstein mostró que la varianza crece linealmente con el tiempo según \(\langle X_t^2\rangle = 2Dt\).</p>
+<p>La relación de Einstein-Stokes conecta \(D\) con la temperatura \(T\), la viscosidad \(\eta\) y el radio de la partícula \(a\). A mayor temperatura, mayor difusión; a mayor viscosidad o mayor radio, menor difusión.</p>
+<p>Esta relación fue una de las primeras verificaciones cuantitativas de la existencia de los átomos, porque permitía conectar magnitudes macroscópicas medibles con el movimiento microscópico molecular.</p>
+        <div class="math-block">$$ D = \frac{k_B T}{6\pi\eta a} $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Una partícula pequeña en agua caliente tendrá un coeficiente de difusión mayor que una partícula grande en un fluido viscoso.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-covarianza-browniana" data-term="Covarianza del movimiento browniano kernel min(s,t) \operatorname{Cov}(B_s,B_t)=\min(s,t) La función de covarianza del proceso de Wiener estándar es \(\operatorname{Cov}(B_s,B_t)=\mathbb{E}[B_sB_t]=\min(s,t)\). Esto implica que el movimiento browniano es un proceso gaussiano completamente determinado por esa función de covarianza. Para tiempos \(t_1,\ldots,t_n\), el vector \((B_{t_1},\ldots,B_{t_n})\) tiene distribución normal multivariante con matriz \(\Sigma_{ij}=\min(t_i,t_j)\). Geométricamente, cuanto más historia común comparten dos tiempos, más correlacionados están los valores de la trayectoria.">
+      <button class="t-btn" onclick="toggle('covarianza-browniana')">
+        <span class="t-letter">Cov</span>
+        <span class="t-term">Covarianza del movimiento browniano<span class="term-sub">kernel min(s,t)</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La función de covarianza del proceso de Wiener estándar es \(\operatorname{Cov}(B_s,B_t)=\mathbb{E}[B_sB_t]=\min(s,t)\).</p>
+<p>Esto implica que el movimiento browniano es un proceso gaussiano completamente determinado por esa función de covarianza. Para tiempos \(t_1,\ldots,t_n\), el vector \((B_{t_1},\ldots,B_{t_n})\) tiene distribución normal multivariante con matriz \(\Sigma_{ij}=\min(t_i,t_j)\).</p>
+<p>Geométricamente, cuanto más historia común comparten dos tiempos, más correlacionados están los valores de la trayectoria.</p>
+        <div class="math-block">$$ \operatorname{Cov}(B_s,B_t)=\min(s,t) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si \(s=1\) y \(t=5\), ambos valores comparten el tramo aleatorio acumulado hasta tiempo 1; por eso su covarianza es 1.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="D">
+    <div class="letter-anchor" id="letra-D">D</div>
+    
+    <div class="card" id="t-difusion" data-term="Difusión fenómeno macroscópico \frac{\partial p}{\partial t}=D\nabla^2 p Fenómeno por el cual una concentración de partículas se dispersa en el espacio siguiendo la segunda ley de Fick. Desde el punto de vista probabilístico, describe cómo evoluciona la densidad de probabilidad de la posición de una partícula browniana. Einstein mostró que el movimiento browniano y la difusión son el mismo fenómeno visto desde escalas distintas: microscópicamente se observa una trayectoria aleatoria; macroscópicamente se observa una nube de probabilidad que se expande. La ecuación de difusión o ecuación del calor describe esa evolución de densidades.">
+      <button class="t-btn" onclick="toggle('difusion')">
+        <span class="t-letter">Di</span>
+        <span class="t-term">Difusión<span class="term-sub">fenómeno macroscópico</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Fenómeno por el cual una concentración de partículas se dispersa en el espacio siguiendo la segunda ley de Fick. Desde el punto de vista probabilístico, describe cómo evoluciona la densidad de probabilidad de la posición de una partícula browniana.</p>
+<p>Einstein mostró que el movimiento browniano y la difusión son el mismo fenómeno visto desde escalas distintas: microscópicamente se observa una trayectoria aleatoria; macroscópicamente se observa una nube de probabilidad que se expande.</p>
+<p>La ecuación de difusión o ecuación del calor describe esa evolución de densidades.</p>
+        <div class="math-block">$$ \frac{\partial p}{\partial t}=D\nabla^2 p $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Una gota de tinta en agua se dispersa gradualmente. A escala microscópica, sus moléculas siguen movimientos aleatorios; a escala macroscópica, se observa difusión.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-dimension-fractal" data-term="Dimensión fractal de la trayectoria geometría irregular del browniano \dim_H(B[0,T])=2 \quad \text{para } d\ge 2 Las trayectorias del movimiento browniano estándar tienen dimensión fractal de Hausdorff igual a 2 en dimensiones espaciales \(d\ge 2\). Esta dimensión refleja que la trayectoria es mucho más irregular que una curva suave unidimensional, pero no llena completamente una región bidimensional como una superficie. La variación cuadrática finita, igual a \(T\) sobre el intervalo \([0,T]\), distingue al browniano de las trayectorias suaves, cuya variación cuadrática es cero.">
+      <button class="t-btn" onclick="toggle('dimension-fractal')">
+        <span class="t-letter">Fr</span>
+        <span class="t-term">Dimensión fractal de la trayectoria<span class="term-sub">geometría irregular del browniano</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Las trayectorias del movimiento browniano estándar tienen dimensión fractal de Hausdorff igual a 2 en dimensiones espaciales \(d\ge 2\).</p>
+<p>Esta dimensión refleja que la trayectoria es mucho más irregular que una curva suave unidimensional, pero no llena completamente una región bidimensional como una superficie.</p>
+<p>La variación cuadrática finita, igual a \(T\) sobre el intervalo \([0,T]\), distingue al browniano de las trayectorias suaves, cuya variación cuadrática es cero.</p>
+        <div class="math-block">$$ \dim_H(B[0,T])=2 \quad \text{para } d\ge 2 $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Al hacer zoom sobre una trayectoria browniana simulada, sigue apareciendo irregularidad. Esa autosimilitud estadística es una señal de su naturaleza fractal.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-drift" data-term="Drift deriva / componente determinística X_t = \mu t + B_t En una ecuación diferencial estocástica, el drift es el término determinístico \(\mu(X_t,t)dt\) que representa la tendencia media del proceso. Un movimiento browniano con drift se escribe \(X_t=\mu t+B_t\). El término \(\mu t\) introduce una dirección preferida de movimiento, como una corriente de arrastre superpuesta a la aleatoriedad. En finanzas, el drift suele interpretarse como retorno esperado; en física, como fuerza sistemática o arrastre promedio.">
+      <button class="t-btn" onclick="toggle('drift')">
+        <span class="t-letter">Dr</span>
+        <span class="t-term">Drift<span class="term-sub">deriva / componente determinística</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>En una ecuación diferencial estocástica, el drift es el término determinístico \(\mu(X_t,t)dt\) que representa la tendencia media del proceso.</p>
+<p>Un movimiento browniano con drift se escribe \(X_t=\mu t+B_t\). El término \(\mu t\) introduce una dirección preferida de movimiento, como una corriente de arrastre superpuesta a la aleatoriedad.</p>
+<p>En finanzas, el drift suele interpretarse como retorno esperado; en física, como fuerza sistemática o arrastre promedio.</p>
+        <div class="math-block">$$ X_t = \mu t + B_t $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si una partícula se mueve aleatoriamente pero dentro de una corriente que empuja hacia la derecha, el término de drift representa esa tendencia direccional.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="E">
+    <div class="letter-anchor" id="letra-E">E</div>
+    
+    <div class="card" id="t-ecuacion-difusion" data-term="Ecuación de difusión heat equation p(x,t)=(4\pi Dt)^{-d/2}\exp\!\left(-\frac{|x|^2}{4Dt}\right) La ecuación \(\partial u/\partial t = D\nabla^2 u\) describe la propagación del calor y la evolución de la densidad de probabilidad de la posición de una partícula browniana. Su solución fundamental es el núcleo de calor, que corresponde a una densidad gaussiana. En dimensión \(d\), esa densidad tiene media cero y matriz de covarianza proporcional a \(2Dt I_d\). Esto conecta directamente el movimiento browniano con las ecuaciones diferenciales parciales.">
+      <button class="t-btn" onclick="toggle('ecuacion-difusion')">
+        <span class="t-letter">Ed</span>
+        <span class="t-term">Ecuación de difusión<span class="term-sub">heat equation</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La ecuación \(\partial u/\partial t = D\nabla^2 u\) describe la propagación del calor y la evolución de la densidad de probabilidad de la posición de una partícula browniana.</p>
+<p>Su solución fundamental es el núcleo de calor, que corresponde a una densidad gaussiana. En dimensión \(d\), esa densidad tiene media cero y matriz de covarianza proporcional a \(2Dt I_d\).</p>
+<p>Esto conecta directamente el movimiento browniano con las ecuaciones diferenciales parciales.</p>
+        <div class="math-block">$$ p(x,t)=(4\pi Dt)^{-d/2}\exp\!\left(-\frac{|x|^2}{4Dt}\right) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si muchas partículas parten del mismo punto, su distribución espacial después de un tiempo se aproxima a una campana gaussiana cada vez más ancha.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-fokker-planck" data-term="Ecuación de Fokker-Planck evolución de densidades \frac{\partial p}{\partial t}=-\frac{\partial}{\partial x}(\mu p)+\frac{\partial^2}{\partial x^2}(D p),\qquad D=\frac{\sigma^2}{2} Ecuación diferencial parcial que describe la evolución temporal de la densidad de probabilidad \(p(x,t)\) de un proceso de Itô. Para una SDE \(dX_t=\mu(X_t)dt+\sigma(X_t)dB_t\), el término de drift desplaza la nube de densidad y el término de difusión la ensancha. Para el movimiento browniano puro, se reduce a la ecuación del calor. Por eso puede interpretarse como la imagen macroscópica de una dinámica estocástica microscópica.">
+      <button class="t-btn" onclick="toggle('fokker-planck')">
+        <span class="t-letter">FP</span>
+        <span class="t-term">Ecuación de Fokker-Planck<span class="term-sub">evolución de densidades</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Ecuación diferencial parcial que describe la evolución temporal de la densidad de probabilidad \(p(x,t)\) de un proceso de Itô.</p>
+<p>Para una SDE \(dX_t=\mu(X_t)dt+\sigma(X_t)dB_t\), el término de drift desplaza la nube de densidad y el término de difusión la ensancha.</p>
+<p>Para el movimiento browniano puro, se reduce a la ecuación del calor. Por eso puede interpretarse como la imagen macroscópica de una dinámica estocástica microscópica.</p>
+        <div class="math-block">$$ \frac{\partial p}{\partial t}=-\frac{\partial}{\partial x}(\mu p)+\frac{\partial^2}{\partial x^2}(D p),\qquad D=\frac{\sigma^2}{2} $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Una SDE describe una trayectoria individual; la ecuación de Fokker-Planck describe cómo evoluciona la distribución de muchas trayectorias posibles.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-langevin" data-term="Ecuación de Langevin dinámica con fricción y ruido m\ddot X_t=-\gamma \dot X_t+\sqrt{2\gamma k_BT}\,\eta(t) Ecuación diferencial estocástica que describe el movimiento de una partícula browniana con inercia, propuesta por Langevin en 1908. Incluye una fuerza de fricción proporcional a la velocidad y una fuerza aleatoria modelada como ruido blanco gaussiano. En el límite de sobreamortiguamiento, cuando la masa se vuelve despreciable, se reduce al movimiento browniano de Einstein-Smoluchowski.">
+      <button class="t-btn" onclick="toggle('langevin')">
+        <span class="t-letter">La</span>
+        <span class="t-term">Ecuación de Langevin<span class="term-sub">dinámica con fricción y ruido</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Ecuación diferencial estocástica que describe el movimiento de una partícula browniana con inercia, propuesta por Langevin en 1908.</p>
+<p>Incluye una fuerza de fricción proporcional a la velocidad y una fuerza aleatoria modelada como ruido blanco gaussiano.</p>
+<p>En el límite de sobreamortiguamiento, cuando la masa se vuelve despreciable, se reduce al movimiento browniano de Einstein-Smoluchowski.</p>
+        <div class="math-block">$$ m\ddot X_t=-\gamma \dot X_t+\sqrt{2\gamma k_BT}\,\eta(t) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Una partícula suspendida en un fluido recibe golpes moleculares aleatorios, pero también sufre fricción viscosa. La ecuación de Langevin modela ambas fuerzas.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-sde" data-term="Ecuación diferencial estocástica EDE / SDE dX_t=\mu(X_t,t)dt+\sigma(X_t,t)dB_t Ecuación de la forma \(dX_t=\mu(X_t,t)dt+\sigma(X_t,t)dB_t\), donde \(B_t\) es un movimiento browniano. El término \(\mu dt\) representa la parte determinística o drift, mientras que \(\sigma dB_t\) representa la perturbación aleatoria. El diferencial \(dB_t\) no puede interpretarse como un diferencial ordinario, porque el movimiento browniano no es diferenciable. Por eso se necesita cálculo estocástico.">
+      <button class="t-btn" onclick="toggle('sde')">
+        <span class="t-letter">SDE</span>
+        <span class="t-term">Ecuación diferencial estocástica<span class="term-sub">EDE / SDE</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Ecuación de la forma \(dX_t=\mu(X_t,t)dt+\sigma(X_t,t)dB_t\), donde \(B_t\) es un movimiento browniano.</p>
+<p>El término \(\mu dt\) representa la parte determinística o drift, mientras que \(\sigma dB_t\) representa la perturbación aleatoria.</p>
+<p>El diferencial \(dB_t\) no puede interpretarse como un diferencial ordinario, porque el movimiento browniano no es diferenciable. Por eso se necesita cálculo estocástico.</p>
+        <div class="math-block">$$ dX_t=\mu(X_t,t)dt+\sigma(X_t,t)dB_t $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>El modelo de precios de acciones de Black-Scholes es una SDE donde el precio tiene crecimiento esperado y ruido browniano multiplicativo.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="F">
+    <div class="letter-anchor" id="letra-F">F</div>
+    
+    <div class="card" id="t-filtracion" data-term="Filtración información acumulada \mathcal{F}_t=\sigma(B_s: s\le t) Familia creciente de \(\sigma\)-álgebras \((\mathcal{F}_t)\) que representa la información acumulada hasta el tiempo \(t\). Un proceso es adaptado a una filtración si \(X_t\) es \(\mathcal{F}_t\)-medible para todo \(t\). En el movimiento browniano, la filtración natural \(\mathcal{F}_t=\sigma(B_s:s\le t)\) codifica todo el historial observado hasta ese instante. Es esencial para definir martingalas, integrales estocásticas, tiempos de parada y procesos de Markov.">
+      <button class="t-btn" onclick="toggle('filtracion')">
+        <span class="t-letter">Fi</span>
+        <span class="t-term">Filtración<span class="term-sub">información acumulada</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Familia creciente de \(\sigma\)-álgebras \((\mathcal{F}_t)\) que representa la información acumulada hasta el tiempo \(t\).</p>
+<p>Un proceso es adaptado a una filtración si \(X_t\) es \(\mathcal{F}_t\)-medible para todo \(t\). En el movimiento browniano, la filtración natural \(\mathcal{F}_t=\sigma(B_s:s\le t)\) codifica todo el historial observado hasta ese instante.</p>
+<p>Es esencial para definir martingalas, integrales estocásticas, tiempos de parada y procesos de Markov.</p>
+        <div class="math-block">$$ \mathcal{F}_t=\sigma(B_s: s\le t) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En un mercado financiero, la filtración representa toda la información disponible hasta el momento actual: precios pasados, noticias conocidas y datos observados.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-fbm" data-term="Movimiento browniano fraccionario fractional Brownian motion \operatorname{Cov}(B_H(t),B_H(s))=\frac12\left(|t|^{2H}+|s|^{2H}-|t-s|^{2H}\right) Generalización del movimiento browniano introducida por Mandelbrot y Van Ness en 1968. Es un proceso gaussiano \(B_H(t)\) con índice de Hurst \(H\in(0,1)\). Para \(H=1/2\) se recupera el movimiento browniano estándar. Para \(H&gt;1/2\), el proceso presenta persistencia y memoria larga. Para \(H&lt;1/2\), presenta anti-persistencia y sub-difusión. A diferencia del movimiento browniano estándar, para \(H\ne 1/2\) no es proceso de Markov ni semimartingala.">
+      <button class="t-btn" onclick="toggle('fbm')">
+        <span class="t-letter">fBm</span>
+        <span class="t-term">Movimiento browniano fraccionario<span class="term-sub">fractional Brownian motion</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Generalización del movimiento browniano introducida por Mandelbrot y Van Ness en 1968. Es un proceso gaussiano \(B_H(t)\) con índice de Hurst \(H\in(0,1)\).</p>
+<p>Para \(H=1/2\) se recupera el movimiento browniano estándar. Para \(H>1/2\), el proceso presenta persistencia y memoria larga. Para \(H<1/2\), presenta anti-persistencia y sub-difusión.</p>
+<p>A diferencia del movimiento browniano estándar, para \(H\ne 1/2\) no es proceso de Markov ni semimartingala.</p>
+        <div class="math-block">$$ \operatorname{Cov}(B_H(t),B_H(s))=\frac12\left(|t|^{2H}+|s|^{2H}-|t-s|^{2H}\right) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Una serie temporal con memoria persistente, donde los incrementos positivos tienden a ser seguidos por otros incrementos positivos, puede modelarse mediante fBm con \(H>1/2\).</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="G">
+    <div class="letter-anchor" id="letra-G">G</div>
+    
+    <div class="card" id="t-gbm" data-term="Movimiento browniano geométrico geometric Brownian motion S_t=S_0\exp\!\left((\mu-\tfrac12\sigma^2)t+\sigma B_t\right) Proceso definido por la SDE \(dS_t=\mu S_tdt+\sigma S_tdB_t\). Su solución explícita es \(S_t=S_0\exp[(\mu-\sigma^2/2)t+\sigma B_t]\). El logaritmo del proceso sigue un movimiento browniano con drift. Por eso \(S_t\) tiene distribución log-normal y permanece siempre positivo. Es la base del modelo Black-Scholes para precios de activos. La corrección \(-\sigma^2/2\) surge del lema de Itô y es esencial.">
+      <button class="t-btn" onclick="toggle('gbm')">
+        <span class="t-letter">GBM</span>
+        <span class="t-term">Movimiento browniano geométrico<span class="term-sub">geometric Brownian motion</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Proceso definido por la SDE \(dS_t=\mu S_tdt+\sigma S_tdB_t\). Su solución explícita es \(S_t=S_0\exp[(\mu-\sigma^2/2)t+\sigma B_t]\).</p>
+<p>El logaritmo del proceso sigue un movimiento browniano con drift. Por eso \(S_t\) tiene distribución log-normal y permanece siempre positivo.</p>
+<p>Es la base del modelo Black-Scholes para precios de activos. La corrección \(-\sigma^2/2\) surge del lema de Itô y es esencial.</p>
+        <div class="math-block">$$ S_t=S_0\exp\!\left((\mu-\tfrac12\sigma^2)t+\sigma B_t\right) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Un precio financiero que nunca puede ser negativo y cuya variabilidad es proporcional al propio precio se modela naturalmente con movimiento browniano geométrico.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-gp" data-term="Proceso gaussiano Gaussian Process K(s,t)=\operatorname{Cov}(X_s,X_t)=\min(s,t) \quad \text{para MB estándar} Proceso estocástico tal que, para cualquier colección finita de tiempos, el vector de valores tiene distribución normal multivariante. Está completamente especificado por una función media \(m(t)\) y un kernel de covarianza \(K(s,t)=\operatorname{Cov}(X_s,X_t)\). El movimiento browniano es un proceso gaussiano con media cero y kernel \(K(s,t)=\min(s,t)\). Los procesos gaussianos son fundamentales en regresión bayesiana no paramétrica y machine learning.">
+      <button class="t-btn" onclick="toggle('gp')">
+        <span class="t-letter">GP</span>
+        <span class="t-term">Proceso gaussiano<span class="term-sub">Gaussian Process</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Proceso estocástico tal que, para cualquier colección finita de tiempos, el vector de valores tiene distribución normal multivariante.</p>
+<p>Está completamente especificado por una función media \(m(t)\) y un kernel de covarianza \(K(s,t)=\operatorname{Cov}(X_s,X_t)\).</p>
+<p>El movimiento browniano es un proceso gaussiano con media cero y kernel \(K(s,t)=\min(s,t)\). Los procesos gaussianos son fundamentales en regresión bayesiana no paramétrica y machine learning.</p>
+        <div class="math-block">$$ K(s,t)=\operatorname{Cov}(X_s,X_t)=\min(s,t) \quad \text{para MB estándar} $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En Gaussian Process Regression, se define un kernel para expresar qué tan relacionados están dos puntos. En el browniano, dos tiempos están relacionados por el mínimo entre ambos.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="H">
+    <div class="letter-anchor" id="letra-H">H</div>
+    
+    <div class="card" id="t-hurst" data-term="Índice de Hurst Hurst exponent \dim_H = 2-H Parámetro \(H\in(0,1)\) que caracteriza la autosimilaridad y la correlación de largo alcance de un proceso. Para el movimiento browniano estándar, \(H=1/2\). Para el movimiento browniano fraccionario, \(H&gt;1/2\) implica persistencia; \(H&lt;1/2\) implica anti-persistencia. La dimensión de Hausdorff de la trayectoria de un fBm se relaciona con \(H\) mediante \(2-H\). Puede estimarse con métodos como R/S, DFA o wavelets.">
+      <button class="t-btn" onclick="toggle('hurst')">
+        <span class="t-letter">H</span>
+        <span class="t-term">Índice de Hurst<span class="term-sub">Hurst exponent</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Parámetro \(H\in(0,1)\) que caracteriza la autosimilaridad y la correlación de largo alcance de un proceso.</p>
+<p>Para el movimiento browniano estándar, \(H=1/2\). Para el movimiento browniano fraccionario, \(H>1/2\) implica persistencia; \(H<1/2\) implica anti-persistencia.</p>
+<p>La dimensión de Hausdorff de la trayectoria de un fBm se relaciona con \(H\) mediante \(2-H\). Puede estimarse con métodos como R/S, DFA o wavelets.</p>
+        <div class="math-block">$$ \dim_H = 2-H $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si una serie financiera tiene \(H>1/2\), puede mostrar tendencia persistente; si tiene \(H<1/2\), puede tender a revertir sus movimientos.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="I">
+    <div class="letter-anchor" id="letra-I">I</div>
+    
+    <div class="card" id="t-incrementos-independientes" data-term="Incrementos independientes ausencia de memoria en intervalos disjuntos B_{t_1}-B_{s_1}\ \perp\!\!\!\perp\ B_{t_2}-B_{s_2} Propiedad fundamental del movimiento browniano: los incrementos sobre intervalos temporales disjuntos son independientes. Si \(0\le s_1\le t_1\le s_2\le t_2\), entonces \(B_{t_1}-B_{s_1}\) y \(B_{t_2}-B_{s_2}\) son independientes. Esta propiedad encapsula la idea de que el movimiento futuro no depende de los incrementos ya ocurridos, siempre que se condicione adecuadamente por el presente.">
+      <button class="t-btn" onclick="toggle('incrementos-independientes')">
+        <span class="t-letter">Ii</span>
+        <span class="t-term">Incrementos independientes<span class="term-sub">ausencia de memoria en intervalos disjuntos</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Propiedad fundamental del movimiento browniano: los incrementos sobre intervalos temporales disjuntos son independientes.</p>
+<p>Si \(0\le s_1\le t_1\le s_2\le t_2\), entonces \(B_{t_1}-B_{s_1}\) y \(B_{t_2}-B_{s_2}\) son independientes.</p>
+<p>Esta propiedad encapsula la idea de que el movimiento futuro no depende de los incrementos ya ocurridos, siempre que se condicione adecuadamente por el presente.</p>
+        <div class="math-block">$$ B_{t_1}-B_{s_1}\ \perp\!\!\!\perp\ B_{t_2}-B_{s_2} $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Lo que la partícula se mueve entre los segundos 0 y 1 no determina estadísticamente lo que se moverá entre los segundos 5 y 6.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-incrementos-estacionarios" data-term="Incrementos estacionarios misma ley para igual duración B_{t+s}-B_t\sim\mathcal{N}(0,s) El movimiento browniano tiene incrementos estacionarios: la distribución de \(B_{t+s}-B_t\) no depende del tiempo inicial \(t\), sino solo de la duración \(s\). Concretamente, \(B_{t+s}-B_t\sim\mathcal{N}(0,s)\). Esto significa que las fluctuaciones tienen el mismo carácter estadístico en cualquier instante del tiempo.">
+      <button class="t-btn" onclick="toggle('incrementos-estacionarios')">
+        <span class="t-letter">Ie</span>
+        <span class="t-term">Incrementos estacionarios<span class="term-sub">misma ley para igual duración</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El movimiento browniano tiene incrementos estacionarios: la distribución de \(B_{t+s}-B_t\) no depende del tiempo inicial \(t\), sino solo de la duración \(s\).</p>
+<p>Concretamente, \(B_{t+s}-B_t\sim\mathcal{N}(0,s)\).</p>
+<p>Esto significa que las fluctuaciones tienen el mismo carácter estadístico en cualquier instante del tiempo.</p>
+        <div class="math-block">$$ B_{t+s}-B_t\sim\mathcal{N}(0,s) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>El movimiento entre 2 y 3 segundos tiene la misma distribución que el movimiento entre 100 y 101 segundos.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-integral-ito" data-term="Integral de Itô integración estocástica \mathbb{E}\left[\left(\int_0^T H_t\,dB_t\right)^2\right]=\mathbb{E}\left[\int_0^T H_t^2\,dt\right] Integral estocástica definida para procesos adaptados \(H_t\) como límite en \(L^2\) de sumas de Riemann evaluadas en el extremo izquierdo. La elección del extremo izquierdo garantiza que el integrando solo use información disponible antes del incremento browniano, preservando la propiedad de martingala. La isometría de Itô permite calcular varianzas de integrales estocásticas y es una herramienta central del cálculo estocástico.">
+      <button class="t-btn" onclick="toggle('integral-ito')">
+        <span class="t-letter">It</span>
+        <span class="t-term">Integral de Itô<span class="term-sub">integración estocástica</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Integral estocástica definida para procesos adaptados \(H_t\) como límite en \(L^2\) de sumas de Riemann evaluadas en el extremo izquierdo.</p>
+<p>La elección del extremo izquierdo garantiza que el integrando solo use información disponible antes del incremento browniano, preservando la propiedad de martingala.</p>
+<p>La isometría de Itô permite calcular varianzas de integrales estocásticas y es una herramienta central del cálculo estocástico.</p>
+        <div class="math-block">$$ \mathbb{E}\left[\left(\int_0^T H_t\,dB_t\right)^2\right]=\mathbb{E}\left[\int_0^T H_t^2\,dt\right] $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si \(H_t\) representa una estrategia de inversión adaptada, la integral \(\int H_t dB_t\) modela la ganancia acumulada frente a ruido browniano.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-proceso-ito" data-term="Proceso de Itô drift + difusión dX_t=\mu_tdt+\sigma_tdB_t Proceso de la forma \(X_t=X_0+\int_0^t\mu_sds+\int_0^t\sigma_sdB_s\). El término \(\mu_tdt\) representa el drift determinístico y \(\sigma_tdB_t\) representa la componente estocástica. La variación cuadrática de un proceso de Itô es \([X]_t=\int_0^t\sigma_s^2ds\).">
+      <button class="t-btn" onclick="toggle('proceso-ito')">
+        <span class="t-letter">Pi</span>
+        <span class="t-term">Proceso de Itô<span class="term-sub">drift + difusión</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Proceso de la forma \(X_t=X_0+\int_0^t\mu_sds+\int_0^t\sigma_sdB_s\).</p>
+<p>El término \(\mu_tdt\) representa el drift determinístico y \(\sigma_tdB_t\) representa la componente estocástica.</p>
+<p>La variación cuadrática de un proceso de Itô es \([X]_t=\int_0^t\sigma_s^2ds\).</p>
+        <div class="math-block">$$ dX_t=\mu_tdt+\sigma_tdB_t $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>El movimiento browniano con drift y volatilidad constante, \(dX_t=\mu dt+\sigma dB_t\), es un proceso de Itô básico.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-lema-ito" data-term="Lema de Itô regla de la cadena estocástica df(B_t)=f&#x27;(B_t)dB_t+\frac12 f&#x27;&#x27;(B_t)dt Regla de la cadena del cálculo estocástico. Para \(f\in C^2\) y \(B_t\) movimiento browniano estándar, se tiene \(df(B_t)=f&#x27;(B_t)dB_t+\frac12 f&#x27;&#x27;(B_t)dt\). El término extra aparece porque \((dB_t)^2=dt\). En cálculo ordinario, los términos cuadráticos se descartan; en cálculo de Itô, contribuyen en primer orden. Es el resultado central para resolver SDEs, derivar Black-Scholes, estudiar martingalas y conectar browniano con ecuaciones diferenciales parciales.">
+      <button class="t-btn" onclick="toggle('lema-ito')">
+        <span class="t-letter">Li</span>
+        <span class="t-term">Lema de Itô<span class="term-sub">regla de la cadena estocástica</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Regla de la cadena del cálculo estocástico. Para \(f\in C^2\) y \(B_t\) movimiento browniano estándar, se tiene \(df(B_t)=f'(B_t)dB_t+\frac12 f''(B_t)dt\).</p>
+<p>El término extra aparece porque \((dB_t)^2=dt\). En cálculo ordinario, los términos cuadráticos se descartan; en cálculo de Itô, contribuyen en primer orden.</p>
+<p>Es el resultado central para resolver SDEs, derivar Black-Scholes, estudiar martingalas y conectar browniano con ecuaciones diferenciales parciales.</p>
+        <div class="math-block">$$ df(B_t)=f'(B_t)dB_t+\frac12 f''(B_t)dt $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Aplicando Itô a \(f(x)=x^2\), se obtiene \(d(B_t^2)=2B_tdB_t+dt\), de donde \(B_t^2-t\) es martingala.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="L">
+    <div class="letter-anchor" id="letra-L">L</div>
+    
+    <div class="card" id="t-levy-caracterizacion" data-term="Teorema de Lévy caracterización del movimiento browniano [M]_t=t \quad \Longleftrightarrow \quad M_t \text{ es movimiento browniano } \text{(+ condiciones)} Un proceso continuo \(M_t\) es un movimiento browniano estándar si y solo si es una martingala local continua, cumple \(M_0=0\) y tiene variación cuadrática \([M]_t=t\) casi seguramente. Este teorema permite identificar brownianos sin verificar explícitamente gaussianidad ni independencia de incrementos. Es especialmente importante en cambios de medida, como en el teorema de Girsanov, donde se demuestra que cierto proceso transformado vuelve a ser browniano bajo una nueva medida.">
+      <button class="t-btn" onclick="toggle('levy-caracterizacion')">
+        <span class="t-letter">Lv</span>
+        <span class="t-term">Teorema de Lévy<span class="term-sub">caracterización del movimiento browniano</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un proceso continuo \(M_t\) es un movimiento browniano estándar si y solo si es una martingala local continua, cumple \(M_0=0\) y tiene variación cuadrática \([M]_t=t\) casi seguramente.</p>
+<p>Este teorema permite identificar brownianos sin verificar explícitamente gaussianidad ni independencia de incrementos.</p>
+<p>Es especialmente importante en cambios de medida, como en el teorema de Girsanov, donde se demuestra que cierto proceso transformado vuelve a ser browniano bajo una nueva medida.</p>
+        <div class="math-block">$$ [M]_t=t \quad \Longleftrightarrow \quad M_t \text{ es movimiento browniano } \text{(+ condiciones)} $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Después de cambiar la medida de probabilidad en un modelo financiero, se puede usar Lévy para verificar que el nuevo ruido sigue siendo browniano.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-proceso-levy" data-term="Proceso de Lévy incrementos independientes y estacionarios X_{t+s}-X_t \sim X_s \quad \text{e incrementos independientes} Proceso estocástico con trayectorias càdlàg, \(X_0=0\), incrementos independientes e incrementos estacionarios. El movimiento browniano es el proceso de Lévy gaussiano y continuo. Otros ejemplos son el proceso de Poisson, los procesos alfa-estables y modelos con saltos. La fórmula de Lévy-Khintchine clasifica todos los procesos de Lévy mediante una parte de drift, una parte browniana y una medida de saltos.">
+      <button class="t-btn" onclick="toggle('proceso-levy')">
+        <span class="t-letter">Pl</span>
+        <span class="t-term">Proceso de Lévy<span class="term-sub">incrementos independientes y estacionarios</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Proceso estocástico con trayectorias càdlàg, \(X_0=0\), incrementos independientes e incrementos estacionarios.</p>
+<p>El movimiento browniano es el proceso de Lévy gaussiano y continuo. Otros ejemplos son el proceso de Poisson, los procesos alfa-estables y modelos con saltos.</p>
+<p>La fórmula de Lévy-Khintchine clasifica todos los procesos de Lévy mediante una parte de drift, una parte browniana y una medida de saltos.</p>
+        <div class="math-block">$$ X_{t+s}-X_t \sim X_s \quad \text{e incrementos independientes} $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>El proceso de Poisson cuenta eventos aleatorios con saltos; el browniano acumula fluctuaciones continuas. Ambos son procesos de Lévy.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="M">
+    <div class="letter-anchor" id="letra-M">M</div>
+    
+    <div class="card" id="t-markov" data-term="Propiedad de Markov el futuro depende solo del presente \mathbb{P}(X_{t+s}\in A\mid \mathcal{F}_t)=\mathbb{P}(X_{t+s}\in A\mid X_t) Un proceso tiene la propiedad de Markov si el futuro, dado el presente, es independiente del pasado. Formalmente, la distribución condicional de \(X_{t+s}\) dada la información acumulada \(\mathcal{F}_t\) depende solo de \(X_t\). El movimiento browniano es un proceso de Markov. La propiedad fuerte de Markov extiende esta idea a tiempos de parada aleatorios.">
+      <button class="t-btn" onclick="toggle('markov')">
+        <span class="t-letter">Mk</span>
+        <span class="t-term">Propiedad de Markov<span class="term-sub">el futuro depende solo del presente</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Un proceso tiene la propiedad de Markov si el futuro, dado el presente, es independiente del pasado.</p>
+<p>Formalmente, la distribución condicional de \(X_{t+s}\) dada la información acumulada \(\mathcal{F}_t\) depende solo de \(X_t\).</p>
+<p>El movimiento browniano es un proceso de Markov. La propiedad fuerte de Markov extiende esta idea a tiempos de parada aleatorios.</p>
+        <div class="math-block">$$ \mathbb{P}(X_{t+s}\in A\mid \mathcal{F}_t)=\mathbb{P}(X_{t+s}\in A\mid X_t) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Para predecir el movimiento futuro de una partícula browniana, basta conocer su posición actual; no es necesario conocer toda su trayectoria pasada.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-martingala" data-term="Martingala juego justo \mathbb{E}[B_t\mid\mathcal{F}_s]=B_s Proceso adaptado \(M_t\) tal que \(\mathbb{E}[M_t\mid\mathcal{F}_s]=M_s\) para todo \(s\le t\). La mejor predicción del valor futuro, dada la información actual, es el valor presente. El movimiento browniano estándar es una martingala. También son martingalas \(B_t^2-t\) y la martingala exponencial \(\exp(\theta B_t-\theta^2t/2)\). Este concepto es fundamental en precios sin arbitraje.">
+      <button class="t-btn" onclick="toggle('martingala')">
+        <span class="t-letter">Ma</span>
+        <span class="t-term">Martingala<span class="term-sub">juego justo</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Proceso adaptado \(M_t\) tal que \(\mathbb{E}[M_t\mid\mathcal{F}_s]=M_s\) para todo \(s\le t\).</p>
+<p>La mejor predicción del valor futuro, dada la información actual, es el valor presente. El movimiento browniano estándar es una martingala.</p>
+<p>También son martingalas \(B_t^2-t\) y la martingala exponencial \(\exp(\theta B_t-\theta^2t/2)\). Este concepto es fundamental en precios sin arbitraje.</p>
+        <div class="math-block">$$ \mathbb{E}[B_t\mid\mathcal{F}_s]=B_s $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En un juego justo, si no hay ventaja para ningún jugador, la esperanza condicional de la ganancia futura es igual a la ganancia actual.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-mb-multidimensional" data-term="MB multidimensional browniano en varias dimensiones B_t=(B_t^{(1)},\ldots,B_t^{(d)}) Proceso \((B_t^{(1)},\ldots,B_t^{(d)})\) donde cada coordenada es un movimiento browniano independiente. Su comportamiento cambia drásticamente con la dimensión. En dimensiones \(d=1\) y \(d=2\), el movimiento browniano es recurrente; en \(d\ge 3\), es transitorio. Esto significa que en dimensiones altas hay más espacio disponible para escapar, por lo que la partícula tiende a alejarse indefinidamente.">
+      <button class="t-btn" onclick="toggle('mb-multidimensional')">
+        <span class="t-letter">Md</span>
+        <span class="t-term">MB multidimensional<span class="term-sub">browniano en varias dimensiones</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Proceso \((B_t^{(1)},\ldots,B_t^{(d)})\) donde cada coordenada es un movimiento browniano independiente.</p>
+<p>Su comportamiento cambia drásticamente con la dimensión. En dimensiones \(d=1\) y \(d=2\), el movimiento browniano es recurrente; en \(d\ge 3\), es transitorio.</p>
+<p>Esto significa que en dimensiones altas hay más espacio disponible para escapar, por lo que la partícula tiende a alejarse indefinidamente.</p>
+        <div class="math-block">$$ B_t=(B_t^{(1)},\ldots,B_t^{(d)}) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Una partícula suspendida en un fluido real se mueve en tres dimensiones; su modelo idealizado puede ser un browniano tridimensional.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="N">
+    <div class="letter-anchor" id="letra-N">N</div>
+    
+    <div class="card" id="t-no-diferenciabilidad" data-term="No-diferenciabilidad nowhere differentiability [B]_t=t Las trayectorias del movimiento browniano son casi seguramente continuas en todo punto, pero diferenciables en ningún punto. La razón profunda es la variación cuadrática no nula. Para una función diferenciable, la variación cuadrática es cero; para el movimiento browniano, es igual a la longitud del intervalo. Esto significa que la partícula realiza oscilaciones infinitas en cualquier intervalo, por pequeño que sea, sin una tangente local definida.">
+      <button class="t-btn" onclick="toggle('no-diferenciabilidad')">
+        <span class="t-letter">Nd</span>
+        <span class="t-term">No-diferenciabilidad<span class="term-sub">nowhere differentiability</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Las trayectorias del movimiento browniano son casi seguramente continuas en todo punto, pero diferenciables en ningún punto.</p>
+<p>La razón profunda es la variación cuadrática no nula. Para una función diferenciable, la variación cuadrática es cero; para el movimiento browniano, es igual a la longitud del intervalo.</p>
+<p>Esto significa que la partícula realiza oscilaciones infinitas en cualquier intervalo, por pequeño que sea, sin una tangente local definida.</p>
+        <div class="math-block">$$ [B]_t=t $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Aunque una trayectoria browniana puede dibujarse como una curva continua, al acercarse a cualquier punto no se estabiliza una pendiente.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-ruido-blanco" data-term="Ruido blanco white noise \mathbb{E}[\eta(t)\eta(s)]=\delta(t-s) Límite formal de la derivada \(dB_t/dt\) del movimiento browniano. No existe como función clásica, porque \(B_t\) no es diferenciable, pero sí puede entenderse como distribución generalizada. Tiene media cero, autocorrelación tipo delta de Dirac y densidad espectral constante en todas las frecuencias. Es el modelo canónico de perturbación aleatoria no correlacionada en el tiempo.">
+      <button class="t-btn" onclick="toggle('ruido-blanco')">
+        <span class="t-letter">Rb</span>
+        <span class="t-term">Ruido blanco<span class="term-sub">white noise</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Límite formal de la derivada \(dB_t/dt\) del movimiento browniano. No existe como función clásica, porque \(B_t\) no es diferenciable, pero sí puede entenderse como distribución generalizada.</p>
+<p>Tiene media cero, autocorrelación tipo delta de Dirac y densidad espectral constante en todas las frecuencias.</p>
+<p>Es el modelo canónico de perturbación aleatoria no correlacionada en el tiempo.</p>
+        <div class="math-block">$$ \mathbb{E}[\eta(t)\eta(s)]=\delta(t-s) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En modelos físicos, el ruido térmico que golpea una partícula puede idealizarse como ruido blanco.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="O">
+    <div class="letter-anchor" id="letra-O">O</div>
+    
+    <div class="card" id="t-ornstein-uhlenbeck" data-term="Proceso de Ornstein-Uhlenbeck reversión a la media dX_t=-\theta(X_t-\mu)dt+\sigma dB_t Proceso gaussiano markoviano definido por \(dX_t=-\theta(X_t-\mu)dt+\sigma dB_t\), con \(\theta&gt;0\). Es el único proceso gaussiano, markoviano y estacionario no trivial. Su autocorrelación decae exponencialmente y su distribución estacionaria es \(\mathcal{N}(\mu,\sigma^2/(2\theta))\). Modela velocidad de partículas brownianas con fricción, tasas de interés, series con reversión a la media y procesos forward en algunos modelos de difusión generativa.">
+      <button class="t-btn" onclick="toggle('ornstein-uhlenbeck')">
+        <span class="t-letter">OU</span>
+        <span class="t-term">Proceso de Ornstein-Uhlenbeck<span class="term-sub">reversión a la media</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Proceso gaussiano markoviano definido por \(dX_t=-\theta(X_t-\mu)dt+\sigma dB_t\), con \(\theta>0\).</p>
+<p>Es el único proceso gaussiano, markoviano y estacionario no trivial. Su autocorrelación decae exponencialmente y su distribución estacionaria es \(\mathcal{N}(\mu,\sigma^2/(2\theta))\).</p>
+<p>Modela velocidad de partículas brownianas con fricción, tasas de interés, series con reversión a la media y procesos forward en algunos modelos de difusión generativa.</p>
+        <div class="math-block">$$ dX_t=-\theta(X_t-\mu)dt+\sigma dB_t $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Una tasa de interés que tiende a regresar hacia un nivel promedio puede modelarse mediante un proceso OU.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="P">
+    <div class="letter-anchor" id="letra-P">P</div>
+    
+    <div class="card" id="t-principio-reflexion" data-term="Principio de reflexión máximo del browniano \mathbb{P}\left(\max_{s\le t}B_s\ge a\right)=2\mathbb{P}(B_t\ge a)=2\left(1-\Phi\left(\frac{a}{\sqrt t}\right)\right) Para el primer tiempo de llegada \(\tau_a=\inf\{t:B_t=a\}\), con \(a&gt;0\), el principio de reflexión establece que la probabilidad de que el máximo supere \(a\) es el doble de la probabilidad de que \(B_t\) termine por encima de \(a\). La idea es reflejar la trayectoria después del primer cruce del nivel \(a\), aprovechando la simetría del movimiento browniano. Permite calcular distribuciones del máximo, probabilidades de cruce de barreras y tiempos de llegada.">
+      <button class="t-btn" onclick="toggle('principio-reflexion')">
+        <span class="t-letter">Pr</span>
+        <span class="t-term">Principio de reflexión<span class="term-sub">máximo del browniano</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Para el primer tiempo de llegada \(\tau_a=\inf\{t:B_t=a\}\), con \(a>0\), el principio de reflexión establece que la probabilidad de que el máximo supere \(a\) es el doble de la probabilidad de que \(B_t\) termine por encima de \(a\).</p>
+<p>La idea es reflejar la trayectoria después del primer cruce del nivel \(a\), aprovechando la simetría del movimiento browniano.</p>
+<p>Permite calcular distribuciones del máximo, probabilidades de cruce de barreras y tiempos de llegada.</p>
+        <div class="math-block">$$ \mathbb{P}\left(\max_{s\le t}B_s\ge a\right)=2\mathbb{P}(B_t\ge a)=2\left(1-\Phi\left(\frac{a}{\sqrt t}\right)\right) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En finanzas, el principio de reflexión ayuda a estudiar opciones con barrera, donde importa si el precio cruzó cierto nivel.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-proceso-estocastico" data-term="Proceso estocástico familia de variables aleatorias \{X_t:t\in T\} Colección de variables aleatorias \(\{X_t:t\in T\}\) definidas sobre un espacio de probabilidad \((\Omega,\mathcal{F},\mathbb{P})\) e indexadas por un conjunto de tiempos. Si \(T\) es discreto, se habla de proceso en tiempo discreto, como una caminata aleatoria. Si \(T\) es continuo, se habla de proceso en tiempo continuo, como el movimiento browniano. Una trayectoria es la función \(t\mapsto X_t(\omega)\) para un resultado fijo \(\omega\).">
+      <button class="t-btn" onclick="toggle('proceso-estocastico')">
+        <span class="t-letter">Pe</span>
+        <span class="t-term">Proceso estocástico<span class="term-sub">familia de variables aleatorias</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Colección de variables aleatorias \(\{X_t:t\in T\}\) definidas sobre un espacio de probabilidad \((\Omega,\mathcal{F},\mathbb{P})\) e indexadas por un conjunto de tiempos.</p>
+<p>Si \(T\) es discreto, se habla de proceso en tiempo discreto, como una caminata aleatoria. Si \(T\) es continuo, se habla de proceso en tiempo continuo, como el movimiento browniano.</p>
+<p>Una trayectoria es la función \(t\mapsto X_t(\omega)\) para un resultado fijo \(\omega\).</p>
+        <div class="math-block">$$ \{X_t:t\in T\} $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>La temperatura diaria de una ciudad, el precio de una acción o la posición de una partícula en el tiempo pueden modelarse como procesos estocásticos.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="R">
+    <div class="letter-anchor" id="letra-R">R</div>
+    
+    <div class="card" id="t-einstein-stokes" data-term="Relación de Einstein-Stokes fluctuación-disipación D=\frac{k_BT}{6\pi\eta a} Relación que conecta el coeficiente de difusión browniana con la temperatura \(T\), la viscosidad \(\eta\) y el radio de la partícula \(a\). Es una de las primeras relaciones de fluctuación-disipación: vincula la amplitud de la fluctuación aleatoria con la disipación energética del medio. Fue verificada experimentalmente por Jean Perrin, quien midió el coeficiente de difusión y dedujo el número de Avogadro.">
+      <button class="t-btn" onclick="toggle('einstein-stokes')">
+        <span class="t-letter">ES</span>
+        <span class="t-term">Relación de Einstein-Stokes<span class="term-sub">fluctuación-disipación</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Relación que conecta el coeficiente de difusión browniana con la temperatura \(T\), la viscosidad \(\eta\) y el radio de la partícula \(a\).</p>
+<p>Es una de las primeras relaciones de fluctuación-disipación: vincula la amplitud de la fluctuación aleatoria con la disipación energética del medio.</p>
+<p>Fue verificada experimentalmente por Jean Perrin, quien midió el coeficiente de difusión y dedujo el número de Avogadro.</p>
+        <div class="math-block">$$ D=\frac{k_BT}{6\pi\eta a} $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Al medir cómo se dispersan partículas microscópicas en un fluido, se puede inferir información sobre constantes físicas fundamentales.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="S">
+    <div class="letter-anchor" id="letra-S">S</div>
+    
+    <div class="card" id="t-autosimilaridad" data-term="Auto-similaridad self-similarity (B_H(ct))\overset{d}{=}(c^H B_H(t)) El movimiento browniano estándar es autosimilar de índice \(1/2\): el proceso \((B_{ct})\) tiene la misma distribución que \((\sqrt{c}B_t)\). Para el movimiento browniano fraccionario con índice de Hurst \(H\), se tiene \((B_H(ct))\overset{d}{=}(c^HB_H(t))\). Esto significa que la trayectoria browniana es un fractal estadístico: al ampliar una parte de la trayectoria se observa una irregularidad similar a la original.">
+      <button class="t-btn" onclick="toggle('autosimilaridad')">
+        <span class="t-letter">Ss</span>
+        <span class="t-term">Auto-similaridad<span class="term-sub">self-similarity</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El movimiento browniano estándar es autosimilar de índice \(1/2\): el proceso \((B_{ct})\) tiene la misma distribución que \((\sqrt{c}B_t)\).</p>
+<p>Para el movimiento browniano fraccionario con índice de Hurst \(H\), se tiene \((B_H(ct))\overset{d}{=}(c^HB_H(t))\).</p>
+<p>Esto significa que la trayectoria browniana es un fractal estadístico: al ampliar una parte de la trayectoria se observa una irregularidad similar a la original.</p>
+        <div class="math-block">$$ (B_H(ct))\overset{d}{=}(c^H B_H(t)) $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Si se toma un pequeño fragmento de una trayectoria browniana y se lo reescala correctamente, se parece estadísticamente a la trayectoria completa.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-semimartingala" data-term="Semimartingala martingala local + variación finita X_t=M_t+A_t Proceso que puede descomponerse como suma de una martingala local y un proceso de variación finita. El movimiento browniano y los procesos de Itô son semimartingalas, por lo que admiten integral estocástica de Itô. El movimiento browniano fraccionario con \(H\ne 1/2\) no es semimartingala, lo que exige herramientas matemáticas diferentes.">
+      <button class="t-btn" onclick="toggle('semimartingala')">
+        <span class="t-letter">Sm</span>
+        <span class="t-term">Semimartingala<span class="term-sub">martingala local + variación finita</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Proceso que puede descomponerse como suma de una martingala local y un proceso de variación finita.</p>
+<p>El movimiento browniano y los procesos de Itô son semimartingalas, por lo que admiten integral estocástica de Itô.</p>
+<p>El movimiento browniano fraccionario con \(H\ne 1/2\) no es semimartingala, lo que exige herramientas matemáticas diferentes.</p>
+        <div class="math-block">$$ X_t=M_t+A_t $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>La clase de semimartingalas es el marco natural para construir modelos financieros con integración estocástica estándar.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+
+  <div class="letter-group" data-letter="T">
+    <div class="letter-anchor" id="letra-T">T</div>
+    
+    <div class="card" id="t-donsker" data-term="Teorema CLT funcional Donsker&#x27;s theorem W_t^{(n)}=\frac{S_{\lfloor nt\rfloor}}{\sigma\sqrt n}\Rightarrow B_t Versión funcional del Teorema Central del Límite. Si \(S_n=\xi_1+\cdots+\xi_n\) es una caminata aleatoria con pasos i.i.d. de media cero y varianza \(\sigma^2\), entonces el proceso reescalado converge al movimiento browniano estándar. No solo converge la distribución en un tiempo fijo, sino la trayectoria completa como función continua. Justifica que el movimiento browniano sea el límite universal de muchos procesos de sumas parciales.">
+      <button class="t-btn" onclick="toggle('donsker')">
+        <span class="t-letter">Do</span>
+        <span class="t-term">Teorema CLT funcional<span class="term-sub">Donsker's theorem</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Versión funcional del Teorema Central del Límite. Si \(S_n=\xi_1+\cdots+\xi_n\) es una caminata aleatoria con pasos i.i.d. de media cero y varianza \(\sigma^2\), entonces el proceso reescalado converge al movimiento browniano estándar.</p>
+<p>No solo converge la distribución en un tiempo fijo, sino la trayectoria completa como función continua.</p>
+<p>Justifica que el movimiento browniano sea el límite universal de muchos procesos de sumas parciales.</p>
+        <div class="math-block">$$ W_t^{(n)}=\frac{S_{\lfloor nt\rfloor}}{\sigma\sqrt n}\Rightarrow B_t $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>Al reescalar muchas caminatas aleatorias con pasos pequeños, sus trayectorias empiezan a parecerse a trayectorias brownianas.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-tiempo-parada" data-term="Tiempo de parada stopping time \tau_a=\inf\{t\ge 0: B_t&gt;a\} Variable aleatoria \(\tau\) tal que el evento \(\{\tau\le t\}\) pertenece a \(\mathcal{F}_t\) para todo \(t\). Esto significa que la decisión de parar puede tomarse usando solo la información disponible hasta ese momento, sin conocer el futuro. Los tiempos de parada son fundamentales en control óptimo, opciones americanas, problemas de primer cruce y propiedad fuerte de Markov.">
+      <button class="t-btn" onclick="toggle('tiempo-parada')">
+        <span class="t-letter">Tp</span>
+        <span class="t-term">Tiempo de parada<span class="term-sub">stopping time</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Variable aleatoria \(\tau\) tal que el evento \(\{\tau\le t\}\) pertenece a \(\mathcal{F}_t\) para todo \(t\).</p>
+<p>Esto significa que la decisión de parar puede tomarse usando solo la información disponible hasta ese momento, sin conocer el futuro.</p>
+<p>Los tiempos de parada son fundamentales en control óptimo, opciones americanas, problemas de primer cruce y propiedad fuerte de Markov.</p>
+        <div class="math-block">$$ \tau_a=\inf\{t\ge 0: B_t>a\} $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>El primer instante en que una trayectoria browniana supera una barrera \(a\) es un tiempo de parada.</p></div>
+      </div></div></div>
+    </div>
+    
+
+    <div class="card" id="t-variacion-cuadratica" data-term="Variación cuadrática quadratic variation [B]_t=t, \qquad (dB_t)^2=dt Para un proceso \(X_t\), la variación cuadrática es el límite en probabilidad de la suma de cuadrados de incrementos sobre particiones que se refinan. Para el movimiento browniano estándar, \([B]_t=t\) casi seguramente. Esto se expresa informalmente como \((dB_t)^2=dt\). Es la razón por la que la regla de la cadena del cálculo estocástico difiere de la ordinaria: el término cuadrático no desaparece, sino que genera el término extra del lema de Itô.">
+      <button class="t-btn" onclick="toggle('variacion-cuadratica')">
+        <span class="t-letter">Vq</span>
+        <span class="t-term">Variación cuadrática<span class="term-sub">quadratic variation</span></span>
+        <span class="t-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Para un proceso \(X_t\), la variación cuadrática es el límite en probabilidad de la suma de cuadrados de incrementos sobre particiones que se refinan.</p>
+<p>Para el movimiento browniano estándar, \([B]_t=t\) casi seguramente. Esto se expresa informalmente como \((dB_t)^2=dt\).</p>
+<p>Es la razón por la que la regla de la cadena del cálculo estocástico difiere de la ordinaria: el término cuadrático no desaparece, sino que genera el término extra del lema de Itô.</p>
+        <div class="math-block">$$ [B]_t=t, \qquad (dB_t)^2=dt $$</div>
+        <div class="example"><span class="example-label">Ejemplo</span><p>En una función diferenciable, la suma de cuadrados de incrementos tiende a cero; en el browniano, tiende al tiempo transcurrido.</p></div>
+      </div></div></div>
+    </div>
+    
+  </div>
+</main>
+
+<footer>
+  Glosario interactivo sobre Movimiento Browniano, procesos de Wiener, cálculo de Itô y aplicaciones modernas.
+  <span class="footer-credit">Material elaborado por el profesor Sergio Gevatschnaider</span>
+</footer>
+
+<script>
+  const TOTAL = 39;
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('mb-glosario-theme', theme);
+    document.querySelectorAll('.th-opt').forEach(btn => btn.classList.remove('active'));
+    const active = document.getElementById('opt-' + theme);
+    if (active) active.classList.add('active');
+  }
+
+  function loadTheme() {
+    const saved = localStorage.getItem('mb-glosario-theme') || 'dark';
+    setTheme(saved);
+  }
+
+  function toggle(id) {
+    const card = document.getElementById('t-' + id);
+    if (!card) return;
+    card.classList.toggle('open');
+    updateProgress();
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([card]).catch(() => {});
+    }
+  }
+
+  function getCards() {
+    return Array.from(document.querySelectorAll('.card'));
+  }
+
+  function getVisibleCards() {
+    return getCards().filter(c => !c.classList.contains('hidden'));
+  }
+
+  function expandVisible() {
+    getVisibleCards().forEach(c => c.classList.add('open'));
+    updateProgress();
+    typesetAll();
+  }
+
+  function expandAll() {
+    getCards().forEach(c => {
+      c.classList.remove('hidden');
+      c.classList.add('open');
+    });
+    document.querySelectorAll('.letter-group').forEach(g => g.classList.remove('hidden'));
+    document.getElementById('search-input').value = '';
+    updateAlphaNav();
+    updateProgress();
+    typesetAll();
+  }
+
+  function collapseAll() {
+    getCards().forEach(c => c.classList.remove('open'));
+    updateProgress();
+  }
+
+  function clearSearch() {
+    document.getElementById('search-input').value = '';
+    filterTerms();
+  }
+
+  function normalizeText(str) {
+    return (str || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function filterTerms() {
+    const query = normalizeText(document.getElementById('search-input').value.trim());
+    let visible = 0;
+
+    document.querySelectorAll('.letter-group').forEach(group => {
+      let groupVisible = 0;
+      group.querySelectorAll('.card').forEach(card => {
+        const haystack = normalizeText(card.dataset.term + ' ' + card.textContent);
+        const match = !query || haystack.includes(query);
+        card.classList.toggle('hidden', !match);
+        if (match) {
+          visible++;
+          groupVisible++;
+        } else {
+          card.classList.remove('open');
+        }
+      });
+      group.classList.toggle('hidden', groupVisible === 0);
+    });
+
+    document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+    document.getElementById('visible-count').textContent = visible + ' visibles';
+    updateAlphaNav();
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const visibleCards = getVisibleCards();
+    const openVisible = visibleCards.filter(c => c.classList.contains('open')).length;
+    const base = visibleCards.length || TOTAL;
+    const pct = Math.round((openVisible / base) * 100);
+    document.getElementById('prog-inner').style.width = pct + '%';
+    document.getElementById('prog-text').textContent = pct + '% ABIERTO';
+    document.getElementById('open-count').textContent = openVisible + ' / ' + base;
+  }
+
+  function buildAlphaNav() {
+    const nav = document.getElementById('alpha-nav');
+    const letters = Array.from(document.querySelectorAll('.letter-group')).map(g => g.dataset.letter);
+    nav.innerHTML = '';
+    letters.forEach(letter => {
+      const btn = document.createElement('button');
+      btn.className = 'alpha-btn has-terms';
+      btn.textContent = letter;
+      btn.dataset.letter = letter;
+      btn.onclick = () => {
+        const anchor = document.getElementById('letra-' + letter);
+        if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+      nav.appendChild(btn);
+    });
+  }
+
+  function updateAlphaNav() {
+    document.querySelectorAll('.alpha-btn').forEach(btn => {
+      const letter = btn.dataset.letter;
+      const group = document.querySelector('.letter-group[data-letter="' + letter + '"]');
+      const hidden = !group || group.classList.contains('hidden');
+      btn.classList.toggle('dimmed', hidden);
+    });
+  }
+
+  function typesetAll() {
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(() => {});
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+      e.preventDefault();
+      document.getElementById('search-input').focus();
+    }
+    if (e.key === 'Escape') {
+      clearSearch();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadTheme();
+    buildAlphaNav();
+    updateProgress();
+    document.getElementById('visible-count').textContent = TOTAL + ' visibles';
+  });
+</script>
+</body>
+</html>

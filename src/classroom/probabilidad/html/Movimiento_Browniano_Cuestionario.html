@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cuestionario · Movimiento Browniano</title>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['$$', '$$']],
+        processEscapes: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      },
+      startup: {
+        ready() {
+          MathJax.startup.defaultReady();
+          MathJax.startup.promise.then(() => MathJax.typesetPromise());
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --bg: #081019;
+      --surface: #0d1724;
+      --card: #111d2c;
+      --card-open: #0d1a2a;
+      --border: #20334d;
+      --accent1: #64d7ff;
+      --accent2: #f0c040;
+      --accent3: #f06060;
+      --accent4: #8b6fff;
+      --text: #e9eef7;
+      --body-text: #c6d4e6;
+      --muted: #7e91aa;
+      --answer-bg: #0a1624;
+      --header-bg1: #0f1d2e;
+      --header-bg2: #081019;
+      --progress-bg: rgba(8,16,25,0.93);
+      --search-bg: #0d1928;
+      --hl-bg: rgba(240,192,64,0.10);
+      --hl-border: rgba(240,192,64,0.30);
+      --math-bg: rgba(100,215,255,0.07);
+      --math-border: #64d7ff;
+      --radius: 14px;
+      --transition: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    [data-theme="light"] {
+      --bg: #f3f6fb;
+      --surface: #e9eef6;
+      --card: #ffffff;
+      --card-open: #f4f8ff;
+      --border: #cdd9ea;
+      --accent1: #087da6;
+      --accent2: #b47c00;
+      --accent3: #c83f4f;
+      --accent4: #634bd5;
+      --text: #142033;
+      --body-text: #314962;
+      --muted: #60758d;
+      --answer-bg: #eef4fb;
+      --header-bg1: #e4edf8;
+      --header-bg2: #f3f6fb;
+      --progress-bg: rgba(243,246,251,0.94);
+      --search-bg: #ffffff;
+      --hl-bg: rgba(180,124,0,0.08);
+      --hl-border: rgba(180,124,0,0.26);
+      --math-bg: rgba(8,125,166,0.06);
+      --math-border: #087da6;
+    }
+    [data-theme="sepia"] {
+      --bg: #f4ecd9;
+      --surface: #eadfc7;
+      --card: #fff8ec;
+      --card-open: #f8eedc;
+      --border: #cbb88f;
+      --accent1: #326f83;
+      --accent2: #93610c;
+      --accent3: #a43d44;
+      --accent4: #5d4b9c;
+      --text: #261c0d;
+      --body-text: #3d2f17;
+      --muted: #78694f;
+      --answer-bg: #eee2cb;
+      --header-bg1: #e5dac1;
+      --header-bg2: #f4ecd9;
+      --progress-bg: rgba(244,236,217,0.94);
+      --search-bg: #fff8ec;
+      --hl-bg: rgba(147,97,12,0.08);
+      --hl-border: rgba(147,97,12,0.26);
+      --math-bg: rgba(50,111,131,0.07);
+      --math-border: #326f83;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lora', Georgia, serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 76px 24px 56px;
+      background: linear-gradient(160deg, var(--header-bg1) 0%, var(--header-bg2) 66%);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      top: -100px; left: 50%;
+      transform: translateX(-50%);
+      width: 760px; height: 380px;
+      background: radial-gradient(ellipse at center, rgba(100,215,255,0.12) 0%, transparent 72%);
+      pointer-events: none;
+    }
+    .tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent1);
+      border: 1px solid color-mix(in srgb, var(--accent1) 42%, transparent);
+      background: color-mix(in srgb, var(--accent1) 10%, transparent);
+      padding: 5px 16px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.8rem);
+      font-weight: 900;
+      line-height: 1.08;
+      background: linear-gradient(135deg, var(--accent1) 0%, #ecfbff 42%, var(--accent2) 82%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.86rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      position: relative;
+      z-index: 1;
+    }
+    .author-credit {
+      margin-top: 24px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.92rem;
+      color: var(--accent2);
+      letter-spacing: 0.05em;
+      font-weight: 500;
+      display: inline-block;
+      padding: 8px 20px;
+      background: color-mix(in srgb, var(--accent2) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent2) 24%, transparent);
+      border-radius: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .count-badge {
+      margin-top: 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent1);
+      position: relative;
+      z-index: 1;
+    }
+
+    #progress-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--progress-bg);
+      backdrop-filter: blur(12px);
+      padding: 11px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    #search-wrap {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background: var(--search-bg);
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:6px 12px;
+      flex:1;
+      min-width:180px;
+      max-width:360px;
+    }
+    #search-wrap:focus-within { border-color: var(--accent1); }
+    #search-wrap svg { stroke: var(--muted); flex-shrink: 0; }
+    #search-input {
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--text);
+      font-family:'DM Mono', monospace;
+      font-size:.78rem;
+    }
+    #search-input::placeholder { color: var(--muted); }
+    #progress-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.76rem;
+      color: var(--accent1);
+      white-space: nowrap;
+    }
+    #progress-bar-outer {
+      flex: 1;
+      min-width: 80px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #progress-bar-inner {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+    #open-count, #visible-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.76rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 20px 90px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 0 0 24px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 10px 20px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .btn:hover { background: var(--accent2); border-color: var(--accent2); color: #000; }
+    .btn-accent { border-color: color-mix(in srgb, var(--accent1) 45%, transparent); color: var(--accent1); }
+    .btn-accent:hover { background: var(--accent1); border-color: var(--accent1); color: #000; }
+
+    .level-nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 30px;
+    }
+    .level-chip {
+      font-family:'DM Mono', monospace;
+      font-size:.68rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--accent1);
+      background: color-mix(in srgb, var(--accent1) 8%, transparent);
+      border:1px solid color-mix(in srgb, var(--accent1) 28%, transparent);
+      border-radius:100px;
+      padding:7px 12px;
+      text-decoration:none;
+      transition: all .22s;
+    }
+    .level-chip:hover { background: var(--accent1); color: #000; }
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent4);
+      padding: 34px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent4), transparent);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s, background .35s;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: fadeUp 0.46s forwards;
+    }
+    .card:hover { border-color: color-mix(in srgb, var(--accent1) 26%, transparent); box-shadow: 0 4px 34px rgba(0,0,0,0.35); }
+    .card.open {
+      background: var(--card-open);
+      border-color: color-mix(in srgb, var(--accent1) 46%, transparent);
+      box-shadow: 0 8px 46px rgba(0,0,0,0.42), 0 0 0 1px color-mix(in srgb, var(--accent1) 10%, transparent);
+    }
+    .card.hidden { display: none; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    .q-trigger {
+      width: 100%;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 23px 25px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+      gap: 17px;
+      text-align: left;
+    }
+    .q-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent2);
+      background: color-mix(in srgb, var(--accent2) 11%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent2) 26%, transparent);
+      border-radius: 6px;
+      padding: 4px 8px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+    .q-title-wrap { display: block; }
+    .q-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1rem, 2vw, 1.12rem);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.42;
+      transition: color 0.3s;
+    }
+    .q-meta {
+      display: inline-block;
+      margin-top: 7px;
+      font-family: 'DM Mono', monospace;
+      font-size: .66rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .card.open .q-title, .card:hover .q-title { color: var(--accent1); }
+    .q-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background var(--transition), border-color var(--transition), transform var(--transition);
+      margin-top: 2px;
+    }
+    .q-icon svg { transition: transform var(--transition); stroke: var(--muted); }
+    .card.open .q-icon { background: var(--accent1); border-color: var(--accent1); transform: scale(1.08); }
+    .card.open .q-icon svg { stroke: #000; transform: rotate(180deg); }
+
+    .a-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--transition); }
+    .card.open .a-wrap { grid-template-rows: 1fr; }
+    .a-inner { overflow: hidden; }
+    .a-body {
+      padding: 0 26px 28px 72px;
+      border-top: 1px solid var(--border);
+      background: var(--answer-bg);
+    }
+    .card.open .a-body { padding-top: 24px; }
+    .a-body p {
+      font-size: 0.97rem;
+      line-height: 1.84;
+      color: var(--body-text);
+      margin-bottom: 14px;
+    }
+    .a-body p:last-child { margin-bottom: 0; }
+    .a-body strong { color: var(--accent1); font-weight: 600; }
+    .a-body em { color: var(--muted); font-style: italic; }
+    .math-block {
+      background: var(--math-bg);
+      border-left: 3px solid var(--math-border);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 18px 0;
+      overflow-x: auto;
+      font-size: 1.03rem;
+    }
+    .highlight {
+      background: var(--hl-bg);
+      border: 1px solid var(--hl-border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 0.92rem;
+      line-height: 1.75;
+      color: var(--body-text);
+    }
+    .highlight strong { color: var(--accent2); }
+    .step-list {
+      margin: 14px 0 16px 18px;
+      color: var(--body-text);
+      line-height: 1.78;
+    }
+    .step-list li { margin-bottom: 8px; }
+
+    #no-results {
+      display:none;
+      text-align:center;
+      padding:50px 20px;
+      font-family:'DM Mono', monospace;
+      font-size:.82rem;
+      color:var(--muted);
+    }
+
+    #theme-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+      transition: box-shadow 0.3s, border-color 0.3s;
+    }
+    #theme-btn:hover { box-shadow: 0 6px 32px rgba(0,0,0,0.45); border-color: var(--accent1); }
+    .theme-opt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 100px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.25s, transform 0.2s;
+      position: relative;
+    }
+    .theme-opt:hover { transform: scale(1.15); }
+    .theme-opt.active { background: var(--accent1); }
+    .theme-opt .tip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .theme-opt:hover .tip { opacity: 1; }
+
+    footer {
+      text-align: center;
+      padding: 32px 20px 48px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+    }
+    .footer-author { color: var(--accent2); font-size: 0.8rem; font-weight: 500; }
+
+    *, *::before, *::after { transition: background-color .35s ease, border-color .35s ease, color .2s ease, box-shadow .3s ease; }
+    .a-wrap { transition: grid-template-rows var(--transition) !important; }
+    #progress-bar-inner { transition: width 0.5s ease !important; }
+    .q-icon svg { transition: transform var(--transition) !important; }
+    .q-icon { transition: background var(--transition), border-color var(--transition), transform var(--transition) !important; }
+
+    .q-trigger mjx-container { display:inline !important; vertical-align:middle; }
+    mjx-container[jax="CHTML"] { line-height: 0; }
+    mjx-container[jax="CHTML"][display="true"] { display:block !important; text-align:center; margin:.5em 0; }
+
+    @media (max-width: 700px) {
+      .a-body { padding-left: 20px; padding-right: 20px; }
+      .q-trigger { padding: 18px; gap: 12px; }
+      h1 { font-size: 2rem; }
+      #theme-btn { bottom: 16px; right: 16px; }
+      #progress-wrap { gap: 8px; padding: 9px 14px; }
+      #search-wrap { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="theme-btn" role="group" aria-label="Cambiar tema">
+  <button class="theme-opt active" id="opt-dark" onclick="setTheme('dark')" title="Oscuro">🌙<span class="tip">Oscuro</span></button>
+  <button class="theme-opt" id="opt-light" onclick="setTheme('light')" title="Claro">☀️<span class="tip">Claro</span></button>
+  <button class="theme-opt" id="opt-sepia" onclick="setTheme('sepia')" title="Sepia">📜<span class="tip">Sepia</span></button>
+</div>
+
+<header>
+  <div class="tag">Cuestionario Académico · 20 Preguntas</div>
+  <h1>Movimiento Browniano<br>&amp; Cálculo Estocástico</h1>
+  <p class="subtitle">De lo conceptual a lo avanzado · Wiener · Itô · SDE · IA Generativa</p>
+  <div class="author-credit">Material elaborado por el profesor Sergio Gevatschnaider</div>
+  <div class="count-badge">20 preguntas con respuestas desarrolladas</div>
+</header>
+
+<div id="progress-wrap">
+  <div id="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search-input" type="text" placeholder="Buscar pregunta, fórmula o concepto..." autocomplete="off" oninput="filterCards()"/>
+  </div>
+  <span id="progress-text">0% COMPLETADO</span>
+  <div id="progress-bar-outer"><div id="progress-bar-inner"></div></div>
+  <span id="open-count">0 / 20 abiertas</span>
+  <span id="visible-count">20 visibles</span>
+</div>
+
+<main>
+  <div class="controls">
+    <button class="btn btn-accent" onclick="expandVisible()">Expandir visibles</button>
+    <button class="btn" onclick="expandAll()">Expandir todo</button>
+    <button class="btn" onclick="collapseAll()">Colapsar todo</button>
+    <button class="btn" onclick="clearSearch()">Limpiar búsqueda</button>
+  </div>
+
+  <nav class="level-nav" aria-label="Navegación por niveles">
+    <a class="level-chip" href="#nivel-1">Nivel 1 · Conceptual</a>
+    <a class="level-chip" href="#nivel-2">Nivel 2 · Matemático</a>
+    <a class="level-chip" href="#nivel-3">Nivel 3 · Itô</a>
+    <a class="level-chip" href="#nivel-4">Nivel 4 · Avanzado</a>
+  </nav>
+
+  <div id="no-results">⊘ &nbsp; Ninguna pregunta coincide con la búsqueda.</div>
+
+  <section id="nivel-1" class="level-section">
+    <div class="section-label">Nivel 1 · Conceptual e histórico</div>
+
+    <div class="card" id="c1" data-level="Nivel 1 Conceptual historico" data-search="movimiento browniano robert brown einstein perrin atomos polen fluido fisica historia">
+      <button class="q-trigger" onclick="toggle(1)">
+        <span class="q-num">01</span>
+        <span class="q-title-wrap"><span class="q-title">¿Qué es el movimiento browniano y quién lo observó por primera vez?</span><span class="q-meta">Historia · física · evidencia atómica</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El <strong>movimiento browniano</strong> es el movimiento errático, continuo e impredecible de partículas microscópicas suspendidas en un fluido. Fue observado por <strong>Robert Brown</strong> en 1827 al estudiar con microscopio granos de polen en agua.</p>
+        <p>En 1905, <strong>Albert Einstein</strong> explicó que ese movimiento era causado por los choques constantes de las moléculas del fluido contra la partícula visible. Esta explicación convirtió al fenómeno en una de las primeras pruebas cuantitativas de la existencia de los átomos.</p>
+        <div class="highlight"><strong>Idea clave:</strong> el movimiento visible de una partícula microscópica revela la agitación invisible de moléculas mucho más pequeñas. Jean Perrin verificó experimentalmente la teoría entre 1908 y 1913, y recibió el Nobel de Física en 1926.</div>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c2" data-level="Nivel 1 Conceptual historico" data-search="proceso de wiener propiedades B0 continuidad incrementos independientes gaussianos estacionarios">
+      <button class="q-trigger" onclick="toggle(2)">
+        <span class="q-num">02</span>
+        <span class="q-title-wrap"><span class="q-title">¿Cuáles son las cuatro propiedades que definen el proceso de Wiener?</span><span class="q-meta">Definición · proceso estocástico</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El <strong>proceso de Wiener</strong> \((B_t)_{t\ge 0}\), también llamado movimiento browniano estándar, queda caracterizado por cuatro propiedades fundamentales:</p>
+        <ol class="step-list">
+          <li>Condición inicial: \(B_0 = 0\) casi seguramente.</li>
+          <li>Continuidad de trayectorias: la función \(t \mapsto B_t\) es continua casi seguramente.</li>
+          <li>Incrementos independientes: los incrementos sobre intervalos disjuntos son independientes.</li>
+          <li>Incrementos gaussianos estacionarios: \(B_t-B_s \sim \mathcal{N}(0,t-s)\), para \(0\le s<t\).</li>
+        </ol>
+        <div class="math-block">$$B_t-B_s \sim \mathcal{N}(0,t-s)$$</div>
+        <p>Estas cuatro propiedades caracterizan de manera única al movimiento browniano estándar.</p>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c3" data-level="Nivel 1 Conceptual historico" data-search="einstein 1905 varianza difusion einstein stokes avogadro ecuacion del calor">
+      <button class="q-trigger" onclick="toggle(3)">
+        <span class="q-num">03</span>
+        <span class="q-title-wrap"><span class="q-title">¿Qué aportó Einstein en 1905 al movimiento browniano?</span><span class="q-meta">Difusión · Einstein-Stokes · Avogadro</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Einstein aportó una explicación cuantitativa del fenómeno browniano. Mostró que la varianza de la posición crece linealmente con el tiempo, lo que conecta el desplazamiento microscópico con una ley macroscópica de difusión.</p>
+        <div class="math-block">$$\mathbb{E}\left[X_t^2\right]=2Dt$$</div>
+        <p>También derivó la relación de <strong>Einstein-Stokes</strong>, que vincula el coeficiente de difusión con temperatura, viscosidad y tamaño de la partícula:</p>
+        <div class="math-block">$$D = \frac{k_B T}{6\pi\eta a}$$</div>
+        <p>Además, formuló la conexión con la ecuación de difusión y propuso que midiendo \(D\) se podía estimar el número de Avogadro, aportando una verificación indirecta de la existencia de los átomos.</p>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c4" data-level="Nivel 1 Conceptual historico" data-search="continuo ninguna parte diferenciable variacion cuadratica fractal dB2 dt derivabilidad continuidad">
+      <button class="q-trigger" onclick="toggle(4)">
+        <span class="q-num">04</span>
+        <span class="q-title-wrap"><span class="q-title">¿Por qué las trayectorias del MB son continuas en todas partes pero diferenciables en ninguna?</span><span class="q-meta">Regularidad · fractalidad · variación cuadrática</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Las trayectorias brownianas son <strong>continuas</strong> porque no presentan saltos. Sin embargo, son tan irregulares localmente que no poseen derivada en ningún punto.</p>
+        <p>La razón profunda está en su <strong>variación cuadrática</strong>: al sumar los cuadrados de los incrementos sobre particiones cada vez más finas, el límite no va a cero, como ocurriría para funciones suaves, sino que converge a la longitud temporal del intervalo.</p>
+        <div class="math-block">$$[B]_t=t \qquad \text{y formalmente} \qquad (dB_t)^2=dt$$</div>
+        <div class="highlight"><strong>Interpretación:</strong> la continuidad indica que la trayectoria no salta; la no diferenciabilidad indica que, a cualquier escala, la trayectoria sigue oscilando con irregularidad fractal.</div>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c5" data-level="Nivel 1 Conceptual historico" data-search="coeficiente de difusion temperatura viscosidad radio fluctuacion disipacion dimension">
+      <button class="q-trigger" onclick="toggle(5)">
+        <span class="q-num">05</span>
+        <span class="q-title-wrap"><span class="q-title">¿Qué es el coeficiente de difusión y cómo se relaciona con la temperatura?</span><span class="q-meta">Difusión · temperatura · viscosidad</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El coeficiente de difusión \(D\) mide la rapidez con la que una partícula browniana se dispersa en el espacio. En dimensión \(d\), el desplazamiento cuadrático medio crece linealmente con el tiempo:</p>
+        <div class="math-block">$$\mathbb{E}\left[\|X_t\|^2\right]=2dDt$$</div>
+        <p>La relación de Einstein-Stokes establece:</p>
+        <div class="math-block">$$D = \frac{k_B T}{6\pi\eta a}$$</div>
+        <p>A mayor temperatura \(T\), las moléculas se mueven más rápido y la difusión aumenta. A mayor viscosidad \(\eta\) o mayor radio de la partícula \(a\), la difusión disminuye.</p>
+        <div class="highlight"><strong>Lectura física:</strong> es una expresión del teorema fluctuación-disipación: la intensidad del ruido térmico y la resistencia del medio quedan matemáticamente acopladas.</div>
+      </div></div></div>
+    </div>
+  </section>
+
+  <section id="nivel-2" class="level-section">
+    <div class="section-label">Nivel 2 · Propiedades matemáticas</div>
+
+    <div class="card" id="c6" data-level="Nivel 2 Propiedades matematicas" data-search="covarianza min(s,t) geometria matriz normal multivariada correlacion incrementos independientes">
+      <button class="q-trigger" onclick="toggle(6)">
+        <span class="q-num">06</span>
+        <span class="q-title-wrap"><span class="q-title">¿Cuál es la función de covarianza del MB y qué significa geométricamente?</span><span class="q-meta">Covarianza · geometría gaussiana</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La función de covarianza del movimiento browniano estándar es:</p>
+        <div class="math-block">$$\operatorname{Cov}(B_s,B_t)=\mathbb{E}[B_sB_t]=\min(s,t)$$</div>
+        <p>Si \(s\le t\), escribimos \(B_t = B_s + (B_t-B_s)\). Entonces:</p>
+        <div class="math-block">$$\mathbb{E}[B_sB_t]=\mathbb{E}[B_s(B_t-B_s)]+\mathbb{E}[B_s^2]=0+s=s$$</div>
+        <p>Geométricamente, el vector \((B_{t_1},\ldots,B_{t_n})\) tiene distribución normal multivariada con matriz de covarianza \(\Sigma_{ij}=\min(t_i,t_j)\). Los tiempos cercanos comparten más historia acumulada y, por eso, están más correlacionados.</p>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c7" data-level="Nivel 2 Propiedades matematicas" data-search="calcular probabilidad W1 W2 normal varianza Phi 0.186 covarianza">
+      <button class="q-trigger" onclick="toggle(7)">
+        <span class="q-num">07</span>
+        <span class="q-title-wrap"><span class="q-title">Calcula \(\mathbb{P}(W(1)+W(2)>2)\) para \(W(t)\) MB estándar.</span><span class="q-meta">Cálculo probabilístico · normal multivariada</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Sea \(X=W(1)+W(2)\). Como el movimiento browniano es gaussiano y centrado, \(X\) también es normal con media cero.</p>
+        <div class="math-block">$$\operatorname{Var}(X)=\operatorname{Var}(W(1))+\operatorname{Var}(W(2))+2\operatorname{Cov}(W(1),W(2))$$</div>
+        <p>Usando \(\operatorname{Var}(W(t))=t\) y \(\operatorname{Cov}(W(1),W(2))=\min(1,2)=1\):</p>
+        <div class="math-block">$$\operatorname{Var}(X)=1+2+2=5$$</div>
+        <p>Por lo tanto, \(X\sim\mathcal{N}(0,5)\), y:</p>
+        <div class="math-block">$$\mathbb{P}(W(1)+W(2)>2)=1-\Phi\left(\frac{2}{\sqrt{5}}\right)\approx 1-\Phi(0.894)\approx 0.186$$</div>
+        <div class="highlight"><strong>Resultado:</strong> la probabilidad es aproximadamente \(18.6\%\).</div>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c8" data-level="Nivel 2 Propiedades matematicas" data-search="variacion cuadratica calculo de ito dB cuadrado dt Taylor segundo orden fundamental">
+      <button class="q-trigger" onclick="toggle(8)">
+        <span class="q-num">08</span>
+        <span class="q-title-wrap"><span class="q-title">¿Qué es la variación cuadrática del MB y por qué es fundamental para el cálculo de Itô?</span><span class="q-meta">Variación cuadrática · Itô</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>La variación cuadrática de \(B_t\) sobre \([0,T]\) es el límite de la suma de cuadrados de los incrementos cuando la partición se refina:</p>
+        <div class="math-block">$$[B]_T=\lim_{\|\Pi\|\to 0}\sum_k\left(B_{t_{k+1}}-B_{t_k}\right)^2=T$$</div>
+        <p>En el cálculo ordinario, los términos de segundo orden suelen desaparecer. En el movimiento browniano, no desaparecen: se acumulan y producen un término temporal.</p>
+        <div class="math-block">$$(dB_t)^2=dt$$</div>
+        <div class="highlight"><strong>Consecuencia:</strong> el desarrollo de Taylor estocástico conserva el término de segundo orden, y por eso el lema de Itô incluye el término adicional \(\frac{1}{2}f''(B_t)dt\).</div>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c9" data-level="Nivel 2 Propiedades matematicas" data-search="martingala Bt Bt cuadrado menos t compensador esperanza condicional">
+      <button class="q-trigger" onclick="toggle(9)">
+        <span class="q-num">09</span>
+        <span class="q-title-wrap"><span class="q-title">¿Es el MB una martingala? ¿Y el proceso \(B_t^2-t\)?</span><span class="q-meta">Martingalas · compensador</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Sí. El movimiento browniano \(B_t\) es una martingala respecto de su filtración natural porque, para \(s<t\):</p>
+        <div class="math-block">$$\mathbb{E}[B_t\mid \mathcal{F}_s]=\mathbb{E}[B_s+(B_t-B_s)\mid \mathcal{F}_s]=B_s$$</div>
+        <p>El proceso \(M_t=B_t^2-t\) también es martingala. En efecto:</p>
+        <div class="math-block">$$\mathbb{E}[B_t^2-t\mid\mathcal{F}_s]=B_s^2-s$$</div>
+        <p>La intuición es que \(t\) actúa como <strong>compensador</strong>: resta el crecimiento esperado de \(B_t^2\) y convierte el proceso resultante en una martingala.</p>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c10" data-level="Nivel 2 Propiedades matematicas" data-search="teorema de Levy martingala local continua variacion cuadratica identifica browniano girsanov">
+      <button class="q-trigger" onclick="toggle(10)">
+        <span class="q-num">10</span>
+        <span class="q-title-wrap"><span class="q-title">Enuncia y explica el Teorema de Lévy del MB.</span><span class="q-meta">Caracterización · martingala local</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El Teorema de Lévy afirma que un proceso continuo \(M_t\), con \(M_0=0\), es un movimiento browniano estándar si y solo si es una martingala local continua con variación cuadrática lineal:</p>
+        <div class="math-block">$$M_t\ \text{martingala local continua},\quad [M]_t=t \quad \Longleftrightarrow \quad M_t\ \text{es MB estándar}$$</div>
+        <p>Su importancia es enorme: permite identificar procesos brownianos sin verificar explícitamente gaussianidad ni independencia de incrementos.</p>
+        <div class="highlight"><strong>Uso típico:</strong> en cambios de medida de Girsanov, se verifica que el proceso transformado sigue siendo martingala local continua y conserva variación cuadrática \(t\); entonces se identifica como browniano bajo la nueva medida.</div>
+      </div></div></div>
+    </div>
+  </section>
+
+  <section id="nivel-3" class="level-section">
+    <div class="section-label">Nivel 3 · Cálculo estocástico</div>
+
+    <div class="card" id="c11" data-level="Nivel 3 Calculo estocastico" data-search="lema de Ito f(Bt) C2 Taylor integral estocastica segundo orden demostracion">
+      <button class="q-trigger" onclick="toggle(11)">
+        <span class="q-num">11</span>
+        <span class="q-title-wrap"><span class="q-title">Enuncia y demuestra el lema de Itô para \(f(B_t)\) con \(f\in C^2\).</span><span class="q-meta">Lema de Itô · regla de la cadena</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Para \(f\in C^2\), el lema de Itô aplicado a \(f(B_t)\) dice:</p>
+        <div class="math-block">$$f(B_t)=f(B_0)+\int_0^t f'(B_s)\,dB_s+\frac{1}{2}\int_0^t f''(B_s)\,ds$$</div>
+        <p>En forma diferencial:</p>
+        <div class="math-block">$$df(B_t)=f'(B_t)dB_t+\frac{1}{2}f''(B_t)dt$$</div>
+        <p>La demostración surge de aplicar Taylor de segundo orden a cada incremento:</p>
+        <div class="math-block">$$f(B_{t_{k+1}})-f(B_{t_k})=f'(B_{t_k})\Delta B_k+\frac{1}{2}f''(B_{t_k})(\Delta B_k)^2+O((\Delta B_k)^3)$$</div>
+        <p>Al refinar la partición, la primera suma converge a una integral estocástica y la segunda a la variación cuadrática \([B]_t=t\), generando el término extra de Itô.</p>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c12" data-level="Nivel 3 Calculo estocastico" data-search="d(Bt cuadrado) exponencial martingala exponencial theta drift e Bt Ito">
+      <button class="q-trigger" onclick="toggle(12)">
+        <span class="q-num">12</span>
+        <span class="q-title-wrap"><span class="q-title">Usa el lema de Itô para calcular \(d(B_t^2)\), \(d(e^{B_t})\) y verificar la martingala exponencial.</span><span class="q-meta">Ejercicios de Itô · martingala exponencial</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Para \(f(x)=x^2\), \(f'(x)=2x\) y \(f''(x)=2\). Entonces:</p>
+        <div class="math-block">$$d(B_t^2)=2B_t\,dB_t+dt$$</div>
+        <p>De aquí se obtiene que \(B_t^2-t\) es martingala.</p>
+        <p>Para \(f(x)=e^x\), \(f'=f''=e^x\), por lo que:</p>
+        <div class="math-block">$$d(e^{B_t})=e^{B_t}dB_t+\frac{1}{2}e^{B_t}dt$$</div>
+        <p>Como tiene término de drift, \(e^{B_t}\) no es martingala. En cambio, para:</p>
+        <div class="math-block">$$M_t=\exp\left(\theta B_t-\frac{\theta^2}{2}t\right)$$</div>
+        <p>se obtiene:</p>
+        <div class="math-block">$$dM_t=\theta M_t\,dB_t$$</div>
+        <div class="highlight"><strong>Conclusión:</strong> al no quedar término en \(dt\), \(M_t\) es martingala local; además, bajo condiciones estándar, es martingala verdadera con \(\mathbb{E}[M_t]=1\).</div>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c13" data-level="Nivel 3 Calculo estocastico" data-search="SDE movimiento browniano geometrico GBM lognormal Black Scholes correccion Ito">
+      <button class="q-trigger" onclick="toggle(13)">
+        <span class="q-num">13</span>
+        <span class="q-title-wrap"><span class="q-title">Resuelve la SDE del movimiento browniano geométrico: \(dS_t=\mu S_tdt+\sigma S_tdB_t\).</span><span class="q-meta">SDE · GBM · log-normal</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Aplicamos Itô a \(f(S_t)=\ln S_t\). Como \(f'(x)=1/x\) y \(f''(x)=-1/x^2\):</p>
+        <div class="math-block">$$d\ln S_t=\frac{1}{S_t}dS_t-\frac{1}{2S_t^2}(dS_t)^2$$</div>
+        <p>Dado que \((dS_t)^2=\sigma^2S_t^2dt\), resulta:</p>
+        <div class="math-block">$$d\ln S_t=\left(\mu-\frac{\sigma^2}{2}\right)dt+\sigma dB_t$$</div>
+        <p>Integrando:</p>
+        <div class="math-block">$$S_t=S_0\exp\left[\left(\mu-\frac{\sigma^2}{2}\right)t+\sigma B_t\right]$$</div>
+        <div class="highlight"><strong>Clave:</strong> la corrección \(-\sigma^2/2\) no aparece en cálculo ordinario; es una corrección propiamente estocástica originada por el término de Itô.</div>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c14" data-level="Nivel 3 Calculo estocastico" data-search="Ornstein Uhlenbeck OU reversion a la media drift restaurador estacionario diffusion models IA">
+      <button class="q-trigger" onclick="toggle(14)">
+        <span class="q-num">14</span>
+        <span class="q-title-wrap"><span class="q-title">¿Qué es el proceso de Ornstein-Uhlenbeck y cómo difiere del MB?</span><span class="q-meta">OU · reversión a la media · estacionariedad</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El proceso de Ornstein-Uhlenbeck satisface:</p>
+        <div class="math-block">$$dX_t=-\theta(X_t-\mu)dt+\sigma dB_t,\qquad \theta>0$$</div>
+        <p>Su solución es:</p>
+        <div class="math-block">$$X_t=\mu+(X_0-\mu)e^{-\theta t}+\sigma\int_0^t e^{-\theta(t-s)}dB_s$$</div>
+        <p>La diferencia central con el MB es que el OU tiene <strong>drift restaurador</strong>: cuando el proceso se aleja de \(\mu\), la dinámica lo empuja de regreso hacia la media.</p>
+        <ul class="step-list">
+          <li>MB: varianza crece sin límite; OU: varianza estacionaria \(\sigma^2/(2\theta)\).</li>
+          <li>MB: no estacionario; OU: puede ser estacionario.</li>
+          <li>MB: sin reversión a la media; OU: reversión exponencial hacia \(\mu\).</li>
+        </ul>
+        <div class="highlight"><strong>Aplicaciones:</strong> tasas de interés, series temporales con reversión a la media y procesos forward en modelos de difusión generativa.</div>
+      </div></div></div>
+    </div>
+  </section>
+
+  <section id="nivel-4" class="level-section">
+    <div class="section-label">Nivel 4 · Propiedades avanzadas y aplicaciones</div>
+
+    <div class="card" id="c15" data-level="Nivel 4 Propiedades avanzadas" data-search="recurrencia transitividad dimensiones browniano planar d mayor igual 3 transitorio origen">
+      <button class="q-trigger" onclick="toggle(15)">
+        <span class="q-num">15</span>
+        <span class="q-title-wrap"><span class="q-title">Teorema de recurrencia/transitividad del MB en distintas dimensiones.</span><span class="q-meta">Dimensión · recurrencia · transitoriedad</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El comportamiento a largo plazo del movimiento browniano depende fuertemente de la dimensión.</p>
+        <ul class="step-list">
+          <li><strong>Dimensión 1:</strong> el MB es recurrente. Visita cualquier vecindad de cualquier punto de \(\mathbb{R}\) infinitas veces casi seguramente.</li>
+          <li><strong>Dimensión 2:</strong> también es recurrente en sentido de vecindades. El browniano planar visita cualquier disco, por pequeño que sea, infinitas veces casi seguramente, aunque no pasa por un punto específico dado.</li>
+          <li><strong>Dimensión \(d\ge 3\):</strong> el MB es transitorio. La partícula escapa hacia el infinito y no regresa recurrentemente.</li>
+        </ul>
+        <div class="highlight"><strong>Intuición:</strong> en dimensiones altas hay demasiado espacio disponible; la trayectoria tiene muchas más direcciones para alejarse y menos probabilidad de regresar.</div>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c16" data-level="Nivel 4 Propiedades avanzadas" data-search="movimiento browniano fraccionario fBm Hurst memoria persistencia antipersistencia Hausdorff">
+      <button class="q-trigger" onclick="toggle(16)">
+        <span class="q-num">16</span>
+        <span class="q-title-wrap"><span class="q-title">¿Qué es el MB fraccionario y cómo se relaciona el índice de Hurst con la memoria?</span><span class="q-meta">fBm · Hurst · memoria de largo alcance</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>El movimiento browniano fraccionario \(B_H(t)\), con \(H\in(0,1)\), es un proceso gaussiano centrado, autosimilar de índice \(H\), con covarianza:</p>
+        <div class="math-block">$$\operatorname{Cov}(B_H(t),B_H(s))=\frac{1}{2}\left(|t|^{2H}+|s|^{2H}-|t-s|^{2H}\right)$$</div>
+        <ul class="step-list">
+          <li>\(H=1/2\): MB estándar, incrementos independientes.</li>
+          <li>\(H>1/2\): persistencia; incrementos con autocorrelación positiva y memoria de largo alcance.</li>
+          <li>\(H<1/2\): antipersistencia; el proceso tiende a revertir la dirección.</li>
+        </ul>
+        <div class="math-block">$$\dim_H(\text{trayectoria})=2-H$$</div>
+        <p>Para \(H\ne 1/2\), el fBm no es proceso de Markov ni semimartingala, lo que complica el cálculo estocástico clásico.</p>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c17" data-level="Nivel 4 Propiedades avanzadas" data-search="principio de reflexion maximo tiempo de llegada tau a densidad Phi">
+      <button class="q-trigger" onclick="toggle(17)">
+        <span class="q-num">17</span>
+        <span class="q-title-wrap"><span class="q-title">Principio de reflexión y distribución del máximo del MB.</span><span class="q-meta">Máximo · hitting time · reflexión</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Sea \(\tau_a=\inf\{t:B_t=a\}\), con \(a>0\). El principio de reflexión dice:</p>
+        <div class="math-block">$$\mathbb{P}\left(\max_{0\le s\le t}B_s\ge a\right)=2\mathbb{P}(B_t\ge a)$$</div>
+        <p>Como \(B_t\sim\mathcal{N}(0,t)\), se obtiene:</p>
+        <div class="math-block">$$\mathbb{P}\left(\max_{s\le t}B_s\ge a\right)=2\left(1-\Phi\left(\frac{a}{\sqrt{t}}\right)\right)$$</div>
+        <p>La densidad del tiempo de llegada a \(a\) es:</p>
+        <div class="math-block">$$f(t)=\frac{a}{\sqrt{2\pi t^3}}\exp\left(-\frac{a^2}{2t}\right)$$</div>
+        <div class="highlight"><strong>Idea geométrica:</strong> una trayectoria que cruza \(a\) y termina por debajo puede reflejarse después del cruce para corresponderse con una trayectoria que termina por encima.</div>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c18" data-level="Nivel 4 Propiedades avanzadas" data-search="Fokker Planck ecuacion calor SDE densidad nube trayectorias mu sigma difusion">
+      <button class="q-trigger" onclick="toggle(18)">
+        <span class="q-num">18</span>
+        <span class="q-title-wrap"><span class="q-title">Explica la ecuación de Fokker-Planck y su relación con el MB.</span><span class="q-meta">SDE · densidad · ecuación del calor</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Para una SDE de la forma:</p>
+        <div class="math-block">$$dX_t=\mu(X_t)dt+\sigma(X_t)dB_t$$</div>
+        <p>la ecuación de Fokker-Planck describe cómo evoluciona la densidad \(p(x,t)\):</p>
+        <div class="math-block">$$\frac{\partial p}{\partial t}=-\frac{\partial}{\partial x}\left[\mu(x)p(x,t)\right]+\frac{\partial^2}{\partial x^2}\left[\frac{\sigma^2(x)}{2}p(x,t)\right]$$</div>
+        <p>Para el MB puro, \(\mu=0\) y \(\sigma=1\), se reduce a la ecuación del calor:</p>
+        <div class="math-block">$$\frac{\partial p}{\partial t}=\frac{1}{2}\frac{\partial^2p}{\partial x^2}$$</div>
+        <p>La solución con inicio en cero es la densidad normal:</p>
+        <div class="math-block">$$p(x,t)=\frac{1}{\sqrt{2\pi t}}\exp\left(-\frac{x^2}{2t}\right)$$</div>
+        <div class="highlight"><strong>Diferencia conceptual:</strong> la SDE describe una trayectoria individual; Fokker-Planck describe la evolución de la nube de todas las trayectorias posibles.</div>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c19" data-level="Nivel 4 Propiedades avanzadas" data-search="Black Scholes movimiento browniano geometrico opcion call europea delta hedging EDP precio">
+      <button class="q-trigger" onclick="toggle(19)">
+        <span class="q-num">19</span>
+        <span class="q-title-wrap"><span class="q-title">¿Cómo se aplica el MB geométrico al modelo Black-Scholes?</span><span class="q-meta">Finanzas · opciones · GBM</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Black-Scholes modela el precio del activo subyacente mediante un movimiento browniano geométrico:</p>
+        <div class="math-block">$$dS_t=\mu S_tdt+\sigma S_tdB_t$$</div>
+        <p>cuya solución es:</p>
+        <div class="math-block">$$S_t=S_0\exp\left[\left(\mu-\frac{\sigma^2}{2}\right)t+\sigma B_t\right]$$</div>
+        <p>Para una opción call europea, el precio es:</p>
+        <div class="math-block">$$C=S_0\Phi(d_1)-Ke^{-rT}\Phi(d_2)$$</div>
+        <div class="math-block">$$d_1=\frac{\ln(S_0/K)+(r+\sigma^2/2)T}{\sigma\sqrt{T}},\qquad d_2=d_1-\sigma\sqrt{T}$$</div>
+        <p>La fórmula se obtiene aplicando Itô al precio de la opción \(V(S_t,t)\), construyendo una cartera de cobertura delta y eliminando el riesgo browniano. Así se llega a la EDP:</p>
+        <div class="math-block">$$\frac{\partial V}{\partial t}+rS\frac{\partial V}{\partial S}+\frac{\sigma^2S^2}{2}\frac{\partial^2V}{\partial S^2}=rV$$</div>
+      </div></div></div>
+    </div>
+
+    <div class="card" id="c20" data-level="Nivel 4 Propiedades avanzadas" data-search="modelos de difusion generativos IA Stable Diffusion DALL-E DDPM Score SDE OU score function reverse diffusion">
+      <button class="q-trigger" onclick="toggle(20)">
+        <span class="q-num">20</span>
+        <span class="q-title-wrap"><span class="q-title">¿Cómo se relaciona el MB con los modelos de difusión generativos en IA?</span><span class="q-meta">IA generativa · Score-SDE · Stable Diffusion</span></span>
+        <span class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="a-wrap"><div class="a-inner"><div class="a-body">
+        <p>Los modelos de difusión generativos, como DDPM y Score-SDE, están construidos sobre ideas brownianas y procesos tipo Ornstein-Uhlenbeck. En el proceso forward se agrega ruido gaussiano incremental a los datos hasta convertirlos en ruido casi puro.</p>
+        <div class="math-block">$$dX_t=-\frac{1}{2}\beta(t)X_tdt+\sqrt{\beta(t)}\,dB_t$$</div>
+        <p>En el proceso inverso, una red neuronal aprende la <strong>score function</strong>:</p>
+        <div class="math-block">$$\operatorname{score}(x,t)=\nabla_x\log p_t(x)$$</div>
+        <p>La SDE reversa puede escribirse conceptualmente como:</p>
+        <div class="math-block">$$dX_t=\left[-\frac{1}{2}\beta(t)X_t-\beta(t)\operatorname{score}(X_t,t)\right]dt+\sqrt{\beta(t)}\,d\bar{B}_t$$</div>
+        <div class="highlight"><strong>Conexión profunda:</strong> generar imágenes desde ruido implica simular una dinámica estocástica inversa. Las herramientas matemáticas detrás son Fokker-Planck, lema de Itô, variación cuadrática y procesos de difusión.</div>
+      </div></div></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-author">Material elaborado por el profesor Sergio Gevatschnaider</div>
+  <br>
+  Movimiento Browniano &nbsp;·&nbsp; 20 Preguntas &amp; Respuestas &nbsp;·&nbsp; Wiener · Itô · SDE · IA Generativa
+</footer>
+
+<script>
+  const total = 20;
+  const themes = ['dark', 'light', 'sepia'];
+  let openSet = new Set();
+
+  function toggle(n) {
+    const card = document.getElementById('c' + n);
+    if (!card || card.classList.contains('hidden')) return;
+    if (card.classList.contains('open')) {
+      card.classList.remove('open');
+      openSet.delete(n);
+    } else {
+      card.classList.add('open');
+      openSet.add(n);
+      if (window.MathJax) MathJax.typesetPromise([card]).catch(err => console.log(err));
+    }
+    updateProgress();
+  }
+
+  function expandAll() {
+    for (let i = 1; i <= total; i++) {
+      const card = document.getElementById('c' + i);
+      card.classList.add('open');
+      openSet.add(i);
+    }
+    updateProgress();
+    if (window.MathJax) MathJax.typesetPromise(document.querySelectorAll('.card')).catch(err => console.log(err));
+  }
+
+  function expandVisible() {
+    for (let i = 1; i <= total; i++) {
+      const card = document.getElementById('c' + i);
+      if (!card.classList.contains('hidden')) {
+        card.classList.add('open');
+        openSet.add(i);
+      }
+    }
+    updateProgress();
+    if (window.MathJax) MathJax.typesetPromise(document.querySelectorAll('.card:not(.hidden)')).catch(err => console.log(err));
+  }
+
+  function collapseAll() {
+    for (let i = 1; i <= total; i++) {
+      const card = document.getElementById('c' + i);
+      card.classList.remove('open');
+    }
+    openSet.clear();
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const count = openSet.size;
+    const pct = Math.round(count / total * 100);
+    document.getElementById('progress-bar-inner').style.width = pct + '%';
+    document.getElementById('open-count').textContent = count + ' / ' + total + ' abiertas';
+    document.getElementById('progress-text').textContent = pct + '% COMPLETADO';
+  }
+
+  function normalizeText(text) {
+    return (text || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function filterCards() {
+    const q = normalizeText(document.getElementById('search-input').value.trim());
+    let visible = 0;
+    document.querySelectorAll('.card').forEach(card => {
+      const haystack = normalizeText(card.textContent + ' ' + (card.dataset.search || '') + ' ' + (card.dataset.level || ''));
+      const match = !q || haystack.includes(q);
+      card.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+
+    document.querySelectorAll('.level-section').forEach(section => {
+      const cards = section.querySelectorAll('.card');
+      const anyVisible = Array.from(cards).some(c => !c.classList.contains('hidden'));
+      section.style.display = anyVisible ? '' : 'none';
+    });
+
+    document.getElementById('visible-count').textContent = visible + ' visibles';
+    document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  function clearSearch() {
+    document.getElementById('search-input').value = '';
+    filterCards();
+    document.getElementById('search-input').focus();
+  }
+
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themes.forEach(th => {
+      document.getElementById('opt-' + th).classList.toggle('active', th === t);
+    });
+    try { localStorage.setItem('brownian-quiz-theme', t); } catch(e) {}
+  }
+
+  (function restoreTheme() {
+    try {
+      const saved = localStorage.getItem('brownian-quiz-theme');
+      if (saved && themes.includes(saved)) setTheme(saved);
+    } catch(e) {}
+  })();
+
+  document.querySelectorAll('.q-trigger').forEach((btn, idx) => {
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle(idx + 1);
+      }
+    });
+  });
+
+  updateProgress();
+  filterCards();
+</script>
+</body>
+</html>
