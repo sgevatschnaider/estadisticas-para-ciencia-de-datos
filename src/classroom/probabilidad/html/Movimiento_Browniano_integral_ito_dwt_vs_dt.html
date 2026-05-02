@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Integral de Itô — Integrar respecto de dW no es integrar respecto de dt</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f1a;
+  --surface:#131929;
+  --raised:#1a2438;
+  --border:#1e3254;
+  --text:#dde6f0;
+  --muted:#7b8fa8;
+  --accent:#29d8c2;
+  --accent2:#f6b73c;
+  --violet:#9b72f4;
+  --green:#3dd68c;
+  --red:#f06060;
+  --grid:rgba(255,255,255,.055);
+  --zero:rgba(255,255,255,.22);
+  --soft:rgba(41,216,194,.10);
+}
+body[data-theme=light]{
+  --bg:#f2f5fa;--surface:#fff;--raised:#edf2f8;--border:#cad7e8;
+  --text:#17223b;--muted:#667b97;--accent:#0c79a7;--accent2:#c47d10;
+  --violet:#6d3ecb;--green:#198a58;--red:#c93030;
+  --grid:rgba(0,0,0,.06);--zero:rgba(0,0,0,.22);--soft:rgba(12,121,167,.08)
+}
+body[data-theme=cyber]{
+  --bg:#070b12;--surface:#0d1424;--raised:#111d34;--border:#1d3c68;
+  --text:#d8ecff;--muted:#7aa1c8;--accent:#00e5ff;--accent2:#ffc857;
+  --violet:#a970ff;--green:#3bf18b;--red:#ff6a88;
+  --grid:rgba(0,229,255,.08);--zero:rgba(0,229,255,.22);--soft:rgba(0,229,255,.11)
+}
+body[data-theme=forest]{
+  --bg:#09140f;--surface:#122019;--raised:#162920;--border:#244235;
+  --text:#d8eee0;--muted:#89a395;--accent:#6be28d;--accent2:#d4b25f;
+  --violet:#90a0ff;--green:#44d37b;--red:#ef7c7c;
+  --grid:rgba(107,226,141,.07);--zero:rgba(107,226,141,.22);--soft:rgba(107,226,141,.09)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:.9rem 1.2rem;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.brand h1{
+  font-family:'Lora',serif;
+  font-size:1.25rem;
+  line-height:1.2;
+}
+.brand p{
+  font-size:.62rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-top:3px;
+}
+select,button,input{font-family:inherit}
+.sel{
+  background:var(--raised);
+  border:1px solid var(--border);
+  color:var(--text);
+  border-radius:18px;
+  padding:.36rem .75rem;
+  font-size:.68rem;
+  outline:none;
+}
+.layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 350px;
+  gap:.9rem;
+  padding:.9rem;
+  min-height:calc(100vh - 68px);
+}
+.left{
+  display:flex;
+  flex-direction:column;
+  gap:.85rem;
+  min-width:0;
+}
+.compare{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.85rem;
+  min-width:0;
+}
+.box,.panel{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+.panel{padding:.85rem}
+.boxhead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:.7rem;
+  padding:.7rem .9rem;
+  border-bottom:1px solid var(--border);
+}
+.tt{
+  font-size:.72rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.badge{
+  padding:.28rem .55rem;
+  border:1px solid var(--border);
+  border-radius:20px;
+  background:var(--raised);
+  font-size:.61rem;
+  color:var(--accent);
+  white-space:nowrap;
+}
+.canvasWrap{height:330px}
+.canvasWrap.big{height:390px}
+canvas{display:block;width:100%;height:100%}
+.legend{
+  display:flex;
+  gap:1rem;
+  flex-wrap:wrap;
+  padding:.65rem .9rem;
+  border-top:1px solid var(--border);
+  font-size:.63rem;
+  color:var(--muted);
+}
+.legend span{display:flex;align-items:center;gap:.35rem}
+.sw{width:12px;height:12px;border-radius:50%;display:inline-block}
+.sidebar{
+  display:flex;
+  flex-direction:column;
+  gap:.8rem;
+  overflow:auto;
+  padding-right:2px;
+}
+.plabel{
+  font-size:.62rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:.7rem;
+}
+.cgroup{margin-bottom:.75rem}
+.cgroup:last-child{margin-bottom:0}
+.crow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:.35rem;
+  font-size:.66rem;
+  color:var(--muted);
+}
+.crow em{
+  font-style:normal;
+  color:var(--accent);
+  font-weight:700;
+}
+input[type=range]{
+  width:100%;
+  appearance:none;
+  height:4px;
+  border-radius:2px;
+  background:var(--raised);
+  outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:var(--accent);
+  cursor:pointer;
+}
+.btns{display:flex;flex-direction:column;gap:.45rem}
+.btn{
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:transparent;
+  color:var(--text);
+  padding:.6rem .7rem;
+  font-size:.7rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.15s;
+}
+.btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent)}
+.btn-primary{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#05110d;
+  font-weight:700;
+}
+.btn-toggle.on{
+  background:var(--violet);
+  border-color:var(--violet);
+  color:#fff;
+}
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.5rem;
+}
+.stat{
+  background:var(--raised);
+  border-radius:8px;
+  padding:.55rem;
+  text-align:center;
+}
+.stat .k{
+  font-size:.55rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.stat .v{
+  font-size:.82rem;
+  color:var(--accent);
+  font-weight:700;
+  margin-top:4px;
+}
+.stat.warn .v{color:var(--accent2)}
+.stat.red .v{color:var(--red)}
+.trow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:.66rem;
+  color:var(--muted);
+  margin-bottom:.45rem;
+}
+.tog{position:relative;width:32px;height:18px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.sld{
+  position:absolute;
+  inset:0;
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:18px;
+  cursor:pointer;
+}
+.sld:before{
+  content:"";
+  position:absolute;
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  left:3px;
+  bottom:2px;
+  background:var(--muted);
+  transition:.2s;
+}
+.tog input:checked+.sld{background:var(--accent);border-color:var(--accent)}
+.tog input:checked+.sld:before{transform:translateX(13px);background:#000}
+.mitem{
+  display:flex;
+  gap:.45rem;
+  padding:.45rem 0;
+  border-bottom:1px solid var(--border);
+}
+.mitem:last-child{border-bottom:none}
+.dot{
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
+  margin-top:5px;flex-shrink:0;
+}
+.formula{
+  font-size:.71rem;
+  color:var(--accent2);
+  font-weight:700;
+  line-height:1.45;
+}
+.desc{
+  font-size:.63rem;
+  color:var(--muted);
+  margin-top:2px;
+  line-height:1.45;
+}
+.note{
+  background:var(--soft);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:.7rem;
+  font-size:.67rem;
+  line-height:1.55;
+}
+.footer{
+  margin-top:.5rem;
+  padding-top:.65rem;
+  border-top:1px solid var(--border);
+  font-size:.65rem;
+  color:var(--muted);
+}
+@media(max-width:1160px){
+  .layout{grid-template-columns:1fr}
+  .canvasWrap.big{height:350px}
+}
+@media(max-width:820px){
+  .compare{grid-template-columns:1fr}
+  .canvasWrap,.canvasWrap.big{height:320px}
+}
+</style>
+</head>
+<body data-theme="dark">
+<header>
+  <div class="brand">
+    <h1>Integral de Itô: integrar respecto de dW<sub>t</sub></h1>
+    <p>No es una integral ordinaria respecto de dt</p>
+  </div>
+  <select class="sel" onchange="setTheme(this.value)">
+    <option value="dark">Tema oscuro</option>
+    <option value="light">Tema claro</option>
+    <option value="cyber">Tema cyber</option>
+    <option value="forest">Tema forest</option>
+  </select>
+</header>
+
+<div class="layout">
+  <div class="left">
+    <div class="box">
+      <div class="boxhead">
+        <div class="tt">Trayectoria browniana y rectángulos estocásticos</div>
+        <div class="badge" id="pathBadge">f(Wt)=Wt</div>
+      </div>
+      <div class="canvasWrap big"><canvas id="pathCanvas"></canvas></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--accent)"></i> Trayectoria browniana</span>
+        <span><i class="sw" style="background:var(--accent2)"></i> Sumas de Itô: W<sub>tᵢ</sub>ΔWᵢ</span>
+        <span><i class="sw" style="background:var(--violet)"></i> Referencia clásica</span>
+      </div>
+    </div>
+
+    <div class="compare">
+      <div class="box">
+        <div class="boxhead">
+          <div class="tt">Integral de Itô acumulada</div>
+          <div class="badge" id="itoBadge">∑ Wᵢ ΔWᵢ</div>
+        </div>
+        <div class="canvasWrap"><canvas id="itoCanvas"></canvas></div>
+      </div>
+
+      <div class="box">
+        <div class="boxhead">
+          <div class="tt">Comparación con integral ordinaria</div>
+          <div class="badge" id="dtBadge">∫ Wt dt</div>
+        </div>
+        <div class="canvasWrap"><canvas id="dtCanvas"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="panel">
+      <div class="plabel">⚙ Parámetros</div>
+      <div class="cgroup">
+        <div class="crow">Tiempo final T <em id="TVal">1.0</em></div>
+        <input type="range" id="TSlider" min="0.5" max="5" step="0.5" value="1" oninput="setT(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Resolución base <em id="baseVal">4096</em></div>
+        <input type="range" id="baseSlider" min="1024" max="16384" step="1024" value="4096" oninput="setBase(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Particiones n <em id="partVal">128</em></div>
+        <input type="range" id="partSlider" min="8" max="4096" step="1" value="128" oninput="setPartitions(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Paso visual <em id="stepVal">128</em></div>
+        <input type="range" id="stepSlider" min="1" max="128" step="1" value="128" oninput="setStep(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Velocidad automática <em id="speedVal">x1</em></div>
+        <input type="range" id="speedSlider" min="1" max="10" step="1" value="4" oninput="setSpeed(this.value)">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">▶ Acciones</div>
+      <div class="btns">
+        <button class="btn btn-primary" onclick="newPath()">Nueva trayectoria</button>
+        <button class="btn btn-toggle" id="autoBtn" onclick="toggleAuto()">● Simulación automática</button>
+        <button class="btn" onclick="showAllSteps()">Mostrar todo</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">☰ Visualización</div>
+      <div class="trow">Mostrar rectángulos WᵢΔWᵢ
+        <label class="tog"><input type="checkbox" id="rectTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Mostrar término clásico ½W²
+        <label class="tog"><input type="checkbox" id="classicTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Mostrar grilla
+        <label class="tog"><input type="checkbox" id="gridTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">■ Lecturas numéricas</div>
+      <div class="grid2">
+        <div class="stat warn"><div class="k">Itô suma</div><div class="v" id="sIto">—</div></div>
+        <div class="stat"><div class="k">Fórmula Itô</div><div class="v" id="sFormula">—</div></div>
+        <div class="stat red"><div class="k">½W² final</div><div class="v" id="sClassic">—</div></div>
+        <div class="stat"><div class="k">∫W dt</div><div class="v" id="sDt">—</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">∂ Conceptos</div>
+      <div class="mitem">
+        <div class="dot"></div>
+        <div>
+          <div class="formula">∑ W<sub>tᵢ</sub>(W<sub>tᵢ₊₁</sub>−W<sub>tᵢ</sub>)</div>
+          <div class="desc">La integral de Itô usa el valor izquierdo del integrando. El futuro incremento browniano todavía no se conoce.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--accent2)"></div>
+        <div>
+          <div class="formula">∫₀ᵀ W<sub>t</sub>dW<sub>t</sub> = ½W<sub>T</sub>² − ½T</div>
+          <div class="desc">El término −½T aparece porque la variación cuadrática del browniano no desaparece.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--violet)"></div>
+        <div>
+          <div class="formula">Contraste clásico: d(W²)=2W dW + (dW)²</div>
+          <div class="desc">En cálculo clásico el término cuadrático se ignora; en Itô, (dW)² se comporta como dt.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">✦ Lectura didáctica</div>
+      <div class="note">
+        Esta simulación compara dos formas de acumular área. En una integral ordinaria respecto de dt, el ancho del rectángulo es un pequeño intervalo de tiempo. En la integral de Itô, el “ancho” es el incremento browniano ΔW, que puede ser positivo o negativo y tiene variación cuadrática acumulada igual a T. Por eso aparece el término extra de Itô.
+      </div>
+      <div class="footer">Material elaborado por el profesor Sergio Gevatschnaider.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const pathCanvas = document.getElementById('pathCanvas');
+const itoCanvas = document.getElementById('itoCanvas');
+const dtCanvas = document.getElementById('dtCanvas');
+const pctx = pathCanvas.getContext('2d');
+const ictx = itoCanvas.getContext('2d');
+const dctx = dtCanvas.getContext('2d');
+
+const S = {
+  T:1,
+  baseN:4096,
+  partN:128,
+  visualStep:128,
+  path:null,
+  auto:false,
+  autoId:null,
+  speed:4
+};
+
+const speedMult = [0.25,0.5,0.75,1,1.5,2,3,4,6,8];
+const speedLabels = {1:'x0.25',2:'x0.5',3:'x0.75',4:'x1',5:'x1.5',6:'x2',7:'x3',8:'x4',9:'x6',10:'x8'};
+
+function css(v){ return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+function randn(){
+  let u=0,v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function makeBrownianPath(){
+  const p = new Float64Array(S.baseN+1);
+  const dt = S.T/S.baseN;
+  for(let i=1;i<=S.baseN;i++) p[i] = p[i-1] + Math.sqrt(dt)*randn();
+  S.path = p;
+}
+function resize(){
+  for(const c of [pathCanvas, itoCanvas, dtCanvas]){
+    const w = c.parentElement;
+    c.width = w.clientWidth;
+    c.height = w.clientHeight;
+  }
+  renderAll();
+}
+window.addEventListener('resize', resize);
+
+function sampledIndex(k,n){
+  return Math.round(k*S.baseN/n);
+}
+function WAtPartition(k,n){
+  return S.path[sampledIndex(k,n)];
+}
+function computeSums(limit=null){
+  const n = S.partN;
+  const L = limit ?? S.visualStep;
+  const maxK = Math.min(n,L);
+  let ito = 0;
+  let dtInt = 0;
+  let qv = 0;
+  const itoSeries = [{x:0,y:0}];
+  const dtSeries = [{x:0,y:0}];
+  const halfW2Series = [{x:0,y:0}];
+  const formulaSeries = [{x:0,y:0}];
+
+  for(let i=0;i<maxK;i++){
+    const a = sampledIndex(i,n);
+    const b = sampledIndex(i+1,n);
+    const Wi = S.path[a];
+    const Wn = S.path[b];
+    const dW = Wn - Wi;
+    const dt = S.T/n;
+    ito += Wi*dW;
+    dtInt += Wi*dt;
+    qv += dW*dW;
+    const t = (i+1)*S.T/n;
+    const halfW2 = 0.5*Wn*Wn;
+    const formula = 0.5*Wn*Wn - 0.5*t;
+    itoSeries.push({x:t,y:ito});
+    dtSeries.push({x:t,y:dtInt});
+    halfW2Series.push({x:t,y:halfW2});
+    formulaSeries.push({x:t,y:formula});
+  }
+  const WT = S.path[sampledIndex(maxK,n)];
+  return {ito,dtInt,qv,WT,t:maxK*S.T/n,itoSeries,dtSeries,halfW2Series,formulaSeries};
+}
+
+function axis(ctx,W,H,m,xmin,xmax,ymin,ymax,xlab,ylab){
+  const gx = x => m.l + (x-xmin)/(xmax-xmin)*(W-m.l-m.r);
+  const gy = y => H-m.b - (y-ymin)/(ymax-ymin)*(H-m.t-m.b);
+
+  if(document.getElementById('gridTog').checked){
+    ctx.strokeStyle = css('--grid');
+    ctx.lineWidth = 1;
+    for(let i=0;i<=8;i++){
+      const x = xmin + i*(xmax-xmin)/8;
+      const px = gx(x);
+      ctx.beginPath(); ctx.moveTo(px,m.t); ctx.lineTo(px,H-m.b); ctx.stroke();
+    }
+    for(let i=0;i<=6;i++){
+      const y = ymin + i*(ymax-ymin)/6;
+      const py = gy(y);
+      ctx.beginPath(); ctx.moveTo(m.l,py); ctx.lineTo(W-m.r,py); ctx.stroke();
+    }
+  }
+
+  if(ymin<0 && ymax>0){
+    ctx.strokeStyle = css('--zero');
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(m.l,gy(0)); ctx.lineTo(W-m.r,gy(0)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.strokeStyle = css('--muted');
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(m.l,m.t); ctx.lineTo(m.l,H-m.b); ctx.lineTo(W-m.r,H-m.b); ctx.stroke();
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'center';
+  for(let i=0;i<=4;i++){
+    const x = xmin + i*(xmax-xmin)/4;
+    ctx.fillText(x.toFixed(2),gx(x),H-m.b+14);
+  }
+  ctx.fillText(xlab,W-m.r+10,H-m.b+14);
+
+  ctx.textAlign = 'right';
+  for(let i=0;i<=4;i++){
+    const y = ymin + i*(ymax-ymin)/4;
+    ctx.fillText(y.toFixed(2),m.l-5,gy(y)+3);
+  }
+
+  ctx.save();
+  ctx.translate(14,H/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';
+  ctx.fillText(ylab,0,0);
+  ctx.restore();
+
+  return {gx,gy};
+}
+function drawLine(ctx,pts,gx,gy,color,lw,dash=false){
+  if(pts.length<2) return;
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.lineJoin = 'round';
+  if(dash) ctx.setLineDash([6,5]);
+  ctx.moveTo(gx(pts[0].x),gy(pts[0].y));
+  for(let i=1;i<pts.length;i++) ctx.lineTo(gx(pts[i].x),gy(pts[i].y));
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function renderPath(){
+  const W = pathCanvas.width, H = pathCanvas.height, ctx = pctx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  let ymin = -1, ymax = 1;
+  for(let i=0;i<=S.baseN;i++){
+    const y = S.path[i];
+    if(y<ymin) ymin=y;
+    if(y>ymax) ymax=y;
+  }
+  const pad = (ymax-ymin)*.12;
+  ymin -= pad; ymax += pad;
+
+  const m = {l:48,r:24,t:24,b:34};
+  const A = axis(ctx,W,H,m,0,S.T,ymin,ymax,'t','W(t)');
+
+  const pts = [];
+  const step = Math.max(1,Math.floor(S.baseN/1600));
+  for(let i=0;i<=S.baseN;i+=step) pts.push({x:i*S.T/S.baseN,y:S.path[i]});
+  if(pts[pts.length-1].x !== S.T) pts.push({x:S.T,y:S.path[S.baseN]});
+  drawLine(ctx,pts,A.gx,A.gy,css('--accent'),2);
+
+  const maxK = Math.min(S.partN,S.visualStep);
+  if(document.getElementById('rectTog').checked){
+    const maxRect = 120;
+    const skip = Math.max(1,Math.ceil(maxK/maxRect));
+    for(let i=0;i<maxK;i+=skip){
+      const a = sampledIndex(i,S.partN);
+      const b = sampledIndex(i+1,S.partN);
+      const ti = i*S.T/S.partN;
+      const tj = (i+1)*S.T/S.partN;
+      const Wi = S.path[a];
+      const Wj = S.path[b];
+      const x1 = A.gx(ti), x2 = A.gx(tj);
+      const y0 = A.gy(Wi);
+      const y1 = A.gy(Wj);
+      ctx.fillStyle = Wj-Wi>=0 ? 'rgba(61,214,140,.18)' : 'rgba(240,96,96,.18)';
+      ctx.fillRect(x1,Math.min(y0,y1),Math.max(1,x2-x1),Math.abs(y1-y0));
+      ctx.strokeStyle = 'rgba(246,183,60,.45)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x1,Math.min(y0,y1),Math.max(1,x2-x1),Math.abs(y1-y0));
+    }
+  }
+
+  const currentT = maxK*S.T/S.partN;
+  ctx.strokeStyle = css('--accent2');
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5,4]);
+  ctx.beginPath();
+  ctx.moveTo(A.gx(currentT),m.t);
+  ctx.lineTo(A.gx(currentT),H-m.b);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "11px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText(`Suma parcial hasta t=${currentT.toFixed(3)} | n=${S.partN}`,m.l+8,m.t+14);
+}
+
+function renderIto(){
+  const W = itoCanvas.width, H = itoCanvas.height, ctx = ictx;
+  const r = computeSums();
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  let ymin = -0.5, ymax = 0.5;
+  for(const s of [r.itoSeries,r.formulaSeries,r.halfW2Series]){
+    for(const p of s){ if(p.y<ymin)ymin=p.y; if(p.y>ymax)ymax=p.y; }
+  }
+  const pad = (ymax-ymin)*.15 || 1;
+  ymin -= pad; ymax += pad;
+
+  const A = axis(ctx,W,H,{l:54,r:24,t:24,b:34},0,S.T,ymin,ymax,'t','valor');
+  if(document.getElementById('classicTog').checked){
+    drawLine(ctx,r.halfW2Series,A.gx,A.gy,css('--red'),1.7,true);
+  }
+  drawLine(ctx,r.formulaSeries,A.gx,A.gy,css('--violet'),2.2,true);
+  drawLine(ctx,r.itoSeries,A.gx,A.gy,css('--accent2'),2.5);
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText('Itô suma',60,22);
+  ctx.fillStyle = css('--violet');
+  ctx.fillText('½W²−½t',130,22);
+  if(document.getElementById('classicTog').checked){
+    ctx.fillStyle = css('--red');
+    ctx.fillText('½W² clásico',220,22);
+  }
+}
+function renderDt(){
+  const W = dtCanvas.width, H = dtCanvas.height, ctx = dctx;
+  const r = computeSums();
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  let ymin = -0.5, ymax = 0.5;
+  for(const s of [r.dtSeries,r.itoSeries]){
+    for(const p of s){ if(p.y<ymin)ymin=p.y; if(p.y>ymax)ymax=p.y; }
+  }
+  const pad = (ymax-ymin)*.15 || 1;
+  ymin -= pad; ymax += pad;
+
+  const A = axis(ctx,W,H,{l:54,r:24,t:24,b:34},0,S.T,ymin,ymax,'t','acumulado');
+  drawLine(ctx,r.dtSeries,A.gx,A.gy,css('--green'),2.5);
+  drawLine(ctx,r.itoSeries,A.gx,A.gy,css('--accent2'),2,true);
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText('Integral ordinaria ∑WᵢΔt',60,22);
+  ctx.fillStyle = css('--accent2');
+  ctx.fillText('Integral de Itô ∑WᵢΔWᵢ',210,22);
+}
+
+function updateLabels(){
+  const r = computeSums();
+  const formula = 0.5*r.WT*r.WT - 0.5*r.t;
+  const classic = 0.5*r.WT*r.WT;
+  document.getElementById('pathBadge').textContent = `t=${r.t.toFixed(3)} | n=${S.partN}`;
+  document.getElementById('itoBadge').textContent = `Itô≈${r.ito.toFixed(4)}`;
+  document.getElementById('dtBadge').textContent = `dt≈${r.dtInt.toFixed(4)}`;
+  document.getElementById('partVal').textContent = S.partN;
+  document.getElementById('stepVal').textContent = S.visualStep;
+  document.getElementById('sIto').textContent = r.ito.toFixed(4);
+  document.getElementById('sFormula').textContent = formula.toFixed(4);
+  document.getElementById('sClassic').textContent = classic.toFixed(4);
+  document.getElementById('sDt').textContent = r.dtInt.toFixed(4);
+}
+
+function renderAll(){
+  if(!S.path) return;
+  updateLabels();
+  renderPath();
+  renderIto();
+  renderDt();
+}
+
+function setTheme(v){
+  document.body.dataset.theme = v;
+  renderAll();
+}
+function setT(v){
+  S.T = parseFloat(v);
+  document.getElementById('TVal').textContent = S.T.toFixed(1);
+  newPath();
+}
+function setBase(v){
+  S.baseN = parseInt(v,10);
+  document.getElementById('baseVal').textContent = S.baseN;
+  const ps = document.getElementById('partSlider');
+  ps.max = S.baseN;
+  if(S.partN > S.baseN) S.partN = S.baseN;
+  if(S.visualStep > S.partN) S.visualStep = S.partN;
+  newPath();
+}
+function setPartitions(v){
+  S.partN = Math.max(8,Math.min(S.baseN,parseInt(v,10)));
+  const ss = document.getElementById('stepSlider');
+  ss.max = S.partN;
+  if(S.visualStep > S.partN) S.visualStep = S.partN;
+  ss.value = S.visualStep;
+  renderAll();
+}
+function setStep(v){
+  S.visualStep = Math.max(1,Math.min(S.partN,parseInt(v,10)));
+  renderAll();
+}
+function setSpeed(v){
+  S.speed = parseInt(v,10);
+  document.getElementById('speedVal').textContent = speedLabels[S.speed] || 'x1';
+}
+function newPath(){
+  makeBrownianPath();
+  S.visualStep = Math.min(S.visualStep,S.partN);
+  document.getElementById('stepSlider').max = S.partN;
+  document.getElementById('stepSlider').value = S.visualStep;
+  renderAll();
+}
+function showAllSteps(){
+  S.visualStep = S.partN;
+  document.getElementById('stepSlider').value = S.visualStep;
+  renderAll();
+}
+function toggleAuto(){
+  S.auto = !S.auto;
+  const b = document.getElementById('autoBtn');
+  if(S.auto){
+    b.classList.add('on');
+    b.textContent = '■ Detener automática';
+    if(S.autoId) cancelAnimationFrame(S.autoId);
+    S.autoId = requestAnimationFrame(autoStep);
+  }else{
+    b.classList.remove('on');
+    b.textContent = '● Simulación automática';
+    if(S.autoId) cancelAnimationFrame(S.autoId);
+    S.autoId = null;
+  }
+}
+function autoStep(){
+  if(!S.auto) return;
+  const mult = speedMult[S.speed-1] || 1;
+  S.visualStep += Math.max(1,Math.round(mult));
+  if(S.visualStep >= S.partN){
+    S.visualStep = 1;
+    S.partN = Math.min(S.baseN,Math.round(S.partN*1.35)+1);
+    document.getElementById('partSlider').value = S.partN;
+    document.getElementById('stepSlider').max = S.partN;
+    if(S.partN >= S.baseN){
+      S.partN = 32;
+      S.visualStep = 1;
+      document.getElementById('partSlider').value = S.partN;
+      newPath();
+    }
+  }
+  document.getElementById('stepSlider').value = S.visualStep;
+  renderAll();
+  S.autoId = requestAnimationFrame(autoStep);
+}
+
+document.getElementById('speedVal').textContent = speedLabels[S.speed];
+makeBrownianPath();
+resize();
+</script>
+</body>
+</html>

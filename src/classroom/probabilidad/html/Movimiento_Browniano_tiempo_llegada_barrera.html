@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Browniano 1D — Tiempo de llegada a una barrera</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f1a;
+  --surface:#131929;
+  --raised:#1a2438;
+  --border:#1e3254;
+  --text:#dde6f0;
+  --muted:#7b8fa8;
+  --accent:#29d8c2;
+  --accent2:#f6b73c;
+  --violet:#9b72f4;
+  --green:#3dd68c;
+  --red:#f06060;
+  --grid:rgba(255,255,255,.055);
+  --zero:rgba(255,255,255,.22);
+  --soft:rgba(41,216,194,.10);
+}
+body[data-theme=light]{
+  --bg:#f2f5fa;--surface:#fff;--raised:#edf2f8;--border:#cad7e8;
+  --text:#17223b;--muted:#667b97;--accent:#0c79a7;--accent2:#c47d10;
+  --violet:#6d3ecb;--green:#198a58;--red:#c93030;
+  --grid:rgba(0,0,0,.06);--zero:rgba(0,0,0,.22);--soft:rgba(12,121,167,.08)
+}
+body[data-theme=cyber]{
+  --bg:#070b12;--surface:#0d1424;--raised:#111d34;--border:#1d3c68;
+  --text:#d8ecff;--muted:#7aa1c8;--accent:#00e5ff;--accent2:#ffc857;
+  --violet:#a970ff;--green:#3bf18b;--red:#ff6a88;
+  --grid:rgba(0,229,255,.08);--zero:rgba(0,229,255,.22);--soft:rgba(0,229,255,.11)
+}
+body[data-theme=forest]{
+  --bg:#09140f;--surface:#122019;--raised:#162920;--border:#244235;
+  --text:#d8eee0;--muted:#89a395;--accent:#6be28d;--accent2:#d4b25f;
+  --violet:#90a0ff;--green:#44d37b;--red:#ef7c7c;
+  --grid:rgba(107,226,141,.07);--zero:rgba(107,226,141,.22);--soft:rgba(107,226,141,.09)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:.9rem 1.2rem;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.brand h1{
+  font-family:'Lora',serif;
+  font-size:1.25rem;
+  line-height:1.2;
+}
+.brand p{
+  font-size:.62rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-top:3px;
+}
+select,button,input{font-family:inherit}
+.sel{
+  background:var(--raised);
+  border:1px solid var(--border);
+  color:var(--text);
+  border-radius:18px;
+  padding:.36rem .75rem;
+  font-size:.68rem;
+  outline:none;
+}
+.layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 350px;
+  gap:.9rem;
+  padding:.9rem;
+  min-height:calc(100vh - 68px);
+}
+.left{
+  display:flex;
+  flex-direction:column;
+  gap:.85rem;
+  min-width:0;
+}
+.compare{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.85rem;
+  min-width:0;
+}
+.box,.panel{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+.panel{padding:.85rem}
+.boxhead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:.7rem;
+  padding:.7rem .9rem;
+  border-bottom:1px solid var(--border);
+}
+.tt{
+  font-size:.72rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.badge{
+  padding:.28rem .55rem;
+  border:1px solid var(--border);
+  border-radius:20px;
+  background:var(--raised);
+  font-size:.61rem;
+  color:var(--accent);
+  white-space:nowrap;
+}
+.canvasWrap{height:330px}
+.canvasWrap.big{height:400px}
+canvas{display:block;width:100%;height:100%}
+.legend{
+  display:flex;
+  gap:1rem;
+  flex-wrap:wrap;
+  padding:.65rem .9rem;
+  border-top:1px solid var(--border);
+  font-size:.63rem;
+  color:var(--muted);
+}
+.legend span{display:flex;align-items:center;gap:.35rem}
+.sw{width:12px;height:12px;border-radius:50%;display:inline-block}
+.sidebar{
+  display:flex;
+  flex-direction:column;
+  gap:.8rem;
+  overflow:auto;
+  padding-right:2px;
+}
+.plabel{
+  font-size:.62rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:.7rem;
+}
+.cgroup{margin-bottom:.75rem}
+.cgroup:last-child{margin-bottom:0}
+.crow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:.35rem;
+  font-size:.66rem;
+  color:var(--muted);
+}
+.crow em{
+  font-style:normal;
+  color:var(--accent);
+  font-weight:700;
+}
+input[type=range]{
+  width:100%;
+  appearance:none;
+  height:4px;
+  border-radius:2px;
+  background:var(--raised);
+  outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:var(--accent);
+  cursor:pointer;
+}
+.btns{display:flex;flex-direction:column;gap:.45rem}
+.btn{
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:transparent;
+  color:var(--text);
+  padding:.6rem .7rem;
+  font-size:.7rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.15s;
+}
+.btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent)}
+.btn-primary{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#05110d;
+  font-weight:700;
+}
+.btn-toggle.on{
+  background:var(--violet);
+  border-color:var(--violet);
+  color:#fff;
+}
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.5rem;
+}
+.stat{
+  background:var(--raised);
+  border-radius:8px;
+  padding:.55rem;
+  text-align:center;
+}
+.stat .k{
+  font-size:.55rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.stat .v{
+  font-size:.82rem;
+  color:var(--accent);
+  font-weight:700;
+  margin-top:4px;
+}
+.stat.warn .v{color:var(--accent2)}
+.stat.red .v{color:var(--red)}
+.trow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:.66rem;
+  color:var(--muted);
+  margin-bottom:.45rem;
+}
+.tog{position:relative;width:32px;height:18px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.sld{
+  position:absolute;
+  inset:0;
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:18px;
+  cursor:pointer;
+}
+.sld:before{
+  content:"";
+  position:absolute;
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  left:3px;
+  bottom:2px;
+  background:var(--muted);
+  transition:.2s;
+}
+.tog input:checked+.sld{background:var(--accent);border-color:var(--accent)}
+.tog input:checked+.sld:before{transform:translateX(13px);background:#000}
+.mitem{
+  display:flex;
+  gap:.45rem;
+  padding:.45rem 0;
+  border-bottom:1px solid var(--border);
+}
+.mitem:last-child{border-bottom:none}
+.dot{
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
+  margin-top:5px;flex-shrink:0;
+}
+.formula{
+  font-size:.71rem;
+  color:var(--accent2);
+  font-weight:700;
+  line-height:1.45;
+}
+.desc{
+  font-size:.63rem;
+  color:var(--muted);
+  margin-top:2px;
+  line-height:1.45;
+}
+.note{
+  background:var(--soft);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:.7rem;
+  font-size:.67rem;
+  line-height:1.55;
+}
+.footer{
+  margin-top:.5rem;
+  padding-top:.65rem;
+  border-top:1px solid var(--border);
+  font-size:.65rem;
+  color:var(--muted);
+}
+@media(max-width:1160px){
+  .layout{grid-template-columns:1fr}
+  .canvasWrap.big{height:360px}
+}
+@media(max-width:820px){
+  .compare{grid-template-columns:1fr}
+  .canvasWrap,.canvasWrap.big{height:320px}
+}
+</style>
+</head>
+<body data-theme="dark">
+<header>
+  <div class="brand">
+    <h1>Tiempo de llegada a una barrera</h1>
+    <p>Eventos aleatorios asociados a trayectorias brownianas</p>
+  </div>
+  <select class="sel" onchange="setTheme(this.value)">
+    <option value="dark">Tema oscuro</option>
+    <option value="light">Tema claro</option>
+    <option value="cyber">Tema cyber</option>
+    <option value="forest">Tema forest</option>
+  </select>
+</header>
+
+<div class="layout">
+  <div class="left">
+    <div class="box">
+      <div class="boxhead">
+        <div class="tt">Browniano 1D hasta tocar la barrera</div>
+        <div class="badge" id="pathBadge">τa = —</div>
+      </div>
+      <div class="canvasWrap big"><canvas id="pathCanvas"></canvas></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--accent)"></i> Trayectoria browniana</span>
+        <span><i class="sw" style="background:var(--red)"></i> Barrera horizontal a</span>
+        <span><i class="sw" style="background:var(--accent2)"></i> Primer toque τ<sub>a</sub></span>
+        <span><i class="sw" style="background:var(--violet)"></i> Trayectorias previas</span>
+      </div>
+    </div>
+
+    <div class="compare">
+      <div class="box">
+        <div class="boxhead">
+          <div class="tt">Histograma de tiempos de llegada</div>
+          <div class="badge" id="histBadge">0 simulaciones</div>
+        </div>
+        <div class="canvasWrap"><canvas id="histCanvas"></canvas></div>
+      </div>
+
+      <div class="box">
+        <div class="boxhead">
+          <div class="tt">Curva de supervivencia empírica</div>
+          <div class="badge" id="survBadge">P(τa &gt; t)</div>
+        </div>
+        <div class="canvasWrap"><canvas id="survCanvas"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="panel">
+      <div class="plabel">⚙ Parámetros</div>
+      <div class="cgroup">
+        <div class="crow">Altura de barrera a <em id="barrierVal">1.00</em></div>
+        <input type="range" id="barrierSlider" min="0.25" max="3" step="0.05" value="1" oninput="setBarrier(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Horizonte máximo T<sub>max</sub> <em id="TVal">5.0</em></div>
+        <input type="range" id="TSlider" min="1" max="20" step="0.5" value="5" oninput="setTMax(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Resolución por trayectoria <em id="stepsVal">3000</em></div>
+        <input type="range" id="stepsSlider" min="500" max="10000" step="500" value="3000" oninput="setSteps(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Número de simulaciones <em id="simVal">200</em></div>
+        <input type="range" id="simSlider" min="20" max="2000" step="20" value="200" oninput="setTargetSims(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Velocidad automática <em id="speedVal">x1</em></div>
+        <input type="range" id="speedSlider" min="1" max="10" step="1" value="4" oninput="setSpeed(this.value)">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">▶ Acciones</div>
+      <div class="btns">
+        <button class="btn btn-primary" onclick="singleSimulation()">Nueva trayectoria</button>
+        <button class="btn btn-toggle" id="autoBtn" onclick="toggleAuto()">● Simulación automática</button>
+        <button class="btn" onclick="runBatch()">Correr lote</button>
+        <button class="btn" onclick="resetAll()">Reiniciar histograma</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">☰ Visualización</div>
+      <div class="trow">Mostrar trayectorias previas
+        <label class="tog"><input type="checkbox" id="ghostTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Mostrar densidad teórica
+        <label class="tog"><input type="checkbox" id="theoryTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Mostrar grilla
+        <label class="tog"><input type="checkbox" id="gridTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">■ Lecturas numéricas</div>
+      <div class="grid2">
+        <div class="stat warn"><div class="k">τ actual</div><div class="v" id="sTau">—</div></div>
+        <div class="stat"><div class="k">Tocó</div><div class="v" id="sHit">—</div></div>
+        <div class="stat"><div class="k">Media τ</div><div class="v" id="sMean">—</div></div>
+        <div class="stat red"><div class="k">No llegaron</div><div class="v" id="sMiss">0</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">∂ Conceptos</div>
+      <div class="mitem">
+        <div class="dot"></div>
+        <div>
+          <div class="formula">τ<sub>a</sub> = inf{t ≥ 0 : W<sub>t</sub> = a}</div>
+          <div class="desc">El tiempo de llegada es una variable aleatoria definida por un evento sobre la trayectoria completa.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--red)"></div>
+        <div>
+          <div class="formula">Barrera horizontal a</div>
+          <div class="desc">La trayectoria se anima hasta el primer cruce de la barrera. Ese instante queda marcado como τ<sub>a</sub>.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--violet)"></div>
+        <div>
+          <div class="formula">Aplicaciones</div>
+          <div class="desc">Física de difusión, precios que alcanzan umbrales, riesgo, opciones barrera y teoría de parada.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">✦ Lectura didáctica</div>
+      <div class="note">
+        Esta simulación muestra que no solo importan los valores del browniano, sino también los eventos definidos sobre su trayectoria. El primer tiempo en que W<sub>t</sub> toca una barrera es aleatorio. Al repetir muchas simulaciones, aparece una distribución de tiempos de llegada: algunas trayectorias llegan rápido, otras tardan mucho y algunas no llegan dentro del horizonte observado.
+      </div>
+      <div class="footer">Material elaborado por el profesor Sergio Gevatschnaider.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const pathCanvas = document.getElementById('pathCanvas');
+const histCanvas = document.getElementById('histCanvas');
+const survCanvas = document.getElementById('survCanvas');
+const pctx = pathCanvas.getContext('2d');
+const hctx = histCanvas.getContext('2d');
+const sctx = survCanvas.getContext('2d');
+
+const S = {
+  a:1,
+  TMax:5,
+  steps:3000,
+  targetSims:200,
+  speed:4,
+  path:[],
+  shownStep:0,
+  tau:null,
+  hit:false,
+  results:[],
+  misses:0,
+  ghosts:[],
+  auto:false,
+  autoId:null,
+  animId:null
+};
+
+const speedMult = [0.25,0.5,0.75,1,1.5,2,3,4,6,8];
+const speedLabels = {1:'x0.25',2:'x0.5',3:'x0.75',4:'x1',5:'x1.5',6:'x2',7:'x3',8:'x4',9:'x6',10:'x8'};
+
+function css(v){ return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+function randn(){
+  let u=0,v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function resize(){
+  for(const c of [pathCanvas,histCanvas,survCanvas]){
+    const w = c.parentElement;
+    c.width = w.clientWidth;
+    c.height = w.clientHeight;
+  }
+  renderAll();
+}
+window.addEventListener('resize', resize);
+
+function generatePath(){
+  const dt = S.TMax/S.steps;
+  const p = new Float64Array(S.steps+1);
+  let tau = null;
+  let hit = false;
+
+  for(let i=1;i<=S.steps;i++){
+    p[i] = p[i-1] + Math.sqrt(dt)*randn();
+
+    if(!hit){
+      if(S.a >= 0 && p[i] >= S.a){
+        const prev = p[i-1];
+        const frac = (S.a - prev)/(p[i] - prev || 1);
+        tau = (i-1 + Math.max(0,Math.min(1,frac))) * dt;
+        hit = true;
+      } else if(S.a < 0 && p[i] <= S.a){
+        const prev = p[i-1];
+        const frac = (S.a - prev)/(p[i] - prev || 1);
+        tau = (i-1 + Math.max(0,Math.min(1,frac))) * dt;
+        hit = true;
+      }
+    }
+  }
+  return {path:p,tau,hit};
+}
+function singleSimulation(){
+  if(S.animId) cancelAnimationFrame(S.animId);
+  const sim = generatePath();
+  if(S.path && S.path.length){
+    S.ghosts.push({path:S.path,tau:S.tau,hit:S.hit});
+    if(S.ghosts.length>8) S.ghosts.shift();
+  }
+  S.path = sim.path;
+  S.tau = sim.tau;
+  S.hit = sim.hit;
+  S.shownStep = 0;
+
+  if(sim.hit) S.results.push(sim.tau);
+  else S.misses += 1;
+
+  animatePath();
+  updateStats();
+  renderAll();
+}
+function animatePath(){
+  if(S.animId) cancelAnimationFrame(S.animId);
+  function step(){
+    const mult = speedMult[S.speed-1] || 1;
+    const inc = Math.max(1,Math.round(mult*12));
+    const endStep = S.hit ? Math.ceil(S.tau/S.TMax*S.steps) : S.steps;
+    S.shownStep = Math.min(endStep, S.shownStep + inc);
+    renderAll();
+    if(S.shownStep < endStep){
+      S.animId = requestAnimationFrame(step);
+    }else{
+      S.animId = null;
+    }
+  }
+  S.animId = requestAnimationFrame(step);
+}
+function runBatch(){
+  const remaining = Math.max(0,S.targetSims - S.results.length - S.misses);
+  const batch = Math.min(remaining || S.targetSims, 400);
+  for(let k=0;k<batch;k++){
+    const sim = generatePath();
+    if(sim.hit) S.results.push(sim.tau);
+    else S.misses += 1;
+    if(k===batch-1){
+      S.path = sim.path;
+      S.tau = sim.tau;
+      S.hit = sim.hit;
+      S.shownStep = sim.hit ? Math.ceil(sim.tau/S.TMax*S.steps) : S.steps;
+    }
+  }
+  updateStats();
+  renderAll();
+}
+function toggleAuto(){
+  S.auto = !S.auto;
+  const b = document.getElementById('autoBtn');
+  if(S.auto){
+    b.classList.add('on');
+    b.textContent = '■ Detener automática';
+    if(S.autoId) cancelAnimationFrame(S.autoId);
+    autoLoop();
+  }else{
+    b.classList.remove('on');
+    b.textContent = '● Simulación automática';
+    if(S.autoId) cancelAnimationFrame(S.autoId);
+    S.autoId = null;
+  }
+}
+function autoLoop(){
+  if(!S.auto) return;
+  const total = S.results.length + S.misses;
+  if(total >= S.targetSims){
+    toggleAuto();
+    return;
+  }
+  singleSimulation();
+  const delayFrames = Math.max(8,Math.round(40/(speedMult[S.speed-1]||1)));
+  let counter = 0;
+  function wait(){
+    if(!S.auto) return;
+    counter++;
+    if(counter>=delayFrames) autoLoop();
+    else S.autoId = requestAnimationFrame(wait);
+  }
+  S.autoId = requestAnimationFrame(wait);
+}
+
+function axis(ctx,W,H,m,xmin,xmax,ymin,ymax,xlab,ylab){
+  const gx = x => m.l + (x-xmin)/(xmax-xmin)*(W-m.l-m.r);
+  const gy = y => H-m.b - (y-ymin)/(ymax-ymin)*(H-m.t-m.b);
+
+  if(document.getElementById('gridTog').checked){
+    ctx.strokeStyle = css('--grid');
+    ctx.lineWidth = 1;
+    for(let i=0;i<=8;i++){
+      const x = xmin + i*(xmax-xmin)/8;
+      const px = gx(x);
+      ctx.beginPath(); ctx.moveTo(px,m.t); ctx.lineTo(px,H-m.b); ctx.stroke();
+    }
+    for(let i=0;i<=6;i++){
+      const y = ymin + i*(ymax-ymin)/6;
+      const py = gy(y);
+      ctx.beginPath(); ctx.moveTo(m.l,py); ctx.lineTo(W-m.r,py); ctx.stroke();
+    }
+  }
+
+  if(ymin<0 && ymax>0){
+    ctx.strokeStyle = css('--zero');
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(m.l,gy(0)); ctx.lineTo(W-m.r,gy(0)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.strokeStyle = css('--muted');
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(m.l,m.t); ctx.lineTo(m.l,H-m.b); ctx.lineTo(W-m.r,H-m.b); ctx.stroke();
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'center';
+  for(let i=0;i<=4;i++){
+    const x = xmin + i*(xmax-xmin)/4;
+    ctx.fillText(x.toFixed(1),gx(x),H-m.b+14);
+  }
+  ctx.fillText(xlab,W-m.r+10,H-m.b+14);
+
+  ctx.textAlign = 'right';
+  for(let i=0;i<=4;i++){
+    const y = ymin + i*(ymax-ymin)/4;
+    ctx.fillText(y.toFixed(1),m.l-5,gy(y)+3);
+  }
+
+  ctx.save();
+  ctx.translate(14,H/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';
+  ctx.fillText(ylab,0,0);
+  ctx.restore();
+
+  return {gx,gy};
+}
+function drawPath(ctx,path,maxStep,A,color,lw,alpha=1){
+  if(!path || path.length<2) return;
+  const L = Math.max(1,Math.min(maxStep,path.length-1));
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.lineJoin = 'round';
+  ctx.moveTo(A.gx(0),A.gy(path[0]));
+  for(let i=1;i<=L;i++){
+    ctx.lineTo(A.gx(i*S.TMax/S.steps),A.gy(path[i]));
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+function renderPath(){
+  const W = pathCanvas.width, H = pathCanvas.height, ctx = pctx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  let ymin = Math.min(-0.5,S.a-0.5), ymax = Math.max(0.5,S.a+0.5);
+  const all = [S.path, ...S.ghosts.map(g=>g.path)];
+  for(const p of all){
+    if(!p) continue;
+    const limit = p===S.path ? Math.max(S.shownStep,1) : p.length-1;
+    const step = Math.max(1,Math.floor(limit/1000));
+    for(let i=0;i<=limit;i+=step){
+      const y = p[i];
+      if(y<ymin)ymin=y;
+      if(y>ymax)ymax=y;
+    }
+  }
+  const pad = (ymax-ymin)*.12 || 1;
+  ymin -= pad; ymax += pad;
+
+  const m = {l:48,r:24,t:24,b:34};
+  const A = axis(ctx,W,H,m,0,S.TMax,ymin,ymax,'t','W(t)');
+
+  if(document.getElementById('ghostTog').checked){
+    for(const g of S.ghosts){
+      const end = g.hit ? Math.ceil(g.tau/S.TMax*S.steps) : S.steps;
+      drawPath(ctx,g.path,end,A,css('--violet'),1.2,.22);
+    }
+  }
+
+  ctx.strokeStyle = css('--red');
+  ctx.lineWidth = 2;
+  ctx.setLineDash([7,5]);
+  ctx.beginPath();
+  ctx.moveTo(m.l,A.gy(S.a));
+  ctx.lineTo(W-m.r,A.gy(S.a));
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  drawPath(ctx,S.path,S.shownStep,A,css('--accent'),2.3,1);
+
+  if(S.hit && S.shownStep >= Math.ceil(S.tau/S.TMax*S.steps)){
+    const tau = S.tau;
+    const x = A.gx(tau), y = A.gy(S.a);
+    ctx.beginPath();
+    ctx.arc(x,y,6,0,2*Math.PI);
+    ctx.fillStyle = css('--accent2');
+    ctx.fill();
+    ctx.strokeStyle = css('--surface');
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.strokeStyle = css('--accent2');
+    ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    ctx.moveTo(x,m.t);
+    ctx.lineTo(x,H-m.b);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "11px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+  const tNow = S.shownStep*S.TMax/S.steps;
+  ctx.fillText(`Barrera a=${S.a.toFixed(2)} | t actual=${tNow.toFixed(3)}`,m.l+8,m.t+14);
+}
+
+function hittingDensity(t,a){
+  if(t<=0) return 0;
+  return Math.abs(a)/Math.sqrt(2*Math.PI*Math.pow(t,3))*Math.exp(-(a*a)/(2*t));
+}
+function renderHistogram(){
+  const W = histCanvas.width, H = histCanvas.height, ctx = hctx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  const bins = 30;
+  const counts = new Array(bins).fill(0);
+  const binW = S.TMax/bins;
+  for(const tau of S.results){
+    if(tau>=0 && tau<=S.TMax){
+      const idx = Math.min(bins-1,Math.floor(tau/binW));
+      counts[idx]++;
+    }
+  }
+
+  let maxY = Math.max(1,...counts);
+  const theory = [];
+  if(document.getElementById('theoryTog').checked){
+    for(let i=1;i<=250;i++){
+      const t = i*S.TMax/250;
+      const density = hittingDensity(t,S.a);
+      const scaled = density * S.results.length * binW;
+      theory.push({x:t,y:scaled});
+      if(scaled>maxY) maxY=scaled;
+    }
+  }
+  maxY *= 1.15;
+
+  const m = {l:48,r:24,t:24,b:34};
+  const A = axis(ctx,W,H,m,0,S.TMax,0,maxY,'t','frecuencia');
+
+  for(let i=0;i<bins;i++){
+    const x0 = i*binW, x1 = x0+binW;
+    const y = counts[i];
+    const px0 = A.gx(x0), px1 = A.gx(x1), py = A.gy(y), base = A.gy(0);
+    ctx.fillStyle = 'rgba(41,216,194,.35)';
+    ctx.fillRect(px0+1,py,Math.max(1,px1-px0-2),base-py);
+    ctx.strokeStyle = css('--accent');
+    ctx.lineWidth = 1;
+    ctx.strokeRect(px0+1,py,Math.max(1,px1-px0-2),base-py);
+  }
+
+  if(theory.length){
+    ctx.beginPath();
+    for(let i=0;i<theory.length;i++){
+      const p = theory[i];
+      const x = A.gx(p.x), y = A.gy(p.y);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = css('--accent2');
+    ctx.lineWidth = 2.2;
+    ctx.stroke();
+    ctx.fillStyle = css('--accent2');
+    ctx.font = "10px 'JetBrains Mono',monospace";
+    ctx.textAlign = 'left';
+    ctx.fillText('densidad teórica reescalada',m.l+8,m.t+14);
+  }
+}
+function renderSurvival(){
+  const W = survCanvas.width, H = survCanvas.height, ctx = sctx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  const total = S.results.length + S.misses;
+  const pts = [];
+  const sorted = [...S.results].sort((a,b)=>a-b);
+  const samples = 120;
+  for(let i=0;i<=samples;i++){
+    const t = i*S.TMax/samples;
+    let arrived = 0;
+    while(arrived<sorted.length && sorted[arrived]<=t) arrived++;
+    const survived = total>0 ? (total-arrived)/total : 1;
+    pts.push({x:t,y:survived});
+  }
+
+  const m = {l:48,r:24,t:24,b:34};
+  const A = axis(ctx,W,H,m,0,S.TMax,0,1,'t','P(τa>t)');
+
+  if(pts.length>1){
+    ctx.beginPath();
+    ctx.strokeStyle = css('--violet');
+    ctx.lineWidth = 2.4;
+    ctx.moveTo(A.gx(pts[0].x),A.gy(pts[0].y));
+    for(let i=1;i<pts.length;i++) ctx.lineTo(A.gx(pts[i].x),A.gy(pts[i].y));
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText('supervivencia empírica: aún no tocó la barrera',m.l+8,m.t+14);
+}
+
+function updateStats(){
+  const total = S.results.length + S.misses;
+  const mean = S.results.length ? S.results.reduce((a,b)=>a+b,0)/S.results.length : null;
+  document.getElementById('pathBadge').textContent = S.hit ? `τa = ${S.tau.toFixed(4)}` : 'τa > Tmax';
+  document.getElementById('histBadge').textContent = `${total} simulaciones`;
+  document.getElementById('survBadge').textContent = `hits: ${S.results.length} | censura: ${S.misses}`;
+  document.getElementById('sTau').textContent = S.hit ? S.tau.toFixed(4) : '—';
+  document.getElementById('sHit').textContent = S.hit ? 'sí' : 'no';
+  document.getElementById('sMean').textContent = mean===null ? '—' : mean.toFixed(3);
+  document.getElementById('sMiss').textContent = String(S.misses);
+}
+function renderAll(){
+  updateStats();
+  renderPath();
+  renderHistogram();
+  renderSurvival();
+}
+
+function setTheme(v){ document.body.dataset.theme = v; renderAll(); }
+function setBarrier(v){
+  S.a = parseFloat(v);
+  document.getElementById('barrierVal').textContent = S.a.toFixed(2);
+  resetAll();
+}
+function setTMax(v){
+  S.TMax = parseFloat(v);
+  document.getElementById('TVal').textContent = S.TMax.toFixed(1);
+  resetAll();
+}
+function setSteps(v){
+  S.steps = parseInt(v,10);
+  document.getElementById('stepsVal').textContent = S.steps;
+  resetAll();
+}
+function setTargetSims(v){
+  S.targetSims = parseInt(v,10);
+  document.getElementById('simVal').textContent = S.targetSims;
+}
+function setSpeed(v){
+  S.speed = parseInt(v,10);
+  document.getElementById('speedVal').textContent = speedLabels[S.speed] || 'x1';
+}
+function resetAll(){
+  if(S.animId) cancelAnimationFrame(S.animId);
+  if(S.autoId) cancelAnimationFrame(S.autoId);
+  S.auto = false;
+  const b = document.getElementById('autoBtn');
+  b.classList.remove('on');
+  b.textContent = '● Simulación automática';
+  S.results = [];
+  S.misses = 0;
+  S.ghosts = [];
+  const sim = generatePath();
+  S.path = sim.path;
+  S.tau = sim.tau;
+  S.hit = sim.hit;
+  S.shownStep = sim.hit ? Math.ceil(sim.tau/S.TMax*S.steps) : S.steps;
+  renderAll();
+}
+
+document.getElementById('speedVal').textContent = speedLabels[S.speed];
+resetAll();
+resize();
+</script>
+</body>
+</html>

@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Difusión forward para modelos generativos</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f1a;
+  --surface:#131929;
+  --raised:#1a2438;
+  --border:#1e3254;
+  --text:#dde6f0;
+  --muted:#7b8fa8;
+  --accent:#29d8c2;
+  --accent2:#f6b73c;
+  --violet:#9b72f4;
+  --green:#3dd68c;
+  --red:#f06060;
+  --grid:rgba(255,255,255,.055);
+  --zero:rgba(255,255,255,.22);
+  --soft:rgba(41,216,194,.10);
+}
+body[data-theme=light]{
+  --bg:#f2f5fa;--surface:#ffffff;--raised:#edf2f8;--border:#cad7e8;
+  --text:#17223b;--muted:#667b97;--accent:#0c79a7;--accent2:#c47d10;
+  --violet:#6d3ecb;--green:#198a58;--red:#c93030;
+  --grid:rgba(0,0,0,.06);--zero:rgba(0,0,0,.22);--soft:rgba(12,121,167,.08)
+}
+body[data-theme=cyber]{
+  --bg:#070b12;--surface:#0d1424;--raised:#111d34;--border:#1d3c68;
+  --text:#d8ecff;--muted:#7aa1c8;--accent:#00e5ff;--accent2:#ffc857;
+  --violet:#a970ff;--green:#3bf18b;--red:#ff6a88;
+  --grid:rgba(0,229,255,.08);--zero:rgba(0,229,255,.22);--soft:rgba(0,229,255,.11)
+}
+body[data-theme=forest]{
+  --bg:#09140f;--surface:#122019;--raised:#162920;--border:#244235;
+  --text:#d8eee0;--muted:#89a395;--accent:#6be28d;--accent2:#d4b25f;
+  --violet:#90a0ff;--green:#44d37b;--red:#ef7c7c;
+  --grid:rgba(107,226,141,.07);--zero:rgba(107,226,141,.22);--soft:rgba(107,226,141,.09)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.9rem 1.2rem;background:var(--surface);border-bottom:1px solid var(--border);
+}
+.brand h1{font-family:'Lora',serif;font-size:1.24rem;line-height:1.2}
+.brand p{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+select,button,input{font-family:inherit}
+.sel{
+  background:var(--raised);border:1px solid var(--border);color:var(--text);
+  border-radius:18px;padding:.36rem .75rem;font-size:.68rem;outline:none;
+}
+.layout{
+  display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:.9rem;padding:.9rem;
+  min-height:calc(100vh - 68px);
+}
+.left{display:flex;flex-direction:column;gap:.85rem;min-width:0}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;min-width:0}
+.box,.panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+}
+.panel{padding:.85rem}
+.boxhead{
+  display:flex;justify-content:space-between;align-items:center;gap:.7rem;
+  padding:.7rem .9rem;border-bottom:1px solid var(--border);
+}
+.tt{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.badge{
+  padding:.28rem .55rem;border:1px solid var(--border);border-radius:20px;
+  background:var(--raised);font-size:.61rem;color:var(--accent);white-space:nowrap;
+}
+.canvasWrap{height:320px}
+.canvasWrap.big{height:430px}
+canvas{display:block;width:100%;height:100%}
+.legend{
+  display:flex;gap:1rem;flex-wrap:wrap;padding:.65rem .9rem;border-top:1px solid var(--border);
+  font-size:.63rem;color:var(--muted)
+}
+.legend span{display:flex;align-items:center;gap:.35rem}
+.sw{width:12px;height:12px;border-radius:50%;display:inline-block}
+.sidebar{
+  display:flex;flex-direction:column;gap:.8rem;overflow:auto;padding-right:2px;
+}
+.plabel{
+  font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem
+}
+.cgroup{margin-bottom:.75rem}.cgroup:last-child{margin-bottom:0}
+.crow{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem;
+  font-size:.66rem;color:var(--muted)
+}
+.crow em{font-style:normal;color:var(--accent);font-weight:700}
+input[type=range]{
+  width:100%;appearance:none;height:4px;border-radius:2px;background:var(--raised);outline:none
+}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer
+}
+.btns{display:flex;flex-direction:column;gap:.45rem}
+.btn{
+  border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);
+  padding:.6rem .7rem;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;
+  cursor:pointer;transition:.15s;
+}
+.btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#05110d;font-weight:700}
+.btn-toggle.on{background:var(--violet);border-color:var(--violet);color:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.stat{background:var(--raised);border-radius:8px;padding:.55rem;text-align:center}
+.stat .k{font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-size:.82rem;color:var(--accent);font-weight:700;margin-top:4px}
+.stat.warn .v{color:var(--accent2)}
+.stat.red .v{color:var(--red)}
+.trow{
+  display:flex;align-items:center;justify-content:space-between;font-size:.66rem;
+  color:var(--muted);margin-bottom:.45rem
+}
+.tog{position:relative;width:32px;height:18px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.sld{
+  position:absolute;inset:0;background:var(--raised);border:1px solid var(--border);
+  border-radius:18px;cursor:pointer;
+}
+.sld:before{
+  content:"";position:absolute;width:11px;height:11px;border-radius:50%;
+  left:3px;bottom:2px;background:var(--muted);transition:.2s;
+}
+.tog input:checked + .sld{background:var(--accent);border-color:var(--accent)}
+.tog input:checked + .sld:before{transform:translateX(13px);background:#000}
+.mitem{display:flex;gap:.45rem;padding:.45rem 0;border-bottom:1px solid var(--border)}
+.mitem:last-child{border-bottom:none}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.formula{font-size:.71rem;color:var(--accent2);font-weight:700;line-height:1.45}
+.desc{font-size:.63rem;color:var(--muted);margin-top:2px;line-height:1.45}
+.note{
+  background:var(--soft);border:1px solid var(--border);border-radius:10px;
+  padding:.7rem;font-size:.67rem;line-height:1.55;color:var(--text)
+}
+.footer{
+  margin-top:.5rem;padding-top:.65rem;border-top:1px solid var(--border);
+  font-size:.65rem;color:var(--muted)
+}
+.rowSel{
+  display:grid;grid-template-columns:1fr 1fr;gap:.5rem
+}
+@media(max-width:1180px){
+  .layout{grid-template-columns:1fr}
+  .canvasWrap.big{height:380px}
+}
+@media(max-width:820px){
+  .compare{grid-template-columns:1fr}
+  .canvasWrap,.canvasWrap.big{height:320px}
+}
+</style>
+</head>
+<body data-theme="dark">
+<header>
+  <div class="brand">
+    <h1>Difusión forward para modelos generativos</h1>
+    <p>Cómo una estructura reconocible se destruye hasta parecer ruido gaussiano</p>
+  </div>
+  <select class="sel" onchange="setTheme(this.value)">
+    <option value="dark">Tema oscuro</option>
+    <option value="light">Tema claro</option>
+    <option value="cyber">Tema cyber</option>
+    <option value="forest">Tema forest</option>
+  </select>
+</header>
+
+<div class="layout">
+  <div class="left">
+    <div class="box">
+      <div class="boxhead">
+        <div class="tt">Destrucción progresiva de la estructura</div>
+        <div class="badge" id="mainBadge">Xt = √ᾱt X0 + √(1−ᾱt) ε</div>
+      </div>
+      <div class="canvasWrap big"><canvas id="mainCanvas"></canvas></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--accent)"></i> X<sub>0</sub>: datos originales</span>
+        <span><i class="sw" style="background:var(--accent2)"></i> X<sub>t</sub>: estado actual</span>
+        <span><i class="sw" style="background:var(--violet)"></i> X<sub>T</sub>: casi ruido puro</span>
+      </div>
+    </div>
+
+    <div class="compare">
+      <div class="box">
+        <div class="boxhead">
+          <div class="tt">Schedule de ruido</div>
+          <div class="badge" id="schedBadge">βt y ᾱt</div>
+        </div>
+        <div class="canvasWrap"><canvas id="scheduleCanvas"></canvas></div>
+      </div>
+
+      <div class="box">
+        <div class="boxhead">
+          <div class="tt">Mezcla señal / ruido</div>
+          <div class="badge" id="coeffBadge">coeficientes</div>
+        </div>
+        <div class="canvasWrap"><canvas id="coeffCanvas"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="panel">
+      <div class="plabel">⚙ Parámetros</div>
+      <div class="cgroup">
+        <div class="crow">Forma inicial <em id="shapeVal">círculo</em></div>
+        <div class="rowSel">
+          <select class="sel" id="shapeSel" onchange="setShape(this.value)">
+            <option value="circle">Círculo</option>
+            <option value="moons">Luna</option>
+            <option value="clusters">Dos clusters</option>
+          </select>
+          <select class="sel" id="scheduleSel" onchange="setSchedule(this.value)">
+            <option value="linear">β lineal</option>
+            <option value="quadratic">β cuadrática</option>
+            <option value="cosine" selected>β tipo cosine</option>
+          </select>
+        </div>
+      </div>
+      <div class="cgroup">
+        <div class="crow">Número de puntos <em id="nVal">450</em></div>
+        <input type="range" id="nSlider" min="100" max="1200" step="50" value="450" oninput="setN(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Tiempo t (paso) <em id="tVal">0 / 200</em></div>
+        <input type="range" id="tSlider" min="0" max="200" step="1" value="0" oninput="setStep(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Intensidad de ruido <em id="noiseVal">1.00</em></div>
+        <input type="range" id="noiseSlider" min="0.30" max="3.00" step="0.05" value="1.00" oninput="setIntensity(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Velocidad de animación <em id="speedVal">x1</em></div>
+        <input type="range" id="speedSlider" min="1" max="10" step="1" value="4" oninput="setSpeed(this.value)">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">▶ Acciones</div>
+      <div class="btns">
+        <button class="btn btn-primary" id="forwardBtn" onclick="toggleForward()">● Forward diffusion</button>
+        <button class="btn" onclick="resetTime()">Reiniciar t = 0</button>
+        <button class="btn" onclick="resampleAll()">Remuestrear datos + ruido</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">☰ Visualización</div>
+      <div class="trow">Mostrar grilla
+        <label class="tog"><input type="checkbox" id="gridTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Mostrar puntos originales en Xt
+        <label class="tog"><input type="checkbox" id="ghostTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Trayectorias de algunos puntos
+        <label class="tog"><input type="checkbox" id="trajTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">■ Lecturas numéricas</div>
+      <div class="grid2">
+        <div class="stat warn"><div class="k">ᾱ<sub>t</sub></div><div class="v" id="sAbar">1.0000</div></div>
+        <div class="stat"><div class="k">β<sub>t</sub></div><div class="v" id="sBeta">0.0000</div></div>
+        <div class="stat"><div class="k">√ᾱ<sub>t</sub></div><div class="v" id="sSignal">1.000</div></div>
+        <div class="stat red"><div class="k">√(1−ᾱ<sub>t</sub>)</div><div class="v" id="sNoise">0.000</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">∂ Conceptos</div>
+      <div class="mitem">
+        <div class="dot"></div>
+        <div>
+          <div class="formula">X<sub>t</sub> = √ᾱ<sub>t</sub> X<sub>0</sub> + √(1−ᾱ<sub>t</sub>) ε</div>
+          <div class="desc">La muestra original se combina con ruido gaussiano. A medida que ᾱ<sub>t</sub> cae, se pierde la estructura de los datos.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--accent2)"></div>
+        <div>
+          <div class="formula">β<sub>t</sub> controla cuánta información se destruye en cada paso</div>
+          <div class="desc">El schedule puede ser lineal, cuadrático o tipo cosine. Diferentes schedules cambian el ritmo del proceso forward.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--violet)"></div>
+        <div>
+          <div class="formula">En IA generativa, el modelo aprende el proceso inverso</div>
+          <div class="desc">Primero destruimos la estructura hasta obtener ruido. Luego una red neuronal aprende a deshacer esa destrucción paso a paso.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">✦ Lectura didáctica</div>
+      <div class="note">
+        Esta simulación conecta la matemática del ruido browniano con la intuición detrás de los modelos de difusión. Partimos de datos reconocibles —como un círculo, una luna o dos clusters— y vamos agregando ruido de manera progresiva. Cuando t crece, el peso de X<sub>0</sub> se apaga y el de ε domina, hasta que la nube se parece a una muestra gaussiana sin estructura.
+      </div>
+      <div class="footer">Material elaborado por el profesor Sergio Gevatschnaider.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const mainCanvas = document.getElementById('mainCanvas');
+const scheduleCanvas = document.getElementById('scheduleCanvas');
+const coeffCanvas = document.getElementById('coeffCanvas');
+const mctx = mainCanvas.getContext('2d');
+const sctx = scheduleCanvas.getContext('2d');
+const cctx = coeffCanvas.getContext('2d');
+
+const S = {
+  shape: 'circle',
+  n: 450,
+  T: 200,
+  step: 0,
+  intensity: 1.0,
+  schedule: 'cosine',
+  speed: 4,
+  X0: [],
+  eps: [],
+  Xcur: [],
+  Xfinal: [],
+  betas: [],
+  alphaBars: [],
+  auto: false,
+  autoId: null
+};
+
+const speedMult = [0.4,0.6,0.8,1,1.5,2,3,4,6,8];
+const speedLabels = {1:'x0.4',2:'x0.6',3:'x0.8',4:'x1',5:'x1.5',6:'x2',7:'x3',8:'x4',9:'x6',10:'x8'};
+
+function css(v){ return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+function randn(){
+  let u=0,v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function resize(){
+  for(const c of [mainCanvas, scheduleCanvas, coeffCanvas]){
+    const w = c.parentElement;
+    c.width = w.clientWidth;
+    c.height = w.clientHeight;
+  }
+  renderAll();
+}
+window.addEventListener('resize', resize);
+
+function normalizePoints(points){
+  let mx = 0, my = 0;
+  for(const p of points){ mx += p.x; my += p.y; }
+  mx /= points.length; my /= points.length;
+  for(const p of points){ p.x -= mx; p.y -= my; }
+  let vx = 0, vy = 0;
+  for(const p of points){ vx += p.x*p.x; vy += p.y*p.y; }
+  vx = Math.sqrt(vx/points.length) || 1;
+  vy = Math.sqrt(vy/points.length) || 1;
+  const scale = Math.max(vx, vy);
+  for(const p of points){ p.x /= scale; p.y /= scale; }
+  return points;
+}
+function generateShape(){
+  const pts = [];
+  if(S.shape === 'circle'){
+    for(let i=0;i<S.n;i++){
+      const ang = Math.random()*2*Math.PI;
+      const r = 1.35 + 0.16*randn();
+      pts.push({x:r*Math.cos(ang), y:r*Math.sin(ang)});
+    }
+  } else if(S.shape === 'moons'){
+    const half = Math.floor(S.n/2);
+    for(let i=0;i<half;i++){
+      const u = Math.random()*Math.PI;
+      pts.push({x:Math.cos(u)-0.5 + 0.05*randn(), y:Math.sin(u) + 0.05*randn()});
+    }
+    for(let i=half;i<S.n;i++){
+      const u = Math.random()*Math.PI;
+      pts.push({x:1.0 - Math.cos(u) - 0.5 + 0.05*randn(), y:-Math.sin(u) + 0.5 + 0.05*randn()});
+    }
+  } else if(S.shape === 'clusters'){
+    const half = Math.floor(S.n/2);
+    for(let i=0;i<half;i++){
+      pts.push({x:-1.2 + 0.40*randn(), y:0.65 + 0.40*randn()});
+    }
+    for(let i=half;i<S.n;i++){
+      pts.push({x:1.2 + 0.45*randn(), y:-0.55 + 0.42*randn()});
+    }
+  }
+  S.X0 = normalizePoints(pts);
+}
+function sampleEps(){
+  S.eps = [];
+  for(let i=0;i<S.n;i++){
+    S.eps.push({x:randn(), y:randn()});
+  }
+}
+function computeSchedule(){
+  const T = S.T;
+  S.betas = new Array(T+1).fill(0);
+  S.alphaBars = new Array(T+1).fill(1);
+  const intensity = S.intensity;
+
+  if(S.schedule === 'linear'){
+    const b0 = 0.0005 * intensity;
+    const b1 = 0.0450 * intensity;
+    for(let t=1;t<=T;t++){
+      const u = (t-1)/(T-1);
+      const beta = Math.min(0.999, Math.max(1e-6, b0 + (b1-b0)*u));
+      S.betas[t] = beta;
+      S.alphaBars[t] = S.alphaBars[t-1]*(1-beta);
+    }
+  } else if(S.schedule === 'quadratic'){
+    const b0 = Math.sqrt(0.0005 * intensity);
+    const b1 = Math.sqrt(0.0450 * intensity);
+    for(let t=1;t<=T;t++){
+      const u = (t-1)/(T-1);
+      const base = b0 + (b1-b0)*u;
+      const beta = Math.min(0.999, Math.max(1e-6, base*base));
+      S.betas[t] = beta;
+      S.alphaBars[t] = S.alphaBars[t-1]*(1-beta);
+    }
+  } else {
+    const s = 0.008;
+    const f0 = Math.cos(((0/T + s)/(1+s))*Math.PI/2)**2;
+    const baseAB = new Array(T+1).fill(1);
+    for(let t=0;t<=T;t++){
+      const ft = Math.cos((((t/T)+s)/(1+s))*Math.PI/2)**2;
+      baseAB[t] = ft/f0;
+    }
+    for(let t=1;t<=T;t++){
+      const rawBeta = 1 - baseAB[t]/baseAB[t-1];
+      const beta = Math.min(0.999, Math.max(1e-6, rawBeta * intensity));
+      S.betas[t] = beta;
+      S.alphaBars[t] = S.alphaBars[t-1]*(1-beta);
+    }
+  }
+}
+function mixCloud(step){
+  const ab = Math.max(0, Math.min(1, S.alphaBars[step]));
+  const a = Math.sqrt(ab);
+  const n = Math.sqrt(1-ab);
+  const out = new Array(S.n);
+  for(let i=0;i<S.n;i++){
+    out[i] = {
+      x: a*S.X0[i].x + n*S.eps[i].x,
+      y: a*S.X0[i].y + n*S.eps[i].y
+    };
+  }
+  return out;
+}
+function refreshClouds(){
+  S.Xcur = mixCloud(S.step);
+  S.Xfinal = mixCloud(S.T);
+}
+function buildAll(){
+  generateShape();
+  sampleEps();
+  computeSchedule();
+  refreshClouds();
+}
+function resampleAll(){
+  stopAuto();
+  buildAll();
+  S.step = 0;
+  document.getElementById('tSlider').value = S.step;
+  refreshClouds();
+  renderAll();
+}
+function setTheme(v){ document.body.dataset.theme = v; renderAll(); }
+function setShape(v){
+  S.shape = v;
+  const names = {circle:'círculo', moons:'luna', clusters:'dos clusters'};
+  document.getElementById('shapeVal').textContent = names[v] || v;
+  resampleAll();
+}
+function setSchedule(v){ S.schedule = v; resampleAll(); }
+function setN(v){ S.n = parseInt(v,10); document.getElementById('nVal').textContent = S.n; resampleAll(); }
+function setStep(v){ S.step = parseInt(v,10); refreshClouds(); renderAll(); }
+function setIntensity(v){ S.intensity = parseFloat(v); document.getElementById('noiseVal').textContent = S.intensity.toFixed(2); computeSchedule(); refreshClouds(); renderAll(); }
+function setSpeed(v){ S.speed = parseInt(v,10); document.getElementById('speedVal').textContent = speedLabels[S.speed] || 'x1'; }
+function resetTime(){
+  stopAuto();
+  S.step = 0;
+  document.getElementById('tSlider').value = 0;
+  refreshClouds();
+  renderAll();
+}
+function stopAuto(){
+  S.auto = false;
+  const b = document.getElementById('forwardBtn');
+  b.classList.remove('on');
+  b.classList.remove('btn-toggle');
+  b.textContent = '● Forward diffusion';
+  if(S.autoId) cancelAnimationFrame(S.autoId);
+  S.autoId = null;
+}
+function toggleForward(){
+  S.auto = !S.auto;
+  const b = document.getElementById('forwardBtn');
+  b.classList.add('btn-toggle');
+  if(S.auto){
+    b.classList.add('on');
+    b.textContent = '■ Detener diffusion';
+    if(S.autoId) cancelAnimationFrame(S.autoId);
+    S.autoId = requestAnimationFrame(autoStep);
+  } else {
+    stopAuto();
+  }
+}
+function autoStep(){
+  if(!S.auto) return;
+  const inc = Math.max(1, Math.round(speedMult[S.speed-1] || 1));
+  S.step = Math.min(S.T, S.step + inc);
+  document.getElementById('tSlider').value = S.step;
+  refreshClouds();
+  renderAll();
+  if(S.step >= S.T){
+    stopAuto();
+    return;
+  }
+  S.autoId = requestAnimationFrame(autoStep);
+}
+function drawGrid(ctx, x, y, w, h){
+  if(!document.getElementById('gridTog').checked) return;
+  ctx.strokeStyle = css('--grid');
+  ctx.lineWidth = 1;
+  for(let i=0;i<=6;i++){
+    const px = x + i*w/6;
+    ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px, y+h); ctx.stroke();
+  }
+  for(let i=0;i<=6;i++){
+    const py = y + i*h/6;
+    ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x+w, py); ctx.stroke();
+  }
+}
+function mapPoint(p, box){
+  const xmin = -4, xmax = 4, ymin = -4, ymax = 4;
+  const px = box.x + (p.x-xmin)/(xmax-xmin)*box.w;
+  const py = box.y + box.h - (p.y-ymin)/(ymax-ymin)*box.h;
+  return {x:px, y:py};
+}
+function drawScatter(ctx, points, box, color, size=3, alpha=1){
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  for(const p of points){
+    const q = mapPoint(p, box);
+    ctx.beginPath();
+    ctx.arc(q.x, q.y, size, 0, 2*Math.PI);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+function drawTrajectories(ctx, box){
+  if(!document.getElementById('trajTog').checked) return;
+  const sampleCount = Math.min(16, S.n);
+  const stride = Math.max(1, Math.floor(S.n/sampleCount));
+  ctx.save();
+  ctx.strokeStyle = 'rgba(246,183,60,.28)';
+  ctx.lineWidth = 1;
+  for(let k=0;k<S.n;k+=stride){
+    const p0 = S.X0[k];
+    const p1 = S.Xcur[k];
+    const a = mapPoint(p0, box), b = mapPoint(p1, box);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function renderMain(){
+  const W = mainCanvas.width, H = mainCanvas.height, ctx = mctx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  const pad = 20;
+  const titleH = 22;
+  const totalGap = 16*2;
+  const boxW = (W - 2*pad - totalGap)/3;
+  const boxH = H - 2*pad - titleH;
+  const boxes = [
+    {x:pad, y:pad+titleH, w:boxW, h:boxH, title:'X0 · estructura original', color:css('--accent')},
+    {x:pad+boxW+16, y:pad+titleH, w:boxW, h:boxH, title:'Xt · tiempo actual', color:css('--accent2')},
+    {x:pad+2*(boxW+16), y:pad+titleH, w:boxW, h:boxH, title:'XT · ruido casi puro', color:css('--violet')}
+  ];
+
+  ctx.font = "12px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+
+  boxes.forEach((b) => {
+    ctx.fillStyle = css('--raised');
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    drawGrid(ctx, b.x, b.y, b.w, b.h);
+    ctx.strokeStyle = css('--border');
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(b.x, b.y, b.w, b.h);
+    ctx.fillStyle = css('--muted');
+    ctx.fillText(b.title, b.x, b.y - 6);
+  });
+
+  drawScatter(ctx, S.X0, boxes[0], css('--accent'), 2.4, .90);
+
+  if(document.getElementById('ghostTog').checked){
+    drawScatter(ctx, S.X0, boxes[1], css('--muted'), 1.6, .18);
+  }
+  drawTrajectories(ctx, boxes[1]);
+  drawScatter(ctx, S.Xcur, boxes[1], css('--accent2'), 2.4, .92);
+
+  drawScatter(ctx, S.Xfinal, boxes[2], css('--violet'), 2.2, .88);
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "11px 'JetBrains Mono',monospace";
+  ctx.fillText(`t = ${S.step} / ${S.T}`, boxes[1].x, H - 8);
+}
+function axesBasic(ctx, W, H, m, xmin, xmax, ymin, ymax, xlab, ylab, rightLabel=null){
+  const gx = x => m.l + (x-xmin)/(xmax-xmin)*(W-m.l-m.r);
+  const gy = y => H-m.b - (y-ymin)/(ymax-ymin)*(H-m.t-m.b);
+
+  if(document.getElementById('gridTog').checked){
+    ctx.strokeStyle = css('--grid');
+    ctx.lineWidth = 1;
+    for(let i=0;i<=8;i++){
+      const x = xmin + i*(xmax-xmin)/8;
+      const px = gx(x);
+      ctx.beginPath(); ctx.moveTo(px,m.t); ctx.lineTo(px,H-m.b); ctx.stroke();
+    }
+    for(let i=0;i<=6;i++){
+      const y = ymin + i*(ymax-ymin)/6;
+      const py = gy(y);
+      ctx.beginPath(); ctx.moveTo(m.l,py); ctx.lineTo(W-m.r,py); ctx.stroke();
+    }
+  }
+
+  ctx.strokeStyle = css('--muted');
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(m.l,m.t);
+  ctx.lineTo(m.l,H-m.b);
+  ctx.lineTo(W-m.r,H-m.b);
+  ctx.stroke();
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'center';
+  for(let i=0;i<=4;i++){
+    const x = xmin + i*(xmax-xmin)/4;
+    ctx.fillText(Math.round(x).toString(), gx(x), H-m.b+14);
+  }
+  ctx.fillText(xlab, W-m.r+10, H-m.b+14);
+
+  ctx.textAlign = 'right';
+  for(let i=0;i<=4;i++){
+    const y = ymin + i*(ymax-ymin)/4;
+    ctx.fillText(y.toFixed(2), m.l-5, gy(y)+3);
+  }
+  ctx.save();
+  ctx.translate(14,H/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign = 'center';
+  ctx.fillText(ylab,0,0);
+  ctx.restore();
+
+  if(rightLabel){
+    ctx.save();
+    ctx.translate(W-6, H/2);
+    ctx.rotate(Math.PI/2);
+    ctx.textAlign = 'center';
+    ctx.fillText(rightLabel,0,0);
+    ctx.restore();
+  }
+
+  return {gx,gy};
+}
+function drawCurve(ctx, arr, xMap, yMap, color, lw, alpha=1, dash=false){
+  if(arr.length<2) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if(dash) ctx.setLineDash([6,4]);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.beginPath();
+  ctx.moveTo(xMap(arr[0].x), yMap(arr[0].y));
+  for(let i=1;i<arr.length;i++) ctx.lineTo(xMap(arr[i].x), yMap(arr[i].y));
+  ctx.stroke();
+  ctx.restore();
+}
+function renderSchedule(){
+  const W = scheduleCanvas.width, H = scheduleCanvas.height, ctx = sctx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  const maxBeta = Math.max(...S.betas.slice(1), 0.0001);
+  const m = {l:48,r:40,t:24,b:34};
+  const A = axesBasic(ctx, W, H, m, 0, S.T, 0, maxBeta, 't', 'βt', 'ᾱt');
+
+  const gx = A.gx;
+  const gyBeta = A.gy;
+  const gyAB = y => H-m.b - y*(H-m.t-m.b);
+
+  const betaPts = [];
+  const abPts = [];
+  for(let t=0;t<=S.T;t++){
+    betaPts.push({x:t, y:S.betas[t] || 0});
+    abPts.push({x:t, y:S.alphaBars[t]});
+  }
+  drawCurve(ctx, betaPts, gx, gyBeta, css('--red'), 2.2, .95, false);
+  drawCurve(ctx, abPts, gx, gyAB, css('--accent2'), 2.2, .95, false);
+
+  const x = gx(S.step);
+  ctx.strokeStyle = css('--violet');
+  ctx.lineWidth = 1.6;
+  ctx.setLineDash([5,4]);
+  ctx.beginPath();
+  ctx.moveTo(x,m.t);
+  ctx.lineTo(x,H-m.b);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const yb = gyBeta(S.betas[S.step] || 0);
+  const ya = gyAB(S.alphaBars[S.step] || 0);
+  ctx.fillStyle = css('--red');
+  ctx.beginPath(); ctx.arc(x, yb, 4.2, 0, 2*Math.PI); ctx.fill();
+  ctx.fillStyle = css('--accent2');
+  ctx.beginPath(); ctx.arc(x, ya, 4.2, 0, 2*Math.PI); ctx.fill();
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText('βt', 58, 22);
+  ctx.fillStyle = css('--accent2');
+  ctx.fillText('ᾱt', 90, 22);
+}
+function renderCoefficients(){
+  const W = coeffCanvas.width, H = coeffCanvas.height, ctx = cctx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  const m = {l:48,r:24,t:24,b:74};
+  const A = axesBasic(ctx, W, H, m, 0, S.T, 0, 1, 't', 'coef.');
+
+  const sigPts = [];
+  const noiPts = [];
+  for(let t=0;t<=S.T;t++){
+    const ab = S.alphaBars[t];
+    sigPts.push({x:t, y:Math.sqrt(ab)});
+    noiPts.push({x:t, y:Math.sqrt(1-ab)});
+  }
+  drawCurve(ctx, sigPts, A.gx, A.gy, css('--green'), 2.2, .95, false);
+  drawCurve(ctx, noiPts, A.gx, A.gy, css('--violet'), 2.2, .95, false);
+
+  const x = A.gx(S.step);
+  ctx.strokeStyle = css('--accent2');
+  ctx.lineWidth = 1.6;
+  ctx.setLineDash([5,4]);
+  ctx.beginPath();
+  ctx.moveTo(x,m.t);
+  ctx.lineTo(x,H-m.b);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const ab = S.alphaBars[S.step];
+  const signal = Math.sqrt(ab);
+  const noise = Math.sqrt(1-ab);
+
+  ctx.fillStyle = css('--green');
+  ctx.beginPath(); ctx.arc(x, A.gy(signal), 4.2, 0, 2*Math.PI); ctx.fill();
+  ctx.fillStyle = css('--violet');
+  ctx.beginPath(); ctx.arc(x, A.gy(noise), 4.2, 0, 2*Math.PI); ctx.fill();
+
+  // Barra horizontal de mezcla actual
+  const barX = 56, barY = H-38, barW = W-90, barH = 18;
+  ctx.strokeStyle = css('--border');
+  ctx.lineWidth = 1;
+  ctx.strokeRect(barX, barY, barW, barH);
+  ctx.fillStyle = 'rgba(61,214,140,.75)';
+  ctx.fillRect(barX, barY, barW*signal/(signal+noise || 1), barH);
+  ctx.fillStyle = 'rgba(155,114,244,.75)';
+  ctx.fillRect(barX + barW*signal/(signal+noise || 1), barY, barW*noise/(signal+noise || 1), barH);
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText('señal √ᾱt', 58, 22);
+  ctx.fillStyle = css('--violet');
+  ctx.fillText('ruido √(1−ᾱt)', 144, 22);
+  ctx.fillStyle = css('--muted');
+  ctx.fillText('mezcla actual', barX, barY-6);
+}
+function updateStats(){
+  const ab = S.alphaBars[S.step];
+  const beta = S.betas[S.step] || 0;
+  const signal = Math.sqrt(ab);
+  const noise = Math.sqrt(1-ab);
+  document.getElementById('tVal').textContent = `${S.step} / ${S.T}`;
+  document.getElementById('mainBadge').textContent = `${S.shape} · schedule ${S.schedule}`;
+  document.getElementById('schedBadge').textContent = `β actual ${beta.toFixed(4)}`;
+  document.getElementById('coeffBadge').textContent = `señal ${signal.toFixed(3)} · ruido ${noise.toFixed(3)}`;
+  document.getElementById('sAbar').textContent = ab.toFixed(4);
+  document.getElementById('sBeta').textContent = beta.toFixed(4);
+  document.getElementById('sSignal').textContent = signal.toFixed(3);
+  document.getElementById('sNoise').textContent = noise.toFixed(3);
+}
+function renderAll(){
+  refreshClouds();
+  updateStats();
+  renderMain();
+  renderSchedule();
+  renderCoefficients();
+}
+document.getElementById('speedVal').textContent = speedLabels[S.speed];
+document.getElementById('shapeVal').textContent = 'círculo';
+buildAll();
+resize();
+</script>
+</body>
+</html>

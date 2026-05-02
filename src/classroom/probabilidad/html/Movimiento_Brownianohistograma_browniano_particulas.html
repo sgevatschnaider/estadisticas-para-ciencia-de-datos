@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Histograma dinámico — Partículas brownianas</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0b0f1a;
+  --surface:#131929;
+  --raised:#1a2438;
+  --border:#1e3254;
+  --text:#dde6f0;
+  --muted:#7c8ea8;
+  --accent:#29d8c2;
+  --accent-2:#f6b73c;
+  --violet:#9b72f4;
+  --green:#3dd68c;
+  --red:#f06060;
+  --grid:rgba(255,255,255,.05);
+  --soft:rgba(41,216,194,.12);
+}
+body[data-theme="light"]{
+  --bg:#f2f5fa;
+  --surface:#ffffff;
+  --raised:#edf2f8;
+  --border:#cad7e8;
+  --text:#16213b;
+  --muted:#667b97;
+  --accent:#0d78a3;
+  --accent-2:#c47d10;
+  --violet:#6d3ecb;
+  --green:#198a58;
+  --red:#c93030;
+  --grid:rgba(0,0,0,.06);
+  --soft:rgba(13,120,163,.10);
+}
+body[data-theme="sepia"]{
+  --bg:#f5eee3;
+  --surface:#fffaf2;
+  --raised:#efe4d0;
+  --border:#d1b890;
+  --text:#4b3a22;
+  --muted:#8d7356;
+  --accent:#a55c1b;
+  --accent-2:#7f4f24;
+  --violet:#8c6bb3;
+  --green:#5b8a3c;
+  --red:#b84a4a;
+  --grid:rgba(75,58,34,.08);
+  --soft:rgba(165,92,27,.10);
+}
+body[data-theme="cyber"]{
+  --bg:#060913;
+  --surface:#0d1424;
+  --raised:#111d34;
+  --border:#1d3c68;
+  --text:#d8ecff;
+  --muted:#78a2ca;
+  --accent:#00e5ff;
+  --accent-2:#ffc857;
+  --violet:#a970ff;
+  --green:#3bf18b;
+  --red:#ff6a88;
+  --grid:rgba(0,229,255,.08);
+  --soft:rgba(0,229,255,.12);
+}
+body[data-theme="forest"]{
+  --bg:#08140f;
+  --surface:#112019;
+  --raised:#162920;
+  --border:#244235;
+  --text:#dbf0e3;
+  --muted:#85a393;
+  --accent:#6be28d;
+  --accent-2:#d4b25f;
+  --violet:#8da0ff;
+  --green:#42d37b;
+  --red:#ef7c7c;
+  --grid:rgba(107,226,141,.08);
+  --soft:rgba(107,226,141,.11);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  transition:background .25s,color .25s;
+}
+header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.9rem 1.2rem;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.brand h1{font-family:'Lora',serif;font-size:1.25rem}
+.brand p{font-size:.63rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.header-tools{display:flex;gap:.55rem;align-items:center}
+select, button, input{font-family:inherit}
+.theme-select{
+  background:var(--raised);color:var(--text);
+  border:1px solid var(--border);border-radius:18px;
+  padding:.35rem .75rem;font-size:.68rem;outline:none;
+}
+.layout{
+  display:grid;grid-template-columns:minmax(0,1fr) 300px;
+  gap:.9rem;padding:.9rem;
+  min-height:calc(100vh - 68px);
+}
+.left{display:flex;flex-direction:column;gap:.8rem;min-width:0}
+.plotbox{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;position:relative;
+}
+.plothead{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.7rem .9rem;border-bottom:1px solid var(--border);
+}
+.plottitle{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.plotbody{height:340px;position:relative}
+.plotbody.small{height:320px}
+canvas{display:block;width:100%;height:100%}
+.badge{
+  padding:.28rem .55rem;border:1px solid var(--border);border-radius:20px;
+  background:var(--raised);font-size:.62rem;color:var(--accent)
+}
+.sidebar{display:flex;flex-direction:column;gap:.8rem;overflow:auto;padding-right:2px}
+.panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.85rem;
+}
+.plabel{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem}
+.cgroup{margin-bottom:.75rem}
+.cgroup:last-child{margin-bottom:0}
+.crow{display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem;font-size:.66rem;color:var(--muted)}
+.crow em{font-style:normal;color:var(--accent);font-weight:600}
+input[type=range]{width:100%;appearance:none;height:4px;border-radius:2px;background:var(--raised);outline:none}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer}
+input[type=number]{
+  width:100%;background:var(--raised);border:1px solid var(--border);color:var(--text);
+  border-radius:8px;padding:.4rem .5rem;font-size:.8rem;outline:none;text-align:center;
+}
+.btns{display:flex;flex-direction:column;gap:.45rem}
+.btn{
+  border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);
+  padding:.6rem .7rem;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:.15s;
+}
+.btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#04110d;font-weight:700}
+.btn-primary:hover{color:#04110d;filter:brightness(1.06)}
+.btn-toggle.on{background:var(--violet);border-color:var(--violet);color:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.stat{
+  background:var(--raised);border-radius:8px;padding:.55rem;text-align:center;
+}
+.stat .k{font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-size:.9rem;color:var(--accent);font-weight:700;margin-top:4px}
+.note{
+  background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:.7rem;
+  font-size:.67rem;line-height:1.55;color:var(--text);
+}
+.mitem{display:flex;gap:.45rem;padding:.45rem 0;border-bottom:1px solid var(--border)}
+.mitem:last-child{border-bottom:none;padding-bottom:0}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.formula{font-size:.71rem;color:var(--accent-2);font-weight:600;line-height:1.45}
+.desc{font-size:.63rem;color:var(--muted);margin-top:2px;line-height:1.45}
+.footer{
+  margin-top:.4rem;padding-top:.65rem;border-top:1px solid var(--border);
+  font-size:.65rem;color:var(--muted);line-height:1.45;
+}
+@media(max-width:960px){
+  .layout{grid-template-columns:1fr}
+  .plotbody,.plotbody.small{height:300px}
+}
+</style>
+</head>
+<body data-theme="dark">
+<header>
+  <div class="brand">
+    <h1>Histograma dinámico: muchas partículas brownianas</h1>
+    <p>De una trayectoria individual a una distribución</p>
+  </div>
+  <div class="header-tools">
+    <select class="theme-select" id="themeSel" onchange="setTheme(this.value)">
+      <option value="dark">Tema oscuro</option>
+      <option value="light">Tema claro</option>
+      <option value="sepia">Tema sepia</option>
+      <option value="cyber">Tema cyber</option>
+      <option value="forest">Tema forest</option>
+    </select>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="left">
+    <div class="plotbox">
+      <div class="plothead">
+        <div class="plottitle">Posiciones instantáneas de las partículas</div>
+        <div class="badge" id="timeBadge">t = 0.000</div>
+      </div>
+      <div class="plotbody"><canvas id="particlesCanvas"></canvas></div>
+    </div>
+
+    <div class="plotbox">
+      <div class="plothead">
+        <div class="plottitle">Histograma empírico + densidad teórica</div>
+        <div class="badge" id="densityBadge">p(x,t)</div>
+      </div>
+      <div class="plotbody small"><canvas id="histCanvas"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="panel">
+      <div class="plabel">⚙ Parámetros</div>
+
+      <div class="cgroup">
+        <div class="crow">Cantidad de partículas N <em id="nVal">500</em></div>
+        <input type="range" id="nSlider" min="50" max="3000" step="50" value="500" oninput="setN(this.value)">
+      </div>
+
+      <div class="cgroup">
+        <div class="crow">Tiempo final T <em id="TVal">2.0</em></div>
+        <input type="range" id="TSlider" min="0.5" max="10" step="0.5" value="2" oninput="setT(this.value)">
+      </div>
+
+      <div class="cgroup">
+        <div class="crow">Parámetro de varianza σ² <em id="varVal">1.00</em></div>
+        <input type="range" id="varSlider" min="0.25" max="4" step="0.25" value="1" oninput="setVariance(this.value)">
+      </div>
+
+      <div class="cgroup">
+        <div class="crow">Velocidad <em id="speedVal">x1</em></div>
+        <input type="range" id="speedSlider" min="1" max="10" step="1" value="4" oninput="setSpeed(this.value)">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">▶ Acciones</div>
+      <div class="btns">
+        <button class="btn btn-primary" onclick="restartSimulation()">Reiniciar</button>
+        <button class="btn btn-toggle on" id="playBtn" onclick="togglePlay()">Pausar</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">■ Estadísticas</div>
+      <div class="grid2">
+        <div class="stat"><div class="k">Tiempo actual</div><div class="v" id="sTime">0.000</div></div>
+        <div class="stat"><div class="k">Var. teórica</div><div class="v" id="sTheoVar">0.000</div></div>
+        <div class="stat"><div class="k">Var. muestral</div><div class="v" id="sSampleVar">0.000</div></div>
+        <div class="stat"><div class="k">Media muestral</div><div class="v" id="sMean">0.000</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">∂ Conexión teórica</div>
+      <div class="mitem">
+        <div class="dot"></div>
+        <div>
+          <div class="formula">X(t) ∼ N(0, σ² t)</div>
+          <div class="desc">Para muchas partículas independientes, las posiciones a tiempo t siguen una normal centrada cuya dispersión crece linealmente con t.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--accent-2)"></div>
+        <div>
+          <div class="formula">p(x,t)= 1 / √(2πσ²t) · exp(−x²/(2σ²t))</div>
+          <div class="desc">La curva superpuesta sobre el histograma es la solución fundamental de la ecuación del calor en una dimensión.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--violet)"></div>
+        <div>
+          <div class="formula">∂p/∂t = (σ²/2) ∂²p/∂x²</div>
+          <div class="desc">El browniano conecta el comportamiento microscópico de partículas individuales con la difusión macroscópica de una densidad.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">✦ Observación didáctica</div>
+      <div class="note">
+        Esta demo muestra por qué el movimiento browniano no es solo una trayectoria aleatoria. Cuando pasamos de una partícula a muchas partículas, aparece una distribución. El histograma empírico se aproxima a la densidad teórica gaussiana, y esa densidad evoluciona exactamente como la solución de la ecuación del calor.
+      </div>
+      <div class="footer">
+        Material elaborado por el profesor Sergio Gevatschnaider.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const pCanvas = document.getElementById('particlesCanvas');
+const pCtx = pCanvas.getContext('2d');
+const hCanvas = document.getElementById('histCanvas');
+const hCtx = hCanvas.getContext('2d');
+
+const state = {
+  N: 500,
+  T: 2,
+  sigma2: 1,
+  speed: 4,
+  positions: [],
+  t: 0,
+  dtBase: 1/240,
+  playing: true,
+  frameId: null,
+  bins: 40
+};
+
+const speedLabels = {1:'x0.25',2:'x0.5',3:'x0.75',4:'x1',5:'x1.5',6:'x2',7:'x3',8:'x4',9:'x6',10:'x8'};
+
+function css(v){ return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+
+function randn(){
+  let u=0,v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function initPositions(){
+  state.positions = new Float64Array(state.N);
+  state.t = 0;
+  updateStats();
+}
+
+function resize(){
+  const pBox = pCanvas.parentElement;
+  pCanvas.width = pBox.clientWidth;
+  pCanvas.height = pBox.clientHeight;
+  const hBox = hCanvas.parentElement;
+  hCanvas.width = hBox.clientWidth;
+  hCanvas.height = hBox.clientHeight;
+  render();
+}
+window.addEventListener('resize', resize);
+
+function getXRange(){
+  const theoStd = Math.sqrt(Math.max(state.sigma2 * Math.max(state.t, 1e-6), 1e-6));
+  let maxAbs = 4 * Math.max(theoStd, 0.5);
+  for(let i=0;i<state.positions.length;i++){
+    const a = Math.abs(state.positions[i]);
+    if(a > maxAbs) maxAbs = a;
+  }
+  return [-maxAbs, maxAbs];
+}
+
+function drawAxes(ctx, W, H, margin, xmin, xmax, ymin, ymax, xlabel, ylabel){
+  const gx = x => margin.l + (x - xmin) / (xmax - xmin) * (W - margin.l - margin.r);
+  const gy = y => H - margin.b - (y - ymin) / (ymax - ymin) * (H - margin.t - margin.b);
+
+  ctx.strokeStyle = css('--grid');
+  ctx.lineWidth = 1;
+  const xTicks = 8, yTicks = 5;
+  for(let i=0;i<=xTicks;i++){
+    const x = xmin + i*(xmax-xmin)/xTicks;
+    const px = gx(x);
+    ctx.beginPath(); ctx.moveTo(px, margin.t); ctx.lineTo(px, H-margin.b); ctx.stroke();
+  }
+  for(let i=0;i<=yTicks;i++){
+    const y = ymin + i*(ymax-ymin)/yTicks;
+    const py = gy(y);
+    ctx.beginPath(); ctx.moveTo(margin.l, py); ctx.lineTo(W-margin.r, py); ctx.stroke();
+  }
+
+  ctx.strokeStyle = css('--muted');
+  ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  ctx.moveTo(margin.l, margin.t);
+  ctx.lineTo(margin.l, H-margin.b);
+  ctx.lineTo(W-margin.r, H-margin.b);
+  ctx.stroke();
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono', monospace";
+  ctx.textAlign = 'center';
+  for(let i=0;i<=xTicks;i++){
+    const x = xmin + i*(xmax-xmin)/xTicks;
+    const px = gx(x);
+    ctx.fillText(x.toFixed(1), px, H-margin.b+14);
+  }
+  ctx.fillText(xlabel, W-margin.r+10, H-margin.b+14);
+
+  ctx.textAlign = 'right';
+  for(let i=0;i<=yTicks;i++){
+    const y = ymin + i*(ymax-ymin)/yTicks;
+    const py = gy(y);
+    ctx.fillText(y.toFixed(1), margin.l-6, py+3);
+  }
+  ctx.save();
+  ctx.translate(14, H/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign = 'center';
+  ctx.fillText(ylabel, 0, 0);
+  ctx.restore();
+
+  return {gx, gy};
+}
+
+function renderParticles(){
+  const W = pCanvas.width, H = pCanvas.height;
+  pCtx.clearRect(0,0,W,H);
+  pCtx.fillStyle = css('--surface');
+  pCtx.fillRect(0,0,W,H);
+
+  const [xmin, xmax] = getXRange();
+  const margin = {l:48,r:20,t:20,b:30};
+  const coords = drawAxes(pCtx, W, H, margin, xmin, xmax, -1.2, 1.2, 'x', 'partículas');
+
+  pCtx.strokeStyle = css('--accent-2');
+  pCtx.setLineDash([4,4]);
+  pCtx.beginPath();
+  pCtx.moveTo(coords.gx(0), margin.t);
+  pCtx.lineTo(coords.gx(0), H-margin.b);
+  pCtx.stroke();
+  pCtx.setLineDash([]);
+
+  const rows = 12;
+  const jitter = 0.08;
+  for(let i=0;i<state.positions.length;i++){
+    const x = state.positions[i];
+    const row = i % rows;
+    const y = -0.95 + row*(1.9/(rows-1)) + (Math.random()-0.5)*jitter;
+    pCtx.beginPath();
+    pCtx.arc(coords.gx(x), coords.gy(y), 2.4, 0, 2*Math.PI);
+    pCtx.fillStyle = css('--accent');
+    pCtx.globalAlpha = 0.45;
+    pCtx.fill();
+  }
+  pCtx.globalAlpha = 1;
+
+  const std = Math.sqrt(Math.max(state.sigma2*state.t,0));
+  pCtx.fillStyle = css('--muted');
+  pCtx.font = "11px 'JetBrains Mono', monospace";
+  pCtx.textAlign = 'left';
+  pCtx.fillText(`σ_t = √(σ² t) = ${std.toFixed(3)}`, margin.l+6, margin.t+12);
+}
+
+function gaussianDensity(x, t, sigma2){
+  const v = sigma2 * t;
+  if(v <= 1e-12) return 0;
+  return (1 / Math.sqrt(2 * Math.PI * v)) * Math.exp(-(x*x)/(2*v));
+}
+
+function renderHistogram(){
+  const W = hCanvas.width, H = hCanvas.height;
+  hCtx.clearRect(0,0,W,H);
+  hCtx.fillStyle = css('--surface');
+  hCtx.fillRect(0,0,W,H);
+
+  const [xmin, xmax] = getXRange();
+  const bins = state.bins;
+  const binWidth = (xmax - xmin) / bins;
+  const counts = new Array(bins).fill(0);
+  for(let i=0;i<state.positions.length;i++){
+    let idx = Math.floor((state.positions[i] - xmin) / (xmax - xmin) * bins);
+    if(idx < 0) idx = 0;
+    if(idx >= bins) idx = bins - 1;
+    counts[idx]++;
+  }
+
+  const densities = counts.map(c => c / (state.N * binWidth));
+  let maxY = 0.001;
+  for(const d of densities) if(d > maxY) maxY = d;
+  const theorySamples = 300;
+  for(let i=0;i<=theorySamples;i++){
+    const x = xmin + i*(xmax-xmin)/theorySamples;
+    const y = gaussianDensity(x, state.t, state.sigma2);
+    if(y > maxY) maxY = y;
+  }
+  maxY *= 1.18;
+
+  const margin = {l:52,r:20,t:20,b:32};
+  const coords = drawAxes(hCtx, W, H, margin, xmin, xmax, 0, maxY, 'x', 'densidad');
+
+  for(let i=0;i<bins;i++){
+    const x0 = xmin + i*binWidth;
+    const x1 = x0 + binWidth;
+    const y = densities[i];
+    const px0 = coords.gx(x0), px1 = coords.gx(x1), py = coords.gy(y), base = coords.gy(0);
+    hCtx.fillStyle = css('--accent');
+    hCtx.globalAlpha = 0.38;
+    hCtx.fillRect(px0+1, py, Math.max(1, px1-px0-2), base-py);
+    hCtx.strokeStyle = css('--accent');
+    hCtx.globalAlpha = 0.9;
+    hCtx.strokeRect(px0+1, py, Math.max(1, px1-px0-2), base-py);
+  }
+  hCtx.globalAlpha = 1;
+
+  if(state.t > 0){
+    hCtx.beginPath();
+    for(let i=0;i<=theorySamples;i++){
+      const x = xmin + i*(xmax-xmin)/theorySamples;
+      const y = gaussianDensity(x, state.t, state.sigma2);
+      const px = coords.gx(x), py = coords.gy(y);
+      if(i===0) hCtx.moveTo(px,py); else hCtx.lineTo(px,py);
+    }
+    hCtx.strokeStyle = css('--accent-2');
+    hCtx.lineWidth = 2.2;
+    hCtx.stroke();
+  }
+
+  hCtx.fillStyle = css('--muted');
+  hCtx.font = "11px 'JetBrains Mono', monospace";
+  hCtx.textAlign = 'left';
+  hCtx.fillText('Histograma empírico', margin.l+6, margin.t+12);
+  hCtx.fillStyle = css('--accent-2');
+  hCtx.fillText('Curva teórica', margin.l+160, margin.t+12);
+}
+
+function render(){
+  renderParticles();
+  renderHistogram();
+  document.getElementById('timeBadge').textContent = `t = ${state.t.toFixed(3)}`;
+  document.getElementById('densityBadge').textContent = state.sigma2 === 1
+    ? 'p(x,t)=1/√(2πt)e^{-x²/(2t)}'
+    : 'p(x,t)=1/√(2πσ²t)e^{-x²/(2σ²t)}';
+}
+
+function updateStats(){
+  let mean = 0;
+  for(let i=0;i<state.positions.length;i++) mean += state.positions[i];
+  mean /= Math.max(1, state.positions.length);
+
+  let v = 0;
+  for(let i=0;i<state.positions.length;i++){
+    const d = state.positions[i] - mean;
+    v += d*d;
+  }
+  v /= Math.max(1, state.positions.length);
+
+  const theoVar = state.sigma2 * state.t;
+  document.getElementById('sTime').textContent = state.t.toFixed(3);
+  document.getElementById('sTheoVar').textContent = theoVar.toFixed(3);
+  document.getElementById('sSampleVar').textContent = v.toFixed(3);
+  document.getElementById('sMean').textContent = mean.toFixed(3);
+}
+
+function stepSimulation(){
+  if(!state.playing) return;
+  const rate = [0.25,0.5,0.75,1,1.5,2,3,4,6,8][state.speed-1] || 1;
+  const dt = state.dtBase * rate;
+  const advance = Math.min(dt, Math.max(0, state.T - state.t));
+  if(advance > 0){
+    const scale = Math.sqrt(state.sigma2 * advance);
+    for(let i=0;i<state.positions.length;i++){
+      state.positions[i] += scale * randn();
+    }
+    state.t += advance;
+  } else {
+    state.playing = false;
+    const btn = document.getElementById('playBtn');
+    btn.classList.remove('on');
+    btn.textContent = 'Reanudar';
+  }
+  updateStats();
+  render();
+  state.frameId = requestAnimationFrame(stepSimulation);
+}
+
+function restartSimulation(){
+  if(state.frameId) cancelAnimationFrame(state.frameId);
+  initPositions();
+  state.playing = true;
+  const btn = document.getElementById('playBtn');
+  btn.classList.add('on');
+  btn.textContent = 'Pausar';
+  render();
+  state.frameId = requestAnimationFrame(stepSimulation);
+}
+
+function togglePlay(){
+  state.playing = !state.playing;
+  const btn = document.getElementById('playBtn');
+  if(state.playing){
+    btn.classList.add('on');
+    btn.textContent = 'Pausar';
+    if(state.frameId) cancelAnimationFrame(state.frameId);
+    state.frameId = requestAnimationFrame(stepSimulation);
+  } else {
+    btn.classList.remove('on');
+    btn.textContent = 'Reanudar';
+  }
+}
+
+function setTheme(v){
+  document.body.dataset.theme = v;
+  render();
+}
+
+function setN(v){
+  state.N = parseInt(v,10);
+  document.getElementById('nVal').textContent = state.N;
+  restartSimulation();
+}
+function setT(v){
+  state.T = parseFloat(v);
+  document.getElementById('TVal').textContent = state.T.toFixed(1);
+  if(state.t > state.T) restartSimulation(); else render();
+}
+function setVariance(v){
+  state.sigma2 = parseFloat(v);
+  document.getElementById('varVal').textContent = state.sigma2.toFixed(2);
+  restartSimulation();
+}
+function setSpeed(v){
+  state.speed = parseInt(v,10);
+  document.getElementById('speedVal').textContent = speedLabels[state.speed] || 'x1';
+}
+
+document.getElementById('speedVal').textContent = speedLabels[state.speed];
+initPositions();
+resize();
+restartSimulation();
+</script>
+</body>
+</html>

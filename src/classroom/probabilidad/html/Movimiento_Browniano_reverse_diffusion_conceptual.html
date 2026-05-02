@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reverse diffusion conceptual</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f1a;
+  --surface:#131929;
+  --raised:#1a2438;
+  --border:#1e3254;
+  --text:#dde6f0;
+  --muted:#7b8fa8;
+  --accent:#29d8c2;
+  --accent2:#f6b73c;
+  --violet:#9b72f4;
+  --green:#3dd68c;
+  --red:#f06060;
+  --grid:rgba(255,255,255,.055);
+  --soft:rgba(41,216,194,.10);
+}
+body[data-theme=light]{
+  --bg:#f2f5fa;--surface:#ffffff;--raised:#edf2f8;--border:#cad7e8;
+  --text:#17223b;--muted:#667b97;--accent:#0c79a7;--accent2:#c47d10;
+  --violet:#6d3ecb;--green:#198a58;--red:#c93030;
+  --grid:rgba(0,0,0,.06);--soft:rgba(12,121,167,.08)
+}
+body[data-theme=cyber]{
+  --bg:#070b12;--surface:#0d1424;--raised:#111d34;--border:#1d3c68;
+  --text:#d8ecff;--muted:#7aa1c8;--accent:#00e5ff;--accent2:#ffc857;
+  --violet:#a970ff;--green:#3bf18b;--red:#ff6a88;
+  --grid:rgba(0,229,255,.08);--soft:rgba(0,229,255,.11)
+}
+body[data-theme=forest]{
+  --bg:#09140f;--surface:#122019;--raised:#162920;--border:#244235;
+  --text:#d8eee0;--muted:#89a395;--accent:#6be28d;--accent2:#d4b25f;
+  --violet:#90a0ff;--green:#44d37b;--red:#ef7c7c;
+  --grid:rgba(107,226,141,.07);--soft:rgba(107,226,141,.09)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--bg);color:var(--text);min-height:100vh;
+}
+header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.9rem 1.2rem;background:var(--surface);border-bottom:1px solid var(--border);
+}
+.brand h1{font-family:'Lora',serif;font-size:1.22rem;line-height:1.2}
+.brand p{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+select,button,input{font-family:inherit}
+.sel{
+  background:var(--raised);border:1px solid var(--border);color:var(--text);
+  border-radius:18px;padding:.36rem .75rem;font-size:.68rem;outline:none;
+}
+.layout{
+  display:grid;grid-template-columns:minmax(0,1fr) 365px;gap:.9rem;padding:.9rem;
+  min-height:calc(100vh - 68px);
+}
+.left{display:flex;flex-direction:column;gap:.85rem;min-width:0}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;min-width:0}
+.box,.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.panel{padding:.85rem}
+.boxhead{
+  display:flex;justify-content:space-between;align-items:center;gap:.7rem;
+  padding:.7rem .9rem;border-bottom:1px solid var(--border)
+}
+.tt{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.badge{
+  padding:.28rem .55rem;border:1px solid var(--border);border-radius:20px;
+  background:var(--raised);font-size:.61rem;color:var(--accent);white-space:nowrap;
+}
+.canvasWrap{height:320px}
+.canvasWrap.big{height:440px}
+canvas{display:block;width:100%;height:100%}
+.legend{
+  display:flex;gap:1rem;flex-wrap:wrap;padding:.65rem .9rem;border-top:1px solid var(--border);
+  font-size:.63rem;color:var(--muted)
+}
+.legend span{display:flex;align-items:center;gap:.35rem}
+.sw{width:12px;height:12px;border-radius:50%;display:inline-block}
+.sidebar{display:flex;flex-direction:column;gap:.8rem;overflow:auto;padding-right:2px}
+.plabel{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem}
+.cgroup{margin-bottom:.75rem}.cgroup:last-child{margin-bottom:0}
+.crow{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:.35rem;font-size:.66rem;color:var(--muted)
+}
+.crow em{font-style:normal;color:var(--accent);font-weight:700}
+input[type=range]{
+  width:100%;appearance:none;height:4px;border-radius:2px;background:var(--raised);outline:none
+}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer
+}
+.btns{display:flex;flex-direction:column;gap:.45rem}
+.btn{
+  border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);
+  padding:.6rem .7rem;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;
+  cursor:pointer;transition:.15s
+}
+.btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#05110d;font-weight:700}
+.btn-toggle.on{background:var(--violet);border-color:var(--violet);color:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.stat{background:var(--raised);border-radius:8px;padding:.55rem;text-align:center}
+.stat .k{font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-size:.82rem;color:var(--accent);font-weight:700;margin-top:4px}
+.stat.warn .v{color:var(--accent2)}
+.stat.red .v{color:var(--red)}
+.trow{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:.66rem;color:var(--muted);margin-bottom:.45rem
+}
+.tog{position:relative;width:32px;height:18px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.sld{
+  position:absolute;inset:0;background:var(--raised);border:1px solid var(--border);
+  border-radius:18px;cursor:pointer
+}
+.sld:before{
+  content:"";position:absolute;width:11px;height:11px;border-radius:50%;
+  left:3px;bottom:2px;background:var(--muted);transition:.2s
+}
+.tog input:checked + .sld{background:var(--accent);border-color:var(--accent)}
+.tog input:checked + .sld:before{transform:translateX(13px);background:#000}
+.mitem{display:flex;gap:.45rem;padding:.45rem 0;border-bottom:1px solid var(--border)}
+.mitem:last-child{border-bottom:none}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.formula{font-size:.71rem;color:var(--accent2);font-weight:700;line-height:1.45}
+.desc{font-size:.63rem;color:var(--muted);margin-top:2px;line-height:1.45}
+.note{
+  background:var(--soft);border:1px solid var(--border);border-radius:10px;
+  padding:.7rem;font-size:.67rem;line-height:1.55
+}
+.footer{
+  margin-top:.5rem;padding-top:.65rem;border-top:1px solid var(--border);
+  font-size:.65rem;color:var(--muted)
+}
+.rowSel{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.flow{
+  display:flex;justify-content:center;align-items:center;gap:.65rem;margin-top:.55rem;
+  font-size:.78rem;font-weight:700;letter-spacing:.04em;flex-wrap:wrap
+}
+.flow .pill{
+  padding:.38rem .7rem;border:1px solid var(--border);border-radius:999px;background:var(--raised)
+}
+.flow .arrow{color:var(--accent2)}
+@media(max-width:1180px){
+  .layout{grid-template-columns:1fr}
+  .canvasWrap.big{height:380px}
+}
+@media(max-width:820px){
+  .compare{grid-template-columns:1fr}
+  .canvasWrap,.canvasWrap.big{height:320px}
+}
+</style>
+</head>
+<body data-theme="dark">
+<header>
+  <div class="brand">
+    <h1>Reverse diffusion conceptual</h1>
+    <p>De ruido gaussiano a datos organizados: intuición visual del proceso inverso</p>
+  </div>
+  <select class="sel" onchange="setTheme(this.value)">
+    <option value="dark">Tema oscuro</option>
+    <option value="light">Tema claro</option>
+    <option value="cyber">Tema cyber</option>
+    <option value="forest">Tema forest</option>
+  </select>
+</header>
+
+<div class="layout">
+  <div class="left">
+    <div class="box">
+      <div class="boxhead">
+        <div class="tt">Proceso inverso: del ruido a la estructura</div>
+        <div class="badge" id="mainBadge">xk−1 ≈ “denoise”(xk)</div>
+      </div>
+      <div class="canvasWrap big"><canvas id="mainCanvas"></canvas></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--violet)"></i> Ruido inicial z</span>
+        <span><i class="sw" style="background:var(--accent2)"></i> Estado actual x<sub>t</sub></span>
+        <span><i class="sw" style="background:var(--accent)"></i> Datos objetivo x<sub>0</sub></span>
+        <span><i class="sw" style="background:var(--green)"></i> Trayectorias conceptuales</span>
+      </div>
+      <div class="flow">
+        <span class="pill">datos</span>
+        <span class="arrow">⟶</span>
+        <span class="pill">ruido</span>
+        <span style="opacity:.55">|</span>
+        <span class="pill">ruido</span>
+        <span class="arrow">⟶</span>
+        <span class="pill">datos</span>
+      </div>
+    </div>
+
+    <div class="compare">
+      <div class="box">
+        <div class="boxhead">
+          <div class="tt">Schedule conceptual de denoising</div>
+          <div class="badge" id="schedBadge">progreso reverse</div>
+        </div>
+        <div class="canvasWrap"><canvas id="scheduleCanvas"></canvas></div>
+      </div>
+
+      <div class="box">
+        <div class="boxhead">
+          <div class="tt">Pesos ruido / estructura</div>
+          <div class="badge" id="coeffBadge">interpolación</div>
+        </div>
+        <div class="canvasWrap"><canvas id="coeffCanvas"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="panel">
+      <div class="plabel">⚙ Parámetros</div>
+      <div class="cgroup">
+        <div class="crow">Distribución objetivo <em id="shapeVal">círculo</em></div>
+        <div class="rowSel">
+          <select class="sel" id="shapeSel" onchange="setShape(this.value)">
+            <option value="circle">Círculo</option>
+            <option value="moons">Luna</option>
+            <option value="clusters">Dos clusters</option>
+            <option value="spiral">Espiral</option>
+          </select>
+          <select class="sel" id="scheduleSel" onchange="setSchedule(this.value)">
+            <option value="linear">Lineal</option>
+            <option value="sigmoid" selected>Sigmoide</option>
+            <option value="cosine">Cosine</option>
+          </select>
+        </div>
+      </div>
+      <div class="cgroup">
+        <div class="crow">Número de puntos <em id="nVal">450</em></div>
+        <input type="range" id="nSlider" min="100" max="1200" step="50" value="450" oninput="setN(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Paso reverse t <em id="tVal">0 / 180</em></div>
+        <input type="range" id="tSlider" min="0" max="180" step="1" value="0" oninput="setStep(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Fuerza de atracción <em id="pullVal">1.00</em></div>
+        <input type="range" id="pullSlider" min="0.40" max="2.00" step="0.05" value="1.00" oninput="setPull(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Ruido residual <em id="residVal">0.25</em></div>
+        <input type="range" id="residSlider" min="0.00" max="1.20" step="0.05" value="0.25" oninput="setResidual(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Velocidad animación <em id="speedVal">x1</em></div>
+        <input type="range" id="speedSlider" min="1" max="10" step="1" value="4" oninput="setSpeed(this.value)">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">▶ Acciones</div>
+      <div class="btns">
+        <button class="btn btn-primary btn-toggle" id="reverseBtn" onclick="toggleReverse()">● Reverse diffusion</button>
+        <button class="btn" onclick="resetTime()">Reiniciar en ruido</button>
+        <button class="btn" onclick="resampleAll()">Remuestrear ruido + datos</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">☰ Visualización</div>
+      <div class="trow">Mostrar objetivo tenue
+        <label class="tog"><input type="checkbox" id="ghostTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Mostrar trayectorias
+        <label class="tog"><input type="checkbox" id="trajTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Mostrar grilla
+        <label class="tog"><input type="checkbox" id="gridTog" checked onchange="renderAll()"><span class="sld"></span></label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">■ Lecturas numéricas</div>
+      <div class="grid2">
+        <div class="stat warn"><div class="k">progreso p(t)</div><div class="v" id="sProg">0.000</div></div>
+        <div class="stat"><div class="k">peso datos</div><div class="v" id="sDataW">0.000</div></div>
+        <div class="stat"><div class="k">peso ruido</div><div class="v" id="sNoiseW">1.000</div></div>
+        <div class="stat red"><div class="k">jitter residual</div><div class="v" id="sJitter">0.250</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">∂ Conceptos</div>
+      <div class="mitem">
+        <div class="dot"></div>
+        <div>
+          <div class="formula">Reverse diffusion: ruido ⟶ datos</div>
+          <div class="desc">Partimos de una nube gaussiana y, paso a paso, vamos empujando los puntos hacia regiones de alta densidad de una distribución objetivo.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--accent2)"></div>
+        <div>
+          <div class="formula">No se entrena una red aquí: es una animación conceptual</div>
+          <div class="desc">En un modelo real, una red aprende la dirección de “desruido”. Aquí esa dirección se emula moviendo cada punto desde el ruido hacia la estructura final.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--green)"></div>
+        <div>
+          <div class="formula">x<sub>t</sub> ≈ (1−p)·z + p·x<sub>0</sub> + ruido residual</div>
+          <div class="desc">Cuando p aumenta, el peso del ruido cae y emerge la geometría del dato.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">✦ Lectura didáctica</div>
+      <div class="note">
+        La idea central de los modelos de difusión es doble: primero se destruye la estructura de los datos mediante un proceso forward; luego se aprende a reconstruirla. Esta demo se concentra en la segunda parte. Empezamos con ruido gaussiano y lo vamos “ordenando” hacia una forma objetivo. No es un modelo entrenado: es una visualización conceptual del mapa <strong>ruido ⟶ datos</strong>.
+      </div>
+      <div class="footer">Material elaborado por el profesor Sergio Gevatschnaider.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const mainCanvas = document.getElementById('mainCanvas');
+const scheduleCanvas = document.getElementById('scheduleCanvas');
+const coeffCanvas = document.getElementById('coeffCanvas');
+const mctx = mainCanvas.getContext('2d');
+const sctx = scheduleCanvas.getContext('2d');
+const cctx = coeffCanvas.getContext('2d');
+
+const S = {
+  shape: 'circle',
+  n: 450,
+  T: 180,
+  step: 0,
+  pull: 1.0,
+  residual: 0.25,
+  schedule: 'sigmoid',
+  speed: 4,
+  Xtarget: [],
+  Znoise: [],
+  eta: [],
+  Xcur: [],
+  progressArr: [],
+  auto: false,
+  autoId: null
+};
+
+const speedMult = [0.4,0.6,0.8,1,1.5,2,3,4,6,8];
+const speedLabels = {1:'x0.4',2:'x0.6',3:'x0.8',4:'x1',5:'x1.5',6:'x2',7:'x3',8:'x4',9:'x6',10:'x8'};
+
+function css(v){ return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+function randn(){
+  let u=0,v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function resize(){
+  for(const c of [mainCanvas, scheduleCanvas, coeffCanvas]){
+    const w = c.parentElement;
+    c.width = w.clientWidth;
+    c.height = w.clientHeight;
+  }
+  renderAll();
+}
+window.addEventListener('resize', resize);
+
+function normalizePoints(points){
+  let mx=0,my=0;
+  for(const p of points){mx+=p.x; my+=p.y;}
+  mx/=points.length; my/=points.length;
+  for(const p of points){p.x-=mx; p.y-=my;}
+  let r=0;
+  for(const p of points){r=Math.max(r, Math.sqrt(p.x*p.x+p.y*p.y));}
+  r = r || 1;
+  for(const p of points){p.x /= (r/2.2); p.y /= (r/2.2);}
+  return points;
+}
+function generateTarget(){
+  const pts = [];
+  if(S.shape === 'circle'){
+    for(let i=0;i<S.n;i++){
+      const a = Math.random()*2*Math.PI;
+      const r = 1.25 + 0.13*randn();
+      pts.push({x:r*Math.cos(a), y:r*Math.sin(a)});
+    }
+  } else if(S.shape === 'moons'){
+    const half = Math.floor(S.n/2);
+    for(let i=0;i<half;i++){
+      const u = Math.random()*Math.PI;
+      pts.push({x:Math.cos(u)-0.45+0.05*randn(), y:Math.sin(u)+0.05*randn()});
+    }
+    for(let i=half;i<S.n;i++){
+      const u = Math.random()*Math.PI;
+      pts.push({x:1.0-Math.cos(u)-0.45+0.05*randn(), y:-Math.sin(u)+0.52+0.05*randn()});
+    }
+  } else if(S.shape === 'clusters'){
+    const half = Math.floor(S.n/2);
+    for(let i=0;i<half;i++) pts.push({x:-1.25 + 0.35*randn(), y:0.75 + 0.35*randn()});
+    for(let i=half;i<S.n;i++) pts.push({x:1.15 + 0.38*randn(), y:-0.65 + 0.36*randn()});
+  } else if(S.shape === 'spiral'){
+    for(let i=0;i<S.n;i++){
+      const u = i/(S.n-1);
+      const t = 0.45 + 3.8*Math.PI*u;
+      const r = 0.18 + 0.23*t;
+      pts.push({x:r*Math.cos(t)+0.08*randn(), y:r*Math.sin(t)+0.08*randn()});
+    }
+  }
+  S.Xtarget = normalizePoints(pts);
+}
+function generateNoise(){
+  S.Znoise = [];
+  S.eta = [];
+  for(let i=0;i<S.n;i++){
+    S.Znoise.push({x:1.3*randn(), y:1.3*randn()});
+    S.eta.push({x:randn(), y:randn()});
+  }
+}
+function computeProgressArray(){
+  S.progressArr = new Array(S.T+1).fill(0);
+  for(let t=0;t<=S.T;t++){
+    const u = t/S.T;
+    let p = u;
+    if(S.schedule === 'linear'){
+      p = u;
+    } else if(S.schedule === 'sigmoid'){
+      p = 1/(1 + Math.exp(-10*(u-0.5)));
+      const p0 = 1/(1 + Math.exp(-10*(0-0.5)));
+      const p1 = 1/(1 + Math.exp(-10*(1-0.5)));
+      p = (p-p0)/(p1-p0);
+    } else if(S.schedule === 'cosine'){
+      p = 1 - Math.cos(u*Math.PI/2);
+    }
+    p = Math.max(0, Math.min(1, p*S.pull));
+    if(p > 1) p = 1;
+    S.progressArr[t] = p;
+  }
+}
+function currentProgress(){
+  return S.progressArr[S.step] || 0;
+}
+function refreshCurrent(){
+  const p = currentProgress();
+  const noiseWeight = 1-p;
+  const dataWeight = p;
+  const jitter = S.residual*(1-p);
+  S.Xcur = new Array(S.n);
+  for(let i=0;i<S.n;i++){
+    S.Xcur[i] = {
+      x: noiseWeight*S.Znoise[i].x + dataWeight*S.Xtarget[i].x + jitter*0.40*S.eta[i].x,
+      y: noiseWeight*S.Znoise[i].y + dataWeight*S.Xtarget[i].y + jitter*0.40*S.eta[i].y
+    };
+  }
+}
+function buildAll(){
+  generateTarget();
+  generateNoise();
+  computeProgressArray();
+  refreshCurrent();
+}
+function resampleAll(){
+  stopAuto();
+  buildAll();
+  S.step = 0;
+  document.getElementById('tSlider').value = 0;
+  refreshCurrent();
+  renderAll();
+}
+function setTheme(v){ document.body.dataset.theme = v; renderAll(); }
+function setShape(v){
+  S.shape = v;
+  const names = {circle:'círculo', moons:'luna', clusters:'dos clusters', spiral:'espiral'};
+  document.getElementById('shapeVal').textContent = names[v] || v;
+  resampleAll();
+}
+function setSchedule(v){ S.schedule = v; computeProgressArray(); refreshCurrent(); renderAll(); }
+function setN(v){ S.n = parseInt(v,10); document.getElementById('nVal').textContent = S.n; resampleAll(); }
+function setStep(v){ S.step = parseInt(v,10); refreshCurrent(); renderAll(); }
+function setPull(v){ S.pull = parseFloat(v); document.getElementById('pullVal').textContent = S.pull.toFixed(2); computeProgressArray(); refreshCurrent(); renderAll(); }
+function setResidual(v){ S.residual = parseFloat(v); document.getElementById('residVal').textContent = S.residual.toFixed(2); refreshCurrent(); renderAll(); }
+function setSpeed(v){ S.speed = parseInt(v,10); document.getElementById('speedVal').textContent = speedLabels[S.speed] || 'x1'; }
+function resetTime(){
+  stopAuto();
+  S.step = 0;
+  document.getElementById('tSlider').value = 0;
+  refreshCurrent();
+  renderAll();
+}
+function stopAuto(){
+  S.auto = false;
+  const b = document.getElementById('reverseBtn');
+  b.classList.remove('on');
+  b.textContent = '● Reverse diffusion';
+  if(S.autoId) cancelAnimationFrame(S.autoId);
+  S.autoId = null;
+}
+function toggleReverse(){
+  S.auto = !S.auto;
+  const b = document.getElementById('reverseBtn');
+  if(S.auto){
+    b.classList.add('on');
+    b.textContent = '■ Detener reverse';
+    if(S.autoId) cancelAnimationFrame(S.autoId);
+    S.autoId = requestAnimationFrame(autoStep);
+  } else {
+    stopAuto();
+  }
+}
+function autoStep(){
+  if(!S.auto) return;
+  const inc = Math.max(1, Math.round(speedMult[S.speed-1] || 1));
+  S.step = Math.min(S.T, S.step + inc);
+  document.getElementById('tSlider').value = S.step;
+  refreshCurrent();
+  renderAll();
+  if(S.step >= S.T){
+    stopAuto();
+    return;
+  }
+  S.autoId = requestAnimationFrame(autoStep);
+}
+function drawGrid(ctx, x, y, w, h){
+  if(!document.getElementById('gridTog').checked) return;
+  ctx.strokeStyle = css('--grid');
+  ctx.lineWidth = 1;
+  for(let i=0;i<=6;i++){
+    const px = x + i*w/6;
+    ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px, y+h); ctx.stroke();
+  }
+  for(let i=0;i<=6;i++){
+    const py = y + i*h/6;
+    ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x+w, py); ctx.stroke();
+  }
+}
+function mapPoint(p, box){
+  const xmin = -4, xmax = 4, ymin = -4, ymax = 4;
+  const px = box.x + (p.x-xmin)/(xmax-xmin)*box.w;
+  const py = box.y + box.h - (p.y-ymin)/(ymax-ymin)*box.h;
+  return {x:px, y:py};
+}
+function drawScatter(ctx, points, box, color, size=3, alpha=1){
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  for(const p of points){
+    const q = mapPoint(p, box);
+    ctx.beginPath();
+    ctx.arc(q.x, q.y, size, 0, 2*Math.PI);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+function drawTrajectories(ctx, box){
+  if(!document.getElementById('trajTog').checked) return;
+  const sampleCount = Math.min(20, S.n);
+  const stride = Math.max(1, Math.floor(S.n/sampleCount));
+  ctx.save();
+  ctx.strokeStyle = 'rgba(61,214,140,.28)';
+  ctx.lineWidth = 1;
+  for(let k=0;k<S.n;k+=stride){
+    const a = mapPoint(S.Znoise[k], box);
+    const b = mapPoint(S.Xcur[k], box);
+    const c = mapPoint(S.Xtarget[k], box);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.lineTo(c.x, c.y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function renderMain(){
+  const W = mainCanvas.width, H = mainCanvas.height, ctx = mctx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  const pad = 20, titleH = 22, gap = 16;
+  const boxW = (W - 2*pad - 2*gap)/3;
+  const boxH = H - 2*pad - titleH;
+  const boxes = [
+    {x:pad, y:pad+titleH, w:boxW, h:boxH, title:'z · ruido inicial'},
+    {x:pad+boxW+gap, y:pad+titleH, w:boxW, h:boxH, title:'x_t · denoising actual'},
+    {x:pad+2*(boxW+gap), y:pad+titleH, w:boxW, h:boxH, title:'x_0 · distribución objetivo'}
+  ];
+
+  ctx.font = "12px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+  boxes.forEach((b)=>{
+    ctx.fillStyle = css('--raised');
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    drawGrid(ctx, b.x, b.y, b.w, b.h);
+    ctx.strokeStyle = css('--border');
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(b.x, b.y, b.w, b.h);
+    ctx.fillStyle = css('--muted');
+    ctx.fillText(b.title, b.x, b.y-6);
+  });
+
+  drawScatter(ctx, S.Znoise, boxes[0], css('--violet'), 2.3, .85);
+
+  if(document.getElementById('ghostTog').checked){
+    drawScatter(ctx, S.Xtarget, boxes[1], css('--muted'), 1.5, .15);
+  }
+  drawTrajectories(ctx, boxes[1]);
+  drawScatter(ctx, S.Xcur, boxes[1], css('--accent2'), 2.3, .92);
+
+  drawScatter(ctx, S.Xtarget, boxes[2], css('--accent'), 2.4, .92);
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "11px 'JetBrains Mono',monospace";
+  ctx.fillText(`t = ${S.step} / ${S.T}`, boxes[1].x, H-8);
+}
+function axes(ctx, W, H, m, xmin, xmax, ymin, ymax, xlab, ylab, rightLabel=null){
+  const gx = x => m.l + (x-xmin)/(xmax-xmin)*(W-m.l-m.r);
+  const gy = y => H-m.b - (y-ymin)/(ymax-ymin)*(H-m.t-m.b);
+
+  if(document.getElementById('gridTog').checked){
+    ctx.strokeStyle = css('--grid');
+    ctx.lineWidth = 1;
+    for(let i=0;i<=8;i++){
+      const x = xmin + i*(xmax-xmin)/8;
+      const px = gx(x);
+      ctx.beginPath(); ctx.moveTo(px,m.t); ctx.lineTo(px,H-m.b); ctx.stroke();
+    }
+    for(let i=0;i<=6;i++){
+      const y = ymin + i*(ymax-ymin)/6;
+      const py = gy(y);
+      ctx.beginPath(); ctx.moveTo(m.l,py); ctx.lineTo(W-m.r,py); ctx.stroke();
+    }
+  }
+
+  ctx.strokeStyle = css('--muted');
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(m.l,m.t); ctx.lineTo(m.l,H-m.b); ctx.lineTo(W-m.r,H-m.b); ctx.stroke();
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'center';
+  for(let i=0;i<=4;i++){
+    const x = xmin + i*(xmax-xmin)/4;
+    ctx.fillText(Math.round(x).toString(), gx(x), H-m.b+14);
+  }
+  ctx.fillText(xlab, W-m.r+10, H-m.b+14);
+
+  ctx.textAlign = 'right';
+  for(let i=0;i<=4;i++){
+    const y = ymin + i*(ymax-ymin)/4;
+    ctx.fillText(y.toFixed(2), m.l-5, gy(y)+3);
+  }
+  ctx.save();
+  ctx.translate(14,H/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';
+  ctx.fillText(ylab,0,0);
+  ctx.restore();
+
+  if(rightLabel){
+    ctx.save();
+    ctx.translate(W-6, H/2);
+    ctx.rotate(Math.PI/2);
+    ctx.textAlign='center';
+    ctx.fillText(rightLabel,0,0);
+    ctx.restore();
+  }
+  return {gx,gy};
+}
+function drawCurve(ctx, pts, gx, gy, color, lw, alpha=1, dash=false){
+  if(pts.length<2) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if(dash) ctx.setLineDash([6,4]);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.beginPath();
+  ctx.moveTo(gx(pts[0].x), gy(pts[0].y));
+  for(let i=1;i<pts.length;i++) ctx.lineTo(gx(pts[i].x), gy(pts[i].y));
+  ctx.stroke();
+  ctx.restore();
+}
+function renderSchedule(){
+  const W = scheduleCanvas.width, H = scheduleCanvas.height, ctx = sctx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  const m = {l:48,r:24,t:24,b:34};
+  const A = axes(ctx, W, H, m, 0, S.T, 0, 1, 't', 'progreso');
+  const pts = [];
+  for(let t=0;t<=S.T;t++) pts.push({x:t, y:S.progressArr[t]});
+  drawCurve(ctx, pts, A.gx, A.gy, css('--accent2'), 2.4, .95, false);
+
+  const x = A.gx(S.step), y = A.gy(currentProgress());
+  ctx.strokeStyle = css('--violet');
+  ctx.lineWidth = 1.6;
+  ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(x,m.t); ctx.lineTo(x,H-m.b); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = css('--violet');
+  ctx.beginPath(); ctx.arc(x, y, 4.2, 0, 2*Math.PI); ctx.fill();
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText('p(t): cuánto emerge la estructura', 58, 22);
+}
+function renderCoefficients(){
+  const W = coeffCanvas.width, H = coeffCanvas.height, ctx = cctx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  const m = {l:48,r:24,t:24,b:72};
+  const A = axes(ctx, W, H, m, 0, S.T, 0, 1, 't', 'peso');
+  const dataPts = [], noisePts = [];
+  for(let t=0;t<=S.T;t++){
+    const p = S.progressArr[t];
+    dataPts.push({x:t, y:p});
+    noisePts.push({x:t, y:1-p});
+  }
+  drawCurve(ctx, dataPts, A.gx, A.gy, css('--green'), 2.3, .95, false);
+  drawCurve(ctx, noisePts, A.gx, A.gy, css('--violet'), 2.3, .95, false);
+
+  const x = A.gx(S.step);
+  ctx.strokeStyle = css('--accent2');
+  ctx.lineWidth = 1.6;
+  ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(x,m.t); ctx.lineTo(x,H-m.b); ctx.stroke();
+  ctx.setLineDash([]);
+
+  const p = currentProgress(), q = 1-p;
+  ctx.fillStyle = css('--green');
+  ctx.beginPath(); ctx.arc(x, A.gy(p), 4.2, 0, 2*Math.PI); ctx.fill();
+  ctx.fillStyle = css('--violet');
+  ctx.beginPath(); ctx.arc(x, A.gy(q), 4.2, 0, 2*Math.PI); ctx.fill();
+
+  const barX = 56, barY = H-38, barW = W-90, barH = 18;
+  ctx.strokeStyle = css('--border');
+  ctx.lineWidth = 1;
+  ctx.strokeRect(barX, barY, barW, barH);
+  ctx.fillStyle = 'rgba(155,114,244,.76)';
+  ctx.fillRect(barX, barY, barW*q, barH);
+  ctx.fillStyle = 'rgba(61,214,140,.76)';
+  ctx.fillRect(barX + barW*q, barY, barW*p, barH);
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono',monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText('ruido', 58, 22);
+  ctx.fillStyle = css('--green');
+  ctx.fillText('estructura', 100, 22);
+  ctx.fillStyle = css('--muted');
+  ctx.fillText('mezcla actual', barX, barY-6);
+}
+function updateStats(){
+  const p = currentProgress();
+  const q = 1-p;
+  const jitter = S.residual*q;
+  document.getElementById('tVal').textContent = `${S.step} / ${S.T}`;
+  document.getElementById('mainBadge').textContent = `${S.shape} · ${S.schedule}`;
+  document.getElementById('schedBadge').textContent = `p(t) = ${p.toFixed(3)}`;
+  document.getElementById('coeffBadge').textContent = `datos ${p.toFixed(3)} · ruido ${q.toFixed(3)}`;
+  document.getElementById('sProg').textContent = p.toFixed(3);
+  document.getElementById('sDataW').textContent = p.toFixed(3);
+  document.getElementById('sNoiseW').textContent = q.toFixed(3);
+  document.getElementById('sJitter').textContent = jitter.toFixed(3);
+}
+function renderAll(){
+  refreshCurrent();
+  updateStats();
+  renderMain();
+  renderSchedule();
+  renderCoefficients();
+}
+
+document.getElementById('speedVal').textContent = speedLabels[S.speed];
+document.getElementById('shapeVal').textContent = 'círculo';
+buildAll();
+resize();
+</script>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Browniano 2D — Nube de partículas y mapa de calor</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0b0f1a;
+  --surface:#131929;
+  --raised:#1a2438;
+  --border:#1e3254;
+  --text:#dde6f0;
+  --muted:#7a8fa8;
+  --accent:#29d8c2;
+  --accent2:#f6b73c;
+  --violet:#9b72f4;
+  --green:#3dd68c;
+  --red:#f06060;
+  --grid:rgba(255,255,255,.05);
+  --soft:rgba(41,216,194,.10);
+}
+body[data-theme="light"]{
+  --bg:#f2f5fa;
+  --surface:#ffffff;
+  --raised:#edf2f8;
+  --border:#cad7e8;
+  --text:#17223b;
+  --muted:#667b97;
+  --accent:#0c79a7;
+  --accent2:#c47d10;
+  --violet:#6d3ecb;
+  --green:#198a58;
+  --red:#c93030;
+  --grid:rgba(0,0,0,.06);
+  --soft:rgba(12,121,167,.08);
+}
+body[data-theme="cyber"]{
+  --bg:#070b12;
+  --surface:#0d1424;
+  --raised:#111d34;
+  --border:#1d3c68;
+  --text:#d8ecff;
+  --muted:#7aa1c8;
+  --accent:#00e5ff;
+  --accent2:#ffc857;
+  --violet:#a970ff;
+  --green:#3bf18b;
+  --red:#ff6a88;
+  --grid:rgba(0,229,255,.08);
+  --soft:rgba(0,229,255,.11);
+}
+body[data-theme="forest"]{
+  --bg:#09140f;
+  --surface:#122019;
+  --raised:#162920;
+  --border:#244235;
+  --text:#d8eee0;
+  --muted:#89a395;
+  --accent:#6be28d;
+  --accent2:#d4b25f;
+  --violet:#90a0ff;
+  --green:#44d37b;
+  --red:#ef7c7c;
+  --grid:rgba(107,226,141,.07);
+  --soft:rgba(107,226,141,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 1.2rem;background:var(--surface);border-bottom:1px solid var(--border);
+}
+.brand h1{font-family:'Lora',serif;font-size:1.24rem}
+.brand p{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.toptools{display:flex;gap:.55rem;align-items:center}
+.sel{
+  background:var(--raised);border:1px solid var(--border);color:var(--text);
+  border-radius:18px;padding:.35rem .75rem;font-size:.68rem;outline:none
+}
+.layout{
+  display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:.9rem;padding:.9rem;
+  min-height:calc(100vh - 68px);
+}
+.left{display:flex;flex-direction:column;gap:.85rem;min-width:0}
+.box{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+}
+.boxhead{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.7rem .9rem;border-bottom:1px solid var(--border);
+}
+.tt{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.badge{
+  padding:.28rem .55rem;border:1px solid var(--border);border-radius:20px;background:var(--raised);
+  font-size:.62rem;color:var(--accent)
+}
+.canvasWrap{height:520px;position:relative}
+canvas{display:block;width:100%;height:100%}
+.legend{
+  display:flex;gap:1rem;flex-wrap:wrap;padding:.65rem .9rem;border-top:1px solid var(--border);
+  font-size:.63rem;color:var(--muted)
+}
+.legend span{display:flex;align-items:center;gap:.35rem}
+.sw{width:11px;height:11px;border-radius:50%;display:inline-block}
+.sidebar{display:flex;flex-direction:column;gap:.8rem;overflow:auto;padding-right:2px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.85rem}
+.plabel{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem}
+.cgroup{margin-bottom:.75rem}.cgroup:last-child{margin-bottom:0}
+.crow{display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem;font-size:.66rem;color:var(--muted)}
+.crow em{font-style:normal;color:var(--accent);font-weight:600}
+input[type=range]{width:100%;appearance:none;height:4px;border-radius:2px;background:var(--raised);outline:none}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer}
+.btns{display:flex;flex-direction:column;gap:.45rem}
+.btn{
+  border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);
+  padding:.6rem .7rem;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:.15s;
+}
+.btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#05110d;font-weight:700}
+.btn-primary:hover{color:#05110d;filter:brightness(1.05)}
+.btn-toggle.on{background:var(--violet);border-color:var(--violet);color:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.stat{background:var(--raised);border-radius:8px;padding:.55rem;text-align:center}
+.stat .k{font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-size:.9rem;color:var(--accent);font-weight:700;margin-top:4px}
+.trow{display:flex;align-items:center;justify-content:space-between;font-size:.66rem;color:var(--muted);margin-bottom:.45rem}
+.trow:last-child{margin-bottom:0}
+.tog{position:relative;width:32px;height:18px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.sld{position:absolute;inset:0;background:var(--raised);border:1px solid var(--border);border-radius:18px;cursor:pointer;transition:.2s}
+.sld:before{content:"";position:absolute;width:11px;height:11px;border-radius:50%;left:3px;bottom:2px;background:var(--muted);transition:.2s}
+.tog input:checked + .sld{background:var(--accent);border-color:var(--accent)}
+.tog input:checked + .sld:before{transform:translateX(13px);background:#000}
+.note{background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:.7rem;font-size:.67rem;line-height:1.55;color:var(--text)}
+.mitem{display:flex;gap:.45rem;padding:.45rem 0;border-bottom:1px solid var(--border)}
+.mitem:last-child{border-bottom:none;padding-bottom:0}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.formula{font-size:.71rem;color:var(--accent2);font-weight:600;line-height:1.45}
+.desc{font-size:.63rem;color:var(--muted);margin-top:2px;line-height:1.45}
+.footer{margin-top:.5rem;padding-top:.65rem;border-top:1px solid var(--border);font-size:.65rem;color:var(--muted);line-height:1.45}
+@media(max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .canvasWrap{height:420px}
+}
+</style>
+</head>
+<body data-theme="dark">
+<header>
+  <div class="brand">
+    <h1>Browniano 2D: nube de partículas y mapa de calor</h1>
+    <p>Difusión espacial desde el origen</p>
+  </div>
+  <div class="toptools">
+    <select class="sel" onchange="setTheme(this.value)">
+      <option value="dark">Tema oscuro</option>
+      <option value="light">Tema claro</option>
+      <option value="cyber">Tema cyber</option>
+      <option value="forest">Tema forest</option>
+    </select>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="left">
+    <div class="box">
+      <div class="boxhead">
+        <div class="tt">Plano 2D: nube difusiva y partícula destacada</div>
+        <div class="badge" id="timeBadge">t = 0.000</div>
+      </div>
+      <div class="canvasWrap"><canvas id="mainCanvas"></canvas></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--accent)"></i> Partículas brownianas</span>
+        <span><i class="sw" style="background:var(--accent2)"></i> Partícula destacada</span>
+        <span><i class="sw" style="background:var(--violet)"></i> Rastro de la partícula destacada</span>
+        <span><i class="sw" style="background:linear-gradient(90deg, transparent, var(--red))"></i> Densidad / mapa de calor</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="panel">
+      <div class="plabel">⚙ Parámetros</div>
+      <div class="cgroup">
+        <div class="crow">Cantidad de partículas N <em id="nVal">700</em></div>
+        <input type="range" id="nSlider" min="100" max="2000" step="50" value="700" oninput="setN(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Tiempo final T <em id="TVal">3.0</em></div>
+        <input type="range" id="TSlider" min="0.5" max="10" step="0.5" value="3" oninput="setT(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Parámetro de varianza σ² <em id="varVal">1.00</em></div>
+        <input type="range" id="varSlider" min="0.25" max="4" step="0.25" value="1" oninput="setSigma2(this.value)">
+      </div>
+      <div class="cgroup">
+        <div class="crow">Velocidad <em id="speedVal">x1</em></div>
+        <input type="range" id="speedSlider" min="1" max="10" step="1" value="4" oninput="setSpeed(this.value)">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">▶ Acciones</div>
+      <div class="btns">
+        <button class="btn btn-primary" onclick="restartSimulation()">Reiniciar</button>
+        <button class="btn btn-toggle on" id="playBtn" onclick="togglePlay()">Pausar</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">☰ Visualización</div>
+      <div class="trow">Mapa de calor
+        <label class="tog"><input type="checkbox" id="heatTog" checked onchange="render()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Mostrar trayectorias
+        <label class="tog"><input type="checkbox" id="trajTog" checked onchange="render()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Mostrar partícula destacada
+        <label class="tog"><input type="checkbox" id="highlightTog" checked onchange="render()"><span class="sld"></span></label>
+      </div>
+      <div class="trow">Mostrar ejes
+        <label class="tog"><input type="checkbox" id="axesTog" checked onchange="render()"><span class="sld"></span></label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">■ Estadísticas</div>
+      <div class="grid2">
+        <div class="stat"><div class="k">Tiempo actual</div><div class="v" id="sTime">0.000</div></div>
+        <div class="stat"><div class="k">Radio RMS</div><div class="v" id="sRMS">0.000</div></div>
+        <div class="stat"><div class="k">Var. teórica</div><div class="v" id="sTheo">0.000</div></div>
+        <div class="stat"><div class="k">Dist. destacada</div><div class="v" id="sHigh">0.000</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">∂ Conceptos</div>
+      <div class="mitem">
+        <div class="dot"></div>
+        <div>
+          <div class="formula">W<sub>t</sub> = (W<sub>t</sub><sup>(1)</sup>, W<sub>t</sub><sup>(2)</sup>)</div>
+          <div class="desc">El browniano bidimensional se construye con dos componentes brownianas independientes.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--accent2)"></div>
+        <div>
+          <div class="formula">W<sub>t</sub> ∼ N(0, t I<sub>2</sub>)</div>
+          <div class="desc">En cada tiempo t, la nube de partículas tiene distribución normal bivariada centrada con matriz de covarianza proporcional a t.</div>
+        </div>
+      </div>
+      <div class="mitem">
+        <div class="dot" style="background:var(--violet)"></div>
+        <div>
+          <div class="formula">Difusión espacial</div>
+          <div class="desc">Visualmente aparece una nube que se expande desde el origen: a mayor tiempo, mayor dispersión radial.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">✦ Lectura didáctica</div>
+      <div class="note">
+        Esta demo permite pasar de la intuición de “muchas trayectorias aleatorias” a la idea de difusión en el plano. La nube de partículas se expande desde el origen y el mapa de calor muestra dónde la densidad es mayor. El rastro de una partícula destacada ayuda a unir la visión microscópica de una trayectoria con la visión macroscópica de la distribución espacial.
+      </div>
+      <div class="footer">Material elaborado por el profesor Sergio Gevatschnaider.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+
+const S = {
+  N: 700,
+  T: 3,
+  sigma2: 1,
+  speed: 4,
+  t: 0,
+  dtBase: 1/240,
+  playing: true,
+  frameId: null,
+  positions: null,
+  highlightIndex: 0,
+  highlightTrail: [],
+  snapshots: [],
+  snapshotEvery: 3,
+  frameCounter: 0,
+  maxSnapshots: 18,
+  heatGridSize: 40
+};
+
+const speedMult = [0.25,0.5,0.75,1,1.5,2,3,4,6,8];
+const speedLabels = {1:'x0.25',2:'x0.5',3:'x0.75',4:'x1',5:'x1.5',6:'x2',7:'x3',8:'x4',9:'x6',10:'x8'};
+
+function css(v){ return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+function randn(){ let u=0,v=0; while(u===0) u=Math.random(); while(v===0) v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+function initState(){
+  S.positions = new Float32Array(2*S.N);
+  S.highlightIndex = 0;
+  S.highlightTrail = [{x:0,y:0}];
+  S.snapshots = [];
+  S.t = 0;
+  S.frameCounter = 0;
+  pushSnapshot();
+  updateStats();
+}
+
+function pushSnapshot(){
+  const copy = new Float32Array(S.positions);
+  S.snapshots.push(copy);
+  if(S.snapshots.length > S.maxSnapshots) S.snapshots.shift();
+}
+
+function resize(){
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  render();
+}
+window.addEventListener('resize', resize);
+
+function getRadius(){
+  const theo = Math.sqrt(Math.max(6 * S.sigma2 * Math.max(S.t, 0.05), 0.5));
+  let r = theo;
+  for(let i=0;i<S.N;i++){
+    const x = S.positions[2*i], y = S.positions[2*i+1];
+    const a = Math.sqrt(x*x+y*y);
+    if(a > r) r = a;
+  }
+  if(S.highlightTrail.length){
+    for(const p of S.highlightTrail){
+      const a = Math.sqrt(p.x*p.x+p.y*p.y);
+      if(a > r) r = a;
+    }
+  }
+  return Math.max(r*1.12, 1);
+}
+
+function worldToCanvas(x,y,R,W,H,margin){
+  const px = margin.l + (x + R) / (2*R) * (W - margin.l - margin.r);
+  const py = H - margin.b - (y + R) / (2*R) * (H - margin.t - margin.b);
+  return [px, py];
+}
+
+function drawAxes(R,W,H,margin){
+  if(!document.getElementById('axesTog').checked) return;
+  ctx.strokeStyle = css('--grid');
+  ctx.lineWidth = 1;
+  const ticks = 8;
+  for(let i=0;i<=ticks;i++){
+    const v = -R + i*(2*R)/ticks;
+    const [px1,py1] = worldToCanvas(v,-R,R,W,H,margin);
+    const [px2,py2] = worldToCanvas(v,R,R,W,H,margin);
+    ctx.beginPath(); ctx.moveTo(px1,py1); ctx.lineTo(px2,py2); ctx.stroke();
+    const [qx1,qy1] = worldToCanvas(-R,v,R,W,H,margin);
+    const [qx2,qy2] = worldToCanvas(R,v,R,W,H,margin);
+    ctx.beginPath(); ctx.moveTo(qx1,qy1); ctx.lineTo(qx2,qy2); ctx.stroke();
+  }
+  ctx.strokeStyle = css('--muted');
+  ctx.lineWidth = 1.2;
+  let a = worldToCanvas(-R,0,R,W,H,margin), b = worldToCanvas(R,0,R,W,H,margin);
+  ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+  a = worldToCanvas(0,-R,R,W,H,margin); b = worldToCanvas(0,R,R,W,H,margin);
+  ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "10px 'JetBrains Mono', monospace";
+  ctx.textAlign = 'center';
+  for(let i=0;i<=ticks;i++){
+    const v = -R + i*(2*R)/ticks;
+    const [px,py] = worldToCanvas(v,0,R,W,H,margin);
+    ctx.fillText(v.toFixed(1), px, H-margin.b+14);
+  }
+  ctx.textAlign = 'right';
+  for(let i=0;i<=ticks;i++){
+    const v = -R + i*(2*R)/ticks;
+    const [px,py] = worldToCanvas(0,v,R,W,H,margin);
+    ctx.fillText(v.toFixed(1), margin.l-6, py+3);
+  }
+}
+
+function renderHeatMap(R,W,H,margin){
+  if(!document.getElementById('heatTog').checked) return;
+  const g = S.heatGridSize;
+  const counts = Array.from({length:g},()=>new Array(g).fill(0));
+  let maxC = 1;
+  for(let i=0;i<S.N;i++){
+    const x = S.positions[2*i], y = S.positions[2*i+1];
+    let ix = Math.floor((x + R)/(2*R) * g);
+    let iy = Math.floor((y + R)/(2*R) * g);
+    if(ix < 0 || ix >= g || iy < 0 || iy >= g) continue;
+    counts[ix][iy] += 1;
+    if(counts[ix][iy] > maxC) maxC = counts[ix][iy];
+  }
+
+  const usableW = W - margin.l - margin.r;
+  const usableH = H - margin.t - margin.b;
+  const cellW = usableW / g;
+  const cellH = usableH / g;
+
+  for(let ix=0; ix<g; ix++){
+    for(let iy=0; iy<g; iy++){
+      const c = counts[ix][iy];
+      if(c <= 0) continue;
+      const alpha = 0.04 + 0.55 * Math.pow(c/maxC, 0.75);
+      const x = margin.l + ix*cellW;
+      const y = margin.t + (g-1-iy)*cellH;
+      ctx.fillStyle = `rgba(${heatRGB().join(',')},${alpha.toFixed(3)})`;
+      ctx.fillRect(x,y,cellW+0.5,cellH+0.5);
+    }
+  }
+}
+
+function heatRGB(){
+  const c = css('--red');
+  const m = c.match(/#([0-9a-f]{6})/i);
+  if(m){
+    const hex = m[1];
+    return [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
+  }
+  return [240,96,96];
+}
+
+function renderTrajectories(R,W,H,margin){
+  if(!document.getElementById('trajTog').checked) return;
+  if(S.snapshots.length < 2) return;
+  ctx.lineWidth = 0.9;
+  for(let i=0;i<S.N;i++){
+    ctx.beginPath();
+    for(let s=0; s<S.snapshots.length; s++){
+      const snap = S.snapshots[s];
+      const x = snap[2*i], y = snap[2*i+1];
+      const [px,py] = worldToCanvas(x,y,R,W,H,margin);
+      if(s===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    const alpha = i === S.highlightIndex ? 0.65 : 0.08;
+    ctx.strokeStyle = i === S.highlightIndex ? `rgba(155,114,244,${alpha})` : `rgba(120,140,170,${alpha})`;
+    ctx.stroke();
+  }
+}
+
+function renderParticles(R,W,H,margin){
+  for(let i=0;i<S.N;i++){
+    const x = S.positions[2*i], y = S.positions[2*i+1];
+    const [px,py] = worldToCanvas(x,y,R,W,H,margin);
+    ctx.beginPath();
+    ctx.arc(px,py,2.3,0,2*Math.PI);
+    ctx.fillStyle = i === S.highlightIndex ? css('--accent2') : css('--accent');
+    ctx.globalAlpha = i === S.highlightIndex ? 1 : 0.55;
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function renderHighlightTrail(R,W,H,margin){
+  if(!document.getElementById('highlightTog').checked) return;
+  if(S.highlightTrail.length < 2) return;
+  ctx.beginPath();
+  for(let i=0;i<S.highlightTrail.length;i++){
+    const p = S.highlightTrail[i];
+    const [px,py] = worldToCanvas(p.x,p.y,R,W,H,margin);
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.strokeStyle = css('--violet');
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function renderTheoryCircle(R,W,H,margin){
+  const radius = Math.sqrt(2 * S.sigma2 * S.t);
+  if(radius <= 0) return;
+  const [cx,cy] = worldToCanvas(0,0,R,W,H,margin);
+  const edge = worldToCanvas(radius,0,R,W,H,margin);
+  const pr = Math.abs(edge[0] - cx);
+  ctx.beginPath();
+  ctx.arc(cx,cy,pr,0,2*Math.PI);
+  ctx.strokeStyle = 'rgba(246,183,60,0.35)';
+  ctx.lineWidth = 1.4;
+  ctx.setLineDash([5,4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function render(){
+  const W = canvas.width, H = canvas.height;
+  const margin = {l:48,r:20,t:20,b:32};
+  const R = getRadius();
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = css('--surface');
+  ctx.fillRect(0,0,W,H);
+
+  renderHeatMap(R,W,H,margin);
+  drawAxes(R,W,H,margin);
+  renderTheoryCircle(R,W,H,margin);
+  renderTrajectories(R,W,H,margin);
+  renderHighlightTrail(R,W,H,margin);
+  renderParticles(R,W,H,margin);
+
+  ctx.fillStyle = css('--muted');
+  ctx.font = "11px 'JetBrains Mono', monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText(`nube centrada en 0 · dispersión creciente`, margin.l+6, margin.t+14);
+  ctx.fillText(`radio teórico típico ≈ √(2σ²t) = ${Math.sqrt(2*S.sigma2*Math.max(S.t,0)).toFixed(3)}`, margin.l+6, margin.t+30);
+
+  document.getElementById('timeBadge').textContent = `t = ${S.t.toFixed(3)}`;
+}
+
+function updateStats(){
+  let meanR2 = 0;
+  for(let i=0;i<S.N;i++){
+    const x = S.positions[2*i], y = S.positions[2*i+1];
+    meanR2 += x*x + y*y;
+  }
+  meanR2 /= Math.max(1,S.N);
+  const rms = Math.sqrt(meanR2);
+  const theo = 2 * S.sigma2 * S.t;
+  const hx = S.positions[2*S.highlightIndex] || 0;
+  const hy = S.positions[2*S.highlightIndex+1] || 0;
+  const hdist = Math.sqrt(hx*hx+hy*hy);
+  document.getElementById('sTime').textContent = S.t.toFixed(3);
+  document.getElementById('sRMS').textContent = rms.toFixed(3);
+  document.getElementById('sTheo').textContent = theo.toFixed(3);
+  document.getElementById('sHigh').textContent = hdist.toFixed(3);
+}
+
+function stepSimulation(){
+  if(S.playing){
+    const dt = S.dtBase * (speedMult[S.speed-1] || 1);
+    const adv = Math.min(dt, Math.max(0, S.T - S.t));
+    if(adv > 0){
+      const scale = Math.sqrt(S.sigma2 * adv);
+      for(let i=0;i<S.N;i++){
+        S.positions[2*i] += scale * randn();
+        S.positions[2*i+1] += scale * randn();
+      }
+      S.t += adv;
+      S.frameCounter++;
+      if(S.frameCounter % S.snapshotEvery === 0) pushSnapshot();
+      const hx = S.positions[2*S.highlightIndex] || 0;
+      const hy = S.positions[2*S.highlightIndex+1] || 0;
+      S.highlightTrail.push({x:hx,y:hy});
+      if(S.highlightTrail.length > 180) S.highlightTrail.shift();
+    } else {
+      S.playing = false;
+      const b = document.getElementById('playBtn');
+      b.classList.remove('on');
+      b.textContent = 'Reanudar';
+    }
+  }
+  updateStats();
+  render();
+  S.frameId = requestAnimationFrame(stepSimulation);
+}
+
+function restartSimulation(){
+  if(S.frameId) cancelAnimationFrame(S.frameId);
+  initState();
+  S.playing = true;
+  const b = document.getElementById('playBtn');
+  b.classList.add('on');
+  b.textContent = 'Pausar';
+  render();
+  S.frameId = requestAnimationFrame(stepSimulation);
+}
+
+function togglePlay(){
+  S.playing = !S.playing;
+  const b = document.getElementById('playBtn');
+  if(S.playing){
+    b.classList.add('on');
+    b.textContent = 'Pausar';
+  } else {
+    b.classList.remove('on');
+    b.textContent = 'Reanudar';
+  }
+}
+
+function setTheme(v){ document.body.dataset.theme = v; render(); }
+function setN(v){ S.N = parseInt(v,10); document.getElementById('nVal').textContent = S.N; restartSimulation(); }
+function setT(v){ S.T = parseFloat(v); document.getElementById('TVal').textContent = S.T.toFixed(1); if(S.t > S.T) restartSimulation(); else render(); }
+function setSigma2(v){ S.sigma2 = parseFloat(v); document.getElementById('varVal').textContent = S.sigma2.toFixed(2); restartSimulation(); }
+function setSpeed(v){ S.speed = parseInt(v,10); document.getElementById('speedVal').textContent = speedLabels[S.speed] || 'x1'; }
+
+document.getElementById('speedVal').textContent = speedLabels[S.speed];
+initState();
+resize();
+restartSimulation();
+</script>
+</body>
+</html>
