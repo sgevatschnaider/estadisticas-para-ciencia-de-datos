@@ -354,7 +354,7 @@ Esta sección reúne materiales interactivos para estudiar el movimiento brownia
 | **Movimiento Browniano · Glosario Interactivo**<br><br><details><summary><strong>Resumen</strong></summary><p>Glosario académico avanzado dedicado al movimiento browniano, el proceso de Wiener y el cálculo estocástico. Reúne 39 términos clave con definiciones desarrolladas, fórmulas, intuiciones geométricas y ejemplos concretos sobre difusión anómala, puente browniano, caminata aleatoria, coeficiente de difusión, covarianza, ecuación de difusión, Fokker-Planck, Langevin, SDE, filtración, movimiento browniano fraccionario, movimiento browniano geométrico, procesos gaussianos, índice de Hurst, integral y lema de Itô, martingalas, propiedad de Markov, ruido blanco, Ornstein-Uhlenbeck, principio de reflexión, autosimilaridad, teorema de Donsker, tiempos de parada y variación cuadrática.</p></details> | [![Ver Glosario](https://img.shields.io/badge/Ver%20Glosario-Interactivo-2ea44f?style=for-the-badge)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/src/classroom/probabilidad/html/Movimiento_Browniano_Glosario.html) |
 
 
-## Geometría Hiperbólica, Teselaciones y Embeddings de Grafos
+## Geometría Hiperbólica, Grafos e Inteligencia Artificial 
 
 <div align="center">
 
@@ -481,22 +481,149 @@ Estos dos recursos deben quedar al final. Primero se consulta el glosario para c
 | **23. Cuestionario: Geometría Hiperbólica, Grafos y Embeddings** <br><br> <details><summary><strong>Resumen:</strong> <em>(haz clic para expandir/colapsar)</em></summary><p>Cuestionario académico interactivo con 30 preguntas organizadas en 6 módulos: embeddings y grafos, geometría hiperbólica, optimización riemanniana, construcción y garantías, evaluación y límites, y aplicaciones. Incluye búsqueda por conceptos, filtro por módulo, filtro por nivel, modo examen, progreso de estudio, botones para expandir o colapsar respuestas, opción de imprimir o exportar a PDF y tarjetas con respuestas desarrolladas. Se deja como último recurso porque funciona como instancia final de repaso, autoevaluación y preparación de clase.</p></details> | [![Ver HTML](https://img.shields.io/badge/Ver%20HTML-Cuestionario-36e6c1?style=for-the-badge&logo=html5)](https://htmlpreview.github.io/?https://github.com/sgevatschnaider/BigData-Graphs-Evo-CA-Classroom/blob/main/src/classroom/graphs/recursos/Hiperbolica_cuestionario_geometria_hiperbolica.html) |
 
 
-## 🎥 Material Audiovisual Complementario: Geometría Hiperbólica, Disco de Poincaré y RSGD
+# 🎥 Geometría Hiperbólica, Disco de Poincaré y RSGD  
+## Curaduría audiovisual guiada para estudiar modelos, visualizaciones y aplicaciones en ciencia de datos
 
-Para consolidar la intuición geométrica y conectar las visualizaciones interactivas con explicaciones formales, esta curaduría reúne videos sobre geometría hiperbólica, disco de Poincaré, teselaciones tipo Escher y optimización riemanniana. La secuencia está pensada para acompañar el estudio de embeddings hiperbólicos, grafos jerárquicos y modelos geométricos aplicados a ciencia de datos.
+> Esta sección reúne videos seleccionados para construir una comprensión progresiva de la geometría hiperbólica: primero desde la intuición visual, luego desde el modelo formal del disco de Poincaré, después desde las teselaciones tipo Escher y finalmente desde la optimización riemanniana aplicada a embeddings, grafos jerárquicos y aprendizaje automático.
 
-| 🎬 Tema y Concepto Clave | 👨‍🏫 Canal / Autor | 🔗 Enlace |
-| :--- | :--- | :--- |
-| **Introducción visual a la geometría hiperbólica**<br><sub>*Video ideal para comenzar: desarrolla intuición geométrica sobre el plano hiperbólico, la curvatura negativa y distintos modelos de representación, incluyendo el disco de Poincaré.*</sub> | **Illuminating hyperbolic geometry**<br><sub>*Introducción visual a la geometría hiperbólica y sus modelos.*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=eGEQ_UuQtYs) |
-| **Geometría hiperbólica y disco de Poincaré**<br><sub>*Complemento breve de divulgación para reforzar la idea de geometría no euclidiana y visualizar cómo el disco de Poincaré permite representar un plano infinito dentro de una región finita.*</sub> | **Beyond Euclid**<br><sub>*Exploring Hyperbolic Geometry & the Fascinating Poincaré Disk.*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=bOPaGHqQxeY) |
-| **Modelo formal del disco de Poincaré**<br><sub>*Clase más técnica sobre el modelo del disco, la métrica hiperbólica, las geodésicas y las isometrías. Es útil para pasar de la intuición visual a la formulación matemática.*</sub> | **HG.03.07 Models and Isometries of the Hyperbolic Plane**<br><sub>*The Poincaré Disc.*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=KbR55AX7DUs) |
-| **Introducción técnica al disco de Poincaré**<br><sub>*Recurso de apoyo para estudiar el modelo del disco desde una perspectiva más matemática, reforzando conceptos como frontera ideal, geodésicas y transformación de distancias.*</sub> | **Introduction to Poincare Disk**<br><sub>*Introducción técnica al modelo del disco de Poincaré.*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=OErKcpfSfn8) |
-| **Serie sobre el disco de Poincaré**<br><sub>*Playlist recomendada para profundizar paso a paso en el modelo del disco, sus propiedades geométricas y su interpretación dentro de la geometría no euclidiana.*</sub> | **Mathematics: Geometry**<br><sub>*Poincare Disk Playlist.*</sub> | [![Ver Playlist](https://img.shields.io/badge/Playlist-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PL1BF3AE959970630F) |
-| **Teselaciones hiperbólicas y patrones tipo Escher**<br><sub>*Explica cómo generar patrones hiperbólicos dentro del disco de Poincaré, conectando algoritmos geométricos con las obras de M. C. Escher y las teselaciones del plano hiperbólico.*</sub> | **Dr. Doug Dunham**<br><sub>*Repeating hyperbolic pattern algorithms.*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](http://www.youtube.com/watch?v=uX5dGZ6Kzyw) |
-| **Circle Limit III y teselaciones hiperbólicas**<br><sub>*Animación visual inspirada en Circle Limit III, útil para observar cómo los patrones hiperbólicos se repiten hacia el borde del disco y generan una sensación de profundidad infinita.*</sub> | **Circle Limit III in a fractal**<br><sub>*Animación visual inspirada en Escher y geometría hiperbólica.*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=xkkJcNwrDVM) |
-| **Geometría no euclidiana y disco de Poincaré**<br><sub>*Conferencia conceptual sobre el disco de Poincaré, su historia matemática y su importancia para representar geometrías no euclidianas de manera visualmente comprensible.*</sub> | **Alberto Verjovsky**<br><sub>*The Poincaré disk and non-euclidean geometry.*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=Ao-Otx6ik_Q) |
-| **Optimización riemanniana y variedades**<br><sub>*Introducción al gradiente riemanniano, retracciones y métodos de optimización sobre variedades. Sirve como puente hacia RSGD y embeddings en espacios no euclidianos.*</sub> | **Introduction to Riemannian Optimization**<br><sub>*Optimization on Riemannian Matrix Manifolds.*</sub> | [![Ver Video](https://img.shields.io/badge/Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=NZSW-oqDq9A) |
-| **Geometría riemanniana aplicada a aprendizaje y control**<br><sub>*Playlist avanzada sobre geometría riemanniana aplicada, útil para vincular el enfoque geométrico con aprendizaje automático, robótica, control y optimización sobre espacios curvos.*</sub> | **IROS’22 Tutorial**<br><sub>*Riemann and Gauss meet Asimov Playlist.*</sub> | [![Ver Playlist](https://img.shields.io/badge/Playlist-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PL_oEZ6dld4ignAdbFvcP_LAJgNbdrNBKC) |
+<p align="center">
+  <img src="https://img.shields.io/badge/Tema-Geometría%20Hiperbólica-4B0082?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Modelo-Disco%20de%20Poincaré-0B7285?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Aplicación-RSGD%20%7C%20Embeddings-2F9E44?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Nivel-Progresivo-FF922B?style=for-the-badge" />
+</p>
+
+---
+
+## 🧭 Ruta de estudio recomendada
+
+La curaduría está organizada como una secuencia didáctica. La idea no es ver los videos de manera aislada, sino avanzar desde la intuición geométrica hasta la aplicación computacional.
+
+| Etapa | Pregunta guía | Qué conviene mirar primero | Objetivo conceptual |
+| :---: | :--- | :--- | :--- |
+| **1** | ¿Qué es una geometría no euclidiana? | Introducciones visuales | Comprender la diferencia entre espacio euclídeo e hiperbólico. |
+| **2** | ¿Cómo se representa un plano infinito dentro de un disco finito? | Disco de Poincaré | Entender frontera ideal, geodésicas y deformación de distancias. |
+| **3** | ¿Por qué las teselaciones se comprimen hacia el borde? | Escher y patrones hiperbólicos | Visualizar crecimiento exponencial y simetrías hiperbólicas. |
+| **4** | ¿Cómo se optimiza una función cuando el espacio no es plano? | Optimización riemanniana | Conectar gradientes, variedades, RSGD y embeddings hiperbólicos. |
+| **5** | ¿Por qué esto importa para grafos, jerarquías e IA? | Riemannian optimization + aplicaciones | Relacionar geometría, ciencia de datos y representación de estructuras complejas. |
+
+---
+
+## 🧠 Mapa conceptual de la curaduría
+
+```text
+Geometría hiperbólica
+│
+├── Intuición geométrica
+│   ├── curvatura negativa
+│   ├── crecimiento exponencial
+│   └── geometrías no euclidianas
+│
+├── Modelos de representación
+│   ├── disco de Poincaré
+│   ├── geodésicas
+│   ├── frontera ideal
+│   └── isometrías
+│
+├── Visualización artística y matemática
+│   ├── teselaciones
+│   ├── patrones tipo Escher
+│   └── repetición hacia el borde
+│
+└── Aplicaciones computacionales
+    ├── variedades riemannianas
+    ├── RSGD
+    ├── embeddings hiperbólicos
+    └── grafos jerárquicos
+```
+
+---
+
+## 📌 Criterio de lectura
+
+Cada video fue clasificado según su función dentro del aprendizaje:
+
+- **Intuición visual:** permite comprender la idea geométrica sin comenzar por fórmulas.
+- **Modelo matemático:** introduce el disco de Poincaré, geodésicas, métricas e isometrías.
+- **Visualización avanzada:** conecta geometría hiperbólica con teselaciones y patrones tipo Escher.
+- **Optimización y aprendizaje automático:** permite vincular la geometría con RSGD, embeddings y grafos.
+
+---
+
+# 🎬 Biblioteca audiovisual curada
+
+## 1. Puerta de entrada: intuición geométrica
+
+| Recurso | Nivel | Concepto central | Uso recomendado | Enlace |
+| :--- | :---: | :--- | :--- | :---: |
+| **Introducción visual a la geometría hiperbólica**<br><sub>Video ideal para comenzar. Desarrolla intuición sobre el plano hiperbólico, la curvatura negativa y distintos modelos de representación, incluyendo el disco de Poincaré.</sub> | 🟢 Inicial | Curvatura negativa y modelos visuales | Usarlo antes de entrar en fórmulas. Sirve para que el estudiante entienda por qué la geometría hiperbólica no se comporta como la geometría euclidiana. | [![Ver video](https://img.shields.io/badge/YouTube-Ver%20video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=eGEQ_UuQtYs) |
+| **Geometría hiperbólica y disco de Poincaré**<br><sub>Complemento breve de divulgación para reforzar la idea de geometría no euclidiana y visualizar cómo el disco de Poincaré permite representar un plano infinito dentro de una región finita.</sub> | 🟢 Inicial | Plano infinito dentro de un disco finito | Recurso de refuerzo para explicar la diferencia entre mirar el disco con ojos euclidianos y entenderlo como representación hiperbólica. | [![Ver video](https://img.shields.io/badge/YouTube-Ver%20video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=bOPaGHqQxeY) |
+
+---
+
+## 2. Disco de Poincaré: del dibujo a la estructura matemática
+
+| Recurso | Nivel | Concepto central | Uso recomendado | Enlace |
+| :--- | :---: | :--- | :--- | :---: |
+| **Modelo formal del disco de Poincaré**<br><sub>Clase más técnica sobre el modelo del disco, la métrica hiperbólica, las geodésicas y las isometrías. Es útil para pasar de la intuición visual a la formulación matemática.</sub> | 🟡 Intermedio | Métrica, geodésicas e isometrías | Usarlo cuando ya se comprendió visualmente el disco y se quiere justificar matemáticamente por qué las rectas hiperbólicas aparecen como diámetros o arcos ortogonales al borde. | [![Ver video](https://img.shields.io/badge/YouTube-Ver%20video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=KbR55AX7DUs) |
+| **Introducción técnica al disco de Poincaré**<br><sub>Recurso de apoyo para estudiar el modelo del disco desde una perspectiva matemática, reforzando conceptos como frontera ideal, geodésicas y transformación de distancias.</sub> | 🟡 Intermedio | Frontera ideal y distancias hiperbólicas | Conveniente para acompañar una simulación del disco de Poincaré o una explicación sobre por qué el borde está infinitamente lejos en la métrica hiperbólica. | [![Ver video](https://img.shields.io/badge/YouTube-Ver%20video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=OErKcpfSfn8) |
+| **Serie sobre el disco de Poincaré**<br><sub>Playlist recomendada para profundizar paso a paso en el modelo del disco, sus propiedades geométricas y su interpretación dentro de la geometría no euclidiana.</sub> | 🟡 Intermedio | Estudio progresivo del modelo | Ideal como material complementario para estudiantes que quieran revisar el tema en varias sesiones y no solo con un único video introductorio. | [![Ver playlist](https://img.shields.io/badge/YouTube-Ver%20playlist-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PL1BF3AE959970630F) |
+
+---
+
+## 3. Teselaciones hiperbólicas: de Escher a los algoritmos geométricos
+
+| Recurso | Nivel | Concepto central | Uso recomendado | Enlace |
+| :--- | :---: | :--- | :--- | :---: |
+| **Teselaciones hiperbólicas y patrones tipo Escher**<br><sub>Explica cómo generar patrones hiperbólicos dentro del disco de Poincaré, conectando algoritmos geométricos con las obras de M. C. Escher y las teselaciones del plano hiperbólico.</sub> | 🔵 Visual avanzado | Teselaciones y repetición hiperbólica | Usarlo para mostrar que la geometría hiperbólica no es solo una abstracción, sino también una estructura que puede generar patrones visuales, arte matemático y algoritmos de repetición espacial. | [![Ver video](https://img.shields.io/badge/YouTube-Ver%20video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](http://www.youtube.com/watch?v=uX5dGZ6Kzyw) |
+| **Circle Limit III y teselaciones hiperbólicas**<br><sub>Animación visual inspirada en Circle Limit III, útil para observar cómo los patrones hiperbólicos se repiten hacia el borde del disco y generan una sensación de profundidad infinita.</sub> | 🔵 Visual avanzado | Escher, simetría y profundidad infinita | Recomendado para conectar matemática, visualización y comunicación. Es especialmente útil después de explicar que el borde del disco representa una frontera ideal infinitamente lejana. | [![Ver video](https://img.shields.io/badge/YouTube-Ver%20video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=xkkJcNwrDVM) |
+| **Geometría no euclidiana y disco de Poincaré**<br><sub>Conferencia conceptual sobre el disco de Poincaré, su historia matemática y su importancia para representar geometrías no euclidianas de manera visualmente comprensible.</sub> | 🟡 Intermedio | Historia, modelo y significado geométrico | Puede usarse como recurso de profundización para unir historia matemática, interpretación visual y formalización geométrica. | [![Ver video](https://img.shields.io/badge/YouTube-Ver%20video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=Ao-Otx6ik_Q) |
+
+---
+
+## 4. Optimización riemanniana, RSGD y aprendizaje automático
+
+| Recurso | Nivel | Concepto central | Uso recomendado | Enlace |
+| :--- | :---: | :--- | :--- | :---: |
+| **Optimización riemanniana y variedades**<br><sub>Introducción al gradiente riemanniano, retracciones y métodos de optimización sobre variedades. Sirve como puente hacia RSGD y embeddings en espacios no euclidianos.</sub> | 🔴 Avanzado | Gradiente riemanniano y optimización sobre variedades | Usarlo cuando se quiera explicar por qué el descenso de gradiente clásico no alcanza si los parámetros viven en un espacio curvo como el disco de Poincaré o una variedad riemanniana. | [![Ver video](https://img.shields.io/badge/YouTube-Ver%20video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=NZSW-oqDq9A) |
+| **Geometría riemanniana aplicada a aprendizaje y control**<br><sub>Playlist avanzada sobre geometría riemanniana aplicada, útil para vincular el enfoque geométrico con aprendizaje automático, robótica, control y optimización sobre espacios curvos.</sub> | 🔴 Avanzado | Geometría aplicada, aprendizaje y control | Recurso para ampliar la conexión entre geometría diferencial, optimización, inteligencia artificial, robótica y modelos de representación. | [![Ver playlist](https://img.shields.io/badge/YouTube-Ver%20playlist-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PL_oEZ6dld4ignAdbFvcP_LAJgNbdrNBKC) |
+
+---
+
+# 🧩 Tabla sintética para orientar al estudiante
+
+| Bloque | Qué se aprende | Conceptos que conviene recordar | Relación con IA y ciencia de datos |
+| :--- | :--- | :--- | :--- |
+| **Intuición hiperbólica** | Que existen geometrías donde las reglas euclidianas no describen bien el espacio. | Curvatura negativa, crecimiento exponencial, no euclidiano. | Ayuda a entender por qué algunos datos no se representan bien en espacios planos. |
+| **Disco de Poincaré** | Que un plano hiperbólico infinito puede representarse dentro de un disco finito. | Geodésicas, frontera ideal, métrica hiperbólica. | Permite construir embeddings hiperbólicos para jerarquías y grafos. |
+| **Teselaciones** | Que el plano hiperbólico admite patrones con crecimiento visual hacia el borde. | Simetrías, teselación, repetición, Escher. | Sirve para visualizar expansión exponencial, muy común en árboles y taxonomías. |
+| **Optimización riemanniana** | Que optimizar en espacios curvos requiere adaptar el gradiente. | Variedad, gradiente riemanniano, retracción, RSGD. | Base matemática para entrenar embeddings en espacios hiperbólicos. |
+
+---
+
+# 🔎 Cómo usar esta curaduría junto con las simulaciones interactivas
+
+1. **Antes de la simulación**, mirar los videos introductorios para instalar la intuición visual.
+2. **Durante la simulación**, relacionar cada elemento visual con un concepto: borde, geodésica, distancia, curvatura y crecimiento.
+3. **Después de la simulación**, avanzar hacia optimización riemanniana para comprender cómo se entrenan embeddings en espacios no euclidianos.
+4. **Como cierre**, conectar el tema con grafos jerárquicos, taxonomías, redes complejas e inteligencia artificial geométrica.
+
+---
+
+# ✅ Ideas clave para recordar
+
+- El disco de Poincaré no es simplemente un dibujo circular: es una representación conforme del plano hiperbólico.
+- Los puntos cercanos al borde parecen comprimidos visualmente, pero en la métrica hiperbólica pueden estar muy lejos.
+- Las geodésicas del disco son diámetros o arcos de circunferencia ortogonales al borde.
+- Las teselaciones hiperbólicas muestran cómo el espacio disponible crece rápidamente al alejarse del centro.
+- RSGD adapta el descenso de gradiente clásico para trabajar sobre variedades y espacios curvos.
+- Los embeddings hiperbólicos son especialmente útiles cuando los datos tienen estructura jerárquica, como árboles, taxonomías, grafos de conocimiento o redes con expansión exponencial.
+
+---
+
+<p align="center">
+  <strong>Material elaborado por el profesor Sergio Gevatschnaider</strong>
+</p>
 
 ### 8. Perspectiva Algebraica: Grafos de Cayley
 ## 📐 Fundamentos Teóricos (The Canon)
