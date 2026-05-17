@@ -620,11 +620,6 @@ Cada video fue clasificado según su función dentro del aprendizaje:
 - Los embeddings hiperbólicos son especialmente útiles cuando los datos tienen estructura jerárquica, como árboles, taxonomías, grafos de conocimiento o redes con expansión exponencial.
 
 ---
-
-<p align="center">
-  <strong>Material elaborado por el profesor Sergio Gevatschnaider</strong>
-</p>
-
 ### 8. Perspectiva Algebraica: Grafos de Cayley
 ## 📐 Fundamentos Teóricos (The Canon)
 
