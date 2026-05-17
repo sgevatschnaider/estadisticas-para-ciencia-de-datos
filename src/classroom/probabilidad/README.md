@@ -353,18 +353,21 @@ Esta sección reúne materiales interactivos para estudiar el movimiento brownia
 | **Movimiento Browniano · Cuestionario Académico Interactivo**<br><br><details><summary><strong>Resumen</strong></summary><p>Cuestionario interactivo diseñado para consolidar el estudio del movimiento browniano desde una perspectiva progresiva: conceptual, histórica, matemática, estocástica y aplicada. Reúne 20 preguntas con respuestas desarrolladas que articulan la observación física de Robert Brown, la explicación de Einstein, el proceso de Wiener, la covarianza, la variación cuadrática, las martingalas, el lema de Itô, las ecuaciones diferenciales estocásticas, el movimiento browniano geométrico, el proceso de Ornstein-Uhlenbeck y las conexiones modernas con finanzas e inteligencia artificial generativa.</p></details> | [![Ver Cuestionario](https://img.shields.io/badge/Ver%20Cuestionario-Interactivo-2ea44f?style=for-the-badge)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/src/classroom/probabilidad/html/Movimiento_Browniano_Cuestionario.html) |
 | **Movimiento Browniano · Glosario Interactivo**<br><br><details><summary><strong>Resumen</strong></summary><p>Glosario académico avanzado dedicado al movimiento browniano, el proceso de Wiener y el cálculo estocástico. Reúne 39 términos clave con definiciones desarrolladas, fórmulas, intuiciones geométricas y ejemplos concretos sobre difusión anómala, puente browniano, caminata aleatoria, coeficiente de difusión, covarianza, ecuación de difusión, Fokker-Planck, Langevin, SDE, filtración, movimiento browniano fraccionario, movimiento browniano geométrico, procesos gaussianos, índice de Hurst, integral y lema de Itô, martingalas, propiedad de Markov, ruido blanco, Ornstein-Uhlenbeck, principio de reflexión, autosimilaridad, teorema de Donsker, tiempos de parada y variación cuadrática.</p></details> | [![Ver Glosario](https://img.shields.io/badge/Ver%20Glosario-Interactivo-2ea44f?style=for-the-badge)](https://sgevatschnaider.github.io/estadisticas-para-ciencia-de-datos/src/classroom/probabilidad/html/Movimiento_Browniano_Glosario.html) |
 
+
+## Geometría Hiperbólica, Teselaciones y Embeddings de Grafos
+
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/sgevatschnaider/BigData-Graphs-Evo-CA-Classroom/29fb87a575bc09783ba3c6e2d0617231ef3f5d6d/src/classroom/graphs/recursos/teselado.gif" alt="Teselado hiperbólico en el disco de Poincaré" width="100%">
+
+</div>
+
+<br>
+
 ### Embeddings Hiperbólicos y Teoría de Grafos
 
 Esta sección reúne una serie de recursos interactivos para estudiar la relación entre **geometría hiperbólica, teoría de grafos y embeddings**. El recorrido parte de la visualización del plano hiperbólico y del disco de Poincaré, avanza hacia teselaciones, bolas métricas y grafos conexos no ponderados, y finalmente conecta estas ideas con embeddings dinámicos, tipos de representaciones y análisis de distorsión.
 
-
-### Embeddings Hiperbólicos y Teoría de Grafos
-
-Esta sección reúne una serie de recursos interactivos para estudiar la relación entre **geometría hiperbólica, teoría de grafos y embeddings**. El recorrido parte de la visualización del plano hiperbólico y del disco de Poincaré, avanza hacia teselaciones, bolas métricas y grafos conexos no ponderados, y finalmente conecta estas ideas con embeddings dinámicos, tipos de representaciones y análisis de distorsión.
-
-### Embeddings Hiperbólicos y Teoría de Grafos
-
-Esta sección reúne una serie de recursos interactivos para estudiar la relación entre **geometría hiperbólica, teoría de grafos y embeddings**. El recorrido parte de la visualización del plano hiperbólico y del disco de Poincaré, avanza hacia teselaciones, bolas métricas y grafos conexos no ponderados, y finalmente conecta estas ideas con embeddings dinámicos, tipos de representaciones y análisis de distorsión.
 | 📄 Recurso | 📥 Acceso |
 |---|---|
 | **El Problema del Embedding: Geometría Hiperbólica y Jerarquías** <br><br> <details><summary><strong>Resumen:</strong> <em>(haz clic para expandir/colapsar)</em></summary><p>Un recorrido exhaustivo de 6 módulos sobre la representación de jerarquías y grafos en espacios continuos. Aborda el <em>mismatch</em> geométrico del espacio euclidiano frente al crecimiento exponencial de los árboles, introduciendo la <strong>Geometría Hiperbólica</strong> y la <strong>Bola de Poincaré</strong> como una solución estructural natural. Incluye optimización riemanniana, enfoques constructivos con garantías de baja distorsión, trade-offs numéricos y aplicaciones en taxonomías, link prediction y redes filogenéticas.</p></details> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1WDxb8kUw6F6HJ6hJG1s0zGCz6YaE-ksU?usp=sharing) <br><br> [![Ver Lección Interactiva](https://img.shields.io/badge/Ver%20Lección-Interactiva-9cf?style=for-the-badge&logo=html5)](https://htmlpreview.github.io/?https://github.com/sgevatschnaider/BigData-Graphs-Evo-CA-Classroom/blob/5eff3f62f4b8f22d48d610183af72e47438d4ca6/src/classroom/graphs/recursos/arbol_hiperbolico.html) |
