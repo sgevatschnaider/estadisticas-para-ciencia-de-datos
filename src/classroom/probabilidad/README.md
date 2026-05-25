@@ -651,6 +651,30 @@ Estos dos recursos deben quedar al final del recorrido de estudio. Primero se co
 | **22. Glosario: Geometría Hiperbólica, Grafos y Embeddings** <br><br> <details><summary><strong>Resumen:</strong> <em>(haz clic para expandir/colapsar)</em></summary><p>Glosario interactivo con 79 términos organizados en 13 categorías. Incluye conceptos de fundamentos métricos, embeddings, geometría hiperbólica, modelos hiperbólicos, funciones matemáticas, optimización, optimización riemanniana, evaluación, límites, construcción, garantías y aplicaciones. Se ubica al final porque funciona como recurso de consulta y consolidación después de haber recorrido las visualizaciones, los modelos, los grafos, los embeddings y los algoritmos.</p></details> | [![Ver HTML](https://img.shields.io/badge/Ver%20HTML-Glosario-f0c040?style=for-the-badge&logo=html5)](https://htmlpreview.github.io/?https://github.com/sgevatschnaider/BigData-Graphs-Evo-CA-Classroom/blob/main/src/classroom/graphs/recursos/Hiperbolico_glosario.html) |
 | **23. Cuestionario: Geometría Hiperbólica, Grafos y Embeddings** <br><br> <details><summary><strong>Resumen:</strong> <em>(haz clic para expandir/colapsar)</em></summary><p>Cuestionario académico interactivo con 30 preguntas organizadas en 6 módulos: embeddings y grafos, geometría hiperbólica, optimización riemanniana, construcción y garantías, evaluación y límites, y aplicaciones. Incluye búsqueda por conceptos, filtro por módulo, modo examen, progreso de estudio, botones para expandir o colapsar respuestas, opción de imprimir o exportar a PDF y tarjetas con respuestas desarrolladas. Se deja como último recurso porque funciona como instancia final de repaso, autoevaluación y preparación de clase.</p></details> | [![Ver HTML](https://img.shields.io/badge/Ver%20HTML-Cuestionario-36e6c1?style=for-the-badge&logo=html5)](https://clinquant-meringue-3930c2.netlify.app/src/classroom/graphs/recursos/hiperbolica_cuestionario_geometria_hiperbolica) |
 
+# Guías de estudio: geometría hiperbólica, grafos y embeddings
+
+Esta sección reúne las guías de apoyo vinculadas específicamente con geometría hiperbólica, grafos, embeddings y aplicaciones en machine learning. Los materiales están pensados para acompañar el estudio conceptual, la resolución de ejercicios y la preparación de clase.
+
+Los documentos completos se encuentran disponibles en la siguiente carpeta de Google Drive:
+
+[![Abrir carpeta en Drive](https://img.shields.io/badge/Abrir%20carpeta-Google%20Drive-4285F4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/drive/folders/1jFB8G6uUIU73hAKb-J_b9eyT_dOsUt_7?usp=sharing)
+
+| 📄 Guía | 🧭 Tema principal | 📌 Descripción |
+|---|---|---|
+| **1. Guía de ejercicios resueltos: Grafos, embeddings y geometría hiperbólica** | Métrica de grafos, embeddings y disco de Poincaré | Guía organizada para trabajar la relación entre grafos, matrices, laplaciano, espectro, embeddings euclídeos e hiperbólicos. Incluye ejercicios sobre distancia en grafos, bolas métricas, crecimiento jerárquico, distorsión, geometría del disco de Poincaré, optimización, Gradient Descent, RSGD, matriz de adyacencia, matriz de distancia, laplaciano, autovalores, autovectores y conectividad. |
+| **2. Guía completa de ejercicios: Geometría hiperbólica, grafos y embeddings en machine learning** | Geometría hiperbólica aplicada a machine learning | Material de ejercicios conceptuales y avanzados sobre el uso de geometría hiperbólica para representar grafos jerárquicos, taxonomías, ontologías, redes complejas y embeddings utilizados en machine learning. Incluye fundamentos, embeddings aprendidos, aplicaciones, simulaciones, optimización, funciones de pérdida, curvatura y tareas de aprendizaje automático. |
+
+## Secuencia sugerida de uso
+
+1. Comenzar con la **guía de grafos, embeddings y geometría hiperbólica**, porque introduce la base matemática necesaria: distancia en grafos, bolas métricas, crecimiento jerárquico, distorsión, disco de Poincaré, laplaciano y espectro.
+
+2. Continuar con la **guía completa de geometría hiperbólica, grafos y embeddings en machine learning**, que amplía el recorrido hacia aplicaciones modernas como taxonomías, ontologías, grafos de conocimiento, redes complejas, simulaciones, funciones de pérdida y optimización riemanniana.
+
+## Articulación con recursos interactivos
+
+Estas guías complementan los recursos HTML interactivos del repositorio. La lectura sugerida es trabajar primero las visualizaciones y simulaciones, luego consultar las guías de ejercicios resueltos y finalmente utilizar el glosario y el cuestionario como instancia de consolidación y autoevaluación.
+
+
 # 🎥 Geometría Hiperbólica, Disco de Poincaré y RSGD  
 ## Curaduría audiovisual guiada para estudiar modelos, visualizaciones y aplicaciones en ciencia de datos
 
